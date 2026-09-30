@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sitenexs</title>
+    <title>Sitenexs — Solusi Digital untuk UMKM Indonesia</title>
     
     <!-- Meta SEO -->
-    <meta name="description" content="Sitenexs membantu DIGITAL INDONESIA naik kelas dengan jasa pembuatan website profesional, sistem presensi karyawan online, dan aplikasi kasir/pos kustom.">
-    <meta name="keywords" content="Sitenexs, Software Bisnis, Buat Website Usaha, Sistem Presensi Online, Aplikasi Kasir POS, Solusi Digital Usaha">
+    <meta name="description" content="Sitenexs membantu UMKM Indonesia menggunakan website bisnis, QR Order, kasir, presensi karyawan, booking, dan sistem custom yang mudah digunakan.">
+    <meta name="keywords" content="Sitenexs, QR Order Restoran, Website UMKM, Sistem Presensi Karyawan, Aplikasi Kasir POS, Solusi Digital Usaha">
     <meta name="author" content="Sitenexs">
     <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://sitenexs.site/">
 
     <!-- Open Graph / WhatsApp -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://sitenexs.com/">
-    <meta property="og:title" content="Sitenexs — Digitalisasi & Software Praktis untuk DIGITAL INDONESIA">
-    <meta property="og:description" content="Tingkatkan Usaha Bisnis Anda dengan sitenexs.">
-    <meta property="og:image" content="https://sitenexs.com/og-image.jpg">
+    <meta property="og:url" content="https://sitenexs.site/">
+    <meta property="og:title" content="Sitenexs — Solusi Digital untuk UMKM Indonesia">
+    <meta property="og:description" content="Website bisnis, QR Order, kasir, presensi karyawan, dan sistem usaha yang dibuat sederhana untuk membantu bisnis Anda.">
+    <meta property="og:image" content="https://sitenexs.site/assets/logo/logo.png">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://sitenexs.site/assets/logo/logo.png">
@@ -28,6 +29,25 @@
 
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Sitenexs",
+      "url": "https://sitenexs.site/",
+      "logo": "https://sitenexs.site/assets/logo/logo.png",
+      "description": "Solusi digital dan software praktis untuk UMKM Indonesia.",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+62-851-7713-7899",
+        "contactType": "customer service",
+        "areaServed": "ID",
+        "availableLanguage": "Indonesian"
+      }
+    }
+    </script>
 
     <style>
         /* === CSS VARIABLES === */
@@ -42,21 +62,18 @@
             --text-main: #0f172a;
             --text-muted: #475569;
             
-            /* Enhanced Border Tokens */
             --border-subtle: #cbd5e1;
             --border-medium: #94a3b8;
             --border-accent: #3b82f6;
             
-            /* Shadows */
             --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
             --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
             --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
             --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
             
-            /* Radius Mix: Sebagian kotak, sebagian dibuat melingkar/pill */
             --radius-md: 0.35rem;
             --radius-lg: 0.75rem;
-            --radius-full: 9999px; /* Tombol dan badge dikembalikan menjadi bentuk pil/bulat */
+            --radius-full: 9999px;
             --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -116,7 +133,7 @@
             transform: translateY(0);
         }
 
-        /* Buttons - Menggunakan --radius-full agar berbentuk pil/bulat ujungnya */
+        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -418,92 +435,119 @@
             font-weight: 600;
         }
         .mini-stat-value {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 800;
             color: var(--text-main);
             margin-top: 0.2rem;
         }
-        .chart-container {
-            background: #ffffff;
+
+        /* === SECTION MASALAH UMKM === */
+        .pain-points-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+        .pain-card {
+            background-color: #fff;
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            padding: 1rem;
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            position: relative;
         }
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        .chart-title {
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-        .chart-badge {
-            font-size: 0.68rem;
-            background: var(--primary-light);
-            color: var(--primary);
-            padding: 0.15rem 0.5rem;
-            border-radius: var(--radius-full);
-            font-weight: 700;
-        }
-        .bar-chart {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            height: 130px;
-            padding-top: 0.75rem;
-            border-bottom: 1px solid var(--border-subtle);
-            gap: 0.75rem;
-        }
-        .bar-column {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100%;
-            justify-content: flex-end;
-        }
-        .bar-fill {
-            width: 100%;
-            max-width: 30px;
-            background: linear-gradient(to top, var(--primary), #60a5fa);
-            border-radius: var(--radius-full) var(--radius-full) 0 0;
-            transition: height 1s ease;
-        }
-        .bar-label {
-            font-size: 0.65rem;
-            color: var(--text-muted);
-            margin-top: 0.4rem;
-            font-weight: 600;
+        .pain-card i {
+            color: #ef4444;
+            font-size: 1.2rem;
+            margin-bottom: 0.75rem;
         }
 
-        /* === STATS SECTION === */
-        .stats-section {
-            padding: 2rem 0;
-            background-color: var(--bg-alt);
-            border-top: 1px solid var(--border-subtle);
-            border-bottom: 1px solid var(--border-subtle);
+        /* === QR ORDER HIGHLIGHT === */
+        .qr-highlight-box {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #ffffff 100%);
+            border: 2px solid rgba(37, 99, 235, 0.2);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
         }
-        .stats-grid {
+        .qr-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin: 1.25rem 0;
+        }
+        .qr-step-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: #ffffff;
+            padding: 0.6rem 0.85rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .qr-step-num {
+            background: var(--primary);
+            color: #fff;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+        }
+
+        /* === STEPPER / CARA KERJA === */
+        .stepper-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 1rem;
-            text-align: center;
         }
-        .stat-item {
-            padding: 0.4rem;
+        .step-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            position: relative;
         }
-        .stat-number {
-            font-size: 1.65rem;
+        .step-num-badge {
+            font-size: 1.25rem;
             font-weight: 800;
             color: var(--primary);
+            margin-bottom: 0.5rem;
         }
-        .stat-label {
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: var(--text-muted);
+
+        /* === TARGET BISNIS GRID === */
+        .target-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+        .target-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+        .target-card:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        .target-card i {
+            font-size: 1.5rem;
         }
 
         /* === LAYANAN / SERVICES === */
@@ -518,7 +562,6 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 1.25rem;
         }
-        /* Ikon dibuat bundar penuh */
         .icon-box {
             width: 48px;
             height: 48px;
@@ -563,25 +606,6 @@
             justify-content: space-between;
             position: relative;
             border: 1px solid var(--border-subtle);
-        }
-        .pricing-popular {
-            border: 2px solid var(--primary);
-            box-shadow: var(--shadow-xl);
-        }
-        .popular-badge {
-            position: absolute;
-            top: -11px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--primary);
-            color: #fff;
-            padding: 0.2rem 0.7rem;
-            font-size: 0.62rem;
-            font-weight: 800;
-            border-radius: var(--radius-full);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
         }
         .price {
             font-size: 1.5rem;
@@ -796,10 +820,13 @@
         /* RESPONSIVE BREAKPOINTS */
         @media (max-width: 992px) {
             .grid-3 { grid-template-columns: repeat(2, 1fr); }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .pain-points-grid { grid-template-columns: repeat(2, 1fr); }
+            .stepper-grid { grid-template-columns: repeat(2, 1fr); }
+            .target-grid { grid-template-columns: repeat(2, 1fr); }
             .footer-grid { grid-template-columns: repeat(2, 1fr); }
             .hero-title { font-size: 2rem; }
             .dashboard-stats-row { grid-template-columns: 1fr; }
+            .qr-highlight-box { grid-template-columns: 1fr; }
         }
         
         @media (max-width: 768px) {
@@ -808,6 +835,9 @@
             .mobile-toggle { display: block; }
             
             .grid-3 { grid-template-columns: 1fr; }
+            .pain-points-grid { grid-template-columns: 1fr; }
+            .stepper-grid { grid-template-columns: 1fr; }
+            .target-grid { grid-template-columns: repeat(2, 1fr); }
             .form-grid { grid-template-columns: 1fr; }
             .hero-buttons { flex-direction: column; }
             .footer-grid { grid-template-columns: 1fr; }
@@ -827,10 +857,10 @@
             </a>
 
             <nav class="nav-links">
-                <a href="#layanan">Layanan Solusi</a>
-                <a href="#keunggulan">Fitur Digital</a>
-                <a href="#portofolio">Hasil Kerja</a>
-                <a href="#harga">Paket Harga</a>
+                <a href="#produk">Produk</a>
+                <a href="#qr-order">QR Order</a>
+                <a href="#cara-kerja">Cara Kerja</a>
+                <a href="#harga">Harga</a>
                 <a href="#faq">FAQ</a>
             </nav>
 
@@ -849,10 +879,10 @@
 
         <!-- MOBILE MENU DROPDOWN -->
         <div id="mobile-menu">
-            <a href="#layanan" class="nav-item">Layanan Solusi</a>
-            <a href="#keunggulan" class="nav-item">Fitur Digital</a>
-            <a href="#portofolio" class="nav-item">Hasil Kerja</a>
-            <a href="#harga" class="nav-item">Paket Harga</a>
+            <a href="#produk" class="nav-item">Produk</a>
+            <a href="#qr-order" class="nav-item">QR Order</a>
+            <a href="#cara-kerja" class="nav-item">Cara Kerja</a>
+            <a href="#harga" class="nav-item">Harga</a>
             <a href="#faq" class="nav-item">FAQ</a>
             
             <div class="mobile-auth-wrapper">
@@ -870,86 +900,54 @@
     <section class="hero bg-grid-pattern">
         <div class="container">
             <div class="badge reveal">
-                <i class="fas fa-store text-primary"></i> Solusi Digital Praktis Untuk DIGITAL INDONESIA
+                <i class="fas fa-store text-primary"></i> Solusi Digital untuk UMKM Indonesia
             </div>
             
             <h1 class="hero-title reveal">
-                Modernkan Usaha Anda dengan Website Profesional & Sistem Presensi Digital
+                Digitalisasi Usaha Tanpa Ribet
             </h1>
             
             <p class="hero-desc reveal">
-                Sitenexs membantu INDONESIA memiliki website profil usaha, sistem absensi karyawan berbasis HP, dan aplikasi kasir modern yang gampang dipakai serta terjangkau.
+                Website bisnis, QR Order, kasir, presensi karyawan, dan sistem usaha yang dibuat sederhana untuk membantu bisnis Anda bekerja lebih mudah.
             </p>
 
             <div class="hero-buttons reveal">
-                <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20mau%20tanya%20pembuatan%20website/sistem%20untuk%20usaha." target="_blank" class="btn btn-primary">
-                    <i class="fab fa-whatsapp"></i> Chat WhatsApp Sekarang
+                <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20mau%20tanya%20demo%20produk%20dan%20solusi%20untuk%20usaha%20saya." target="_blank" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Coba Demo Gratis
                 </a>
-                <a href="#layanan" class="btn btn-secondary">
-                    Lihat Layanan Solusi
+                <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20konsultasi%20kebutuhan%20usaha%20saya." target="_blank" class="btn btn-secondary">
+                    <i class="fab fa-whatsapp"></i> Konsultasi via WhatsApp
                 </a>
             </div>
 
-            <!-- Preview Dashboard Mockup -->
+            <!-- Preview Product Showcase Mockup -->
             <div class="mockup-wrapper reveal">
                 <div class="mockup-container">
                     <div class="mockup-header">
                         <div class="dot dot-red"></div>
                         <div class="dot dot-yellow"></div>
                         <div class="dot dot-green"></div>
-                        <span class="mockup-url">https://dashboard.sitenexs.com/analitik</span>
+                        <span class="mockup-url">https://demo.sitenexs.site/preview</span>
                     </div>
                     <div class="mockup-body">
                         <div class="dashboard-stats-row">
                             <div class="mini-stat-card">
-                                <div class="mini-stat-title">Total Pendapatan Bulan Ini</div>
-                                <div class="mini-stat-value">Rp 14.850.000</div>
+                                <div class="mini-stat-title">Status Sistem</div>
+                                <div class="mini-stat-value text-accent"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> Aktif & Online</div>
                             </div>
                             <div class="mini-stat-card">
-                                <div class="mini-stat-title">Transaksi Berhasil</div>
-                                <div class="mini-stat-value">342 Order</div>
+                                <div class="mini-stat-title">Akses Perangkat</div>
+                                <div class="mini-stat-value">HP, Tablet, Laptop</div>
                             </div>
                             <div class="mini-stat-card">
-                                <div class="mini-stat-title">Kehadiran Karyawan</div>
-                                <div class="mini-stat-value">98.5%</div>
+                                <div class="mini-stat-title">Penggunaan</div>
+                                <div class="mini-stat-value">Praktis Tanpa Instal</div>
                             </div>
                         </div>
 
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <div class="chart-title"><i class="fas fa-chart-line text-primary"></i> Grafik Pertumbuhan Omzet & Performa Usaha</div>
-                                <span class="chart-badge">Tahun 2026</span>
-                            </div>
-                            <div class="bar-chart">
-                                <div class="bar-column">
-                                    <div class="bar-fill" style="height: 40%;"></div>
-                                    <span class="bar-label">Jan</span>
-                                </div>
-                                <div class="bar-column">
-                                    <div class="bar-fill" style="height: 55%;"></div>
-                                    <span class="bar-label">Feb</span>
-                                </div>
-                                <div class="bar-column">
-                                    <div class="bar-fill" style="height: 50%;"></div>
-                                    <span class="bar-label">Mar</span>
-                                </div>
-                                <div class="bar-column">
-                                    <div class="bar-fill" style="height: 70%;"></div>
-                                    <span class="bar-label">Apr</span>
-                                </div>
-                                <div class="bar-column">
-                                    <div class="bar-fill" style="height: 65%;"></div>
-                                    <span class="bar-label">Mei</span>
-                                </div>
-                                <div class="bar-column">
-                                    <div class="bar-fill" style="height: 85%;"></div>
-                                    <span class="bar-label">Jun</span>
-                                </div>
-                                <div class="bar-column">
-                                    <div class="bar-fill" style="height: 95%;"></div>
-                                    <span class="bar-label">Jul</span>
-                                </div>
-                            </div>
+                        <div style="background: var(--bg-alt); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem; text-align: center;">
+                            <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem;"><i class="fas fa-laptop-code text-primary"></i> Preview Sistem Sitenexs</h4>
+                            <p style="font-size: 0.78rem; color: var(--text-muted);">Sistem dirancang responsif dan ringan, siap diakses langsung oleh staf, kasir, maupun pelanggan Anda.</p>
                         </div>
                     </div>
                 </div>
@@ -957,115 +955,212 @@
         </div>
     </section>
 
-    <!-- STATISTIK / COUNTER -->
-    <section class="stats-section">
+    <!-- SECTION MASALAH UMKM -->
+    <section class="section-padding bg-alt">
         <div class="container">
-            <div class="stats-grid">
-                <div class="stat-item reveal">
-                    <div class="stat-number"><span class="counter" data-target="100">0</span>+</div>
-                    <div class="stat-label">Usaha Terbantu</div>
+            <div class="section-header reveal">
+                <div class="section-subtitle">Tantangan Bisnis</div>
+                <h2 class="section-title">Masih Mengelola Usaha Secara Manual?</h2>
+                <p class="section-desc">Pekerjaan operasional yang menumpuk seringkali memperlambat perkembangan usaha Anda.</p>
+            </div>
+
+            <div class="pain-points-grid">
+                <div class="pain-card reveal">
+                    <i class="fas fa-receipt"></i>
+                    <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem;">Pencatatan Pesanan Manual</h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem;">Order dari pelanggan masih ditulis di kertas, rentan terselip, salah hitung, atau keliru saat diserahkan ke bagian dapur/kasir.</p>
                 </div>
-                <div class="stat-item reveal">
-                    <div class="stat-number"><span class="counter" data-target="3">0</span>-7 Hari</div>
-                    <div class="stat-label">Pengerjaan Website</div>
+
+                <div class="pain-card reveal">
+                    <i class="fas fa-book-open"></i>
+                    <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem;">Menu & Katalog Kertas</h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem;">Biaya cetak ulang tinggi setiap kali ada perubahan harga atau menu baru, serta kurang praktis dibagikan ke pelanggan.</p>
                 </div>
-                <div class="stat-item reveal">
-                    <div class="stat-number"><span class="counter" data-target="100">0</span>%</div>
-                    <div class="stat-label">Akses via Smartphone</div>
+
+                <div class="pain-card reveal">
+                    <i class="fas fa-calculator"></i>
+                    <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem;">Rekap Keuangan Rumit</h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem;">Data transaksi harian dan stok barang sulit direkap secara akurat tanpa alat bantu software yang terstruktur.</p>
                 </div>
-                <div class="stat-item reveal">
-                    <div class="stat-number">24/7</div>
-                    <div class="stat-label">Pendampingan Admin</div>
+
+                <div class="pain-card reveal">
+                    <i class="fas fa-users-slash"></i>
+                    <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem;">Absensi Karyawan Manual</h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem;">Pemeriksaan kehadiran staf harus dicatat satu per satu, menyita waktu pemilik usaha di akhir bulan.</p>
+                </div>
+
+                <div class="pain-card reveal">
+                    <i class="fas fa-globe"></i>
+                    <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem;">Belum Punya Website Usaha</h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem;">Calon pelanggan kesulitan menemukan informasi profil dan lokasi bisnis Anda di internet secara profesional.</p>
+                </div>
+
+                <div class="pain-card reveal" style="background: var(--primary); color: #fff; border-color: var(--primary);">
+                    <i class="fas fa-check-circle" style="color: #fff;"></i>
+                    <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem; color: #fff;">Solusi dari Sitenexs</h3>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 0.8rem;">Sitenexs membantu menyederhanakan seluruh proses tersebut dengan aplikasi berbasis web yang mudah dioperasikan.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- LAYANAN UTAMA -->
-    <section id="layanan" class="section-padding">
+    <!-- QR ORDER HIGHLIGHT SECTION -->
+    <section id="qr-order" class="section-padding">
+        <div class="container">
+            <div class="qr-highlight-box reveal">
+                <div>
+                    <div class="section-subtitle">Produk Unggulan</div>
+                    <h2 class="section-title" style="font-size: 1.5rem; margin-top: 0.3rem;">Pesanan dari Meja Langsung Masuk ke Kasir</h2>
+                    <p class="section-desc" style="text-align: left; margin-top: 0.5rem;">Sangat cocok untuk restoran, cafe, dan rumah makan. Pelanggan tidak perlu antre atau memanggil pelayan.</p>
+                    
+                    <div class="qr-steps">
+                        <div class="qr-step-item"><span class="qr-step-num">1</span> Pelanggan scan QR Code di meja pakai HP</div>
+                        <div class="qr-step-item"><span class="qr-step-num">2</span> Daftar menu interaktif terbuka di browser HP</div>
+                        <div class="qr-step-item"><span class="qr-step-num">3</span> Pilih pesanan & kirim langsung</div>
+                        <div class="qr-step-item"><span class="qr-step-num">4</span> Pesanan otomatis masuk ke sistem kasir/dapur</div>
+                    </div>
+
+                    <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20tertarik%20dengan%20QR%20Order%20untuk%20usaha%20saya.%20Saya%20ingin%20melihat%20demonya." target="_blank" class="btn btn-primary">
+                        <i class="fab fa-whatsapp"></i> Coba Demo QR Order
+                    </a>
+                </div>
+
+                <div style="background: #ffffff; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 1.5rem;">
+                    <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between;">
+                        <span><i class="fas fa-utensils text-primary"></i> Keuntungan QR Order</span>
+                        <span class="badge" style="margin: 0;">Praktis</span>
+                    </div>
+                    <ul class="feature-list" style="border-top: none; padding-top: 0;">
+                        <li><i class="fas fa-check"></i> Mengurangi kesalahan pencatatan manual</li>
+                        <li><i class="fas fa-check"></i> Pelanggan melihat menu & foto dari HP masing-masing</li>
+                        <li><i class="fas fa-check"></i> Alur operasional restoran lebih terstruktur</li>
+                        <li><i class="fas fa-check"></i> Tanpa perlu instal aplikasi tambahan bagi pelanggan</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRODUK / LAYANAN -->
+    <section id="produk" class="section-padding bg-alt">
         <div class="container">
             <div class="section-header reveal">
-                <div class="section-subtitle">Layanan Unggulan</div>
-                <h2 class="section-title">Solusi Digital yang Paling Dibutuhkan Usaha</h2>
-                <p class="section-desc">Pilih solusi yang sesuai dengan kebutuhan dan skala bisnis Anda saat ini.</p>
+                <div class="section-subtitle">Daftar Produk</div>
+                <h2 class="section-title">Solusi Sistem untuk Berbagai Kebutuhan Usaha</h2>
+                <p class="section-desc">Pilih produk yang paling sesuai dengan operasional bisnis Anda saat ini.</p>
             </div>
 
             <div class="grid-3">
                 <div class="custom-card custom-card-hover reveal">
-                    <div class="icon-box"><i class="fas fa-globe"></i></div>
-                    <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">Website & Toko Online Bisnis</h3>
-                    <p style="color: var(--text-muted); font-size: 0.8rem;">Website resmi untuk profil bisnis, katalog produk lengkap, tombol order via WhatsApp, dan integrasi Google Maps.</p>
+                    <div class="icon-box"><i class="fas fa-qrcode"></i></div>
+                    <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">QR Order & Menu Digital</h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">Solusi pesanan meja tanpa antre untuk restoran, cafe, dan rumah makan.</p>
+                    <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20melihat%20demo%20QR%20Order." target="_blank" class="btn btn-outline btn-sm btn-block">Lihat Demo</a>
                 </div>
 
                 <div class="custom-card custom-card-hover reveal">
-                    <div class="icon-box"><i class="fas fa-user-check"></i></div>
-                    <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">Sistem Presensi Karyawan (GPS)</h3>
-                    <p style="color: var(--text-muted); font-size: 0.8rem;">Aplikasi absensi HP pakai foto selfie & koordinat lokasi. Rekap laporan bulanan otomatis format Excel tanpa rekap manual.</p>
+                    <div class="icon-box"><i class="fas fa-globe"></i></div>
+                    <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">Website Bisnis</h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">Website profesional untuk memperkenalkan profil usaha dan produk Anda di internet.</p>
+                    <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20melihat%20demo%20Website%20Bisnis." target="_blank" class="btn btn-outline btn-sm btn-block">Lihat Demo</a>
                 </div>
 
                 <div class="custom-card custom-card-hover reveal">
                     <div class="icon-box"><i class="fas fa-cash-register"></i></div>
-                    <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">Aplikasi Kasir / POS Sederhana</h3>
-                    <p style="color: var(--text-muted); font-size: 0.8rem;">Pencatatan transaksi penjualan harian, cetak struk via bluetooth thermal printer, serta kontrol stok barang toko.</p>
+                    <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">Kasir / POS</h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">Kelola transaksi penjualan harian dan stok produk toko dengan lebih mudah.</p>
+                    <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20melihat%20demo%20Kasir%20POS." target="_blank" class="btn btn-outline btn-sm btn-block">Lihat Demo</a>
                 </div>
 
                 <div class="custom-card custom-card-hover reveal">
-                    <div class="icon-box"><i class="fas fa-qrcode"></i></div>
-                    <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">Menu Digital / Brosur QR Code</h3>
-                    <p style="color: var(--text-muted); font-size: 0.8rem;">Sangat cocok untuk Resto, Kafe, dan Salon. Pelanggan tinggal scan QR Code di meja untuk melihat daftar menu interaktif.</p>
+                    <div class="icon-box"><i class="fas fa-user-check"></i></div>
+                    <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">Presensi GPS</h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">Catat kehadiran karyawan secara akurat melalui HP menggunakan foto selfie & lokasi GPS.</p>
+                    <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20melihat%20demo%20Presensi%20GPS." target="_blank" class="btn btn-outline btn-sm btn-block">Lihat Demo</a>
                 </div>
 
                 <div class="custom-card custom-card-hover reveal">
                     <div class="icon-box"><i class="fas fa-calendar-check"></i></div>
-                    <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">Sistem Booking & Janji Temu</h3>
-                    <p style="color: var(--text-muted); font-size: 0.8rem;">Cocok untuk jasa barbershop, klinik, bengkel, dan persewaan. Memudahkan pelanggan mengatur jadwal kunjungan.</p>
+                    <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">Booking</h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">Atur jadwal kunjungan pelanggan untuk barbershop, salon, klinik, atau jasa layanan.</p>
+                    <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20melihat%20demo%20Booking%20System." target="_blank" class="btn btn-outline btn-sm btn-block">Lihat Demo</a>
                 </div>
 
                 <div class="custom-card custom-card-hover reveal">
                     <div class="icon-box"><i class="fas fa-gears"></i></div>
-                    <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">Pembuatan Website Untuk Bisnis</h3>
-                    <p style="color: var(--text-muted); font-size: 0.8rem;">Punya alur bisnis unik? Kami siap mendesain sistem internal sesuai dengan alur operasional khusus usaha Anda.</p>
+                    <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem;">Custom System</h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">Sistem yang dibuat khusus mengikuti alur operasional unik di usaha Anda.</p>
+                    <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20konsultasi%20Custom%20System." target="_blank" class="btn btn-outline btn-sm btn-block">Diskusi Kebutuhan</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- FITUR UNGULAN UNTUK DIGITAL INDONESIA -->
-    <section id="keunggulan" class="section-padding bg-alt">
+    <!-- CARA KERJA -->
+    <section id="cara-kerja" class="section-padding">
         <div class="container">
             <div class="section-header reveal">
-                <div class="section-subtitle">Mengapa Sitenexs?</div>
-                <h2 class="section-title">Didesain Agar Mudah Ditangani Pemilik Usaha</h2>
+                <div class="section-subtitle">Alur Kerja</div>
+                <h2 class="section-title">Bagaimana Sitenexs Bekerja?</h2>
+                <p class="section-desc">Proses ringkas untuk mulai menggunakan sistem digital di usaha Anda.</p>
             </div>
 
-            <div class="grid-3">
-                <div class="custom-card reveal">
-                    <div class="icon-box" style="margin-bottom: 0.8rem;"><i class="fas fa-feather-pointed text-primary"></i></div>
-                    <h4 style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem;">Sangat Mudah Digunakan</h4>
-                    <p style="color: var(--text-muted); font-size: 0.8rem;">Tampilan ringkas tanpa kerumitan teknis. Anda atau staf dapat langsung memakainya dalam hitungan menit.</p>
+            <div class="stepper-grid">
+                <div class="step-card reveal">
+                    <div class="step-num-badge">01</div>
+                    <h4 style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem;">Pilih Solusi</h4>
+                    <p style="color: var(--text-muted); font-size: 0.8rem;">Tentukan produk atau sistem yang paling sesuai dengan kebutuhan operasional bisnis Anda.</p>
                 </div>
 
-                <div class="custom-card reveal">
-                    <div class="icon-box" style="margin-bottom: 0.8rem;"><i class="fas fa-mobile-screen text-primary"></i></div>
-                    <h4 style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem;">Ramah HP / Smartphone</h4>
-                    <p style="color: var(--text-muted); font-size: 0.8rem;">Dapat diakses lancar lewat HP Android, iPhone, Laptop, maupun Tablet tanpa perlu beli perangkat mahal.</p>
+                <div class="step-card reveal">
+                    <div class="step-num-badge">02</div>
+                    <h4 style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem;">Konsultasikan Kebutuhan</h4>
+                    <p style="color: var(--text-muted); font-size: 0.8rem;">Hubungi tim kami via WhatsApp untuk mendiskusikan detail fitur dan penyesuaian.</p>
                 </div>
 
-                <div class="custom-card reveal">
-                    <div class="icon-box" style="margin-bottom: 0.8rem;"><i class="fas fa-hand-holding-dollar text-primary"></i></div>
-                    <h4 style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem;">Tanpa Biaya Tersembunyi</h4>
-                    <p style="color: var(--text-muted); font-size: 0.8rem;">Harga jelas dari awal. Bebas konsultasi dan termasuk garansi pendampingan dari tim teknis kami.</p>
+                <div class="step-card reveal">
+                    <div class="step-num-badge">03</div>
+                    <h4 style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem;">Sistem Disiapkan</h4>
+                    <p style="color: var(--text-muted); font-size: 0.8rem;">Tim Sitenexs menyiapkan website atau aplikasi siap pakai beserta data menu/produk Anda.</p>
+                </div>
+
+                <div class="step-card reveal">
+                    <div class="step-num-badge">04</div>
+                    <h4 style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem;">Mulai Digunakan</h4>
+                    <p style="color: var(--text-muted); font-size: 0.8rem;">Sistem langsung dapat diakses dari HP atau komputer dengan pendampingan penggunaan.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- PORTOFOLIO / HASIL KERJA -->
+    <!-- TARGET BISNIS -->
+    <section class="section-padding bg-alt">
+        <div class="container">
+            <div class="section-header reveal">
+                <div class="section-subtitle">Target Pengguna</div>
+                <h2 class="section-title">Sitenexs Cocok untuk Berbagai Jenis Usaha</h2>
+            </div>
+
+            <div class="target-grid">
+                <div class="target-card reveal"><i class="fas fa-utensils text-primary"></i> Restoran</div>
+                <div class="target-card reveal"><i class="fas fa-mug-hot text-primary"></i> Cafe</div>
+                <div class="target-card reveal"><i class="fas fa-store text-primary"></i> Toko</div>
+                <div class="target-card reveal"><i class="fas fa-scissors text-primary"></i> Barbershop</div>
+                <div class="target-card reveal"><i class="fas fa-spray-can-sparkles text-primary"></i> Salon</div>
+                <div class="target-card reveal"><i class="fas fa-wrench text-primary"></i> Bengkel</div>
+                <div class="target-card reveal"><i class="fas fa-building text-primary"></i> Kantor</div>
+                <div class="target-card reveal"><i class="fas fa-box text-primary"></i> UMKM</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PORTOFOLIO / CONTOH DEMO -->
     <section id="portofolio" class="section-padding">
         <div class="container">
             <div class="section-header reveal">
-                <div class="section-subtitle">Portofolio</div>
-                <h2 class="section-title">Contoh Solusi yang Telah Kami Buat</h2>
+                <div class="section-subtitle">Contoh Demo</div>
+                <h2 class="section-title">Preview Implementasi Sistem</h2>
+                <p class="section-desc">Berikut adalah contoh model sistem yang dapat diterapkan pada usaha Anda.</p>
             </div>
 
             <div class="grid-3">
@@ -1075,8 +1170,9 @@
                     </div>
                     <div class="portfolio-body">
                         <span class="portfolio-category">Kuliner & Resto</span>
-                        <h3 style="font-size: 0.95rem; font-weight: 700; margin-top: 0.2rem;">Web Menu QR & Presensi Karyawan</h3>
-                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.3rem;">Sistem terpadu untuk jaringan rumah makan daerah dengan 20+ staf.</p>
+                        <h3 style="font-size: 0.95rem; font-weight: 700; margin-top: 0.2rem;">Contoh Demo QR Order & Menu</h3>
+                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.3rem;">Simulasi alur pemesanan meja otomatis untuk rumah makan.</p>
+                        <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20melihat%20detail%20demo%20QR%20Order%20Resto." target="_blank" class="btn btn-outline btn-sm btn-block" style="margin-top: 0.75rem;">Lihat Detail</a>
                     </div>
                 </div>
 
@@ -1086,8 +1182,9 @@
                     </div>
                     <div class="portfolio-body">
                         <span class="portfolio-category">Toko Retail</span>
-                        <h3 style="font-size: 0.95rem; font-weight: 700; margin-top: 0.2rem;">Website Katalog & Kasir Whatsapp</h3>
-                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.3rem;">Toko kelontong modern dengan fitur checkout langsung terhubung ke Chat WA.</p>
+                        <h3 style="font-size: 0.95rem; font-weight: 700; margin-top: 0.2rem;">Contoh Demo Katalog & Kasir</h3>
+                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.3rem;">Simulasi website katalog produk dan pencatatan kasir toko.</p>
+                        <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20melihat%20detail%20demo%20Katalog%20Toko." target="_blank" class="btn btn-outline btn-sm btn-block" style="margin-top: 0.75rem;">Lihat Detail</a>
                     </div>
                 </div>
 
@@ -1097,8 +1194,9 @@
                     </div>
                     <div class="portfolio-body">
                         <span class="portfolio-category">Jasa Layanan</span>
-                        <h3 style="font-size: 0.95rem; font-weight: 700; margin-top: 0.2rem;">System Booking Barbershop / Salon</h3>
-                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.3rem;">Aplikasi penjadwalan capster dan pencatatan komisi bulanan otomatis.</p>
+                        <h3 style="font-size: 0.95rem; font-weight: 700; margin-top: 0.2rem;">Contoh Demo Booking System</h3>
+                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.3rem;">Simulasi penjadwalan kunjungan pelanggan dan staf.</p>
+                        <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20melihat%20detail%20demo%20Booking%20System." target="_blank" class="btn btn-outline btn-sm btn-block" style="margin-top: 0.75rem;">Lihat Detail</a>
                     </div>
                 </div>
             </div>
@@ -1109,65 +1207,87 @@
     <section id="harga" class="section-padding bg-alt">
         <div class="container">
             <div class="section-header reveal">
-                <div class="section-subtitle">Paket Harga Ringan</div>
-                <h2 class="section-title">Investasi Terjangkau untuk Pertumbuhan Usaha</h2>
+                <div class="section-subtitle">Paket Harga</div>
+                <h2 class="section-title">Investasi Terjangkau untuk Usaha</h2>
             </div>
 
             <div class="grid-3">
                 <div class="custom-card pricing-card custom-card-hover reveal">
                     <div>
-                        <h3 style="font-size: 1rem; font-weight: 700;">Website Profil Usaha</h3>
-                        <p style="color: var(--text-muted); font-size: 0.78rem; margin-top: 0.15rem;">Cocok untuk usaha baru agar tampil terpercaya.</p>
+                        <h3 style="font-size: 1rem; font-weight: 700;">Website Bisnis</h3>
+                        <p style="color: var(--text-muted); font-size: 0.78rem; margin-top: 0.15rem;">Profil usaha dan katalog produk online.</p>
                         <div class="price">Rp 750.000 <span>/ sekali bayar</span></div>
                         <ul class="feature-list">
                             <li><i class="fas fa-check"></i> Domain .com / .my.id (1 Thn)</li>
-                            <li><i class="fas fa-check"></i> Halaman Profil & Katalog Produk</li>
-                            <li><i class="fas fa-check"></i> Tombol Order Langsung WA</li>
-                            <li><i class="fas fa-check"></i> Integrasi Lokasi Google Maps</li>
-                            <li><i class="fas fa-check"></i> Gratis Pemanduan Admin</li>
+                            <li><i class="fas fa-check"></i> Halaman Profil & Katalog</li>
+                            <li><i class="fas fa-check"></i> Tombol Order WA</li>
+                            <li><i class="fas fa-check"></i> Pemanduan Admin</li>
                         </ul>
                     </div>
-                    <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20tertarik%20Paket%20Website%20Profil%20Usaha." target="_blank" class="btn btn-secondary btn-block">Pilih Paket</a>
-                </div>
-
-                <div class="custom-card pricing-card pricing-popular custom-card-hover reveal">
-                    <span class="popular-badge">Paling Banyak Dipilih</span>
-                    <div>
-                        <h3 style="font-size: 1rem; font-weight: 700;">Presensi + Website Pro</h3>
-                        <p style="color: var(--text-muted); font-size: 0.78rem; margin-top: 0.15rem;">Solusi operasional dan promosi lengkap.</p>
-                        <div class="price">Rp 1.850.000 <span>/ sistem usaha</span></div>
-                        <ul class="feature-list">
-                            <li><i class="fas fa-check"></i> Fitur Website Bisnis Lengkap</li>
-                            <li><i class="fas fa-check"></i> Sistem Presensi GPS & Selfie HP</li>
-                            <li><i class="fas fa-check"></i> Dashboard Kelola Karyawan</li>
-                            <li><i class="fas fa-check"></i> Laporan Absensi Export Excel</li>
-                            <li><i class="fas fa-check"></i> Pendampingan & Garansi 6 Bulan</li>
-                        </ul>
-                    </div>
-                    <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20tertarik%20Paket%20Presensi%20+%20Website%20Pro." target="_blank" class="btn btn-primary btn-block">Pilih Paket</a>
+                    <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20tertarik%20Paket%20Website%20Bisnis." target="_blank" class="btn btn-secondary btn-block">Konsultasi Gratis</a>
                 </div>
 
                 <div class="custom-card pricing-card custom-card-hover reveal">
                     <div>
-                        <h3 style="font-size: 1rem; font-weight: 700;">Sistem Kasir / Custom</h3>
-                        <p style="color: var(--text-muted); font-size: 0.78rem; margin-top: 0.15rem;">Untuk toko retail, resto, & multi-cabang.</p>
-                        <div class="price">Konsultasi <span>/ penyesuaian</span></div>
+                        <h3 style="font-size: 1rem; font-weight: 700;">QR Order / Kasir</h3>
+                        <p style="color: var(--text-muted); font-size: 0.78rem; margin-top: 0.15rem;">Solusi operasional resto dan toko.</p>
+                        <div class="price" style="font-size: 1.25rem; margin: 1.1rem 0;">Hubungi Kami</div>
                         <ul class="feature-list">
-                            <li><i class="fas fa-check"></i> Software Kasir POS / Stok Barang</li>
-                            <li><i class="fas fa-check"></i> Cetak Struk Bluetooth / Thermal</li>
-                            <li><i class="fas fa-check"></i> Pengaturan Cabang & Karyawan</li>
-                            <li><i class="fas fa-check"></i> Desain Sistem Sesuai Alur Usaha</li>
-                            <li><i class="fas fa-check"></i> Support Teknis Prioritas</li>
+                            <li><i class="fas fa-check"></i> Menu Digital QR Code</li>
+                            <li><i class="fas fa-check"></i> Sistem Kasir / POS</li>
+                            <li><i class="fas fa-check"></i> Pengaturan Stok Barang</li>
+                            <li><i class="fas fa-check"></i> Support Teknis</li>
                         </ul>
                     </div>
-                    <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20konsultasi%20Sistem%20Custom/Kasir." target="_blank" class="btn btn-secondary btn-block">Hubungi Kami</a>
+                    <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20tertarik%20dengan%20QR%20Order%20atau%20Kasir." target="_blank" class="btn btn-secondary btn-block">Konsultasi Gratis</a>
+                </div>
+
+                <div class="custom-card pricing-card custom-card-hover reveal">
+                    <div>
+                        <h3 style="font-size: 1rem; font-weight: 700;">Custom System</h3>
+                        <p style="color: var(--text-muted); font-size: 0.78rem; margin-top: 0.15rem;">Sistem sesuai alur khusus usaha Anda.</p>
+                        <div class="price" style="font-size: 1.25rem; margin: 1.1rem 0;">Diskusi Kebutuhan</div>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Presensi GPS & Selfie Karyawan</li>
+                            <li><i class="fas fa-check"></i> Sistem Booking / Janji Temu</li>
+                            <li><i class="fas fa-check"></i> Fitur Kustom Sesuai Permintaan</li>
+                            <li><i class="fas fa-check"></i> Pendampingan Penuh</li>
+                        </ul>
+                    </div>
+                    <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20diskusi%20Custom%20System." target="_blank" class="btn btn-secondary btn-block">Konsultasi Gratis</a>
+                </div>
+            </div>
+            <p style="text-align: center; font-size: 0.78rem; color: var(--text-muted); margin-top: 1.5rem;">* Harga dapat berbeda berdasarkan fitur dan kebutuhan spesifik usaha.</p>
+        </div>
+    </section>
+
+    <!-- MENGAPA SITENEXS -->
+    <section class="section-padding">
+        <div class="container">
+            <div class="section-header reveal">
+                <div class="section-subtitle">Keunggulan</div>
+                <h2 class="section-title">Mengapa Menggunakan Sitenexs?</h2>
+            </div>
+
+            <div class="grid-3">
+                <div class="custom-card reveal">
+                    <h4 style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem;"><i class="fas fa-check text-primary"></i> Mudah Digunakan</h4>
+                    <p style="color: var(--text-muted); font-size: 0.8rem;">Tampilan ringkas dan ramah pengguna agar staf langsung paham dalam hitungan menit.</p>
+                </div>
+                <div class="custom-card reveal">
+                    <h4 style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem;"><i class="fas fa-check text-primary"></i> Berbasis Web</h4>
+                    <p style="color: var(--text-muted); font-size: 0.8rem;">Dapat diakses langsung dari browser HP, tablet, atau laptop tanpa instalasi rumit.</p>
+                </div>
+                <div class="custom-card reveal">
+                    <h4 style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem;"><i class="fas fa-check text-primary"></i> Harga Transparan</h4>
+                    <p style="color: var(--text-muted); font-size: 0.8rem;">Biaya jelas dari awal tanpa biaya tersembunyi serta disertai pendampingan penggunaan.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- FAQ SECTION -->
-    <section id="faq" class="section-padding">
+    <section id="faq" class="section-padding bg-alt">
         <div class="container">
             <div class="section-header reveal">
                 <div class="section-subtitle">FAQ</div>
@@ -1177,76 +1297,129 @@
             <div class="faq-wrapper">
                 <div class="faq-item reveal">
                     <button class="faq-btn">
-                        <span>Apakah saya yang awam teknologi bisa mengoperasikannya?</span>
+                        <span>Apakah harus membeli perangkat khusus?</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="faq-content">
-                        Sangat bisa. Kami merancang semua sistem dengan tampilan yang sesederhana mungkin. Kami juga memberikan video panduan serta mendampingi Anda sampai paham.
+                        Tidak perlu. Sistem Sitenexs berbasis web sehingga dapat diakses menggunakan HP, tablet, atau komputer yang sudah Anda miliki.
                     </div>
                 </div>
 
                 <div class="faq-item reveal">
                     <button class="faq-btn">
-                        <span>Bagaimana cara kerja Sistem Presensi Karyawan?</span>
+                        <span>Apakah sistem dapat digunakan dari HP?</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="faq-content">
-                        Karyawan cukup membuka link absensi dari HP mereka, mengambil foto selfie, dan sistem akan otomatis mencatat jam serta lokasi GPS mereka. Anda bisa mengunduh rekapannya kapan saja.
+                        Ya, seluruh tampilan dan fitur dirancang responsif dan nyaman dioperasikan melalui smartphone Android maupun iPhone.
                     </div>
                 </div>
 
                 <div class="faq-item reveal">
                     <button class="faq-btn">
-                        <span>Berapa lama proses pengerjaan pembuatan website?</span>
+                        <span>Apakah pelanggan harus menginstal aplikasi?</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="faq-content">
-                        Untuk paket Website Usaha umum, pengerjaan memakan waktu sekitar 3 hingga 5 hari kerja setelah semua data produk dan foto usaha kami terima.
+                        Tidak. Untuk fitur QR Order, pelanggan cukup melakukan scan QR Code menggunakan kamera HP dan menu akan langsung terbuka di browser web mereka.
+                    </div>
+                </div>
+
+                <div class="faq-item reveal">
+                    <button class="faq-btn">
+                        <span>Apakah Sitenexs cocok untuk usaha kecil?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-content">
+                        Sangat cocok. Sistem kami dirancang fleksibel untuk membantu usaha skala kecil hingga menengah merapikan proses operasional mereka.
+                    </div>
+                </div>
+
+                <div class="faq-item reveal">
+                    <button class="faq-btn">
+                        <span>Berapa lama pembuatan website?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-content">
+                        Untuk paket Website Usaha standar, pengerjaan memakan waktu sekitar 3 hingga 5 hari kerja setelah data dan materi diterima.
+                    </div>
+                </div>
+
+                <div class="faq-item reveal">
+                    <button class="faq-btn">
+                        <span>Apakah bisa meminta fitur khusus?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-content">
+                        Bisa. Melalui opsi Custom System, kami siap mendesain fitur yang disesuaikan dengan alur kerja unik di usaha Anda.
+                    </div>
+                </div>
+
+                <div class="faq-item reveal">
+                    <button class="faq-btn">
+                        <span>Apakah tersedia demo?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-content">
+                        Ya, Anda dapat menghubungi kami melalui WhatsApp untuk mendapatkan link demo uji coba produk sebelum memutuskan penggunaan.
+                    </div>
+                </div>
+
+                <div class="faq-item reveal">
+                    <button class="faq-btn">
+                        <span>Bagaimana cara mendapatkan bantuan?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-content">
+                        Tim Sitenexs menyediakan layanan bantuan dan konsultasi melalui WhatsApp untuk mendampingi penggunaan sistem Anda.
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- FORM KONTAK -->
-    <section id="kontak" class="section-padding bg-alt">
+    <!-- FORM KONTAK / CTA BESAR -->
+    <section id="kontak" class="section-padding">
         <div class="container">
             <div class="section-header reveal">
-                <div class="section-subtitle">Diskusi Gratis</div>
-                <h2 class="section-title">Tanyakan Kebutuhan Digital Usaha Anda</h2>
-                <p class="section-desc">Isi formulir di bawah ini atau langsung hubungi kami via WhatsApp.</p>
+                <div class="section-subtitle">Konsultasi Gratis</div>
+                <h2 class="section-title">Siap Membuat Operasional Usaha Lebih Sederhana?</h2>
+                <p class="section-desc">Ceritakan kebutuhan usaha Anda. Kami bantu mencari solusi yang sesuai.</p>
             </div>
 
             <div class="form-container">
                 <form id="contact-form" class="custom-card reveal">
                     <div class="form-grid">
                         <div class="form-group">
-                            <label>Nama Pemilik / Usaha</label>
-                            <input type="text" required placeholder="Contoh: Budi (Toko Berkah)" class="form-control">
+                            <label>Nama Usaha / Pemilik</label>
+                            <input type="text" id="wa-name" required placeholder="Contoh: Budi (Cafe Sedap)" class="form-control">
                         </div>
                         <div class="form-group">
                             <label>No. WhatsApp</label>
-                            <input type="tel" required placeholder="085177137899" class="form-control">
+                            <input type="tel" id="wa-phone" required placeholder="085177137899" class="form-control">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label>Layanan yang Diminati</label>
-                        <select class="form-control">
-                            <option>Website Profil Usaha / Katalog</option>
-                            <option>Sistem Presensi Karyawan (GPS)</option>
-                            <option>Aplikasi Kasir / POS Toko</option>
-                            <option>Menu QR Code / Booking System</option>
-                            <option>Lainnya / Ingin Konsultasi Dulu</option>
+                        <select id="wa-service" class="form-control">
+                            <option>QR Order & Menu Digital</option>
+                            <option>Website Bisnis / Katalog</option>
+                            <option>Aplikasi Kasir / POS</option>
+                            <option>Presensi GPS Karyawan</option>
+                            <option>Booking System</option>
+                            <option>Custom System / Lainnya</option>
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label>Catatan Singkat Kebutuhan</label>
-                        <textarea rows="3" placeholder="Ceritakan singkat jenis usaha Anda dan sistem yang diinginkan..." class="form-control"></textarea>
+                        <textarea id="wa-note" rows="3" placeholder="Ceritakan singkat jenis usaha Anda dan sistem yang diinginkan..." class="form-control"></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-block" style="border-radius: var(--radius-full);">Kirim Pesan Konsultasi</button>
+                    <button type="submit" class="btn btn-primary btn-block" style="border-radius: var(--radius-full);">
+                        <i class="fab fa-whatsapp"></i> 💬 Konsultasi Gratis via WhatsApp
+                    </button>
                 </form>
             </div>
         </div>
@@ -1261,36 +1434,36 @@
                         <img src="logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.style.display='none'">
                         <span class="logo-text">Sitenexs</span>
                     </div>
-                    <p style="font-size: 0.78rem; line-height: 1.4; max-width: 260px;">Partner DIGITAL INDONESIA. Solusi software praktis, terjangkau, dan mudah dipakai.</p>
+                    <p style="font-size: 0.78rem; line-height: 1.4; max-width: 260px;">Solusi digital dan software praktis, terjangkau, dan mudah dipakai untuk UMKM Indonesia.</p>
                 </div>
                 <div>
-                    <div class="footer-title">Layanan</div>
+                    <div class="footer-title">Produk</div>
                     <ul class="footer-links">
-                        <li><a href="#layanan">Website Usaha</a></li>
-                        <li><a href="#layanan">Presensi GPS</a></li>
-                        <li><a href="#layanan">Aplikasi Kasir</a></li>
+                        <li><a href="#produk">QR Order</a></li>
+                        <li><a href="#produk">Website Bisnis</a></li>
+                        <li><a href="#produk">Kasir POS</a></li>
+                        <li><a href="#produk">Presensi GPS</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="footer-title">Informasi</div>
+                    <ul class="footer-links">
+                        <li><a href="#cara-kerja">Cara Kerja</a></li>
                         <li><a href="#harga">Paket Harga</a></li>
+                        <li><a href="#faq">FAQ</a></li>
                     </ul>
                 </div>
                 <div>
-                    <div class="footer-title">Tentang Kami</div>
-                    <ul class="footer-links">
-                        <li><a href="https://sitenexs.site/founder">Tentang Founder</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="footer-title">Sosial Media & Kontak</div>
+                    <div class="footer-title">Kontak</div>
                     <div class="social-icons" style="margin-bottom: 0.6rem;">
-                        <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
-                        <a href="https://wa.me/6285177137899" target="_blank" class="social-btn"><i class="fab fa-whatsapp"></i></a>
+                        <a href="https://wa.me/6285177137899" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp Sitenexs" class="social-btn"><i class="fab fa-whatsapp"></i></a>
                     </div>
-                    <p style="font-size: 0.78rem;"><i class="fas fa-envelope"></i> halo@sitenexs.com</p>
+                    <p style="font-size: 0.78rem;"><i class="fas fa-envelope"></i> halo@sitenexs.site</p>
                     <p style="font-size: 0.78rem; margin-top: 0.2rem;"><i class="fas fa-phone"></i> +62 851-7713-7899</p>
                 </div>
             </div>
             <div style="border-top: 1px solid var(--border-subtle); padding-top: 1rem; text-align: center; font-size: 0.72rem;">
-                &copy; 2026 Sitenexs. Solusi Digital INDONESIA.
+                &copy; 2026 Sitenexs. Solusi Digital UMKM Indonesia.
             </div>
         </div>
     </footer>
@@ -1298,7 +1471,7 @@
     <!-- FLOATING WHATSAPP BUTTON -->
     <div class="whatsapp-float-container">
         <div class="whatsapp-tooltip">Butuh bantuan? Chat kami 👋</div>
-        <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20tanya%20seputar%20pembuatan%20website%20dan%20sistem%20presensi." 
+        <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20tanya%20seputar%20website%20dan%20sistem%20usaha." 
            target="_blank" 
            rel="noopener noreferrer"
            aria-label="Chat WhatsApp"
@@ -1309,83 +1482,71 @@
 
     <!-- JAVASCRIPT -->
     <script>
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const mobileNavItems = document.querySelectorAll('#mobile-menu a');
+        document.addEventListener('DOMContentLoaded', () => {
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileNavItems = document.querySelectorAll('#mobile-menu a');
 
-        mobileMenuBtn.addEventListener('click', () => {
-            const isDisplayed = mobileMenu.style.display === 'block';
-            mobileMenu.style.display = isDisplayed ? 'none' : 'block';
-        });
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', () => {
+                    const isDisplayed = mobileMenu.style.display === 'block';
+                    mobileMenu.style.display = isDisplayed ? 'none' : 'block';
+                });
 
-        mobileNavItems.forEach(item => {
-            item.addEventListener('click', () => {
-                mobileMenu.style.display = 'none';
-            });
-        });
-
-        function revealOnScroll() {
-            const reveals = document.querySelectorAll('.reveal');
-            const windowHeight = window.innerHeight;
-            reveals.forEach(element => {
-                const elementTop = element.getBoundingClientRect().top;
-                if (elementTop < windowHeight - 80) {
-                    element.classList.add('active');
-                }
-            });
-        }
-        window.addEventListener('scroll', revealOnScroll);
-        window.addEventListener('load', revealOnScroll);
-
-        let countersStarted = false;
-        function startCounters() {
-            const counters = document.querySelectorAll('.counter');
-            counters.forEach(counter => {
-                const target = +counter.getAttribute('data-target');
-                let count = 0;
-                const speed = target / 30;
-
-                const updateCount = () => {
-                    count += speed;
-                    if (count < target) {
-                        counter.innerText = Math.ceil(count);
-                        setTimeout(updateCount, 30);
-                    } else {
-                        counter.innerText = target;
-                    }
-                };
-                updateCount();
-            });
-        }
-
-        window.addEventListener('scroll', () => {
-            const counterSection = document.querySelector('.stats-section');
-            if (counterSection) {
-                const position = counterSection.getBoundingClientRect().top;
-                if (position < window.innerHeight && !countersStarted) {
-                    startCounters();
-                    countersStarted = true;
-                }
+                mobileNavItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        mobileMenu.style.display = 'none';
+                    });
+                });
             }
-        });
 
-        const faqBtns = document.querySelectorAll('.faq-btn');
-        faqBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const content = btn.nextElementSibling;
-                const icon = btn.querySelector('i');
-                const isOpen = content.style.display === 'block';
-                
-                content.style.display = isOpen ? 'none' : 'block';
-                icon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-                icon.style.transition = 'transform 0.3s';
+            // Reveal Animation on Scroll
+            const reveals = document.querySelectorAll('.reveal');
+            function revealOnScroll() {
+                const windowHeight = window.innerHeight;
+                reveals.forEach(element => {
+                    const elementTop = element.getBoundingClientRect().top;
+                    if (elementTop < windowHeight - 80) {
+                        element.classList.add('active');
+                    }
+                });
+            }
+            window.addEventListener('scroll', revealOnScroll);
+            revealOnScroll();
+
+            // FAQ Accordion
+            const faqBtns = document.querySelectorAll('.faq-btn');
+            faqBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const content = btn.nextElementSibling;
+                    const icon = btn.querySelector('i');
+                    const isOpen = content.style.display === 'block';
+                    
+                    content.style.display = isOpen ? 'none' : 'block';
+                    if (icon) {
+                        icon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+                        icon.style.transition = 'transform 0.3s';
+                    }
+                });
             });
-        });
 
-        document.getElementById('contact-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            alert('Terima kasih! Tim Sitenexs akan menghubungi nomor WhatsApp Anda dalam waktu dekat.');
-            e.target.reset();
+            // Contact Form to WhatsApp Redirection
+            const contactForm = document.getElementById('contact-form');
+            if (contactForm) {
+                contactForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('wa-name').value.trim();
+                    const phone = document.getElementById('wa-phone').value.trim();
+                    const service = document.getElementById('wa-service').value;
+                    const note = document.getElementById('wa-note').value.trim();
+
+                    const message = `Halo Sitenexs, saya ingin konsultasi terkait usaha.\n\nNama/Usaha: ${name}\nNo. WA: ${phone}\nLayanan: ${service}\nCatatan: ${note || '-'}`;
+                    const encodedMessage = encodeURIComponent(message);
+                    const whatsappUrl = `https://wa.me/6285177137899?text=${encodedMessage}`;
+
+                    window.open(whatsappUrl, '_blank');
+                });
+            }
         });
     </script>
 </body>
