@@ -1,1 +1,2304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin | Sitenexs</title>
+    <link rel="icon" type="image/png" href="https://sitenexs.site/assets/favicon/favicon.png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #e0e7ff;
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-subtle: #cbd5e1;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --sidebar-width: 260px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; font-size: 0.8rem; }
+        
+        /* SIDEBAR STYLING */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+        }
+        .sidebar-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sidebar-brand { font-size: 1.05rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.025em; }
+        .sidebar-brand i { background: var(--primary-light); padding: 6px; border-radius: var(--radius-md); font-size: 0.85rem; }
+        .sidebar-body { padding: 1.25rem; overflow-y: auto; flex: 1; }
+        .sidebar-section-title { font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.08em; }
+        
+        .subscription-form {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            margin-bottom: 1.5rem;
+        }
+        .form-group { margin-bottom: 0.75rem; }
+        .form-label { font-size: 0.7rem; font-weight: 700; display: block; margin-bottom: 0.25rem; color: var(--text-main); }
+        .form-select, .form-input {
+            width: 100%;
+            padding: 0.5rem 0.6rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            font-family: inherit;
+            background: #fff;
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 0.6rem;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
 
+        /* MAIN CONTENT AREA */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 1.5rem;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: calc(100% - var(--sidebar-width));
+        }
+        .container { max-width: 1350px; margin: 0 auto; }
+        
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 1.5rem; 
+            background: var(--bg-card); 
+            padding: 1rem 1.25rem; 
+            border-radius: var(--radius-lg); 
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-sm);
+        }
+        .header-left { display: flex; align-items: center; gap: 0.75rem; }
+        .burger-btn { background: none; border: none; font-size: 1.1rem; color: var(--text-main); cursor: pointer; display: none; padding: 0.4rem; border-radius: var(--radius-md); transition: background 0.2s; }
+        .burger-btn:hover { background: var(--bg-body); }
+        .header h1 { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.025em; }
+        .badge-public { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 0.3rem 0.6rem; border-radius: var(--radius-md); font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 0.3rem; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { 
+            background: var(--bg-card); 
+            padding: 1.15rem; 
+            border-radius: var(--radius-lg); 
+            border: 1px solid var(--border-subtle); 
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; bottom: 0;
+            width: 3px;
+            background: var(--primary);
+        }
+        .stat-title { font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 0.35rem; letter-spacing: 0.05em; }
+        .stat-value { font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: -0.03em; }
+        
+        .filter-card { 
+            background: var(--bg-card); 
+            padding: 1rem; 
+            border-radius: var(--radius-lg); 
+            border: 1px solid var(--border-subtle); 
+            margin-bottom: 1.25rem; 
+            display: flex; 
+            gap: 0.75rem; 
+            flex-wrap: wrap; 
+            box-shadow: var(--shadow-sm);
+        }
+        .filter-input { flex: 1; min-width: 200px; }
+        
+        .table-container { 
+            background: var(--bg-card); 
+            border-radius: var(--radius-lg); 
+            border: 1px solid var(--border-subtle); 
+            overflow-x: auto; 
+            box-shadow: var(--shadow-sm);
+        }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.75rem; }
+        th, td { padding: 0.65rem 0.85rem; border-bottom: 1px solid var(--border-subtle); white-space: nowrap; }
+        th { background: #f8fafc; font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.05em; }
+        tr:hover td { background: #fafafa; }
+        .logo-thumb { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-subtle); }
+        .action-btns { display: flex; gap: 0.35rem; }
+        .btn-icon { 
+            width: 26px; 
+            height: 26px; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 4px; 
+            color: white; 
+            text-decoration: none; 
+            font-size: 0.7rem; 
+            cursor: pointer; 
+            border: none;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .btn-icon:hover { opacity: 0.9; transform: scale(1.05); }
+        .btn-wa { background: #10b981; }
+        .btn-email { background: #3b82f6; }
+        .btn-delete { background: #ef4444; }
+        .btn-copy { background: #64748b; }
+
+        .badge-status { padding: 3px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem; }
+        .status-trial { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .status-active { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+        .status-expired { background: #ffeeec; color: #b91c1c; border: 1px solid #fecaca; }
+
+        /* RESPONSIVE MEDIA QUERY */
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; max-width: 100%; padding: 1rem; }
+            .burger-btn { display: inline-block; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <i class="fas fa-shield-alt"></i> Panel Kontrol
+            </div>
+            <button class="burger-btn" onclick="toggleSidebar()" style="display:block; font-size: 0.9rem;"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="sidebar-body">
+            <div class="sidebar-section-title">Atur Masa Aktif Klien</div>
+            <div class="subscription-form">
+                <form id="sub-form" onsubmit="handleUpdateSubscription(event)">
+                    <div class="form-group">
+                        <label class="form-label">Pilih Klien</label>
+                        <select id="sub-client-select" class="form-select" required>
+                            <option value="">-- Pilih Klien --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Paket / Durasi</label>
+                        <select id="sub-package-select" class="form-select" required>
+                            <option value="trial_3">Trial 3 Hari</option>
+                            <option value="trial_7">Trial 7 Hari</option>
+                            <option value="trial_30">Trial 30 Hari</option>
+                            <option value="sub_30">Langganan 1 Bulan (30 Hari)</option>
+                            <option value="sub_365">Langganan 1 Tahun (365 Hari)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-clock"></i> Perbarui Masa Aktif
+                    </button>
+                </form>
+            </div>
+            
+            <div class="sidebar-section-title">Informasi Sistem</div>
+            <p style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.4;">
+                Gunakan panel di atas untuk memperpanjang masa trial atau mengubah status langganan akun klien Sitenexs secara langsung.
+            </p>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="container">
+            <div class="header">
+                <div class="header-left">
+                    <button class="burger-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1>Dashboard Admin Sitenexs</h1>
+                </div>
+                <span class="badge-public"><i class="fas fa-lock-open"></i> Mode Akses Publik</span>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Total Klien</div>
+                    <div class="stat-value" id="stat-total">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Pendaftaran Hari Ini</div>
+                    <div class="stat-value" id="stat-today">0</div>
+                </div>
+            </div>
+
+            <div class="filter-card">
+                <input type="text" id="search-input" class="filter-input form-input" placeholder="🔍 Cari nama pemilik atau usaha...">
+                <select id="service-filter" class="filter-input form-select">
+                    <option value="">Semua Layanan</option>
+                    <option value="katalog">Website Profil UMKM / Katalog</option>
+                    <option value="presensi">Sistem Presensi Karyawan (GPS)</option>
+                    <option value="kasir">Aplikasi Kasir / POS Toko</option>
+                    <option value="booking">Menu QR Code / Booking System</option>
+                </select>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Logo</th>
+                            <th>Nama Pemilik</th>
+                            <th>Nama Usaha</th>
+                            <th>Masa Aktif / Status</th>
+                            <th>Email & WhatsApp</th>
+                            <th>Alamat</th>
+                            <th>Sosmed</th>
+                            <th>Layanan</th>
+                            <th>Tanggal Daftar</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="client-table-body">
+                        <tr><td colspan="11" style="text-align: center; padding: 2rem; color: var(--text-muted);">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-container">
+
+
+</div>
+          
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+/* =========================================================
+   SITENEXS ADMIN PANEL
+   PUBLIC ACCESS
+   CLIENTS + PAYMENT VERIFICATION
+========================================================= */
+
+
+/* =========================================================
+   SUPABASE CONFIG
+========================================================= */
+
+const SUPABASE_URL =
+    "https://mlvzybhlgohekytjeosv.supabase.co";
+
+
+const SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sdnp5YmhsZ29oZWt5dGplb3N2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMTk3ODksImV4cCI6MjEwNjU5NTc4OX0.rCXjNkAbhmyXesE5p9we_V5oUrLaQCQ1sOxhCRK66vk";
+
+
+const { createClient } = supabase;
+
+
+const _supabase =
+    createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY,
+        {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true
+            }
+        }
+    );
+
+
+/* =========================================================
+   DATA
+========================================================= */
+
+let clients = [];
+
+let payments = [];
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHtml(value = "") {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+/* =========================================================
+   ESCAPE JAVASCRIPT
+========================================================= */
+
+function escapeJs(value = "") {
+
+    return String(value)
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/\r/g, "\\r")
+        .replace(/\n/g, "\\n");
+}
+
+
+/* =========================================================
+   FORMAT DATE
+========================================================= */
+
+function formatDate(date) {
+
+    if (!date) {
+        return "-";
+    }
+
+    const parsed =
+        new Date(date);
+
+    if (
+        Number.isNaN(
+            parsed.getTime()
+        )
+    ) {
+        return "-";
+    }
+
+    return parsed.toLocaleDateString(
+        "id-ID",
+        {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        }
+    );
+}
+
+
+/* =========================================================
+   FORMAT DATE TIME
+========================================================= */
+
+function formatDateTime(date) {
+
+    if (!date) {
+        return "-";
+    }
+
+    const parsed =
+        new Date(date);
+
+    if (
+        Number.isNaN(
+            parsed.getTime()
+        )
+    ) {
+        return "-";
+    }
+
+    return parsed.toLocaleString(
+        "id-ID",
+        {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
+}
+
+
+/* =========================================================
+   FORMAT RUPIAH
+========================================================= */
+
+function formatRupiah(value) {
+
+    return new Intl.NumberFormat(
+        "id-ID",
+        {
+            style: "currency",
+            currency: "IDR",
+            maximumFractionDigits: 0
+        }
+    ).format(
+        Number(value) || 0
+    );
+}
+
+
+/* =========================================================
+   GET CLIENT BY UID
+========================================================= */
+
+function getClientByUid(uid) {
+
+    if (!uid) {
+        return null;
+    }
+
+    return clients.find(
+        client =>
+            String(client.uid) ===
+            String(uid)
+    ) || null;
+}
+
+
+/* =========================================================
+   LOAD CLIENTS
+========================================================= */
+
+async function fetchClients() {
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await _supabase
+                .from("clients")
+                .select("*")
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        clients =
+            data || [];
+
+
+        updateStats();
+
+        populateClientDropdown();
+
+        renderTable();
+
+        renderPayments();
+
+
+    } catch (error) {
+
+        console.error(
+            "Fetch clients error:",
+            error
+        );
+
+
+        const tbody =
+            document.getElementById(
+                "client-table-body"
+            );
+
+
+        if (tbody) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td
+                        colspan="11"
+                        style="
+                            text-align:center;
+                            padding:40px;
+                            color:#dc2626;
+                        "
+                    >
+                        Gagal mengambil data client.
+                        <br>
+                        <small>
+                            ${escapeHtml(
+                                error.message
+                            )}
+                        </small>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+}
+
+
+/* =========================================================
+   LOAD PAYMENTS
+========================================================= */
+
+async function fetchPayments() {
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await _supabase
+                .from("payments")
+                .select("*")
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        payments =
+            data || [];
+
+
+        renderPayments();
+
+
+    } catch (error) {
+
+        console.error(
+            "Fetch payments error:",
+            error
+        );
+
+
+        payments = [];
+
+
+        const tbody =
+            document.getElementById(
+                "payment-table-body"
+            );
+
+
+        if (tbody) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td
+                        colspan="8"
+                        style="
+                            text-align:center;
+                            padding:30px;
+                            color:#64748b;
+                        "
+                    >
+                        Belum ada data pembayaran.
+                    </td>
+                </tr>
+            `;
+        }
+    }
+}
+
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+function updateStats() {
+
+    const total =
+        document.getElementById(
+            "stat-total"
+        );
+
+
+    const today =
+        document.getElementById(
+            "stat-today"
+        );
+
+
+    if (total) {
+
+        total.textContent =
+            clients.length;
+    }
+
+
+    if (today) {
+
+        const now =
+            new Date();
+
+
+        const todayCount =
+            clients.filter(
+                client => {
+
+                    if (!client.created_at) {
+                        return false;
+                    }
+
+
+                    const date =
+                        new Date(
+                            client.created_at
+                        );
+
+
+                    return (
+                        date.getDate() ===
+                            now.getDate() &&
+
+                        date.getMonth() ===
+                            now.getMonth() &&
+
+                        date.getFullYear() ===
+                            now.getFullYear()
+                    );
+
+                }
+            ).length;
+
+
+        today.textContent =
+            todayCount;
+    }
+}
+
+
+/* =========================================================
+   CLIENT DROPDOWN
+========================================================= */
+
+function populateClientDropdown() {
+
+    const select =
+        document.getElementById(
+            "sub-client-select"
+        );
+
+
+    if (!select) {
+        return;
+    }
+
+
+    select.innerHTML = `
+        <option value="">
+            -- Pilih Klien --
+        </option>
+    `;
+
+
+    clients.forEach(
+        client => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                client.uid || "";
+
+
+            option.textContent =
+                `${client.store_name || "-"} — ${client.email || "-"}`;
+
+
+            select.appendChild(
+                option
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   UPDATE SUBSCRIPTION
+========================================================= */
+
+async function handleUpdateSubscription(event) {
+
+    if (event) {
+        event.preventDefault();
+    }
+
+
+    const clientUid =
+        document.getElementById(
+            "sub-client-select"
+        )?.value;
+
+
+    const packageType =
+        document.getElementById(
+            "sub-package-select"
+        )?.value;
+
+
+    if (!clientUid) {
+
+        alert(
+            "Pilih client terlebih dahulu."
+        );
+
+        return;
+    }
+
+
+    if (!packageType) {
+
+        alert(
+            "Pilih paket terlebih dahulu."
+        );
+
+        return;
+    }
+
+
+    const packageMap = {
+
+        trial_3: {
+            days: 3,
+            status: "trial",
+            name: "Trial 3 Hari"
+        },
+
+        trial_7: {
+            days: 7,
+            status: "trial",
+            name: "Trial 7 Hari"
+        },
+
+        trial_30: {
+            days: 30,
+            status: "trial",
+            name: "Trial 30 Hari"
+        },
+
+        sub_30: {
+            days: 30,
+            status: "active",
+            name: "Langganan 30 Hari"
+        },
+
+        sub_365: {
+            days: 365,
+            status: "active",
+            name: "Langganan 365 Hari"
+        }
+
+    };
+
+
+    const selected =
+        packageMap[
+            packageType
+        ];
+
+
+    if (!selected) {
+
+        alert(
+            "Paket tidak valid."
+        );
+
+        return;
+    }
+
+
+    const client =
+        getClientByUid(
+            clientUid
+        );
+
+
+    const clientName =
+        client?.store_name ||
+        client?.owner_name ||
+        "client ini";
+
+
+    if (
+        !confirm(
+            `Aktifkan ${selected.name} untuk ${clientName}?`
+        )
+    ) {
+        return;
+    }
+
+
+    try {
+
+        const {
+            error
+        } =
+            await _supabase.rpc(
+                "admin_set_subscription",
+                {
+                    p_uid:
+                        clientUid,
+
+                    p_days:
+                        selected.days,
+
+                    p_status:
+                        selected.status,
+
+                    p_package:
+                        selected.name
+                }
+            );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        alert(
+            "Status langganan berhasil diperbarui."
+        );
+
+
+        await fetchClients();
+
+        await fetchPayments();
+
+
+    } catch (error) {
+
+        console.error(
+            "Subscription error:",
+            error
+        );
+
+
+        alert(
+            "Gagal memperbarui langganan:\n" +
+            error.message
+        );
+    }
+}
+
+
+/* =========================================================
+   APPROVE PAYMENT
+========================================================= */
+
+async function approvePayment(
+    paymentId,
+    days = 30
+) {
+
+    if (!paymentId) {
+        return;
+    }
+
+
+    if (
+        !confirm(
+            "Yakin ingin menyetujui pembayaran ini?"
+        )
+    ) {
+        return;
+    }
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await _supabase.rpc(
+                "approve_payment",
+                {
+                    p_payment_id:
+                        paymentId,
+
+                    p_days:
+                        Number(days)
+                }
+            );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        console.log(
+            "Payment approved:",
+            data
+        );
+
+
+        alert(
+            "Pembayaran berhasil disetujui.\nAkun sekarang aktif."
+        );
+
+
+        await fetchClients();
+
+        await fetchPayments();
+
+
+    } catch (error) {
+
+        console.error(
+            "Approve payment error:",
+            error
+        );
+
+
+        alert(
+            "Gagal menyetujui pembayaran:\n" +
+            error.message
+        );
+    }
+}
+
+
+/* =========================================================
+   REJECT PAYMENT
+========================================================= */
+
+async function rejectPayment(
+    paymentId
+) {
+
+    if (!paymentId) {
+        return;
+    }
+
+
+    if (
+        !confirm(
+            "Yakin ingin menolak pembayaran ini?"
+        )
+    ) {
+        return;
+    }
+
+
+    try {
+
+        const {
+            error
+        } =
+            await _supabase.rpc(
+                "reject_payment",
+                {
+                    p_payment_id:
+                        paymentId
+                }
+            );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        alert(
+            "Pembayaran berhasil ditolak."
+        );
+
+
+        await fetchClients();
+
+        await fetchPayments();
+
+
+    } catch (error) {
+
+        console.error(
+            "Reject payment error:",
+            error
+        );
+
+
+        alert(
+            "Gagal menolak pembayaran:\n" +
+            error.message
+        );
+    }
+}
+
+
+/* =========================================================
+   PAYMENT STATUS
+========================================================= */
+
+function getPaymentStatusHtml(
+    status
+) {
+
+    if (
+        status ===
+        "paid"
+    ) {
+
+        return `
+            <span class="badge-status status-active">
+                <i class="fas fa-check"></i>
+                Sudah Bayar
+            </span>
+        `;
+    }
+
+
+    if (
+        status ===
+        "waiting_verification"
+    ) {
+
+        return `
+            <span class="badge-status status-trial">
+                <i class="fas fa-clock"></i>
+                Menunggu
+            </span>
+        `;
+    }
+
+
+    if (
+        status ===
+        "rejected"
+    ) {
+
+        return `
+            <span class="badge-status status-expired">
+                <i class="fas fa-times"></i>
+                Ditolak
+            </span>
+        `;
+    }
+
+
+    return `
+        <span class="badge-status status-expired">
+            ${escapeHtml(
+                status || "-"
+            )}
+        </span>
+    `;
+}
+
+
+/* =========================================================
+   PAYMENT ACTIONS
+========================================================= */
+
+function getPaymentActions(
+    payment
+) {
+
+    if (
+        payment.status !==
+        "waiting_verification"
+    ) {
+
+        return `
+            <span
+                style="
+                    color:#94a3b8;
+                    font-size:0.75rem;
+                "
+            >
+                -
+            </span>
+        `;
+    }
+
+
+    return `
+        <div class="action-btns">
+
+            <button
+                type="button"
+                class="btn-icon btn-wa"
+                onclick="approvePayment(
+                    '${escapeJs(payment.id)}',
+                    30
+                )"
+                title="Setujui 30 Hari"
+            >
+                <i class="fas fa-check"></i>
+            </button>
+
+
+            <button
+                type="button"
+                class="btn-icon btn-delete"
+                onclick="rejectPayment(
+                    '${escapeJs(payment.id)}'
+                )"
+                title="Tolak Pembayaran"
+            >
+                <i class="fas fa-times"></i>
+            </button>
+
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   RENDER PAYMENTS
+========================================================= */
+
+function renderPayments() {
+
+    const tbody =
+        document.getElementById(
+            "payment-table-body"
+        );
+
+
+    if (!tbody) {
+        return;
+    }
+
+
+    if (!payments.length) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td
+                    colspan="8"
+                    style="
+                        text-align:center;
+                        padding:30px;
+                        color:#64748b;
+                    "
+                >
+                    Belum ada pembayaran.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    tbody.innerHTML =
+        payments.map(
+            payment => {
+
+                const client =
+                    getClientByUid(
+                        payment.uid
+                    );
+
+
+                const owner =
+                    client?.owner_name ||
+                    "-";
+
+
+                const store =
+                    client?.store_name ||
+                    "-";
+
+
+                const packageName =
+                    payment.package_name ||
+                    "-";
+
+
+                const status =
+                    getPaymentStatusHtml(
+                        payment.status
+                    );
+
+
+                const actions =
+                    getPaymentActions(
+                        payment
+                    );
+
+
+                return `
+                    <tr>
+
+                        <td>
+                            <strong>
+                                ${escapeHtml(
+                                    payment.invoice_id ||
+                                    "-"
+                                )}
+                            </strong>
+                        </td>
+
+
+                        <td>
+                            ${escapeHtml(
+                                owner
+                            )}
+                        </td>
+
+
+                        <td>
+                            ${escapeHtml(
+                                store
+                            )}
+                        </td>
+
+
+                        <td>
+                            ${escapeHtml(
+                                packageName
+                            )}
+                        </td>
+
+
+                        <td>
+                            ${formatRupiah(
+                                payment.amount
+                            )}
+                        </td>
+
+
+                        <td>
+                            ${formatDateTime(
+                                payment.created_at
+                            )}
+                        </td>
+
+
+                        <td>
+                            ${status}
+                        </td>
+
+
+                        <td>
+                            ${actions}
+                        </td>
+
+                    </tr>
+                `;
+            }
+        ).join("");
+}
+
+
+/* =========================================================
+   CLIENT STATUS
+========================================================= */
+
+function getClientStatus(
+    client
+) {
+
+    const now =
+        new Date();
+
+
+    /* WAITING PAYMENT */
+
+    if (
+        client.payment_status ===
+        "waiting_verification"
+    ) {
+
+        return {
+
+            text:
+                "Menunggu Verifikasi",
+
+            className:
+                "status-trial"
+        };
+    }
+
+
+    /* PAID */
+
+    if (
+        client.payment_status ===
+        "paid"
+    ) {
+
+        if (
+            client.expires_at &&
+            new Date(
+                client.expires_at
+            ) > now
+        ) {
+
+            return {
+
+                text:
+                    "Sudah Berbayar",
+
+                className:
+                    "status-active"
+            };
+        }
+
+
+        return {
+
+            text:
+                "Berakhir",
+
+            className:
+                "status-expired"
+        };
+    }
+
+
+    /* ACTIVE */
+
+    if (
+        client.subscription_status ===
+        "active" &&
+
+        client.expires_at &&
+
+        new Date(
+            client.expires_at
+        ) > now
+    ) {
+
+        return {
+
+            text:
+                "Aktif",
+
+            className:
+                "status-active"
+        };
+    }
+
+
+    /* TRIAL */
+
+    if (
+        client.subscription_status ===
+        "trial" &&
+
+        client.expires_at &&
+
+        new Date(
+            client.expires_at
+        ) > now
+    ) {
+
+        return {
+
+            text:
+                "Trial",
+
+            className:
+                "status-trial"
+        };
+    }
+
+
+    /* EXPIRED */
+
+    if (
+        client.expires_at &&
+        new Date(
+            client.expires_at
+        ) <= now
+    ) {
+
+        return {
+
+            text:
+                "Berakhir",
+
+            className:
+                "status-expired"
+        };
+    }
+
+
+    /* DEFAULT */
+
+    return {
+
+        text:
+            "Belum Berbayar",
+
+        className:
+            "status-expired"
+    };
+}
+
+
+/* =========================================================
+   STATUS DETAIL
+========================================================= */
+
+function getStatusDetail(
+    client
+) {
+
+    if (!client.expires_at) {
+
+        return "-";
+    }
+
+
+    return formatDate(
+        client.expires_at
+    );
+}
+
+
+/* =========================================================
+   LOGO HTML
+========================================================= */
+
+function getLogoHtml(
+    client
+) {
+
+    if (
+        client.store_logo
+    ) {
+
+        return `
+            <img
+                src="${escapeHtml(
+                    client.store_logo
+                )}"
+                alt="Logo"
+                class="logo-thumb"
+                style="
+                    width:42px;
+                    height:42px;
+                    border-radius:50%;
+                    object-fit:cover;
+                "
+                onerror="
+                    this.onerror=null;
+                    this.style.display='none';
+                    this.nextElementSibling.style.display='flex';
+                "
+            >
+
+            <div
+                style="
+                    display:none;
+                    width:42px;
+                    height:42px;
+                    border-radius:50%;
+                    background:#eff6ff;
+                    align-items:center;
+                    justify-content:center;
+                    color:#2563eb;
+                "
+            >
+                <i class="fas fa-store"></i>
+            </div>
+        `;
+    }
+
+
+    return `
+        <div
+            style="
+                width:42px;
+                height:42px;
+                border-radius:50%;
+                background:#eff6ff;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                color:#2563eb;
+            "
+        >
+            <i class="fas fa-store"></i>
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   SOCIAL MEDIA
+========================================================= */
+
+function getSocialHtml(
+    client
+) {
+
+    const social =
+        client.store_social;
+
+
+    if (!social) {
+
+        return `
+            <span
+                style="
+                    color:#94a3b8;
+                "
+            >
+                -
+            </span>
+        `;
+    }
+
+
+    let url =
+        String(social).trim();
+
+
+    if (
+        !/^https?:\/\//i.test(
+            url
+        )
+    ) {
+
+        url =
+            "https://" +
+            url;
+    }
+
+
+    return `
+        <a
+            href="${escapeHtml(url)}"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="
+                color:#4f46e5;
+                text-decoration:none;
+                font-weight:700;
+            "
+            title="Buka sosial media"
+        >
+            <i class="fas fa-external-link-alt"></i>
+            Buka
+        </a>
+    `;
+}
+
+
+/* =========================================================
+   CLIENT ACTIONS
+========================================================= */
+
+function getClientActions(
+    client
+) {
+
+    const address =
+        client.store_address ||
+        "";
+
+
+    const whatsapp =
+        String(
+            client.whatsapp ||
+            ""
+        ).replace(
+            /[^0-9]/g,
+            ""
+        );
+
+
+    return `
+        <div class="action-btns">
+
+            <button
+                type="button"
+                class="btn-icon btn-copy"
+                onclick="copyAddress(
+                    '${escapeJs(address)}'
+                )"
+                title="Salin alamat"
+            >
+                <i class="fas fa-copy"></i>
+            </button>
+
+
+            ${
+                whatsapp
+                    ? `
+                        <a
+                            href="https://wa.me/${encodeURIComponent(
+                                whatsapp
+                            )}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="btn-icon btn-wa"
+                            title="WhatsApp"
+                        >
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    `
+                    : ""
+            }
+
+
+            <button
+                type="button"
+                class="btn-icon btn-delete"
+                onclick="deleteClient(
+                    '${escapeJs(client.id)}'
+                )"
+                title="Hapus client"
+            >
+                <i class="fas fa-trash"></i>
+            </button>
+
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   RENDER CLIENT TABLE
+========================================================= */
+
+function renderTable() {
+
+    const tbody =
+        document.getElementById(
+            "client-table-body"
+        );
+
+
+    if (!tbody) {
+        return;
+    }
+
+
+    const search =
+        (
+            document.getElementById(
+                "search-input"
+            )?.value || ""
+        )
+            .toLowerCase()
+            .trim();
+
+
+    const service =
+        document.getElementById(
+            "service-filter"
+        )?.value || "";
+
+
+    const filtered =
+        clients.filter(
+            client => {
+
+                const text =
+                    [
+                        client.owner_name,
+                        client.store_name,
+                        client.email,
+                        client.whatsapp,
+                        client.store_address,
+                        client.service
+                    ]
+                        .join(" ")
+                        .toLowerCase();
+
+
+                const matchSearch =
+                    !search ||
+                    text.includes(
+                        search
+                    );
+
+
+                const matchService =
+                    !service ||
+                    client.service ===
+                        service;
+
+
+                return (
+                    matchSearch &&
+                    matchService
+                );
+            }
+        );
+
+
+    if (!filtered.length) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td
+                    colspan="11"
+                    style="
+                        text-align:center;
+                        padding:40px;
+                        color:#64748b;
+                    "
+                >
+                    Tidak ada client ditemukan.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    tbody.innerHTML =
+        filtered.map(
+            (client, index) => {
+
+                const status =
+                    getClientStatus(
+                        client
+                    );
+
+
+                const logo =
+                    getLogoHtml(
+                        client
+                    );
+
+
+                const social =
+                    getSocialHtml(
+                        client
+                    );
+
+
+                const actions =
+                    getClientActions(
+                        client
+                    );
+
+
+                return `
+                    <tr>
+
+                        <!-- NO -->
+
+                        <td>
+                            <strong>
+                                ${index + 1}
+                            </strong>
+                        </td>
+
+
+                        <!-- LOGO -->
+
+                        <td>
+                            ${logo}
+                        </td>
+
+
+                        <!-- PEMILIK -->
+
+                        <td>
+                            <strong>
+                                ${escapeHtml(
+                                    client.owner_name ||
+                                    "-"
+                                )}
+                            </strong>
+                        </td>
+
+
+                        <!-- USAHA -->
+
+                        <td>
+                            <strong>
+                                ${escapeHtml(
+                                    client.store_name ||
+                                    "-"
+                                )}
+                            </strong>
+                        </td>
+
+
+                        <!-- STATUS -->
+
+                        <td>
+
+                            <span
+                                class="
+                                    badge-status
+                                    ${status.className}
+                                "
+                            >
+                                ${status.text}
+                            </span>
+
+                            <div
+                                style="
+                                    margin-top:4px;
+                                    color:#64748b;
+                                    font-size:0.65rem;
+                                "
+                            >
+                                ${
+                                    client.expires_at
+                                        ? "Sampai " +
+                                          escapeHtml(
+                                              getStatusDetail(
+                                                  client
+                                              )
+                                          )
+                                        : "Tidak ada masa aktif"
+                                }
+                            </div>
+
+                        </td>
+
+
+                        <!-- EMAIL + WHATSAPP -->
+
+                        <td>
+
+                            <div>
+                                <i
+                                    class="fas fa-envelope"
+                                    style="
+                                        width:15px;
+                                        color:#64748b;
+                                    "
+                                ></i>
+
+                                ${escapeHtml(
+                                    client.email ||
+                                    "-"
+                                )}
+                            </div>
+
+
+                            <div
+                                style="
+                                    margin-top:5px;
+                                "
+                            >
+                                <i
+                                    class="fab fa-whatsapp"
+                                    style="
+                                        width:15px;
+                                        color:#10b981;
+                                    "
+                                ></i>
+
+                                ${escapeHtml(
+                                    client.whatsapp ||
+                                    "-"
+                                )}
+                            </div>
+
+                        </td>
+
+
+                        <!-- ALAMAT -->
+
+                        <td
+                            style="
+                                max-width:220px;
+                                white-space:normal;
+                                min-width:180px;
+                            "
+                        >
+                            ${escapeHtml(
+                                client.store_address ||
+                                "-"
+                            )}
+                        </td>
+
+
+                        <!-- SOSMED -->
+
+                        <td>
+                            ${social}
+                        </td>
+
+
+                        <!-- LAYANAN -->
+
+                        <td>
+                            ${escapeHtml(
+                                client.service ||
+                                "-"
+                            )}
+                        </td>
+
+
+                        <!-- TANGGAL DAFTAR -->
+
+                        <td>
+                            ${formatDateTime(
+                                client.created_at
+                            )}
+                        </td>
+
+
+                        <!-- AKSI -->
+
+                        <td>
+                            ${actions}
+                        </td>
+
+                    </tr>
+                `;
+            }
+        ).join("");
+}
+
+
+/* =========================================================
+   FILTER
+========================================================= */
+
+function filterData() {
+
+    renderTable();
+}
+
+
+/* =========================================================
+   COPY ADDRESS
+========================================================= */
+
+async function copyAddress(
+    address
+) {
+
+    if (!address) {
+
+        alert(
+            "Alamat tidak tersedia."
+        );
+
+        return;
+    }
+
+
+    try {
+
+        await navigator.clipboard.writeText(
+            address
+        );
+
+
+        alert(
+            "Alamat berhasil disalin."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Copy address error:",
+            error
+        );
+
+
+        alert(
+            address
+        );
+    }
+}
+
+
+/* =========================================================
+   DELETE CLIENT
+========================================================= */
+
+async function deleteClient(
+    clientId
+) {
+
+    if (!clientId) {
+        return;
+    }
+
+
+    const client =
+        clients.find(
+            item =>
+                String(item.id) ===
+                String(clientId)
+        );
+
+
+    const clientName =
+        client?.store_name ||
+        client?.owner_name ||
+        "client ini";
+
+
+    if (
+        !confirm(
+            `Yakin ingin menghapus ${clientName}?`
+        )
+    ) {
+        return;
+    }
+
+
+    try {
+
+        const {
+            error
+        } =
+            await _supabase
+                .from("clients")
+                .delete()
+                .eq(
+                    "id",
+                    clientId
+                );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        alert(
+            "Client berhasil dihapus."
+        );
+
+
+        await fetchClients();
+
+        await fetchPayments();
+
+
+    } catch (error) {
+
+        console.error(
+            "Delete client error:",
+            error
+        );
+
+
+        alert(
+            "Gagal menghapus client:\n" +
+            error.message
+        );
+    }
+}
+
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+function toggleSidebar() {
+
+    const sidebar =
+        document.querySelector(
+            ".sidebar"
+        );
+
+
+    if (sidebar) {
+
+        sidebar.classList.toggle(
+            "active"
+        );
+    }
+}
+
+
+/* =========================================================
+   REFRESH ALL
+========================================================= */
+
+async function refreshAll() {
+
+    await fetchClients();
+
+    await fetchPayments();
+}
+
+
+/* =========================================================
+   EVENTS
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
+
+        /*
+         * TIDAK ADA LOGIN ADMIN.
+         *
+         * Halaman langsung memuat data.
+         */
+
+        await fetchClients();
+
+        await fetchPayments();
+
+
+        /* SEARCH */
+
+        const searchInput =
+            document.getElementById(
+                "search-input"
+            );
+
+
+        if (searchInput) {
+
+            searchInput.addEventListener(
+                "input",
+                renderTable
+            );
+        }
+
+
+        /* SERVICE FILTER */
+
+        const serviceFilter =
+            document.getElementById(
+                "service-filter"
+            );
+
+
+        if (serviceFilter) {
+
+            serviceFilter.addEventListener(
+                "change",
+                renderTable
+            );
+        }
+
+
+        /* SUBSCRIPTION FORM */
+
+        const subForm =
+            document.getElementById(
+                "sub-form"
+            );
+
+
+        if (subForm) {
+
+            subForm.addEventListener(
+                "submit",
+                handleUpdateSubscription
+            );
+        }
+
+
+        /*
+         * FOCUS REFRESH
+         */
+
+        window.addEventListener(
+            "focus",
+            async () => {
+
+                await refreshAll();
+
+            }
+        );
+
+    }
+);
+
+
+/* =========================================================
+   GLOBAL FUNCTIONS
+========================================================= */
+
+window.fetchClients =
+    fetchClients;
+
+
+window.fetchPayments =
+    fetchPayments;
+
+
+window.approvePayment =
+    approvePayment;
+
+
+window.rejectPayment =
+    rejectPayment;
+
+
+window.deleteClient =
+    deleteClient;
+
+
+window.filterData =
+    filterData;
+
+
+window.copyAddress =
+    copyAddress;
+
+
+window.toggleSidebar =
+    toggleSidebar;
+
+
+window.handleUpdateSubscription =
+    handleUpdateSubscription;
+
+
+window.refreshAll =
+    refreshAll;
+
+</script>
+</body>
+</html>
