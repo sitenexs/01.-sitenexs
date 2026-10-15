@@ -274,6 +274,8 @@
             width: 32px;
             border-radius: var(--radius-sm);
             object-fit: cover;
+            border: 1.5px solid var(--border-medium);
+            box-shadow: var(--shadow-sm);
         }
         .nav-links {
             display: flex;
@@ -375,14 +377,19 @@
             object-fit: cover;
             border-radius: var(--radius-md);
             margin-bottom: 1rem;
-            border: 1px solid var(--border-subtle);
+            border: 1px solid var(--border-medium);
+            box-shadow: var(--shadow-sm);
+        }
+        .info-card-image-centered {
+            object-position: center center;
         }
         .info-card-map {
             width: 100%;
             height: 140px;
             border-radius: var(--radius-md);
             margin-bottom: 1rem;
-            border: 1px solid var(--border-subtle);
+            border: 1px solid var(--border-medium);
+            box-shadow: var(--shadow-sm);
             overflow: hidden;
         }
         .info-card-map iframe {
@@ -702,7 +709,7 @@
 
             <div class="about-info-grid">
                 <div class="info-card reveal">
-                    <img src="https://sitenexs.com/assets/foto/ngoding.png?auto=format&fit=crop&w=600&q=80" alt="Pengembang Sitenexs" class="info-card-image">
+                    <img src="https://sitenexs.com/assets/foto/ngoding.png?auto=format&fit=crop&w=600&q=80" alt="Pengembang Sitenexs" class="info-card-image info-card-image-centered">
                     <div>
                         <h3 class="info-card-title">Berdiri pada tahun 2026</h3>
                         <p class="info-card-desc">
@@ -764,11 +771,7 @@
                     </div>
                     
                     <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.65rem; line-height: 1.55;">
-                        <strong>Syafaat Nuryadi</strong> adalah seorang pengembang perangkat lunak (Software Engineer) asal Bengkulu, Indonesia. Beliau mendirikan Sitenexs pada tahun 2024 dengan visi meruntuhkan hambatan teknologi bagi para pelaku usaha kecil dan menengah.
-                    </p>
-
-                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.85rem; line-height: 1.55;">
-                        Beliau merancang setiap solusi digital Sitenexs agar mengutamakan kecepatan akses, keamanan, serta kemudahan pakai di berbagai perangkat (HP, Tablet, Laptop).
+                        <strong>Syafaat Nuryadi</strong> adalah seorang pengembang perangkat lunak (Software Engineer) asal Bengkulu, Indonesia. yang berhasil mendirikan Sitenexs pada <strong>27/09/2026</strong> "dengan visi Menjadi pelopor inovasi digital yang menghadirkan teknologi modern, mudah digunakan, dan memberikan manfaat nyata bagi masyarakat..
                     </p>
 
                     <div style="border-top: 1px dashed var(--border-subtle); padding-top: 0.75rem; margin-top: 0.75rem;">
@@ -785,7 +788,7 @@
 
                     <div style="margin-top: 1.1rem;">
                         <a href="https://founder.sitenexs.com" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
-                            <i class="fas fa-globe"></i> Kunjungi Situs Resmi: founder.sitenexs.com
+                            <i class="fas fa-globe"></i> lihat Selengkapnya
                         </a>
                     </div>
                 </div>
@@ -901,7 +904,7 @@
                     <ul class="footer-links">
                         <li><a href="#tentang">Tentang Kami</a></li>
                         <li><a href="#pendiri">Profil Pendiri</a></li>
-                        <li><a href="#kegunaan">Kegunaan UMKM</a></li>
+                        <li><a href="#kegunaan">Kegunaan untuk UMKM</a></li>
                         <li><a href="#kontak">Kontak Kami</a></li>
                     </ul>
                 </div>
