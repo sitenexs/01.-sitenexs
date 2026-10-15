@@ -3,10 +3,9 @@
 
   <url>
     <loc>https://sitenexs.com/</loc>
-  </url>
-
-  <url>
-    <loc>https://sitenexs.com/index.html</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
   </url>
 
 </urlset>
