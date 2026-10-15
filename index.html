@@ -579,7 +579,7 @@
             scroll-behavior: smooth;
         }
         
-        /* Custom Styled Scrollbar untuk Area Testimoni */
+        /* Custom Scrollbar */
         .testimonials-grid::-webkit-scrollbar {
             width: 6px;
         }
@@ -1054,7 +1054,7 @@
         </div>
     </section>
 
-    <!-- SECTION TESTIMONI LENGKAP BERSAMA FORM ULASAN -->
+    <!-- SECTION TESTIMONI BERSAMA FORM ULASAN & FIRESTORE -->
     <section id="testimoni" class="page-section bg-gradient-soft">
         <div class="container">
             <div class="section-header reveal">
@@ -1109,12 +1109,12 @@
 
                     <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
                         <button type="button" id="cancel-review-btn" class="btn btn-secondary btn-sm">Batal</button>
-                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Kirim Ulasan</button>
+                        <button type="submit" id="submit-review-btn" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Kirim Ulasan</button>
                     </div>
                 </form>
             </div>
 
-            <!-- DAFTAR TESTIMONI (AREA DENGAN SCROLL MANDIRI) -->
+            <!-- DAFTAR TESTIMONI (TERINTEGRASI FIRESTORE) -->
             <div id="testimonials-list" class="testimonials-grid reveal">
                 <!-- Testimoni Bawaan 1 -->
                 <div class="testimonial-card">
@@ -1260,7 +1260,7 @@
         </a>
     </div>
 
-    <!-- JAVASCRIPT -->
+    <!-- JAVASCRIPT UI REGULER -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // TOGGLE MOBILE MENU
@@ -1310,14 +1310,11 @@
                 });
             }
 
-            // REVIEW FORM & TESTIMONIAL DYNAMIC LOGIC
+            // TOGGLE REVIEW FORM
             const toggleReviewBtn = document.getElementById('toggle-review-btn');
             const cancelReviewBtn = document.getElementById('cancel-review-btn');
             const reviewFormContainer = document.getElementById('review-form-container');
-            const reviewForm = document.getElementById('review-form');
-            const testimonialsList = document.getElementById('testimonials-list');
 
-            // Toggle Show Form
             if (toggleReviewBtn && reviewFormContainer) {
                 toggleReviewBtn.addEventListener('click', () => {
                     reviewFormContainer.style.display = reviewFormContainer.style.display === 'block' ? 'none' : 'block';
@@ -1333,7 +1330,7 @@
                 });
             }
 
-            // Star Rating Picker Logic (Anti-Text Selection)
+            // STAR RATING PICKER LOGIC (ANTI-BLOK TEKS)
             const starPicker = document.getElementById('star-picker');
             const ratingInput = document.getElementById('review-rating');
 
@@ -1355,102 +1352,164 @@
                     });
                 });
             }
+        });
+    </script>
 
-            // Load Saved Testimonials from LocalStorage
-            function loadSavedReviews() {
-                const saved = JSON.parse(localStorage.getItem('sitenexs_user_reviews') || '[]');
-                saved.forEach(review => {
-                    appendReviewCard(review, false);
-                });
+    <!-- FIREBASE & FIRESTORE INTEGRATION (MODULE SCRIPT) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-analytics.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            onSnapshot, 
+            query, 
+            orderBy, 
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+
+        // Konfigurasi Firebase Anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4",
+            authDomain: "sitenexs-62919.firebaseapp.com",
+            projectId: "sitenexs-62919",
+            storageBucket: "sitenexs-62919.firebasestorage.app",
+            messagingSenderId: "1060348110644",
+            appId: "1:1060348110644:web:e45af14d5f26a9cf8e6761",
+            measurementId: "G-C7YL0Q7YRQ"
+        };
+
+        // Inisialisasi Firebase & Firestore
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+
+        // Referensi Koleksi 'reviews' di Firestore
+        const reviewsRef = collection(db, "reviews");
+
+        const testimonialsList = document.getElementById('testimonials-list');
+        const reviewForm = document.getElementById('review-form');
+        const reviewFormContainer = document.getElementById('review-form-container');
+        const submitBtn = document.getElementById('submit-review-btn');
+        const starPicker = document.getElementById('star-picker');
+
+        // Helper untuk mencegah XSS injection
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+
+        // Render Kartu Testimoni ke UI
+        function renderReviewCard(id, reviewData) {
+            let starsHTML = '';
+            const rating = parseInt(reviewData.rating) || 5;
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    starsHTML += '<i class="fas fa-star"></i>';
+                } else {
+                    starsHTML += '<i class="far fa-star" style="color:#cbd5e1;"></i>';
+                }
             }
 
-            function appendReviewCard(review, isNew = true) {
-                let starsHTML = '';
-                for (let i = 1; i <= 5; i++) {
-                    if (i <= review.rating) {
-                        starsHTML += '<i class="fas fa-star"></i>';
-                    } else {
-                        starsHTML += '<i class="far fa-star" style="color:#cbd5e1;"></i>';
-                    }
-                }
+            const initial = reviewData.name ? reviewData.name.charAt(0).toUpperCase() : 'U';
 
-                const initial = review.name ? review.name.charAt(0).toUpperCase() : 'U';
-
-                const cardHTML = `
-                    <div class="testimonial-card ${isNew ? 'reveal active' : ''}">
-                        <div>
-                            <div class="stars-container">${starsHTML}</div>
-                            <p class="testimonial-text">"${escapeHTML(review.comment)}"</p>
-                        </div>
-                        <div class="testimonial-author">
-                            <div class="author-avatar">${initial}</div>
-                            <div class="author-info">
-                                <h5>${escapeHTML(review.name)}</h5>
-                                <p>${escapeHTML(review.business)}</p>
-                            </div>
+            return `
+                <div class="testimonial-card reveal active" id="doc-${id}">
+                    <div>
+                        <div class="stars-container">${starsHTML}</div>
+                        <p class="testimonial-text">"${escapeHTML(reviewData.comment)}"</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">${initial}</div>
+                        <div class="author-info">
+                            <h5>${escapeHTML(reviewData.name)}</h5>
+                            <p>${escapeHTML(reviewData.business)}</p>
                         </div>
                     </div>
-                `;
+                </div>
+            `;
+        }
 
-                testimonialsList.insertAdjacentHTML('afterbegin', cardHTML);
-                
-                // Auto scroll ke paling atas daftar testimoni jika ulasan baru ditambahkan
-                if (isNew) {
-                    testimonialsList.scrollTop = 0;
+        // AMBIL & DENGARKAN ULASAN SCR REAL-TIME DARI FIRESTORE
+        const q = query(reviewsRef, orderBy("createdAt", "desc"));
+
+        onSnapshot(q, (snapshot) => {
+            let firestoreHTML = '';
+            snapshot.forEach((doc) => {
+                firestoreHTML += renderReviewCard(doc.id, doc.data());
+            });
+
+            if (snapshot.docs.length > 0) {
+                // Tampilkan ulasan dari Firestore di bagian teratas daftar
+                testimonialsList.innerHTML = firestoreHTML;
+            }
+        }, (error) => {
+            console.error("Gagal mengambil data dari Firestore: ", error);
+        });
+
+        // KIRIM ULASAN BARU KE FIRESTORE
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const name = document.getElementById('review-name').value.trim();
+                const email = document.getElementById('review-email').value.trim();
+                const business = document.getElementById('review-business').value.trim();
+                const comment = document.getElementById('review-comment').value.trim();
+                const rating = parseInt(document.getElementById('review-rating').value) || 5;
+
+                if (!name || !email || !business || !comment) {
+                    alert('Silakan lengkapi seluruh kolom ulasan.');
+                    return;
                 }
-            }
 
-            function escapeHTML(str) {
-                return str.replace(/[&<>'"]/g, 
-                    tag => ({
-                        '&': '&amp;',
-                        '<': '&lt;',
-                        '>': '&gt;',
-                        "'": '&#39;',
-                        '"': '&quot;'
-                    }[tag] || tag)
-                );
-            }
+                // Ubah status tombol untuk cegah submit ganda
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
 
-            // Submit Review Form
-            if (reviewForm) {
-                reviewForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
+                try {
+                    // Simpan data ke koleksi 'reviews' di Cloud Firestore
+                    await addDoc(reviewsRef, {
+                        name: name,
+                        email: email,
+                        business: business,
+                        comment: comment,
+                        rating: rating,
+                        createdAt: serverTimestamp()
+                    });
 
-                    const name = document.getElementById('review-name').value.trim();
-                    const email = document.getElementById('review-email').value.trim();
-                    const business = document.getElementById('review-business').value.trim();
-                    const comment = document.getElementById('review-comment').value.trim();
-                    const rating = parseInt(document.getElementById('review-rating').value) || 5;
-
-                    if (!name || !email || !business || !comment) {
-                        alert('Silakan lengkapi seluruh data ulasan Anda.');
-                        return;
-                    }
-
-                    const newReview = { name, email, business, comment, rating, date: new Date().toISOString() };
-
-                    // Save to local storage
-                    const existing = JSON.parse(localStorage.getItem('sitenexs_user_reviews') || '[]');
-                    existing.push(newReview);
-                    localStorage.setItem('sitenexs_user_reviews', JSON.stringify(existing));
-
-                    // Append directly to page
-                    appendReviewCard(newReview, true);
-
-                    // Reset & Hide Form
+                    // Reset Form & Sembunyikan
                     reviewForm.reset();
-                    ratingInput.value = 5;
-                    const stars = starPicker.querySelectorAll('i');
-                    stars.forEach(s => s.classList.add('active'));
+                    document.getElementById('review-rating').value = 5;
+                    if (starPicker) {
+                        const stars = starPicker.querySelectorAll('i');
+                        stars.forEach(s => s.classList.add('active'));
+                    }
                     reviewFormContainer.style.display = 'none';
 
-                    alert('Terima kasih! Ulasan Anda telah berhasil diterbitkan.');
-                });
-            }
+                    // Smooth Scroll ke Atas Daftar Testimoni
+                    testimonialsList.scrollTop = 0;
 
-            loadSavedReviews();
-        });
+                    alert('Terima kasih! Ulasan Anda telah berhasil terisi dan langsung tersimpan di sistem Sitenexs.');
+
+                } catch (error) {
+                    console.error("Error menambahkan dokumen ulasan: ", error);
+                    alert('Terjadi kesalahan saat menyimpan ulasan Anda ke Firestore. Silakan coba beberapa saat lagi.');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Ulasan';
+                }
+            });
+        }
     </script>
 </body>
 </html>
