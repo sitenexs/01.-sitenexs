@@ -183,7 +183,7 @@
             border: 1px solid transparent;
             text-align: center;
         }
-        .btn-sm { padding: 0.45rem 1rem; font-size: 0.8rem; }
+        .btn-sm { padding: 0.45rem 0.9rem; font-size: 0.8rem; }
         .btn-primary {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: #ffffff;
@@ -285,12 +285,18 @@
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 1.75rem;
+            gap: 1.5rem;
             font-size: 0.85rem;
             font-weight: 600;
         }
         .nav-links a { color: var(--text-muted); transition: var(--transition); }
         .nav-links a:hover { color: var(--primary); }
+
+        .nav-auth-desktop {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
         
         .mobile-toggle {
             display: none;
@@ -307,11 +313,13 @@
             display: none;
             background-color: var(--bg-card);
             border-bottom: 1px solid var(--border-subtle);
-            padding: 0.65rem 1.25rem;
+            padding: 0.65rem 1.25rem 1.25rem 1.25rem;
             box-shadow: var(--shadow-md);
         }
         #mobile-menu a.nav-item {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             padding: 0.65rem 0;
             font-size: 0.85rem;
             font-weight: 600;
@@ -655,6 +663,7 @@
         /* KHUSUS HP / MOBILE */
         @media (max-width: 768px) {
             .nav-links { display: none; }
+            .nav-auth-desktop { display: none !important; }
             .mobile-toggle { display: block; }
             
             .about-info-grid { 
@@ -710,12 +719,18 @@
                 <a href="#pendiri">Profil Pendiri</a>
                 <a href="#kegunaan">Kegunaan UMKM</a>
                 <a href="#kontak">Kontak</a>
+                <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer"><i class="fas fa-layer-group text-primary" style="font-size: 0.8rem;"></i> Layanan</a>
             </nav>
 
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <a href="#kontak" class="btn btn-primary btn-sm">
-                    <i class="fab fa-whatsapp"></i> Hubungi Kami
-                </a>
+                <div class="nav-auth-desktop">
+                    <a href="https://account.sitenexs.com/login" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-sign-in-alt text-primary"></i> Masuk
+                    </a>
+                    <a href="https://account.sitenexs.com/register" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
+                        <i class="fas fa-user-plus"></i> Daftar
+                    </a>
+                </div>
                 <button id="mobile-menu-btn" class="mobile-toggle" aria-label="Open Menu">
                     <i class="fas fa-bars"></i>
                 </button>
@@ -724,10 +739,23 @@
 
         <!-- MOBILE MENU DROPDOWN -->
         <div id="mobile-menu">
-            <a href="#tentang" class="nav-item">Tentang Bisnis</a>
-            <a href="#pendiri" class="nav-item">Profil Pendiri</a>
-            <a href="#kegunaan" class="nav-item">Kegunaan UMKM</a>
-            <a href="#kontak" class="nav-item">Kontak</a>
+            <a href="#tentang" class="nav-item">Tentang Bisnis <i class="fas fa-chevron-right" style="font-size: 0.75rem; color: var(--text-muted);"></i></a>
+            <a href="#pendiri" class="nav-item">Profil Pendiri <i class="fas fa-chevron-right" style="font-size: 0.75rem; color: var(--text-muted);"></i></a>
+            <a href="#kegunaan" class="nav-item">Kegunaan UMKM <i class="fas fa-chevron-right" style="font-size: 0.75rem; color: var(--text-muted);"></i></a>
+            <a href="#kontak" class="nav-item">Kontak <i class="fas fa-chevron-right" style="font-size: 0.75rem; color: var(--text-muted);"></i></a>
+            <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" class="nav-item">
+                <span><i class="fas fa-layer-group text-primary" style="margin-right: 0.35rem;"></i> Layanan Sitenexs</span> 
+                <i class="fas fa-external-link-alt" style="font-size: 0.75rem; color: var(--text-muted);"></i>
+            </a>
+            
+            <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px dashed var(--border-subtle); display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem;">
+                <a href="https://account.sitenexs.com/login" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-block">
+                    <i class="fas fa-sign-in-alt text-primary"></i> Masuk
+                </a>
+                <a href="https://account.sitenexs.com/register" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-block">
+                    <i class="fas fa-user-plus"></i> Daftar
+                </a>
+            </div>
         </div>
     </header>
 
@@ -961,6 +989,8 @@
                         <li><a href="#pendiri">Profil Pendiri</a></li>
                         <li><a href="#kegunaan">Kegunaan untuk UMKM</a></li>
                         <li><a href="#kontak">Kontak Kami</a></li>
+                        <li><a href="https://layanan.sitenexs.com" target="_blank">Layanan Sitenexs</a></li>
+                        <li><a href="https://account.sitenexs.com" target="_blank">Portal Akun</a></li>
                     </ul>
                 </div>
                 <div>
