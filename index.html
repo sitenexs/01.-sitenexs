@@ -78,9 +78,11 @@
             --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
             --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
             --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.06);
+            --shadow-card: 0 16px 32px -12px rgba(37, 99, 235, 0.1);
             --radius-sm: 0.375rem;
             --radius-md: 0.625rem;
-            --radius-lg: 1rem;
+            --radius-lg: 0.875rem;
+            --radius-xl: 1.25rem;
             --radius-full: 9999px;
             --transition: all 0.25s ease-in-out;
         }
@@ -119,7 +121,7 @@
             z-index: 2;
         }
 
-        /* BACKGROUND PATTERNS (POLA KOTAK-KOTAK GARIS) */
+        /* BACKGROUND PATTERNS */
         .bg-grid-pattern {
             background-image: 
                 linear-gradient(to right, rgba(37, 99, 235, 0.08) 1px, transparent 1px),
@@ -184,9 +186,9 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.45rem;
-            padding: 0.65rem 1.25rem;
-            font-size: 0.85rem;
+            gap: 0.4rem;
+            padding: 0.55rem 1.1rem;
+            font-size: 0.8rem;
             font-weight: 700;
             border-radius: var(--radius-full);
             transition: var(--transition);
@@ -194,7 +196,7 @@
             border: 1px solid transparent;
             text-align: center;
         }
-        .btn-sm { padding: 0.45rem 0.9rem; font-size: 0.8rem; }
+        .btn-sm { padding: 0.4rem 0.85rem; font-size: 0.775rem; }
         .btn-primary {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: #ffffff;
@@ -213,6 +215,15 @@
         .btn-secondary:hover {
             border-color: var(--primary);
             color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .btn-outline-primary {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1.5px solid var(--primary);
+        }
+        .btn-outline-primary:hover {
+            background-color: var(--primary-light);
             transform: translateY(-2px);
         }
         .btn-block { width: 100%; border-radius: var(--radius-md); }
@@ -286,7 +297,6 @@
             background-clip: text;
         }
         
-        /* LOGO BULAT PERFECT CIRCLE */
         .logo-img {
             height: 32px;
             width: 32px;
@@ -341,42 +351,139 @@
             border-bottom: 1px solid var(--border-subtle);
         }
 
-        /* HERO SECTION */
-        .hero { text-align: center; }
+        /* DESAIN DIKECILKAN & DITURUNKAN: HERO SECTION & HERO CARD */
+        .hero { 
+            text-align: center;
+            padding-top: 85px; /* Menurunkan posisi hero agar pas di bawah navbar */
+            padding-bottom: 2rem;
+        }
+        
+        .hero-wrapper {
+            max-width: 720px; /* Ukuran dibatasi agar card lebih mungil dan ramping */
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .hero-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 1.5px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem 1.25rem; /* Padding dalam diperkecil */
+            box-shadow: var(--shadow-card);
+            position: relative;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3.5px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+        }
+
         .badge {
             display: inline-flex;
             align-items: center;
             gap: 0.35rem;
-            padding: 0.3rem 0.85rem;
+            padding: 0.25rem 0.75rem;
             border-radius: var(--radius-full);
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 700;
             background-color: rgba(37, 99, 235, 0.08);
             color: var(--primary);
             border: 1px solid rgba(37, 99, 235, 0.18);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
         .hero-title {
-            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            font-size: clamp(1.3rem, 2.5vw, 1.85rem);
             font-weight: 800;
-            line-height: 1.22;
-            max-width: 780px;
-            margin: 0 auto 1rem auto;
+            line-height: 1.25;
+            max-width: 640px;
+            margin: 0 auto 0.65rem auto;
             letter-spacing: -0.02em;
             color: var(--text-main);
         }
         .hero-desc {
-            font-size: clamp(0.85rem, 1.3vw, 0.98rem);
+            font-size: clamp(0.78rem, 1.1vw, 0.875rem);
             color: var(--text-muted);
-            max-width: 600px;
-            margin: 0 auto 1.75rem auto;
-            line-height: 1.6;
+            max-width: 540px;
+            margin: 0 auto 1.15rem auto;
+            line-height: 1.55;
         }
+        
         .hero-buttons {
             display: flex;
             justify-content: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
             flex-wrap: wrap;
+            margin-bottom: 0.85rem;
+        }
+
+        /* TOMBOL LAYANAN KHUSUS */
+        .hero-layanan-action {
+            border-top: 1px dashed var(--border-subtle);
+            padding-top: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        /* HERO HIGHLIGHTS GRID (SUB-CARDS) DENGAN UKURAN LEBIH COMPACT */
+        .hero-highlights {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.65rem;
+        }
+
+        .highlight-item {
+            background: #ffffff;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 0.65rem 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-align: left;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .highlight-item:hover {
+            border-color: var(--border-accent);
+            transform: translateY(-2px);
+        }
+
+        .highlight-icon {
+            width: 30px;
+            height: 30px;
+            min-width: 30px;
+            border-radius: var(--radius-sm);
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+        }
+
+        .highlight-text h5 {
+            font-size: 0.775rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .highlight-text p {
+            font-size: 0.675rem;
+            color: var(--text-muted);
+            margin-top: 0.1rem;
         }
 
         /* ABOUT CARDS */
@@ -786,13 +893,14 @@
 
             .hero { 
                 min-height: calc(100vh - 60px);
-                padding-top: 60px; 
+                padding-top: 80px; 
                 padding-bottom: 2rem;
                 display: flex;
                 align-items: center;
                 justify-content: center;
             }
 
+            .hero-highlights { grid-template-columns: 1fr; gap: 0.5rem; }
             .about-info-grid { grid-template-columns: repeat(2, 1fr); }
             .founder-card { grid-template-columns: 190px 1fr; gap: 1.75rem; padding: 1.75rem; }
             .utility-grid { grid-template-columns: 1fr; }
@@ -805,6 +913,11 @@
             .nav-auth-desktop { display: none !important; }
             .mobile-toggle { display: block; }
             
+            .hero-card {
+                padding: 1.25rem 1rem;
+                border-radius: var(--radius-lg);
+            }
+
             .about-info-grid { 
                 grid-template-columns: 1fr; 
                 gap: 1.1rem;
@@ -841,6 +954,7 @@
             
             .hero-buttons { flex-direction: column; width: 100%; }
             .hero-buttons .btn { width: 100%; }
+            .hero-layanan-action .btn { width: 100%; }
         }
     </style>
 </head>
@@ -901,28 +1015,65 @@
         </div>
     </header>
 
-    <!-- HERO SECTION (HALAMAN PERTAMA DENGAN BACKGROUND KOTAK-KOTAK) -->
+    <!-- HERO SECTION (DITURUNKAN & DIKECILKAN KARTUNYA) -->
     <section id="hero" class="page-section hero bg-gradient-hero bg-grid-pattern">
         <div class="container">
-            <div class="badge reveal">
-                <i class="fas fa-shield-alt text-primary"></i> Mitra Digitalisasi UMKM Indonesia
-            </div>
-            
-            <h1 class="hero-title reveal">
-                Transformasi Digital UMKM Sederhana, Tepat, dan Efisien
-            </h1>
-            
-            <p class="hero-desc reveal">
-                Sitenexs adalah penyedia platform sistem berbasis web yang berdedikasi membantu pemilik usaha mikro, kecil, dan menengah merapikan operasional harian tanpa komplikasi teknis.
-            </p>
+            <div class="hero-wrapper reveal">
+                <!-- HERO MAIN CARD (COMPACT SIZE) -->
+                <div class="hero-card">
+                    <div class="badge">
+                        <i class="fas fa-shield-alt text-primary"></i> Mitra Digitalisasi UMKM Indonesia
+                    </div>
+                    
+                    <h1 class="hero-title">
+                        Transformasi Digital UMKM Sederhana, Tepat, dan Efisien
+                    </h1>
+                    
+                    <p class="hero-desc">
+                        Sitenexs adalah penyedia platform sistem berbasis web yang berdedikasi membantu pemilik usaha mikro, kecil, dan menengah merapikan operasional harian tanpa komplikasi teknis.
+                    </p>
 
-            <div class="hero-buttons reveal">
-                <a href="#tentang" class="btn btn-primary">
-                    <i class="fas fa-compass"></i> Pelajari Profil Bisnis
-                </a>
-                <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20bertanya%20mengenai%20layanan%20dan%20profil%20bisnis%20Sitenexs." target="_blank" class="btn btn-secondary">
-                    <i class="fab fa-whatsapp"></i> Konsultasi Langsung
-                </a>
+                    <div class="hero-buttons">
+                        <a href="#tentang" class="btn btn-primary">
+                            <i class="fas fa-compass"></i> Pelajari Profil Bisnis
+                        </a>
+                        <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20bertanya%20mengenai%20layanan%20dan%20profil%20bisnis%20Sitenexs." target="_blank" class="btn btn-secondary">
+                            <i class="fab fa-whatsapp text-accent"></i> Konsultasi Langsung
+                        </a>
+                    </div>
+
+                    <!-- TOMBOL MENUJU LAYANAN -->
+                    <div class="hero-layanan-action">
+                        <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">
+                            <i class="fas fa-layer-group"></i> Lihat Semua Layanan Sitenexs <i class="fas fa-arrow-right" style="font-size: 0.7rem; margin-left: 0.15rem;"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- HERO HIGHLIGHTS GRID (SUB-CARDS COMPACT) -->
+                <div class="hero-highlights">
+                    <div class="highlight-item">
+                        <div class="highlight-icon"><i class="fas fa-rocket"></i></div>
+                        <div class="highlight-text">
+                            <h5>Sistem Siap Pakai</h5>
+                            <p>Desain intuitif & langsung jalan</p>
+                        </div>
+                    </div>
+                    <div class="highlight-item">
+                        <div class="highlight-icon"><i class="fas fa-laptop-code"></i></div>
+                        <div class="highlight-text">
+                            <h5>Bebas Rumit Teknis</h5>
+                            <p>Tanpa instalasi perangkat berat</p>
+                        </div>
+                    </div>
+                    <div class="highlight-item">
+                        <div class="highlight-icon"><i class="fas fa-user-check"></i></div>
+                        <div class="highlight-text">
+                            <h5>Pendampingan Penuh</h5>
+                            <p>Dukungan teknis siap membimbing</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
