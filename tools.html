@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sitenexs Tools — Alat Konversi, Edit & Presentasi Gratis</title>
+    
+    <meta name="description" content="Sitenexs Tools: Ubah format gambar, resize foto, convert PDF, dan tampilkan presentasi UMKM.">
+    <meta name="author" content="Sitenexs">
+    
+    <link rel="icon" type="image/png" href="https://sitenexs.com/assets/logo/logo.png">
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- LIBRARIES -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <!-- LocalForage untuk menyimpan file ke LocalHost/IndexedDB agar tidak hilang saat Refresh -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+
+    <style>
+        /* ROOT CSS SITENEXS */
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --accent: #10b981;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-alt: #f1f5f9;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-subtle: #e2e8f0;
+            --border-medium: #cbd5e1;
+            --border-accent: #93c5fd;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+            --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.06);
+            --shadow-card: 0 16px 32px -12px rgba(37, 99, 235, 0.1);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.625rem;
+            --radius-lg: 0.875rem;
+            --radius-xl: 1.25rem;
+            --radius-full: 9999px;
+            --transition: all 0.25s ease-in-out;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; font-size: 14px; width: 100%; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-body); color: var(--text-main); line-height: 1.6; overflow-x: hidden; width: 100%; -webkit-font-smoothing: antialiased; }
+        a { text-decoration: none; color: inherit; }
+        button, input, select, textarea { font-family: inherit; }
+
+        .container { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 1.25rem; position: relative; z-index: 2; }
+        .bg-grid-pattern { background-image: linear-gradient(to right, rgba(37, 99, 235, 0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(37, 99, 235, 0.06) 1px, transparent 1px); background-size: 32px 32px; }
+        .bg-gradient-soft { background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%); }
+
+        .page-section { padding: 4.5rem 0; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.65rem 1.25rem; font-size: 0.85rem; font-weight: 700; border-radius: var(--radius-full); transition: var(--transition); cursor: pointer; border: 1px solid transparent; }
+        .btn-sm { padding: 0.45rem 0.6rem; font-size: 0.75rem; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3); }
+        .btn-secondary { background-color: #fff; color: var(--text-main); border: 1px solid var(--border-medium); box-shadow: var(--shadow-sm); }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+        .btn-danger { background-color: #fef2f2; color: #ef4444; border: 1px solid #fca5a5; }
+        .btn-danger:hover { background-color: #ef4444; color: #fff; transform: translateY(-2px); }
+        .btn-accent { background-color: #f0fdf4; color: var(--accent); border: 1px solid #86efac; }
+        .btn-accent:hover { background-color: var(--accent); color: #fff; transform: translateY(-2px); }
+        .btn-block { width: 100%; border-radius: var(--radius-md); }
+        
+        .section-header { text-align: center; max-width: 640px; margin: 0 auto 2.25rem auto; }
+        .section-subtitle { display: inline-block; font-size: 0.725rem; font-weight: 800; letter-spacing: 0.08em; color: var(--primary); text-transform: uppercase; margin-bottom: 0.4rem; padding: 0.25rem 0.85rem; background: rgba(37, 99, 235, 0.08); border-radius: var(--radius-full); border: 1px solid rgba(37, 99, 235, 0.18); }
+        .section-title { font-size: clamp(1.35rem, 2.2vw, 1.95rem); font-weight: 800; color: var(--text-main); line-height: 1.3; }
+        .section-desc { font-size: 0.875rem; color: var(--text-muted); margin-top: 0.4rem; }
+
+        /* Navbar */
+        #navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-subtle); }
+        .nav-container { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+        .logo { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 1.2rem; color: var(--text-main); }
+        .logo-text { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-img { height: 34px; width: 34px; border-radius: var(--radius-full); object-fit: cover; border: 1.5px solid var(--border-medium); }
+        .nav-links { display: flex; align-items: center; gap: 1.25rem; font-size: 0.85rem; font-weight: 600; }
+        .nav-links a { color: var(--text-muted); transition: var(--transition); }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+
+        /* Hero & Grid */
+        .hero { text-align: center; padding-top: 130px; padding-bottom: 3rem; }
+        .hero-title { font-size: clamp(1.6rem, 2.8vw, 2.2rem); font-weight: 800; color: var(--text-main); margin-bottom: 0.85rem; }
+
+        .solutions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 3rem; }
+        .tool-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm); transition: var(--transition); display: flex; flex-direction: column; cursor: pointer; text-align: left; }
+        .tool-card:hover, .tool-card.active { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow-md); background-color: var(--primary-light); }
+        .tool-icon { width: 42px; height: 42px; border-radius: var(--radius-md); background: #fff; border: 1px solid var(--border-accent); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin-bottom: 0.75rem; }
+        .tool-title { font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem; }
+        .tool-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; }
+
+        /* Workspace Area */
+        .workspace { background: #fff; border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-md); display: none; margin-bottom: 4rem; }
+        .workspace.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .upload-zone { border: 2px dashed var(--border-medium); border-radius: var(--radius-lg); padding: 3rem 2rem; text-align: center; background: var(--bg-alt); transition: var(--transition); cursor: pointer; margin-bottom: 1.5rem; }
+        .upload-zone:hover { border-color: var(--primary); background: var(--primary-light); }
+        .upload-zone i { font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem; }
+        .upload-zone h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .upload-zone p { font-size: 0.85rem; color: var(--text-muted); }
+        
+        /* Gambar Editor */
+        .editor-layout { display: grid; grid-template-columns: 1fr 300px; gap: 2rem; display: none; }
+        .preview-container { background: var(--bg-alt); border-radius: var(--radius-md); display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; min-height: 300px; border: 1px solid var(--border-subtle); padding: 1.5rem;}
+        .preview-container img { max-width: 100%; max-height: 400px; object-fit: contain; border-radius: 4px; box-shadow: var(--shadow-sm); background-image: repeating-linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), repeating-linear-gradient(45deg, #ccc 25%, #fff 25%, #fff 75%, #ccc 75%, #ccc); background-position: 0 0, 10px 10px; background-size: 20px 20px;}
+        .preview-info { margin-top: 1rem; font-size: 0.85rem; font-weight: 700; color: var(--primary); text-align: center; background: var(--primary-light); padding: 0.5rem 1rem; border-radius: var(--radius-full); border: 1px solid var(--border-accent); }
+        .controls-panel { background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 1.25rem; border-radius: var(--radius-md); }
+        .control-group { margin-bottom: 1rem; }
+        .control-group label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.35rem; color: var(--text-main); }
+        .form-control { width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); font-size: 0.825rem; }
+        .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+
+        /* PDF EDITOR UI */
+        .pdf-editor-layout { display: none; flex-direction: column; gap: 1.25rem; }
+        .pdf-toolbar { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm); }
+        .pdf-pages-scrollbox { max-height: 550px; overflow-y: auto; background: var(--bg-alt); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.5rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        .pdf-pages-scrollbox::-webkit-scrollbar { width: 8px; }
+        .pdf-pages-scrollbox::-webkit-scrollbar-track { background: var(--bg-card); border-radius: 8px; }
+        .pdf-pages-scrollbox::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 8px; }
+        .pdf-pages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; }
+        .pdf-page-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.85rem; text-align: center; box-shadow: var(--shadow-sm); position: relative; transition: var(--transition); display: flex; flex-direction: column; justify-content: space-between; }
+        .pdf-page-card.deleted { opacity: 0.5; filter: grayscale(100%); }
+        .pdf-page-canvas-wrapper { position: relative; width: 100%; margin-bottom: 0.75rem; border: 1px solid var(--border-subtle); border-radius: 4px; background: #fff; overflow: hidden; }
+        .pdf-page-canvas { width: 100%; display: block; }
+        .pdf-page-number { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.75rem; color: var(--text-main); }
+        .pdf-page-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+        .pdf-page-actions .btn-full { grid-column: 1 / -1; }
+        .deleted-overlay { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); color: #ef4444; font-size: 3rem; display: none; font-weight: 900; opacity: 0.8; z-index: 10; pointer-events: none;}
+        .pdf-page-card.deleted .deleted-overlay { display: block; }
+
+        /* PRESENTATION VIEWER UI */
+        .pres-layout { display: none; flex-direction: column; gap: 1.25rem; }
+        .pres-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .pres-thumb-card { border: 2px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; cursor: pointer; position: relative; aspect-ratio: 16/9; background: #000; display: flex; align-items: center; justify-content: center; transition: var(--transition); }
+        .pres-thumb-card:hover { border-color: var(--primary); transform: scale(1.02); }
+        .pres-thumb-card img, .pres-thumb-card video { max-width: 100%; max-height: 100%; object-fit: cover; }
+        .pres-thumb-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: #fff; font-size: 0.7rem; padding: 0.25rem; text-align: center; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;}
+        
+        .btn-delete-slide { position: absolute; top: 5px; right: 5px; background: rgba(239, 68, 68, 0.8); color: white; border: none; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.7rem; z-index: 5;}
+        .btn-delete-slide:hover { background: #ef4444; transform: scale(1.1); }
+
+        /* FULLSCREEN OVERLAY */
+        #presentation-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; z-index: 99999; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .pres-nav-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(255,255,255,0.15); color: white; border: none;
+            width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 10;
+        }
+        .pres-nav-btn:hover { background: rgba(255,255,255,0.4); }
+        .pres-nav-left { left: 20px; }
+        .pres-nav-right { right: 20px; }
+        
+        /* Tombol Bening Keluar Presentasi */
+        .pres-close-btn {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem; border-radius: 5px; font-weight: bold; cursor: pointer; z-index: 10;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            transition: 0.3s;
+        }
+        .pres-close-btn:hover { background: rgba(255, 0, 0, 0.8); color: #fff; border-color: transparent;}
+
+        .pres-content-box {
+            width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; position: relative;
+        }
+        .pres-content-box img, .pres-content-box video {
+            max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* Footer */
+        footer { background-color: #fff; padding: 2rem 0; border-top: 1px solid var(--border-subtle); text-align: center; font-size: 0.8rem; color: var(--text-muted); }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .editor-layout { grid-template-columns: 1fr; }
+            .pdf-toolbar, .pres-layout .pdf-toolbar { flex-direction: column; gap: 1rem; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <header id="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff&size=64&rounded=true';">
+                <span class="logo-text">Sitenexs Tools</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html"><i class="fas fa-home"></i> Beranda Utama</a>
+                <a href="#" class="active"><i class="fas fa-tools"></i> Alat Digital</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero bg-grid-pattern">
+        <div class="container">
+            <div class="badge">
+                <i class="fas fa-bolt text-primary"></i> 100% Proses Lokal & Aman
+            </div>
+            <h1 class="hero-title">Solusi Edit, Konversi & Presentasi UMKM</h1>
+            <p class="section-desc" style="max-width: 600px; margin: 0 auto;">
+                Ubah format, sesuaikan ukuran foto, edit dokumen PDF (Hapus, Ekstrak), dan tampilkan presentasi menawan layaknya proktor, langsung dari browser Anda.
+            </p>
+        </div>
+    </section>
+
+    <!-- MAIN TOOLS SECTION -->
+    <section class="page-section bg-gradient-soft" style="padding-top: 0;">
+        <div class="container">
+            
+            <!-- PILIHAN MENU TOOLS -->
+            <div class="solutions-grid" id="tools-menu">
+                <div class="tool-card active" onclick="switchTool('konversi-gambar', this)">
+                    <div class="tool-icon"><i class="fas fa-exchange-alt"></i></div>
+                    <h3 class="tool-title">Konversi Gambar</h3>
+                    <p class="tool-desc">Format PNG ↔ JPG ↔ WebP.</p>
+                </div>
+                <div class="tool-card" onclick="switchTool('resize-foto', this)">
+                    <div class="tool-icon"><i class="fas fa-compress-arrows-alt"></i></div>
+                    <h3 class="tool-title">Resize Foto</h3>
+                    <p class="tool-desc">Kecilkan resolusi (Width x Height).</p>
+                </div>
+                <div class="tool-card" onclick="switchTool('gambar-ke-pdf', this)">
+                    <div class="tool-icon"><i class="fas fa-file-pdf"></i></div>
+                    <h3 class="tool-title">Gambar ke PDF</h3>
+                    <p class="tool-desc">Gabung foto menjadi PDF A4.</p>
+                </div>
+                <div class="tool-card" onclick="switchTool('edit-pdf', this)">
+                    <div class="tool-icon"><i class="fas fa-edit"></i></div>
+                    <h3 class="tool-title">Editor PDF</h3>
+                    <p class="tool-desc">Hapus, Tambah & Ganti Halaman.</p>
+                </div>
+                <!-- TOOL BARU: PRESENTASI -->
+                <div class="tool-card" id="card-presentasi" onclick="switchTool('presentasi', this)">
+                    <div class="tool-icon" style="color: #f59e0b; border-color: #fcd34d;"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <h3 class="tool-title">Mode Presentasi</h3>
+                    <p class="tool-desc">Tampilkan File secara Fullscreen.</p>
+                </div>
+            </div>
+
+            <!-- WORKSPACE AREA -->
+            <div class="workspace active" id="workspace-area">
+                <div class="section-header" style="margin-bottom: 1.5rem; text-align: left;">
+                    <h2 class="section-title" id="ws-title" style="font-size: 1.5rem;">Konverter Gambar</h2>
+                    <p class="section-desc" id="ws-desc" style="margin-top: 0;">Upload gambar Anda untuk diproses.</p>
+                </div>
+
+                <!-- Input File Hidden -->
+                <input type="file" id="file-input" accept="image/png, image/jpeg, image/webp" style="display: none;">
+                
+                <!-- Upload Dropzone -->
+                <div class="upload-zone" id="dropzone" onclick="document.getElementById('file-input').click()">
+                    <i id="drop-icon" class="fas fa-cloud-upload-alt"></i>
+                    <h4 id="drop-title">Klik atau Tarik File Kesini</h4>
+                    <p id="drop-desc">Mendukung PNG, JPG, JPEG, WEBP (Max 10MB)</p>
+                </div>
+
+                <!-- 1. AREA EDITOR GAMBAR -->
+                <div class="editor-layout" id="editor-area">
+                    <div class="preview-container">
+                        <canvas id="process-canvas" style="display: none;"></canvas>
+                        <img id="image-preview" src="" alt="Live Preview">
+                        <div id="preview-info" class="preview-info">
+                            <i class="fas fa-spinner fa-spin"></i> Memuat...
+                        </div>
+                    </div>
+                    <div class="controls-panel">
+                        <div id="ctrl-konversi">
+                            <div class="control-group">
+                                <label>Ubah Ke Format:</label>
+                                <select id="format-select" class="form-control">
+                                    <option value="image/png">PNG (.png)</option>
+                                    <option value="image/jpeg">JPG/JPEG (.jpg)</option>
+                                    <option value="image/webp">WEBP (.webp)</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label>Kualitas Gambar:</label>
+                                <input type="range" id="quality-slider" min="0.1" max="1" step="0.1" value="0.9" style="width: 100%;">
+                                <div style="text-align: right; font-size: 0.75rem; color: var(--primary); font-weight: bold;" id="quality-val">90%</div>
+                            </div>
+                        </div>
+                        <div id="ctrl-resize" style="display: none;">
+                            <div class="control-group grid-2">
+                                <div><label>Lebar (px)</label><input type="number" id="resize-w" class="form-control"></div>
+                                <div><label>Tinggi (px)</label><input type="number" id="resize-h" class="form-control"></div>
+                            </div>
+                            <div class="control-group">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal; cursor: pointer;">
+                                    <input type="checkbox" id="keep-ratio" checked> Pertahankan Rasio
+                                </label>
+                            </div>
+                        </div>
+                        <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 1.5rem 0;">
+                        <button id="btn-process" class="btn btn-primary btn-block" style="margin-bottom: 0.75rem;"><i class="fas fa-download"></i> Unduh Hasil</button>
+                        <button class="btn btn-secondary btn-block btn-reset"><i class="fas fa-trash-alt"></i> Hapus File</button>
+                    </div>
+                </div>
+
+                <!-- 2. AREA EDITOR PDF -->
+                <div class="pdf-editor-layout" id="pdf-editor-area">
+                    <div class="pdf-toolbar">
+                        <div>
+                            <h3 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.2rem;"><i class="fas fa-file-pdf text-primary"></i> <span id="pdf-filename">document.pdf</span></h3>
+                            <p style="font-size: 0.8rem; color: var(--text-muted);" id="pdf-stats">Menganalisa dokumen...</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button id="btn-add-pdf-page" class="btn btn-accent"><i class="fas fa-plus"></i> Sisip Gambar</button>
+                            <input type="file" id="input-add-page" accept="image/png, image/jpeg, image/webp" style="display: none;">
+                            <button id="btn-save-pdf" class="btn btn-primary"><i class="fas fa-save"></i> Simpan PDF Baru</button>
+                            <button class="btn btn-secondary btn-reset"><i class="fas fa-times"></i> Tutup</button>
+                        </div>
+                    </div>
+                    <div class="pdf-pages-scrollbox">
+                        <div class="pdf-pages-grid" id="pdf-pages-grid"></div>
+                    </div>
+                </div>
+
+                <!-- 3. AREA PRESENTASI -->
+                <div class="pres-layout" id="pres-area">
+                    <div class="pdf-toolbar">
+                        <div>
+                            <h3 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.2rem;"><i class="fas fa-play-circle text-primary"></i> Manajemen Materi Presentasi</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-muted);" id="pres-stats">Total: 0 Materi ditambahkan.</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="btn btn-accent" onclick="document.getElementById('file-input').click()"><i class="fas fa-plus"></i> Tambah Materi</button>
+                            <button id="btn-start-pres" class="btn btn-primary"><i class="fas fa-tv"></i> Mulai Presentasi</button>
+                            <button class="btn btn-secondary" onclick="clearPresentation()"><i class="fas fa-trash-alt"></i> Bersihkan</button>
+                        </div>
+                    </div>
+                    <div class="pdf-pages-scrollbox" style="background: #fff;">
+                        <div class="pres-grid" id="pres-grid-container">
+                            <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 2rem;">Belum ada materi. Silakan upload Dokumen Utama, Gambar, atau Video.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FULLSCREEN PRESENTATION VIEWER -->
+    <div id="presentation-overlay">
+        <!-- Tombol Keluar Dibuat Bening -->
+        <button class="pres-close-btn" onclick="closePresentation()"><i class="fas fa-times"></i> Tutup</button>
+        
+        <button class="pres-nav-btn pres-nav-left" onclick="prevSlide()"><i class="fas fa-chevron-left"></i></button>
+        <button class="pres-nav-btn pres-nav-right" onclick="nextSlide()"><i class="fas fa-chevron-right"></i></button>
+        
+        <div class="pres-content-box" id="pres-content-box">
+            <!-- Image / Video / PPT Placeholder will be injected here -->
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Sitenexs Tools. Dikembangkan oleh <a href="https://founder.sitenexs.com" style="color: var(--primary); font-weight: 700;">Syafaat Nuryadi</a>.</p>
+        </div>
+    </footer>
+
+    <!-- LOGIK JAVASCRIPT APLIKASI -->
+    <script>
+        // ==========================================
+        // STATE MANAJEMEN UMUM
+        // ==========================================
+        let currentMode = 'konversi-gambar'; 
+        let originalFile = null;
+        let debounceTimer;
+
+        // Image State
+        let currentImage = new Image();
+        let originalWidth = 0; let originalHeight = 0;
+
+        // PDF Editor State
+        let pdfArrayBuffer = null; let pdfDocInstance = null; let pdfPagesState = [];
+
+        // Presentation State (Akan disimpan di IndexedDB via localForage)
+        let presSlides = []; // { type: 'image'|'video'|'ppt', data: Base64/Blob, name: string }
+        let currentSlideIndex = 0;
+
+        // Elements
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file-input');
+        const wsTitle = document.getElementById('ws-title');
+        const wsDesc = document.getElementById('ws-desc');
+        const dropIcon = document.getElementById('drop-icon');
+        const dropTitle = document.getElementById('drop-title');
+        const dropDesc = document.getElementById('drop-desc');
+
+        const editorArea = document.getElementById('editor-area');
+        const imagePreview = document.getElementById('image-preview');
+        const previewInfo = document.getElementById('preview-info');
+        const canvas = document.getElementById('process-canvas');
+        const ctx = canvas.getContext('2d');
+        const formatSelect = document.getElementById('format-select');
+        const qualitySlider = document.getElementById('quality-slider');
+        const resizeW = document.getElementById('resize-w');
+        const resizeH = document.getElementById('resize-h');
+        const keepRatio = document.getElementById('keep-ratio');
+
+        const pdfEditorArea = document.getElementById('pdf-editor-area');
+        const pdfPagesGrid = document.getElementById('pdf-pages-grid');
+        
+        const presArea = document.getElementById('pres-area');
+        const presGrid = document.getElementById('pres-grid-container');
+        const presOverlay = document.getElementById('presentation-overlay');
+        const presContentBox = document.getElementById('pres-content-box');
+
+        // ==========================================
+        // AUTO-LOAD PRESENTATION DATA PADA SAAT REFRESH (LocalForage)
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            localforage.getItem('sitenexs_presentation').then(function(value) {
+                if (value && value.length > 0) {
+                    presSlides = value;
+                    // Aktifkan mode presentasi jika ada file tersimpan
+                    document.getElementById('card-presentasi').click();
+                }
+            }).catch(function(err) {
+                console.log("LocalForage load error:", err);
+            });
+        });
+
+        async function savePresentationState() {
+            try {
+                await localforage.setItem('sitenexs_presentation', presSlides);
+            } catch (err) {
+                console.error("Gagal menyimpan ke penyimpanan lokal:", err);
+            }
+        }
+
+
+        // ==========================================
+        // 1. NAVIGASI MENU TOOLS
+        // ==========================================
+        window.switchTool = function(mode, element) {
+            currentMode = mode;
+            document.querySelectorAll('.tool-card').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+
+            document.getElementById('ctrl-konversi').style.display = 'none';
+            document.getElementById('ctrl-resize').style.display = 'none';
+            editorArea.style.display = 'none';
+            pdfEditorArea.style.display = 'none';
+            presArea.style.display = 'none';
+            fileInput.removeAttribute('multiple');
+            
+            if(mode !== 'presentasi') resetWorkspace();
+
+            if(mode === 'konversi-gambar') {
+                wsTitle.innerText = "Konverter Gambar Universal"; wsDesc.innerText = "Ubah gambar PNG ke WebP, WebP ke PNG, JPG ke PNG, dll.";
+                document.getElementById('ctrl-konversi').style.display = 'block';
+                fileInput.accept = "image/png, image/jpeg, image/webp";
+                setupDropzoneImage();
+            } 
+            else if(mode === 'resize-foto') {
+                wsTitle.innerText = "Ubah Ukuran Foto (Resize)"; wsDesc.innerText = "Kecilkan dimensi pixel gambar tanpa memotong.";
+                document.getElementById('ctrl-resize').style.display = 'block';
+                fileInput.accept = "image/png, image/jpeg, image/webp";
+                setupDropzoneImage();
+            }
+            else if(mode === 'gambar-ke-pdf') {
+                wsTitle.innerText = "Gambar ke PDF"; wsDesc.innerText = "Ubah file gambar Anda menjadi dokumen PDF berstandar A4.";
+                fileInput.accept = "image/png, image/jpeg, image/webp";
+                setupDropzoneImage();
+            }
+            else if(mode === 'edit-pdf') {
+                wsTitle.innerText = "Editor File PDF"; wsDesc.innerText = "Hapus halaman, sisip gambar, dan ganti halaman salah.";
+                fileInput.accept = "application/pdf";
+                dropIcon.className = "fas fa-file-pdf"; dropTitle.innerText = "Pilih File PDF Anda"; dropDesc.innerText = "Mendukung dokumen .pdf (Max 15MB)";
+            }
+            else if(mode === 'presentasi') {
+                wsTitle.innerText = "Mode Presentasi Layar Penuh"; wsDesc.innerText = "Mendukung PDF, Gambar, Video, dan File PPT Anda.";
+                
+                // MENGATUR AGAR FILE PICKER MEMBUKA DOKUMEN UTAMA BUKAN SEKADAR GALERI FOTO
+                fileInput.accept = ".pdf,.ppt,.pptx,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,video/mp4,image/jpeg,image/png";
+                fileInput.setAttribute('multiple', 'true');
+                
+                dropIcon.className = "fas fa-chalkboard-teacher"; dropTitle.innerText = "Masukkan Dokumen / Materi"; dropDesc.innerText = "Mendukung PDF, PPT, Gambar, Video (Bisa pilih banyak file sekaligus).";
+                
+                if(presSlides.length > 0) {
+                    dropzone.style.display = 'none';
+                    presArea.style.display = 'flex';
+                    renderPresentationGrid();
+                } else {
+                    dropzone.style.display = 'block';
+                }
+            }
+        };
+
+        function setupDropzoneImage() {
+            dropIcon.className = "fas fa-cloud-upload-alt"; dropTitle.innerText = "Klik atau Tarik File Kesini"; dropDesc.innerText = "Mendukung PNG, JPG, JPEG, WEBP (Max 10MB)";
+        }
+
+        // ==========================================
+        // 2. INPUT FILE (ROUTING)
+        // ==========================================
+        fileInput.addEventListener('change', function(e) {
+            const files = e.target.files;
+            if(!files || files.length === 0) return;
+
+            if (currentMode === 'presentasi') {
+                handlePresentationUpload(files);
+            } 
+            else if (currentMode === 'edit-pdf') {
+                if(files[0].type !== 'application/pdf') { alert("Tolong upload file PDF!"); return; }
+                dropzone.style.display = 'none'; pdfEditorArea.style.display = 'flex';
+                document.getElementById('pdf-filename').innerText = files[0].name;
+                loadPDFData(files[0]);
+            } 
+            else {
+                if(!files[0].type.startsWith('image/')) { alert("Tolong upload file Gambar!"); return; }
+                originalFile = files[0];
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    currentImage.onload = function() {
+                        originalWidth = currentImage.width; originalHeight = currentImage.height;
+                        resizeW.value = originalWidth; resizeH.value = originalHeight;
+                        dropzone.style.display = 'none'; editorArea.style.display = 'grid';
+                        updateLivePreview();
+                    }
+                    currentImage.src = evt.target.result;
+                }
+                reader.readAsDataURL(files[0]);
+            }
+        });
+
+        // ==========================================
+        // LOGIKA EDITOR GAMBAR
+        // ==========================================
+        function updateLivePreview() {
+            if(!originalFile || !currentImage.src || currentMode === 'edit-pdf' || currentMode === 'presentasi') return;
+            let targetWidth = originalWidth; let targetHeight = originalHeight;
+            if(currentMode === 'resize-foto') {
+                targetWidth = parseInt(resizeW.value) || originalWidth; targetHeight = parseInt(resizeH.value) || originalHeight;
+            }
+            canvas.width = targetWidth; canvas.height = targetHeight;
+            if(formatSelect.value === 'image/jpeg' || currentMode === 'gambar-ke-pdf') {
+                ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            ctx.drawImage(currentImage, 0, 0, targetWidth, targetHeight);
+
+            let format = (currentMode === 'konversi-gambar') ? formatSelect.value : originalFile.type;
+            let quality = parseFloat(qualitySlider.value);
+            if (currentMode !== 'konversi-gambar') quality = 1.0; 
+            
+            const dataURL = canvas.toDataURL(format, quality);
+            imagePreview.src = dataURL;
+            const base64Length = dataURL.length - (dataURL.indexOf(',') + 1);
+            const sizeInKB = ((Math.ceil(base64Length * 3 / 4)) / 1024).toFixed(1);
+            let formatName = currentMode === 'gambar-ke-pdf' ? "PDF" : format.split('/')[1].toUpperCase();
+            previewInfo.innerHTML = `<i class="fas fa-info-circle"></i> ${targetWidth} x ${targetHeight} px &nbsp;|&nbsp; Est ${formatName}: ${sizeInKB} KB`;
+        }
+
+        formatSelect.addEventListener('change', updateLivePreview);
+        qualitySlider.addEventListener('input', function() {
+            document.getElementById('quality-val').innerText = Math.round(this.value * 100) + '%';
+            clearTimeout(debounceTimer); debounceTimer = setTimeout(updateLivePreview, 100);
+        });
+        resizeW.addEventListener('input', function() {
+            if(keepRatio.checked && originalWidth > 0) resizeH.value = Math.round(this.value * (originalHeight / originalWidth)) || '';
+            updateLivePreview();
+        });
+        resizeH.addEventListener('input', function() {
+            if(keepRatio.checked && originalHeight > 0) resizeW.value = Math.round(this.value * (originalWidth / originalHeight)) || '';
+            updateLivePreview();
+        });
+        document.getElementById('btn-process').addEventListener('click', function() {
+            if(!originalFile) return;
+            if(currentMode === 'gambar-ke-pdf') {
+                const { jsPDF } = window.jspdf;
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+                const ratio = canvas.width / canvas.height;
+                let rW = pdf.internal.pageSize.getWidth(); let rH = rW / ratio;
+                if (rH > pdf.internal.pageSize.getHeight()) { rH = pdf.internal.pageSize.getHeight(); rW = rH * ratio; }
+                pdf.addImage(imgData, 'JPEG', (pdf.internal.pageSize.getWidth() - rW)/2, (pdf.internal.pageSize.getHeight() - rH)/2, rW, rH);
+                pdf.save(`${originalFile.name.split('.')[0]}_sitenexs.pdf`);
+            } else {
+                const format = (currentMode === 'konversi-gambar') ? formatSelect.value : originalFile.type;
+                let ext = format.split('/')[1] === "jpeg" ? "jpg" : format.split('/')[1];
+                triggerDownload(imagePreview.src, `${originalFile.name.split('.')[0]}_sitenexs.${ext}`);
+            }
+        });
+
+
+        // ==========================================
+        // LOGIKA EDITOR PDF
+        // ==========================================
+        function loadPDFData(file) {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                pdfArrayBuffer = e.target.result; pdfPagesState = []; 
+                try {
+                    pdfDocInstance = await pdfjsLib.getDocument(new Uint8Array(pdfArrayBuffer)).promise;
+                    for(let i = 1; i <= pdfDocInstance.numPages; i++) {
+                        pdfPagesState.push({ id: 'orig_'+i, type: 'original', originalIndex: i, deleted: false, replacedWithImage: null });
+                    }
+                    renderPDFUI();
+                } catch (err) { pdfPagesGrid.innerHTML = `<div style="grid-column: 1/-1; color: red;">Gagal membaca file PDF.</div>`; }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function renderPDFUI() {
+            pdfPagesGrid.innerHTML = '';
+            let validCount = 0;
+            for (let i = 0; i < pdfPagesState.length; i++) {
+                const page = pdfPagesState[i];
+                if (!page.deleted) validCount++;
+
+                const card = document.createElement('div'); card.className = `pdf-page-card ${page.deleted ? 'deleted' : ''}`;
+                card.innerHTML = `<div class="deleted-overlay"><i class="fas fa-trash"></i></div>
+                                  <div class="pdf-page-canvas-wrapper"><canvas class="pdf-page-canvas" id="cvs_${page.id}"></canvas></div>
+                                  <div class="pdf-page-number">${page.type === 'original' ? 'Halaman '+page.originalIndex : 'Halaman Baru'} ${page.replacedWithImage ? '(Diganti)' : ''}</div>`;
+                
+                const actions = document.createElement('div'); actions.className = 'pdf-page-actions';
+                
+                const fileInp = document.createElement('input'); fileInp.type = 'file'; fileInp.accept = 'image/*'; fileInp.style.display = 'none';
+                fileInp.onchange = (e) => {
+                    const r = new FileReader(); r.onload = (evt) => { page.replacedWithImage = evt.target.result; renderPDFUI(); };
+                    r.readAsDataURL(e.target.files[0]);
+                };
+                card.appendChild(fileInp);
+
+                const btnRep = document.createElement('button'); btnRep.className = 'btn btn-secondary btn-sm'; btnRep.innerHTML = '<i class="fas fa-sync-alt"></i> Ganti';
+                btnRep.onclick = () => fileInp.click(); actions.appendChild(btnRep);
+
+                const btnDel = document.createElement('button'); btnDel.className = page.deleted ? 'btn btn-secondary btn-sm' : 'btn btn-danger btn-sm';
+                btnDel.innerHTML = page.deleted ? '<i class="fas fa-undo"></i> Batal' : '<i class="fas fa-trash-alt"></i> Hapus';
+                btnDel.onclick = () => { page.deleted = !page.deleted; renderPDFUI(); };
+                actions.appendChild(btnDel);
+
+                card.appendChild(actions); pdfPagesGrid.appendChild(card);
+
+                // Render Canvas
+                const cvs = card.querySelector('canvas');
+                if(page.replacedWithImage) drawBase64ToCanvas(page.replacedWithImage, cvs);
+                else if(page.type === 'original') renderPdfJsPage(page.originalIndex, cvs);
+                else drawBase64ToCanvas(page.addedImageFile, cvs);
+            }
+            document.getElementById('pdf-stats').innerText = `Disimpan: ${validCount} | Dihapus: ${pdfPagesState.filter(p=>p.deleted).length}`;
+        }
+
+        async function renderPdfJsPage(pageNum, canvas) {
+            const p = await pdfDocInstance.getPage(pageNum); const v = p.getViewport({ scale: 0.8 });
+            canvas.width = v.width; canvas.height = v.height;
+            await p.render({ canvasContext: canvas.getContext('2d'), viewport: v }).promise;
+        }
+
+        function drawBase64ToCanvas(dataUrl, canvas) {
+            const img = new Image();
+            img.onload = () => {
+                canvas.width = 400; canvas.height = 400 * (img.height / img.width);
+                const ctx = canvas.getContext('2d'); ctx.fillStyle = "#fff"; ctx.fillRect(0,0,canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            };
+            img.src = dataUrl;
+        }
+
+        document.getElementById('btn-add-pdf-page').addEventListener('click', () => document.getElementById('input-add-page').click());
+        document.getElementById('input-add-page').addEventListener('change', function(e) {
+            if(!e.target.files[0]) return;
+            const r = new FileReader(); r.onload = (evt) => {
+                pdfPagesState.push({ id: 'added_'+Date.now(), type: 'added', originalIndex: null, deleted: false, replacedWithImage: null, addedImageFile: evt.target.result });
+                renderPDFUI();
+            };
+            r.readAsDataURL(e.target.files[0]); e.target.value = "";
+        });
+
+        document.getElementById('btn-save-pdf').addEventListener('click', async function() {
+            const btn = this; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...'; btn.disabled = true;
+            try {
+                const { PDFDocument } = window.PDFLib; const newPdfDoc = await PDFDocument.create();
+                let originalPdfDoc = pdfArrayBuffer ? await PDFDocument.load(pdfArrayBuffer) : null;
+                for (let i = 0; i < pdfPagesState.length; i++) {
+                    const p = pdfPagesState[i]; if (p.deleted) continue;
+                    if (p.type === 'original' && !p.replacedWithImage) {
+                        const [cPage] = await newPdfDoc.copyPages(originalPdfDoc, [p.originalIndex - 1]);
+                        newPdfDoc.addPage(cPage);
+                    } else {
+                        const imgUrl = p.replacedWithImage || p.addedImageFile;
+                        let imgE = (imgUrl.includes('jpeg')||imgUrl.includes('jpg')) ? await newPdfDoc.embedJpg(imgUrl) : await newPdfDoc.embedPng(imgUrl);
+                        const d = imgE.scale(1); const t = newPdfDoc.addPage([d.width, d.height]);
+                        t.drawImage(imgE, { x: 0, y: 0, width: d.width, height: d.height });
+                    }
+                }
+                const blob = new Blob([await newPdfDoc.save()], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                triggerDownload(url, `${document.getElementById('pdf-filename').innerText.split('.')[0]}_Edited.pdf`);
+                setTimeout(() => URL.revokeObjectURL(url), 5000);
+            } catch (err) { alert("Terjadi kesalahan teknis saat menyimpan PDF."); } 
+            finally { btn.innerHTML = '<i class="fas fa-save"></i> Simpan PDF Baru'; btn.disabled = false; }
+        });
+
+
+        // ==========================================
+        // LOGIKA PRESENTASI (Fitur Baru + IndexedDB + Rendering PPT Dummy)
+        // ==========================================
+        async function handlePresentationUpload(files) {
+            dropzone.style.display = 'none';
+            presArea.style.display = 'flex';
+            presGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem;"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><p>Memproses Materi Presentasi...</p></div>`;
+            
+            for(let i=0; i<files.length; i++) {
+                const file = files[i];
+                if(file.type.startsWith('image/')) {
+                    const src = await fileToDataUrl(file);
+                    presSlides.push({ type: 'image', data: src, name: file.name });
+                } 
+                else if(file.type.startsWith('video/')) {
+                    // Simpan tipe Blob langsung ke IndexedDB agar tidak expired
+                    presSlides.push({ type: 'video', data: file, name: file.name });
+                }
+                else if(file.type === 'application/pdf') {
+                    // Extract all pages from PDF to images for presentation
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument(new Uint8Array(arrayBuffer)).promise;
+                    for(let p=1; p<=pdf.numPages; p++) {
+                        const page = await pdf.getPage(p);
+                        const viewport = page.getViewport({ scale: 2.0 }); // High res rendering
+                        const canvas = document.createElement('canvas');
+                        canvas.width = viewport.width; canvas.height = viewport.height;
+                        const context = canvas.getContext('2d');
+                        context.fillStyle = "#fff"; context.fillRect(0,0,canvas.width, canvas.height);
+                        await page.render({ canvasContext: context, viewport: viewport }).promise;
+                        
+                        presSlides.push({ 
+                            type: 'image', 
+                            data: canvas.toDataURL('image/jpeg', 0.9), 
+                            name: `${file.name} - Hal ${p}` 
+                        });
+                    }
+                }
+                else if(file.name.endsWith('.ppt') || file.name.endsWith('.pptx')) {
+                    // Browser murni tanpa server pihak ketiga tidak dapat merender animasi PPT
+                    // Beri placeholder cerdas untuk ditangani saat full screen
+                    presSlides.push({
+                        type: 'ppt',
+                        data: null,
+                        name: file.name
+                    });
+                }
+            }
+            
+            savePresentationState();
+            renderPresentationGrid();
+            fileInput.value = ""; // reset input
+        }
+
+        function fileToDataUrl(file) {
+            return new Promise((resolve) => {
+                const r = new FileReader(); r.onload = (e) => resolve(e.target.result); r.readAsDataURL(file);
+            });
+        }
+
+        function renderPresentationGrid() {
+            presGrid.innerHTML = '';
+            document.getElementById('pres-stats').innerText = `Total: ${presSlides.length} Slide Tersimpan.`;
+            
+            if(presSlides.length === 0) {
+                presGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:gray; padding:2rem;">Materi presentasi kosong.</div>`;
+                return;
+            }
+
+            presSlides.forEach((slide, index) => {
+                const card = document.createElement('div');
+                card.className = 'pres-thumb-card';
+                card.onclick = () => openPresentation(index);
+
+                // Tambahkan Tombol Hapus Slide Spesifik
+                const btnDel = document.createElement('button');
+                btnDel.className = 'btn-delete-slide';
+                btnDel.innerHTML = '<i class="fas fa-times"></i>';
+                btnDel.onclick = (e) => {
+                    e.stopPropagation(); // Mencegah terbukanya presentasi saat tombol silang diklik
+                    presSlides.splice(index, 1);
+                    savePresentationState();
+                    renderPresentationGrid();
+                };
+                card.appendChild(btnDel);
+
+                if(slide.type === 'image') {
+                    const img = document.createElement('img'); img.src = slide.data; card.appendChild(img);
+                } else if(slide.type === 'video') {
+                    const url = URL.createObjectURL(slide.data);
+                    card.innerHTML += `<video src="${url}#t=0.1" preload="metadata"></video><i class="fas fa-play-circle" style="position:absolute; font-size:2rem; color:rgba(255,255,255,0.8);"></i>`;
+                } else if(slide.type === 'ppt') {
+                    card.style.background = '#f97316';
+                    card.innerHTML += `<i class="fas fa-file-powerpoint" style="font-size:2.5rem; color:#fff;"></i>`;
+                }
+                
+                const label = document.createElement('div');
+                label.className = 'pres-thumb-label'; label.innerText = slide.name;
+                card.appendChild(label);
+                
+                presGrid.appendChild(card);
+            });
+        }
+
+        window.clearPresentation = function() {
+            if(confirm("Apakah Anda yakin ingin menghapus semua materi presentasi yang tersimpan?")) {
+                presSlides = [];
+                savePresentationState();
+                renderPresentationGrid();
+                dropzone.style.display = 'block';
+                presArea.style.display = 'none';
+            }
+        }
+
+        // --- FULLSCREEN VIEWER LOGIC ---
+        document.getElementById('btn-start-pres').addEventListener('click', () => {
+            if(presSlides.length > 0) openPresentation(0);
+            else alert("Tambahkan materi presentasi terlebih dahulu.");
+        });
+
+        function openPresentation(index) {
+            currentSlideIndex = index;
+            presOverlay.style.display = 'flex';
+            
+            // Force Fullscreen & Landscape API saat diperbesar
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().then(() => {
+                    if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock('landscape').catch((e) => console.log("Rotasi terkunci otomatis: ", e));
+                    }
+                }).catch(()=>{});
+            }
+
+            showSlide(currentSlideIndex);
+        }
+
+        window.closePresentation = function() {
+            presOverlay.style.display = 'none';
+            presContentBox.innerHTML = ''; // Stop video
+            if (document.exitFullscreen && document.fullscreenElement) {
+                document.exitFullscreen().catch(()=>{});
+            }
+        }
+
+        window.prevSlide = function() {
+            if(currentSlideIndex > 0) { currentSlideIndex--; showSlide(currentSlideIndex); }
+        }
+        window.nextSlide = function() {
+            if(currentSlideIndex < presSlides.length - 1) { currentSlideIndex++; showSlide(currentSlideIndex); }
+        }
+
+        function showSlide(index) {
+            presContentBox.innerHTML = '';
+            const slide = presSlides[index];
+            
+            if(slide.type === 'image') {
+                presContentBox.innerHTML = `<img src="${slide.data}">`;
+            } else if(slide.type === 'video') {
+                const url = URL.createObjectURL(slide.data);
+                presContentBox.innerHTML = `<video src="${url}" controls autoplay></video>`;
+            } else if(slide.type === 'ppt') {
+                presContentBox.innerHTML = `
+                <div style="color:white; text-align:center; font-family:'Plus Jakarta Sans', sans-serif; background:rgba(255,255,255,0.05); padding:3rem; border-radius:1rem;">
+                    <i class="fas fa-file-powerpoint" style="font-size:6rem; color:#f97316; margin-bottom:1rem;"></i>
+                    <h2 style="font-size:1.5rem; margin-bottom:0.5rem;">${slide.name}</h2>
+                    <p style="color:#ccc; font-size:0.9rem; max-width:400px; margin:0 auto;">Catatan: Browser tidak memiliki sistem internal untuk memutar animasi file PowerPoint secara utuh.<br><br><b>Saran untuk presentasi maksimal:</b> Silakan <i>Save As PDF</i> file presentasi Anda melalui aplikasi MS PowerPoint, lalu unggah file PDF-nya kembali ke aplikasi ini.</p>
+                </div>`;
+            }
+        }
+
+        // SWIPE GESTURE FOR PRESENTATION
+        let touchStartX = 0; let touchEndX = 0;
+        presOverlay.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+        presOverlay.addEventListener('touchend', e => { 
+            touchEndX = e.changedTouches[0].screenX; 
+            if (touchEndX < touchStartX - 50) nextSlide();
+            if (touchEndX > touchStartX + 50) prevSlide();
+        });
+        
+        // KEYBOARD NAVIGATION
+        document.addEventListener('keydown', (e) => {
+            if(presOverlay.style.display === 'flex') {
+                if(e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+                if(e.key === 'ArrowLeft') prevSlide();
+                if(e.key === 'Escape') closePresentation();
+            }
+        });
+
+
+        // ==========================================
+        // UTILITAS GLOBAL
+        // ==========================================
+        function triggerDownload(url, filename) {
+            const link = document.createElement('a'); link.download = filename; link.href = url;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+
+        document.querySelectorAll('.btn-reset').forEach(btn => btn.addEventListener('click', resetWorkspace));
+        function resetWorkspace() {
+            fileInput.value = ""; originalFile = null;
+            imagePreview.src = ""; editorArea.style.display = 'none';
+            pdfArrayBuffer = null; pdfDocInstance = null; pdfPagesState = [];
+            pdfPagesGrid.innerHTML = ''; pdfEditorArea.style.display = 'none';
+            dropzone.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
