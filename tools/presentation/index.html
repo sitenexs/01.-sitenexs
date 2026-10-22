@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sitenexs Tools — Mode Presentasi Layar Penuh</title>
+    
+    <meta name="description" content="Sitenexs Tools: Tampilkan presentasi PDF, Gambar, dan Video secara layar penuh (fullscreen) langsung dari browser Anda tanpa aplikasi tambahan.">
+    <meta name="author" content="Sitenexs">
+    <link rel="icon" type="image/png" href="https://sitenexs.com/assets/logo/logo.png">
+
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- LIBRARIES KHUSUS PRESENTASI -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+
+    <style>
+        /* ROOT CSS SITENEXS */
+        :root {
+            --primary: #2563eb; --primary-dark: #1d4ed8; --primary-light: #eff6ff;
+            --accent: #10b981; --bg-body: #f8fafc; --bg-card: #ffffff; --bg-alt: #f1f5f9;
+            --text-main: #0f172a; --text-muted: #64748b; --border-subtle: #e2e8f0;
+            --border-medium: #cbd5e1; --border-accent: #93c5fd;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+            --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+            --radius-sm: 0.375rem; --radius-md: 0.625rem; --radius-lg: 0.875rem;
+            --radius-xl: 1.25rem; --radius-full: 9999px; --transition: all 0.25s ease-in-out;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; font-size: 14px; width: 100%; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-body); color: var(--text-main); line-height: 1.6; overflow-x: hidden; width: 100%; -webkit-font-smoothing: antialiased; }
+        a { text-decoration: none; color: inherit; }
+        button, input { font-family: inherit; }
+
+        .container { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 1.25rem; position: relative; z-index: 2; }
+        .bg-grid-pattern { background-image: linear-gradient(to right, rgba(37, 99, 235, 0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(37, 99, 235, 0.06) 1px, transparent 1px); background-size: 32px 32px; }
+        .bg-gradient-soft { background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%); }
+
+        .page-section { padding: 4.5rem 0; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.65rem 1.25rem; font-size: 0.85rem; font-weight: 700; border-radius: var(--radius-full); transition: var(--transition); cursor: pointer; border: 1px solid transparent; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3); }
+        .btn-secondary { background-color: #fff; color: var(--text-main); border: 1px solid var(--border-medium); box-shadow: var(--shadow-sm); }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+        .btn-accent { background-color: #f0fdf4; color: var(--accent); border: 1px solid #86efac; }
+        .btn-accent:hover { background-color: var(--accent); color: #fff; transform: translateY(-2px); }
+
+        /* Navbar */
+        #navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-subtle); }
+        .nav-container { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+        .logo { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 1.2rem; color: var(--text-main); }
+        .logo-text { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-img { height: 34px; width: 34px; border-radius: var(--radius-full); object-fit: cover; border: 1.5px solid var(--border-medium); }
+        .nav-links { display: flex; align-items: center; gap: 1.25rem; font-size: 0.85rem; font-weight: 600; }
+        .nav-links a { color: var(--text-muted); transition: var(--transition); }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+
+        /* Hero */
+        .hero { text-align: center; padding-top: 120px; padding-bottom: 2rem; }
+        .hero-title { font-size: clamp(1.6rem, 2.8vw, 2.2rem); font-weight: 800; color: var(--text-main); margin-bottom: 0.85rem; }
+
+        /* Back Button */
+        .back-nav { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--primary); font-weight: 700; font-size: 0.85rem; margin-bottom: 1.5rem; text-decoration: none; }
+        .back-nav:hover { text-decoration: underline; }
+
+        /* Workspace Area */
+        .workspace { background: #fff; border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-md); margin-bottom: 4rem; }
+        
+        .upload-zone { border: 2px dashed var(--border-medium); border-radius: var(--radius-lg); padding: 3rem 2rem; text-align: center; background: var(--bg-alt); transition: var(--transition); cursor: pointer; margin-bottom: 1.5rem; }
+        .upload-zone:hover { border-color: var(--primary); background: var(--primary-light); }
+        .upload-zone i { font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem; }
+        .upload-zone h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .upload-zone p { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* PRESENTATION VIEWER UI */
+        .pres-layout { display: none; flex-direction: column; gap: 1.25rem; }
+        .pdf-toolbar { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm); }
+        .pdf-pages-scrollbox { max-height: 550px; overflow-y: auto; background: #fff; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.5rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        
+        .pres-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1.25rem; }
+        .pres-thumb-card { border: 2px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; cursor: pointer; position: relative; aspect-ratio: 16/9; background: #000; display: flex; align-items: center; justify-content: center; transition: var(--transition); box-shadow: var(--shadow-sm);}
+        .pres-thumb-card:hover { border-color: var(--primary); transform: scale(1.02); box-shadow: var(--shadow-md);}
+        .pres-thumb-card img, .pres-thumb-card video { max-width: 100%; max-height: 100%; object-fit: cover; }
+        .pres-thumb-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.75); color: #fff; font-size: 0.75rem; font-weight:600; padding: 0.4rem; text-align: center; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;}
+        
+        .btn-delete-slide { position: absolute; top: 5px; right: 5px; background: rgba(239, 68, 68, 0.8); color: white; border: none; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; z-index: 5;}
+        .btn-delete-slide:hover { background: #ef4444; transform: scale(1.1); }
+
+        /* FULLSCREEN OVERLAY */
+        #presentation-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; z-index: 99999; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .pres-nav-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(255,255,255,0.15); color: white; border: none;
+            width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 10;
+        }
+        .pres-nav-btn:hover { background: rgba(255,255,255,0.4); }
+        .pres-nav-left { left: 20px; }
+        .pres-nav-right { right: 20px; }
+        
+        .pres-close-btn {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem; border-radius: 5px; font-weight: bold; cursor: pointer; z-index: 10;
+            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); transition: 0.3s;
+        }
+        .pres-close-btn:hover { background: rgba(255, 0, 0, 0.8); color: #fff; border-color: transparent;}
+
+        .pres-content-box { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; position: relative; }
+        .pres-content-box img, .pres-content-box video { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        footer { background-color: #fff; padding: 2rem 0; border-top: 1px solid var(--border-subtle); text-align: center; font-size: 0.8rem; color: var(--text-muted); }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .pdf-toolbar { flex-direction: column; gap: 1rem; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <header id="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff&size=64&rounded=true';">
+                <span class="logo-text">Sitenexs Tools</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html"><i class="fas fa-home"></i> Beranda Utama</a>
+                <a href="tools.html" class="active"><i class="fas fa-tools"></i> Alat Digital</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero bg-grid-pattern">
+        <div class="container">
+            <h1 class="hero-title">Sistem Penampil Presentasi UMKM</h1>
+            <p class="section-desc" style="max-width: 600px; margin: 0 auto;">
+                Ubah layar Anda menjadi proyektor digital. Dukungan format PDF, Video, dan Gambar secara *fullscreen* dan tersimpan aman di browser Anda tanpa perlu internet.
+            </p>
+        </div>
+    </section>
+
+    <!-- WORKSPACE SECTION -->
+    <section class="page-section bg-gradient-soft" style="padding-top: 0;">
+        <div class="container">
+            
+            <a href="tools.html" class="back-nav"><i class="fas fa-arrow-left"></i> Kembali ke Menu Sitenexs Tools</a>
+
+            <div class="workspace">
+                <!-- Input File Multiple -->
+                <input type="file" id="file-input" multiple accept=".pdf,.ppt,.pptx,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,video/mp4,image/jpeg,image/png" style="display: none;">
+                
+                <!-- Upload Dropzone -->
+                <div class="upload-zone" id="dropzone" onclick="document.getElementById('file-input').click()">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <h4>Masukkan Dokumen / Materi Presentasi</h4>
+                    <p>Mendukung PDF, Gambar, Video (Bisa pilih banyak file sekaligus).</p>
+                </div>
+
+                <!-- AREA PRESENTASI -->
+                <div class="pres-layout" id="pres-area">
+                    <div class="pdf-toolbar">
+                        <div>
+                            <h3 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.2rem;"><i class="fas fa-play-circle text-primary"></i> Manajemen Materi Presentasi</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-muted);" id="pres-stats">Total: 0 Materi ditambahkan.</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="btn btn-accent" onclick="document.getElementById('file-input').click()"><i class="fas fa-plus"></i> Tambah Materi</button>
+                            <button id="btn-start-pres" class="btn btn-primary"><i class="fas fa-tv"></i> Mulai Presentasi</button>
+                            <button class="btn btn-secondary" onclick="clearPresentation()"><i class="fas fa-trash-alt"></i> Bersihkan</button>
+                        </div>
+                    </div>
+                    <div class="pdf-pages-scrollbox">
+                        <div class="pres-grid" id="pres-grid-container">
+                            <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 2rem;">Belum ada materi. Silakan upload Dokumen, Gambar, atau Video.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FULLSCREEN PRESENTATION VIEWER -->
+    <div id="presentation-overlay">
+        <button class="pres-close-btn" onclick="closePresentation()"><i class="fas fa-times"></i> Tutup</button>
+        <button class="pres-nav-btn pres-nav-left" onclick="prevSlide()"><i class="fas fa-chevron-left"></i></button>
+        <button class="pres-nav-btn pres-nav-right" onclick="nextSlide()"><i class="fas fa-chevron-right"></i></button>
+        
+        <div class="pres-content-box" id="pres-content-box"></div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Sitenexs Tools. Dikembangkan oleh <a href="https://founder.sitenexs.com" style="color: var(--primary); font-weight: 700;">Syafaat Nuryadi</a>.</p>
+        </div>
+    </footer>
+
+    <!-- LOGIK JAVASCRIPT APLIKASI -->
+    <script>
+        // STATE MANAJEMEN PRESENTASI
+        let presSlides = []; 
+        let currentSlideIndex = 0;
+
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file-input');
+        const presArea = document.getElementById('pres-area');
+        const presGrid = document.getElementById('pres-grid-container');
+        const presOverlay = document.getElementById('presentation-overlay');
+        const presContentBox = document.getElementById('pres-content-box');
+
+        // AUTO-LOAD DATA DARI LOCALFORAGE (Menghindari hilang saat refresh)
+        document.addEventListener('DOMContentLoaded', () => {
+            localforage.getItem('sitenexs_presentation').then(function(value) {
+                if (value && value.length > 0) {
+                    presSlides = value;
+                    dropzone.style.display = 'none';
+                    presArea.style.display = 'flex';
+                    renderPresentationGrid();
+                }
+            }).catch(function(err) {
+                console.log("LocalForage error:", err);
+            });
+        });
+
+        async function savePresentationState() {
+            try {
+                await localforage.setItem('sitenexs_presentation', presSlides);
+            } catch (err) {
+                console.error("Gagal simpan lokal:", err);
+            }
+        }
+
+        // PROSES UPLOAD FILE MULTIPLE
+        fileInput.addEventListener('change', async function(e) {
+            const files = e.target.files;
+            if(!files || files.length === 0) return;
+
+            dropzone.style.display = 'none';
+            presArea.style.display = 'flex';
+            presGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem;"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><p>Memproses Materi Presentasi...</p></div>`;
+            
+            for(let i=0; i<files.length; i++) {
+                const file = files[i];
+                if(file.type.startsWith('image/')) {
+                    const src = await fileToDataUrl(file);
+                    presSlides.push({ type: 'image', data: src, name: file.name });
+                } 
+                else if(file.type.startsWith('video/')) {
+                    presSlides.push({ type: 'video', data: file, name: file.name });
+                }
+                else if(file.type === 'application/pdf') {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument(new Uint8Array(arrayBuffer)).promise;
+                    for(let p=1; p<=pdf.numPages; p++) {
+                        const page = await pdf.getPage(p);
+                        const viewport = page.getViewport({ scale: 2.0 });
+                        const canvas = document.createElement('canvas');
+                        canvas.width = viewport.width; canvas.height = viewport.height;
+                        const context = canvas.getContext('2d');
+                        context.fillStyle = "#fff"; context.fillRect(0,0,canvas.width, canvas.height);
+                        await page.render({ canvasContext: context, viewport: viewport }).promise;
+                        
+                        presSlides.push({ 
+                            type: 'image', 
+                            data: canvas.toDataURL('image/jpeg', 0.9), 
+                            name: `${file.name} - Hal ${p}` 
+                        });
+                    }
+                }
+                else if(file.name.endsWith('.ppt') || file.name.endsWith('.pptx')) {
+                    presSlides.push({ type: 'ppt', data: null, name: file.name });
+                }
+            }
+            
+            savePresentationState();
+            renderPresentationGrid();
+            fileInput.value = ""; 
+        });
+
+        function fileToDataUrl(file) {
+            return new Promise((resolve) => {
+                const r = new FileReader(); r.onload = (e) => resolve(e.target.result); r.readAsDataURL(file);
+            });
+        }
+
+        // RENDER UI GRID MATERI
+        function renderPresentationGrid() {
+            presGrid.innerHTML = '';
+            document.getElementById('pres-stats').innerText = `Total: ${presSlides.length} Slide Tersimpan.`;
+            
+            if(presSlides.length === 0) {
+                presGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:gray; padding:2rem;">Materi presentasi kosong.</div>`;
+                return;
+            }
+
+            presSlides.forEach((slide, index) => {
+                const card = document.createElement('div');
+                card.className = 'pres-thumb-card';
+                card.onclick = () => openPresentation(index);
+
+                // Tombol Hapus Slide
+                const btnDel = document.createElement('button');
+                btnDel.className = 'btn-delete-slide';
+                btnDel.innerHTML = '<i class="fas fa-times"></i>';
+                btnDel.onclick = (e) => {
+                    e.stopPropagation(); 
+                    presSlides.splice(index, 1);
+                    savePresentationState();
+                    renderPresentationGrid();
+                };
+                card.appendChild(btnDel);
+
+                // Thumbnail
+                if(slide.type === 'image') {
+                    card.innerHTML += `<img src="${slide.data}">`;
+                } else if(slide.type === 'video') {
+                    const url = URL.createObjectURL(slide.data);
+                    card.innerHTML += `<video src="${url}#t=0.1" preload="metadata"></video><i class="fas fa-play-circle" style="position:absolute; font-size:2rem; color:rgba(255,255,255,0.8);"></i>`;
+                } else if(slide.type === 'ppt') {
+                    card.style.background = '#f97316';
+                    card.innerHTML += `<i class="fas fa-file-powerpoint" style="font-size:2.5rem; color:#fff;"></i>`;
+                }
+                
+                card.innerHTML += `<div class="pres-thumb-label">${slide.name}</div>`;
+                presGrid.appendChild(card);
+            });
+        }
+
+        window.clearPresentation = function() {
+            if(confirm("Apakah Anda yakin ingin menghapus semua materi presentasi yang tersimpan?")) {
+                presSlides = [];
+                savePresentationState();
+                renderPresentationGrid();
+                dropzone.style.display = 'block';
+                presArea.style.display = 'none';
+            }
+        }
+
+        // LOGIKA PENAMPIL LAYAR PENUH (FULLSCREEN)
+        document.getElementById('btn-start-pres').addEventListener('click', () => {
+            if(presSlides.length > 0) openPresentation(0);
+            else alert("Tambahkan materi presentasi terlebih dahulu.");
+        });
+
+        function openPresentation(index) {
+            currentSlideIndex = index;
+            presOverlay.style.display = 'flex';
+            
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().then(() => {
+                    if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock('landscape').catch(()=>{});
+                    }
+                }).catch(()=>{});
+            }
+
+            showSlide(currentSlideIndex);
+        }
+
+        window.closePresentation = function() {
+            presOverlay.style.display = 'none';
+            presContentBox.innerHTML = ''; 
+            if (document.exitFullscreen && document.fullscreenElement) {
+                document.exitFullscreen().catch(()=>{});
+            }
+        }
+
+        window.prevSlide = function() {
+            if(currentSlideIndex > 0) { currentSlideIndex--; showSlide(currentSlideIndex); }
+        }
+        window.nextSlide = function() {
+            if(currentSlideIndex < presSlides.length - 1) { currentSlideIndex++; showSlide(currentSlideIndex); }
+        }
+
+        function showSlide(index) {
+            presContentBox.innerHTML = '';
+            const slide = presSlides[index];
+            
+            if(slide.type === 'image') {
+                presContentBox.innerHTML = `<img src="${slide.data}">`;
+            } else if(slide.type === 'video') {
+                const url = URL.createObjectURL(slide.data);
+                presContentBox.innerHTML = `<video src="${url}" controls autoplay></video>`;
+            } else if(slide.type === 'ppt') {
+                presContentBox.innerHTML = `
+                <div style="color:white; text-align:center; font-family:'Plus Jakarta Sans', sans-serif; background:rgba(255,255,255,0.05); padding:3rem; border-radius:1rem;">
+                    <i class="fas fa-file-powerpoint" style="font-size:6rem; color:#f97316; margin-bottom:1rem;"></i>
+                    <h2 style="font-size:1.5rem; margin-bottom:0.5rem;">${slide.name}</h2>
+                    <p style="color:#ccc; font-size:0.9rem; max-width:400px; margin:0 auto;">Catatan: File PPT asli tidak dapat dirender animasi oleh browser secara offline.<br><br><b>Tips:</b> Lakukan <i>Save As PDF</i> dari aplikasi PowerPoint Anda, lalu unggah file PDF-nya kesini agar setiap halamannya tampil sempurna.</p>
+                </div>`;
+            }
+        }
+
+        // KONTROL SENTUH (SWIPE)
+        let touchStartX = 0; let touchEndX = 0;
+        presOverlay.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+        presOverlay.addEventListener('touchend', e => { 
+            touchEndX = e.changedTouches[0].screenX; 
+            if (touchEndX < touchStartX - 50) nextSlide();
+            if (touchEndX > touchStartX + 50) prevSlide();
+        });
+        
+        // KONTROL KEYBOARD
+        document.addEventListener('keydown', (e) => {
+            if(presOverlay.style.display === 'flex') {
+                if(e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+                if(e.key === 'ArrowLeft') prevSlide();
+                if(e.key === 'Escape') closePresentation();
+            }
+        });
+    </script>
+</body>
+</html>
