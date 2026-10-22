@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sitenexs Tools — Editor PDF Gratis</title>
+    
+    <meta name="description" content="Sitenexs Tools: Hapus halaman PDF, ganti halaman yang salah dengan gambar baru, atau sisipkan halaman tambahan secara lokal dan aman.">
+    <meta name="author" content="Sitenexs">
+    <link rel="icon" type="image/png" href="https://sitenexs.com/assets/logo/logo.png">
+
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- LIBRARIES UNTUK PDF EDITOR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+    <script>
+        // Set worker untuk PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+
+    <style>
+        /* ROOT CSS SITENEXS */
+        :root {
+            --primary: #2563eb; --primary-dark: #1d4ed8; --primary-light: #eff6ff;
+            --accent: #10b981; --bg-body: #f8fafc; --bg-card: #ffffff; --bg-alt: #f1f5f9;
+            --text-main: #0f172a; --text-muted: #64748b; --border-subtle: #e2e8f0;
+            --border-medium: #cbd5e1; --border-accent: #93c5fd;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+            --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.06);
+            --radius-sm: 0.375rem; --radius-md: 0.625rem; --radius-lg: 0.875rem;
+            --radius-xl: 1.25rem; --radius-full: 9999px; --transition: all 0.25s ease-in-out;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; font-size: 14px; width: 100%; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-body); color: var(--text-main); line-height: 1.6; overflow-x: hidden; width: 100%; -webkit-font-smoothing: antialiased; }
+        a { text-decoration: none; color: inherit; }
+        button, input { font-family: inherit; }
+
+        .container { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 1.25rem; position: relative; z-index: 2; }
+        .bg-grid-pattern { background-image: linear-gradient(to right, rgba(37, 99, 235, 0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(37, 99, 235, 0.06) 1px, transparent 1px); background-size: 32px 32px; }
+        .bg-gradient-soft { background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%); }
+
+        .page-section { padding: 4.5rem 0; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.65rem 1.25rem; font-size: 0.85rem; font-weight: 700; border-radius: var(--radius-full); transition: var(--transition); cursor: pointer; border: 1px solid transparent; }
+        .btn-sm { padding: 0.45rem 0.6rem; font-size: 0.75rem; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3); }
+        .btn-secondary { background-color: #fff; color: var(--text-main); border: 1px solid var(--border-medium); box-shadow: var(--shadow-sm); }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+        .btn-danger { background-color: #fef2f2; color: #ef4444; border: 1px solid #fca5a5; }
+        .btn-danger:hover { background-color: #ef4444; color: #fff; transform: translateY(-2px); }
+        .btn-accent { background-color: #f0fdf4; color: var(--accent); border: 1px solid #86efac; }
+        .btn-accent:hover { background-color: var(--accent); color: #fff; transform: translateY(-2px); }
+        
+        .section-header { text-align: center; max-width: 640px; margin: 0 auto 2.25rem auto; }
+        .section-title { font-size: clamp(1.35rem, 2.2vw, 1.95rem); font-weight: 800; color: var(--text-main); line-height: 1.3; }
+        .section-desc { font-size: 0.875rem; color: var(--text-muted); margin-top: 0.4rem; }
+
+        /* Navbar */
+        #navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-subtle); }
+        .nav-container { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+        .logo { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 1.2rem; color: var(--text-main); }
+        .logo-text { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-img { height: 34px; width: 34px; border-radius: var(--radius-full); object-fit: cover; border: 1.5px solid var(--border-medium); }
+        .nav-links { display: flex; align-items: center; gap: 1.25rem; font-size: 0.85rem; font-weight: 600; }
+        .nav-links a { color: var(--text-muted); transition: var(--transition); }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+
+        /* Hero */
+        .hero { text-align: center; padding-top: 120px; padding-bottom: 2rem; }
+        .hero-title { font-size: clamp(1.6rem, 2.8vw, 2.2rem); font-weight: 800; color: var(--text-main); margin-bottom: 0.85rem; }
+
+        /* Workspace Area */
+        .workspace { background: #fff; border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-md); margin-bottom: 4rem; }
+        
+        .upload-zone { border: 2px dashed var(--border-medium); border-radius: var(--radius-lg); padding: 3rem 2rem; text-align: center; background: var(--bg-alt); transition: var(--transition); cursor: pointer; margin-bottom: 1.5rem; }
+        .upload-zone:hover { border-color: var(--primary); background: var(--primary-light); }
+        .upload-zone i { font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem; }
+        .upload-zone h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .upload-zone p { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* PDF EDITOR UI */
+        .pdf-editor-layout { display: none; flex-direction: column; gap: 1.25rem; }
+        .pdf-toolbar { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm); }
+        .pdf-pages-scrollbox { max-height: 600px; overflow-y: auto; background: var(--bg-alt); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.5rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        .pdf-pages-scrollbox::-webkit-scrollbar { width: 8px; }
+        .pdf-pages-scrollbox::-webkit-scrollbar-track { background: var(--bg-card); border-radius: 8px; }
+        .pdf-pages-scrollbox::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 8px; }
+        .pdf-pages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; }
+        
+        .pdf-page-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.85rem; text-align: center; box-shadow: var(--shadow-sm); position: relative; transition: var(--transition); display: flex; flex-direction: column; justify-content: space-between; }
+        .pdf-page-card.deleted { opacity: 0.5; filter: grayscale(100%); }
+        .pdf-page-canvas-wrapper { position: relative; width: 100%; margin-bottom: 0.75rem; border: 1px solid var(--border-subtle); border-radius: 4px; background: #fff; overflow: hidden; }
+        .pdf-page-canvas { width: 100%; display: block; }
+        .pdf-page-number { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.75rem; color: var(--text-main); }
+        
+        .pdf-page-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+        .pdf-page-actions .btn-full { grid-column: 1 / -1; }
+        .deleted-overlay { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); color: #ef4444; font-size: 3rem; display: none; font-weight: 900; opacity: 0.8; z-index: 10; pointer-events: none;}
+        .pdf-page-card.deleted .deleted-overlay { display: block; }
+
+        /* Back Button */
+        .back-nav { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--primary); font-weight: 700; font-size: 0.85rem; margin-bottom: 1.5rem; text-decoration: none; }
+        .back-nav:hover { text-decoration: underline; }
+
+        footer { background-color: #fff; padding: 2rem 0; border-top: 1px solid var(--border-subtle); text-align: center; font-size: 0.8rem; color: var(--text-muted); }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .pdf-toolbar { flex-direction: column; gap: 1rem; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <header id="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff&size=64&rounded=true';">
+                <span class="logo-text">Sitenexs Tools</span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html"><i class="fas fa-home"></i> Beranda Utama</a>
+                <a href="tools.html" class="active"><i class="fas fa-tools"></i> Alat Digital</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero bg-grid-pattern">
+        <div class="container">
+            <h1 class="hero-title">Editor Dokumen PDF</h1>
+            <p class="section-desc" style="max-width: 600px; margin: 0 auto;">
+                Hapus halaman yang tidak perlu, ganti halaman yang salah (typo), atau sisipkan gambar tambahan menjadi halaman baru di dalam PDF Anda dengan aman.
+            </p>
+        </div>
+    </section>
+
+    <!-- WORKSPACE SECTION -->
+    <section class="page-section bg-gradient-soft" style="padding-top: 0;">
+        <div class="container">
+            
+            <a href="tools.html" class="back-nav"><i class="fas fa-arrow-left"></i> Kembali ke Menu Sitenexs Tools</a>
+
+            <div class="workspace">
+                <input type="file" id="file-input" accept="application/pdf" style="display: none;">
+                
+                <!-- Upload Dropzone -->
+                <div class="upload-zone" id="dropzone" onclick="document.getElementById('file-input').click()">
+                    <i class="fas fa-file-pdf"></i>
+                    <h4>Pilih File PDF Anda</h4>
+                    <p>Mendukung dokumen .pdf (Max 15MB)</p>
+                </div>
+
+                <!-- AREA EDITOR PDF -->
+                <div class="pdf-editor-layout" id="pdf-editor-area">
+                    <div class="pdf-toolbar">
+                        <div>
+                            <h3 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.2rem;">
+                                <i class="fas fa-file-pdf text-primary"></i> <span id="pdf-filename">document.pdf</span>
+                            </h3>
+                            <p style="font-size: 0.8rem; color: var(--text-muted);" id="pdf-stats">Menganalisa dokumen...</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button id="btn-add-pdf-page" class="btn btn-accent"><i class="fas fa-plus"></i> Sisip Gambar Baru</button>
+                            <input type="file" id="input-add-page" accept="image/png, image/jpeg, image/webp" style="display: none;">
+                            
+                            <button id="btn-save-pdf" class="btn btn-primary"><i class="fas fa-save"></i> Simpan & Unduh PDF</button>
+                            <button class="btn btn-secondary" onclick="resetWorkspace()"><i class="fas fa-trash-alt"></i> Bersihkan File</button>
+                        </div>
+                    </div>
+                    
+                    <div class="pdf-pages-scrollbox">
+                        <div class="pdf-pages-grid" id="pdf-pages-grid">
+                            <!-- Injeksi JS -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Sitenexs Tools. Dikembangkan oleh <a href="https://founder.sitenexs.com" style="color: var(--primary); font-weight: 700;">Syafaat Nuryadi</a>.</p>
+        </div>
+    </footer>
+
+    <!-- LOGIK JAVASCRIPT -->
+    <script>
+        let originalFile = null;
+        let pdfArrayBuffer = null; 
+        let pdfDocInstance = null; 
+        let pdfPagesState = [];
+
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file-input');
+        const pdfEditorArea = document.getElementById('pdf-editor-area');
+        const pdfPagesGrid = document.getElementById('pdf-pages-grid');
+        const inputAddPage = document.getElementById('input-add-page');
+
+        fileInput.addEventListener('change', function(e) {
+            const files = e.target.files;
+            if(!files || files.length === 0) return;
+            if(files[0].type !== 'application/pdf') { alert("Tolong upload file berformat PDF!"); return; }
+            
+            originalFile = files[0];
+            dropzone.style.display = 'none'; 
+            pdfEditorArea.style.display = 'flex';
+            document.getElementById('pdf-filename').innerText = originalFile.name;
+            loadPDFData(originalFile);
+        });
+
+        function loadPDFData(file) {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                pdfArrayBuffer = e.target.result; 
+                pdfPagesState = []; 
+                try {
+                    pdfDocInstance = await pdfjsLib.getDocument(new Uint8Array(pdfArrayBuffer)).promise;
+                    for(let i = 1; i <= pdfDocInstance.numPages; i++) {
+                        pdfPagesState.push({ id: 'orig_'+i, type: 'original', originalIndex: i, deleted: false, replacedWithImage: null });
+                    }
+                    renderPDFUI();
+                } catch (err) { 
+                    pdfPagesGrid.innerHTML = `<div style="grid-column: 1/-1; color: red;">Gagal membaca file PDF. Pastikan file tidak rusak atau dilindungi password.</div>`; 
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function renderPDFUI() {
+            pdfPagesGrid.innerHTML = '';
+            let validCount = 0;
+            
+            for (let i = 0; i < pdfPagesState.length; i++) {
+                const page = pdfPagesState[i];
+                if (!page.deleted) validCount++;
+
+                const card = document.createElement('div'); 
+                card.className = `pdf-page-card ${page.deleted ? 'deleted' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="deleted-overlay"><i class="fas fa-trash"></i></div>
+                    <div class="pdf-page-canvas-wrapper"><canvas class="pdf-page-canvas" id="cvs_${page.id}"></canvas></div>
+                    <div class="pdf-page-number">${page.type === 'original' ? 'Halaman '+page.originalIndex : 'Halaman Baru'} ${page.replacedWithImage ? '(Diganti)' : ''}</div>
+                `;
+                
+                const actions = document.createElement('div'); 
+                actions.className = 'pdf-page-actions';
+                
+                // Fitur Ganti Gambar
+                const fileInp = document.createElement('input'); 
+                fileInp.type = 'file'; fileInp.accept = 'image/*'; fileInp.style.display = 'none';
+                fileInp.onchange = (e) => {
+                    const r = new FileReader(); 
+                    r.onload = (evt) => { page.replacedWithImage = evt.target.result; renderPDFUI(); };
+                    r.readAsDataURL(e.target.files[0]);
+                };
+                card.appendChild(fileInp);
+
+                const btnRep = document.createElement('button'); 
+                btnRep.className = 'btn btn-secondary btn-sm'; 
+                btnRep.innerHTML = '<i class="fas fa-sync-alt"></i> Ganti';
+                btnRep.onclick = () => fileInp.click(); 
+                actions.appendChild(btnRep);
+
+                // Fitur Hapus
+                const btnDel = document.createElement('button'); 
+                btnDel.className = page.deleted ? 'btn btn-secondary btn-sm' : 'btn btn-danger btn-sm';
+                btnDel.innerHTML = page.deleted ? '<i class="fas fa-undo"></i> Batal' : '<i class="fas fa-trash-alt"></i> Hapus';
+                btnDel.onclick = () => { 
+                    if(!page.deleted && validCount <= 1) {
+                        alert("Minimal harus menyisakan 1 halaman."); return;
+                    }
+                    page.deleted = !page.deleted; 
+                    renderPDFUI(); 
+                };
+                actions.appendChild(btnDel);
+
+                card.appendChild(actions); 
+                pdfPagesGrid.appendChild(card);
+
+                // Render Thumbnail Canvas
+                const cvs = card.querySelector('canvas');
+                if(page.replacedWithImage) drawBase64ToCanvas(page.replacedWithImage, cvs);
+                else if(page.type === 'original') renderPdfJsPage(page.originalIndex, cvs);
+                else drawBase64ToCanvas(page.addedImageFile, cvs);
+            }
+            
+            document.getElementById('pdf-stats').innerText = `Total Disimpan: ${validCount} Hal | Dihapus: ${pdfPagesState.filter(p=>p.deleted).length} Hal`;
+        }
+
+        async function renderPdfJsPage(pageNum, canvas) {
+            const p = await pdfDocInstance.getPage(pageNum); 
+            const v = p.getViewport({ scale: 0.8 });
+            canvas.width = v.width; 
+            canvas.height = v.height;
+            await p.render({ canvasContext: canvas.getContext('2d'), viewport: v }).promise;
+        }
+
+        function drawBase64ToCanvas(dataUrl, canvas) {
+            const img = new Image();
+            img.onload = () => {
+                canvas.width = 400; 
+                canvas.height = 400 * (img.height / img.width);
+                const ctx = canvas.getContext('2d'); 
+                ctx.fillStyle = "#fff"; ctx.fillRect(0,0,canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            };
+            img.src = dataUrl;
+        }
+
+        // Fitur Tambah / Sisip Gambar
+        document.getElementById('btn-add-pdf-page').addEventListener('click', () => inputAddPage.click());
+        inputAddPage.addEventListener('change', function(e) {
+            if(!e.target.files[0]) return;
+            const r = new FileReader(); 
+            r.onload = (evt) => {
+                pdfPagesState.push({ 
+                    id: 'added_'+Date.now(), type: 'added', originalIndex: null, 
+                    deleted: false, replacedWithImage: null, addedImageFile: evt.target.result 
+                });
+                renderPDFUI();
+                const scrollbox = document.querySelector('.pdf-pages-scrollbox');
+                setTimeout(() => scrollbox.scrollTop = scrollbox.scrollHeight, 100);
+            };
+            r.readAsDataURL(e.target.files[0]); 
+            e.target.value = "";
+        });
+
+        // Simpan Hasil Akhir
+        document.getElementById('btn-save-pdf').addEventListener('click', async function() {
+            const btn = this; 
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...'; 
+            btn.disabled = true;
+            
+            try {
+                const { PDFDocument } = window.PDFLib; 
+                const newPdfDoc = await PDFDocument.create();
+                let originalPdfDoc = pdfArrayBuffer ? await PDFDocument.load(pdfArrayBuffer) : null;
+                
+                for (let i = 0; i < pdfPagesState.length; i++) {
+                    const p = pdfPagesState[i]; 
+                    if (p.deleted) continue;
+                    
+                    if (p.type === 'original' && !p.replacedWithImage) {
+                        const [cPage] = await newPdfDoc.copyPages(originalPdfDoc, [p.originalIndex - 1]);
+                        newPdfDoc.addPage(cPage);
+                    } else {
+                        const imgUrl = p.replacedWithImage || p.addedImageFile;
+                        let imgE = (imgUrl.includes('jpeg')||imgUrl.includes('jpg')) ? await newPdfDoc.embedJpg(imgUrl) : await newPdfDoc.embedPng(imgUrl);
+                        const d = imgE.scale(1); 
+                        const t = newPdfDoc.addPage([d.width, d.height]);
+                        t.drawImage(imgE, { x: 0, y: 0, width: d.width, height: d.height });
+                    }
+                }
+                
+                const blob = new Blob([await newPdfDoc.save()], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                
+                const link = document.createElement('a'); 
+                link.download = `${originalFile.name.split('.')[0]}_Sitenexs_Edited.pdf`; 
+                link.href = url;
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                
+                setTimeout(() => URL.revokeObjectURL(url), 5000);
+            } catch (err) { 
+                alert("Terjadi kesalahan teknis saat menyimpan PDF."); 
+            } finally { 
+                btn.innerHTML = '<i class="fas fa-save"></i> Simpan & Unduh PDF'; 
+                btn.disabled = false; 
+            }
+        });
+
+        function resetWorkspace() {
+            fileInput.value = ""; originalFile = null;
+            pdfArrayBuffer = null; pdfDocInstance = null; pdfPagesState = [];
+            pdfPagesGrid.innerHTML = ''; pdfEditorArea.style.display = 'none';
+            dropzone.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
