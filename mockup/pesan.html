@@ -44,13 +44,12 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
-            font-size: 0.75rem; /* Base font diperkecil */
-            padding-bottom: 4.5rem; /* Ruang untuk floating bar */
+            font-size: 0.75rem;
+            padding-bottom: 4.5rem;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
         }
 
-        /* Container: Padding diperkecil agar pas di frame mockup */
         .container {
             width: 100%;
             max-width: 1024px;
@@ -95,7 +94,7 @@
         .order-meta-box {
             background: linear-gradient(135deg, var(--primary-light) 0%, #ffffff 100%);
             border: 1px solid #fed7aa; padding: 0.6rem; border-radius: var(--radius-md);
-            display: grid; grid-template-columns: 1fr; gap: 0.5rem; /* Stack di mockup sempit */
+            display: grid; grid-template-columns: 1fr; gap: 0.5rem;
             margin-bottom: 0.85rem; box-shadow: var(--shadow-sm);
         }
         .order-meta-box div {
@@ -105,7 +104,7 @@
         .order-meta-box span { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; }
         .order-meta-box input {
             background: transparent; border: none; font-weight: 700; color: var(--primary);
-            font-size: 0.8rem; pointer-events: none; text-align: right; width: 80px;
+            font-size: 0.8rem; text-align: right; width: 120px; outline: none;
         }
 
         /* --- FILTER & SEARCH --- */
@@ -146,13 +145,13 @@
         }
         .cat-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-        /* --- MENU GRID: Dibuat lebih kecil & pas 2 kolom --- */
+        /* --- MENU GRID --- */
         .section-title { font-size: 0.9rem; margin-bottom: 0.75rem; font-weight: 700; }
         
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Wajib 2 kolom agar tidak terlalu besar */
-            gap: 0.5rem; /* Gap diperkecil */
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
         }
 
         .menu-card {
@@ -209,7 +208,20 @@
         }
         .modal.show .modal-content { transform: scale(1); }
 
-        .modal-subscribe-content { text-align: center; }
+        /* --- QUANTITY CONTROLLER DI MODAL --- */
+        .qty-control {
+            display: flex; align-items: center; justify-content: center; gap: 1rem; margin: 1rem 0;
+        }
+        .qty-btn {
+            width: 32px; height: 32px; border-radius: var(--radius-full); border: 1px solid var(--border-subtle);
+            background: #fff; font-size: 0.85rem; font-weight: 700; color: var(--primary); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: var(--transition);
+        }
+        .qty-btn:hover { background: var(--primary-light); border-color: var(--primary); }
+        .qty-input {
+            width: 50px; text-align: center; font-size: 0.9rem; font-weight: 700;
+            border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.3rem; outline: none;
+        }
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -233,11 +245,11 @@
         <div class="order-meta-box">
             <div>
                 <span><i class="fas fa-chair" style="color:var(--primary)"></i> Meja</span>
-                <input type="text" value="01" readonly>
+                <input type="text" id="input-meja" value="01" placeholder="No. Meja">
             </div>
             <div>
                 <span><i class="fas fa-user" style="color:var(--primary)"></i> Nama</span>
-                <input type="text" value="Nama kamu" readonly>
+                <input type="text" id="input-nama" value="Tamu" placeholder="Nama Anda">
             </div>
         </div>
 
@@ -272,15 +284,15 @@
 
     <!-- Floating Bottom Bar -->
     <div class="floating-actions">
-        <button class="call-waiter-btn" onclick="openModal('subscribe-modal')">
+        <button class="call-waiter-btn" onclick="openSubscribeModal()">
             <i class="fas fa-bell"></i> Pelayan
         </button>
         <div style="display: flex; align-items: center; gap: 0.5rem;">
             <div style="text-align: right;">
-                <span style="font-size: 0.6rem; color: var(--text-muted); display: block;">1 Item</span>
-                <span style="font-size: 0.8rem; font-weight: 700; color: var(--primary);">Rp 25.000</span>
+                <span id="cart-count" style="font-size: 0.6rem; color: var(--text-muted); display: block;">0 Item</span>
+                <span id="cart-total" style="font-size: 0.8rem; font-weight: 700; color: var(--primary);">Rp 0</span>
             </div>
-            <button class="btn btn-primary" onclick="openModal('subscribe-modal')">Pesanan</button>
+            <button class="btn btn-primary" onclick="openSubscribeModal()">Pesanan</button>
         </div>
     </div>
 
@@ -294,33 +306,41 @@
                 <button onclick="closeModal('guide-modal')" style="background:none; border:none; font-size:1rem; cursor:pointer; color:var(--text-muted);"><i class="fas fa-times"></i></button>
             </div>
             <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.5;">
-                Halaman ini adalah versi Mockup interaktif. Layout telah dioptimalkan agar responsif diletakkan di dalam Iframe atau Dashboard web berukuran kecil.
+                Ini adalah Tampilan Demo
             </p>
             <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.5rem;" onclick="closeModal('guide-modal')">Tutup</button>
         </div>
     </div>
 
-    <!-- Modal Detail Makanan -->
+    <!-- Modal Input Jumlah Pesanan -->
     <div class="modal" id="detail-modal">
         <div class="modal-content">
             <div style="display: flex; justify-content: flex-end; margin-bottom: 0.5rem;">
                 <button onclick="closeModal('detail-modal')" style="background:none; border:none; font-size:1rem; cursor:pointer; color:var(--text-muted);"><i class="fas fa-times"></i></button>
             </div>
-            <div style="width: 100%; height: 140px; background: #f5f5f4; border-radius: var(--radius-sm); margin-bottom: 0.75rem; overflow: hidden;">
+            <div style="width: 100%; height: 120px; background: #f5f5f4; border-radius: var(--radius-sm); margin-bottom: 0.75rem; overflow: hidden;">
                 <img id="detail-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <h3 id="detail-title" style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem;"></h3>
             <div id="detail-price" style="font-size: 0.85rem; color: var(--primary); font-weight: 700; margin-bottom: 0.5rem;"></div>
-            <p id="detail-desc" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;"></p>
-            <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.5rem;" onclick="closeModal('detail-modal'); openModal('subscribe-modal');">
-                <i class="fas fa-plus"></i> Tambah
+            <p id="detail-desc" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; line-height: 1.4;"></p>
+            
+            <!-- Pengatur Jumlah -->
+            <div class="qty-control">
+                <button class="qty-btn" onclick="adjustModalQty(-1)"><i class="fas fa-minus"></i></button>
+                <input type="number" id="modal-qty" class="qty-input" value="1" min="1">
+                <button class="qty-btn" onclick="adjustModalQty(1)"><i class="fas fa-plus"></i></button>
+            </div>
+
+            <button id="detail-add-btn" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.5rem;">
+                <i class="fas fa-cart-plus"></i> Masukkan ke Pesanan
             </button>
         </div>
     </div>
 
     <!-- Modal Berlangganan -->
     <div class="modal" id="subscribe-modal" style="z-index: 3000;">
-        <div class="modal-content modal-subscribe-content">
+        <div class="modal-content" style="text-align: center;">
             <div style="display: flex; justify-content: flex-end; margin-bottom: -0.5rem;">
                 <button onclick="closeModal('subscribe-modal')" style="background:none; border:none; font-size:1.1rem; cursor:pointer; color:var(--text-muted);"><i class="fas fa-times"></i></button>
             </div>
@@ -344,6 +364,8 @@
 
         let products = [];
         let currentCategory = 'all';
+        let cart = {}; // { productId: quantity }
+        let selectedProductId = null;
 
         async function fetchMenuProducts() {
             const { data, error } = await _supabase.from('products').select('*');
@@ -398,11 +420,63 @@
                             <div class="menu-price">Rp ${p.price.toLocaleString('id-ID')}</div>
                         </div>
                         <div class="menu-action">
-                            <button class="btn btn-primary" onclick="openModal('subscribe-modal')"><i class="fas fa-plus"></i></button>
+                            <button class="btn btn-primary" onclick="openDetailModal(${p.id})"><i class="fas fa-plus"></i> Tambah</button>
                         </div>
                     </div>
                 `;
             });
+        }
+
+        function openDetailModal(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+            
+            selectedProductId = product.id;
+            document.getElementById('detail-img').src = product.img || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&auto=format&fit=crop&q=80';
+            document.getElementById('detail-title').innerText = product.name;
+            document.getElementById('detail-price').innerText = 'Rp ' + product.price.toLocaleString('id-ID');
+            document.getElementById('detail-desc').innerText = product.desc || 'Menu lezat pilihan terbaik dari Sitenexs Cafe.';
+            document.getElementById('modal-qty').value = 1; // Reset jumlah ke 1 setiap kali dibuka
+
+            const addBtn = document.getElementById('detail-add-btn');
+            addBtn.onclick = () => {
+                let qty = parseInt(document.getElementById('modal-qty').value) || 1;
+                if (qty < 1) qty = 1;
+                cart[selectedProductId] = (cart[selectedProductId] || 0) + qty;
+                updateCartUI();
+                closeModal('detail-modal');
+            };
+
+            openModal('detail-modal');
+        }
+
+        function adjustModalQty(change) {
+            const input = document.getElementById('modal-qty');
+            let currentVal = parseInt(input.value) || 1;
+            currentVal += change;
+            if (currentVal < 1) currentVal = 1;
+            input.value = currentVal;
+        }
+
+        function updateCartUI() {
+            let totalItems = 0;
+            let totalPrice = 0;
+
+            for (let id in cart) {
+                let qty = cart[id];
+                let product = products.find(p => p.id == id);
+                if (product) {
+                    totalItems += qty;
+                    totalPrice += product.price * qty;
+                }
+            }
+
+            document.getElementById('cart-count').innerText = `${totalItems} Item`;
+            document.getElementById('cart-total').innerText = `Rp ${totalPrice.toLocaleString('id-ID')}`;
+        }
+
+        function openSubscribeModal() {
+            openModal('subscribe-modal');
         }
 
         function openModal(modalId) {
@@ -415,16 +489,6 @@
             const modal = document.getElementById(modalId);
             modal.classList.remove('show');
             setTimeout(() => modal.style.display = 'none', 300);
-        }
-
-        function openDetailModal(id) {
-            const product = products.find(p => p.id === id);
-            if (!product) return;
-            document.getElementById('detail-img').src = product.img || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&auto=format&fit=crop&q=80';
-            document.getElementById('detail-title').innerText = product.name;
-            document.getElementById('detail-price').innerText = 'Rp ' + product.price.toLocaleString('id-ID');
-            document.getElementById('detail-desc').innerText = product.desc || 'Menu lezat pilihan terbaik dari Sitenexs Cafe.';
-            openModal('detail-modal');
         }
     </script>
 </body>
