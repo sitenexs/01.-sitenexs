@@ -30,37 +30,6 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- JSON-LD Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Sitenexs",
-      "url": "https://sitenexs.com/",
-      "logo": "https://sitenexs.com/assets/logo/logo.png",
-      "foundingDate": "2026",
-      "founder": {
-        "@type": "Person",
-        "name": "Syafaat Nuryadi",
-        "jobTitle": "Founder & Lead Software Engineer",
-        "sameAs": "https://founder.sitenexs.com"
-      },
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Bengkulu",
-        "addressCountry": "ID"
-      },
-      "description": "Mitra transformasi digital dan efisiensi sistem operasional usaha untuk UMKM Indonesia.",
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+62-851-7713-7899",
-        "contactType": "customer service",
-        "areaServed": "ID",
-        "availableLanguage": "Indonesian"
-      }
-    }
-    </script>
-
     <style>
         :root {
             --primary: #2563eb;
@@ -71,20 +40,20 @@
             --bg-card: #ffffff;
             --bg-alt: #f1f5f9;
             --text-main: #0f172a;
-            --text-muted: #64748b;
+            --text-muted: #475569;
             --border-subtle: #e2e8f0;
             --border-medium: #cbd5e1;
             --border-accent: #93c5fd;
             --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
             --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
-            --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.06);
-            --shadow-card: 0 16px 32px -12px rgba(37, 99, 235, 0.1);
+            --shadow-lg: 0 15px 30px -5px rgba(15, 23, 42, 0.08);
+            --shadow-card: 0 20px 40px -12px rgba(37, 99, 235, 0.15);
             --radius-sm: 0.375rem;
             --radius-md: 0.625rem;
-            --radius-lg: 0.875rem;
-            --radius-xl: 1.25rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
             --radius-full: 9999px;
-            --transition: all 0.25s ease-in-out;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         *, *::before, *::after {
@@ -95,7 +64,7 @@
 
         html {
             scroll-behavior: smooth;
-            font-size: 14px;
+            font-size: 15px;
             width: 100%;
         }
 
@@ -116,13 +85,14 @@
 
         button, input, select, textarea {
             font-family: inherit;
+            outline: none;
         }
 
         .container {
             width: 100%;
-            max-width: 1080px;
+            max-width: 1120px;
             margin: 0 auto;
-            padding: 0 1.25rem;
+            padding: 0 1.5rem;
             position: relative;
             z-index: 2;
         }
@@ -146,24 +116,16 @@
         .bg-gradient-soft {
             background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
         }
-        
-        .bg-gradient-hero {
-            background-color: #f8fafc;
-        }
-        
-        .bg-gradient-section {
-            background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
-        }
 
         /* BASE SECTION STYLES */
         .page-section { 
             position: relative;
             width: 100%;
-            padding: 4.5rem 0;
+            padding: 5.5rem 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            scroll-margin-top: 80px;
+            scroll-margin-top: 70px;
         }
 
         /* UTILITIES */
@@ -172,7 +134,7 @@
 
         .reveal {
             opacity: 0;
-            transform: translateY(16px);
+            transform: translateY(20px);
             transition: var(--transition);
         }
 
@@ -187,8 +149,8 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            padding: 0.65rem 1.25rem;
-            font-size: 0.85rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
             font-weight: 700;
             border-radius: var(--radius-full);
             transition: var(--transition);
@@ -199,19 +161,19 @@
         }
 
         .btn-sm {
-            padding: 0.45rem 0.95rem;
-            font-size: 0.775rem;
+            padding: 0.5rem 1.25rem;
+            font-size: 0.85rem;
         }
 
         .btn-primary {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: #ffffff;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
         }
 
         .btn-secondary {
@@ -224,7 +186,8 @@
         .btn-secondary:hover {
             border-color: var(--primary);
             color: var(--primary);
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
         }
 
         .btn-outline-primary {
@@ -235,7 +198,7 @@
 
         .btn-outline-primary:hover {
             background-color: var(--primary-light);
-            transform: translateY(-2px);
+            transform: translateY(-3px);
         }
 
         .btn-block {
@@ -246,37 +209,37 @@
         /* HEADERS */
         .section-header {
             text-align: center;
-            max-width: 640px;
-            margin: 0 auto 2.25rem auto;
+            max-width: 680px;
+            margin: 0 auto 3rem auto;
         }
 
         .section-subtitle {
             display: inline-block;
-            font-size: 0.725rem;
+            font-size: 0.75rem;
             font-weight: 800;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.1em;
             color: var(--primary);
             text-transform: uppercase;
-            margin-bottom: 0.4rem;
-            padding: 0.25rem 0.85rem;
+            margin-bottom: 0.75rem;
+            padding: 0.3rem 1rem;
             background: rgba(37, 99, 235, 0.08);
             border-radius: var(--radius-full);
             border: 1px solid rgba(37, 99, 235, 0.18);
         }
 
         .section-title {
-            font-size: clamp(1.35rem, 2.2vw, 1.95rem);
+            font-size: clamp(1.5rem, 2.5vw, 2.2rem);
             font-weight: 800;
             letter-spacing: -0.02em;
             color: var(--text-main);
-            line-height: 1.3;
+            line-height: 1.25;
+            margin-bottom: 0.5rem;
         }
 
         .section-desc {
-            font-size: 0.875rem;
+            font-size: 0.95rem;
             color: var(--text-muted);
-            margin-top: 0.4rem;
-            line-height: 1.55;
+            line-height: 1.6;
         }
 
         /* 1. NAVBAR */
@@ -286,25 +249,26 @@
             left: 0;
             width: 100%;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-sm);
         }
 
         .nav-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 64px;
+            height: 75px;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            gap: 0.75rem;
             font-weight: 800;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             color: var(--text-main);
         }
 
@@ -316,19 +280,20 @@
         }
 
         .logo-img {
-            height: 34px;
-            width: 34px;
+            height: 40px;
+            width: 40px;
             border-radius: var(--radius-full);
             object-fit: cover;
-            border: 1.5px solid var(--border-medium);
+            border: 2px solid #fff;
             box-shadow: var(--shadow-sm);
         }
 
+        /* Diperbesar ukuran Nav Link */
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 1.25rem;
-            font-size: 0.85rem;
+            gap: 2.25rem;
+            font-size: 1.05rem; 
             font-weight: 600;
         }
 
@@ -340,11 +305,36 @@
         .nav-links a:hover {
             color: var(--primary);
         }
+        
+        .nav-divider {
+            width: 1px;
+            height: 20px;
+            background-color: var(--border-medium);
+        }
+
+        .nav-layanan-link {
+            color: var(--primary) !important;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
 
         .nav-auth-desktop {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem; 
+        }
+        
+        .nav-login-text {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            transition: var(--transition);
+        }
+        
+        .nav-login-text:hover {
+            color: var(--primary);
         }
 
         .mobile-toggle {
@@ -352,56 +342,77 @@
             background: none;
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             cursor: pointer;
             color: var(--text-main);
-            padding: 0.4rem 0.7rem;
+            padding: 0.4rem 0.8rem;
+            transition: var(--transition);
+        }
+        
+        .mobile-toggle:hover {
+            background: var(--bg-alt);
         }
 
         #mobile-menu {
             display: none;
             background-color: var(--bg-card);
             border-bottom: 1px solid var(--border-subtle);
-            padding: 0.75rem 1.25rem 1.25rem 1.25rem;
+            padding: 0 1.5rem 1.5rem 1.5rem;
             box-shadow: var(--shadow-md);
+        }
+        
+        #mobile-menu.show {
+            display: block;
+            animation: slideDown 0.3s ease forwards;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         #mobile-menu a.nav-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.75rem 0;
-            font-size: 0.875rem;
+            padding: 1rem 0;
+            font-size: 1rem;
             font-weight: 600;
             color: var(--text-main);
             border-bottom: 1px solid var(--border-subtle);
         }
 
-        /* 2. HERO SECTION - DITINGKATKAN JARAKNYA DARI NAVBAR */
+        /* 2. HERO SECTION */
         .hero { 
             text-align: center;
-            padding-top: 130px; /* Ditambah dari 100px agar jauh dari navbar */
-            padding-bottom: 4rem;
-            margin-top: 10px;  /* Memberikan ruang bernapas ekstra */
+            padding-top: 160px; 
+            padding-bottom: 5rem;
         }
 
         .hero-wrapper {
-            max-width: 760px;
+            max-width: 820px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
+            gap: 1.5rem;
         }
 
         .hero-card {
             background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-            border: 1.5px solid var(--border-subtle);
+            border: 1px solid var(--border-subtle);
             border-radius: var(--radius-xl);
-            padding: 2.25rem 1.75rem;
+            padding: 3rem 2rem;
             box-shadow: var(--shadow-card);
             position: relative;
             z-index: 2;
             overflow: hidden;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
         }
 
         .hero-card::before {
@@ -410,73 +421,72 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
+            height: 5px;
             background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
         }
 
         .badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            padding: 0.35rem 0.95rem;
+            gap: 0.5rem;
+            padding: 0.4rem 1.2rem;
             border-radius: var(--radius-full);
-            font-size: 0.725rem;
+            font-size: 0.8rem;
             font-weight: 700;
             background-color: rgba(37, 99, 235, 0.08);
             color: var(--primary);
             border: 1px solid rgba(37, 99, 235, 0.18);
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
         }
 
         .hero-title {
-            font-size: clamp(1.4rem, 2.6vw, 2rem);
+            font-size: clamp(1.8rem, 3.2vw, 2.7rem);
             font-weight: 800;
-            line-height: 1.35;
-            max-width: 660px;
-            margin: 0 auto 0.85rem auto;
+            line-height: 1.25;
+            max-width: 720px;
+            margin: 0 auto 1rem auto;
             letter-spacing: -0.02em;
             color: var(--text-main);
         }
 
         .hero-desc {
-            font-size: clamp(0.825rem, 1.1vw, 0.9rem);
+            font-size: clamp(0.95rem, 1.2vw, 1.05rem);
             color: var(--text-muted);
-            max-width: 560px;
-            margin: 0 auto 1.5rem auto;
-            line-height: 1.65;
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+            line-height: 1.6;
         }
 
         .hero-buttons {
             display: flex;
             justify-content: center;
-            gap: 0.75rem;
+            gap: 1rem;
             flex-wrap: wrap;
-            margin-bottom: 1.25rem;
+            margin-bottom: 2rem;
         }
 
         .hero-layanan-action {
-            border-top: 1px dashed var(--border-subtle);
-            padding-top: 1.15rem;
+            border-top: 1px dashed var(--border-medium);
+            padding-top: 1.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
         }
 
         .hero-highlights {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 0.75rem;
+            gap: 1rem;
         }
 
         .highlight-item {
             background: #ffffff;
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            padding: 0.75rem 0.95rem;
+            padding: 1.2rem;
             display: flex;
             align-items: center;
-            gap: 0.65rem;
+            gap: 0.85rem;
             text-align: left;
             box-shadow: var(--shadow-sm);
             transition: var(--transition);
@@ -484,40 +494,127 @@
 
         .highlight-item:hover {
             border-color: var(--border-accent);
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
         }
 
         .highlight-icon {
-            width: 32px;
-            height: 32px;
-            min-width: 32px;
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
             border-radius: var(--radius-sm);
             background: var(--primary-light);
             color: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
+            font-size: 1.1rem;
         }
 
         .highlight-text h5 {
-            font-size: 0.8rem;
+            font-size: 0.95rem;
             font-weight: 700;
             color: var(--text-main);
             line-height: 1.2;
         }
 
         .highlight-text p {
-            font-size: 0.7rem;
+            font-size: 0.85rem;
             color: var(--text-muted);
-            margin-top: 0.1rem;
+            margin-top: 0.2rem;
         }
 
-        /* 3. PILIHAN SOLUSI DIGITAL */
+
+        /* 3. DEMO PRODUK ATAU LAYANAN - 1 HP UTUH MENGHADAP SAMPING DI ATAS KATALOG */
+        .demo-section-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 1rem 0 3rem 0;
+            overflow: visible; 
+        }
+
+        .phone-mockup-wrapper {
+            perspective: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .phone-mockup {
+            width: 310px;
+            height: 620px;
+            background: #1e293b; 
+            border-radius: 40px;
+            padding: 12px;
+            transform: rotateY(-18deg) rotateX(5deg) rotateZ(2deg);
+            box-shadow: 
+                -30px 30px 50px -15px rgba(15, 23, 42, 0.45), 
+                inset 0 0 0 2px #475569,
+                inset -3px 0 6px rgba(255,255,255,0.15);
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .phone-mockup-wrapper:hover .phone-mockup {
+            transform: rotateY(-5deg) rotateX(2deg) rotateZ(0deg) scale(1.05);
+            box-shadow: 
+                -15px 15px 30px -10px rgba(15, 23, 42, 0.3), 
+                inset 0 0 0 2px #475569,
+                inset -2px 0 4px rgba(255,255,255,0.1);
+        }
+
+        .phone-mockup::before {
+            content: ''; position: absolute; left: -3px; top: 130px; width: 3px; height: 50px;
+            background: #475569; border-radius: 4px 0 0 4px;
+        }
+        .phone-mockup::after {
+            content: ''; position: absolute; left: -3px; top: 190px; width: 3px; height: 50px;
+            background: #475569; border-radius: 4px 0 0 4px;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background-color: #f8fafc;
+            border-radius: 30px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .phone-notch {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 130px; height: 30px; background: #1e293b;
+            border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; z-index: 10;
+        }
+
+        /* Frame Web Asli di Dalam Mockup HP */
+        .phone-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: #ffffff;
+            z-index: 1;
+        }
+
+        .demo-text-box {
+            text-align: center; max-width: 650px; margin: 2rem auto 0 auto;
+        }
+        .demo-title { font-size: 1.4rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem; }
+        .demo-desc { font-size: 1rem; color: var(--text-muted); line-height: 1.6; }
+
+
+        /* 4. PILIHAN SOLUSI DIGITAL (Katalog) */
         .solutions-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1.25rem;
+            gap: 1.5rem;
             width: 100%;
         }
 
@@ -525,7 +622,7 @@
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
-            padding: 1.25rem;
+            padding: 1.75rem;
             box-shadow: var(--shadow-sm);
             transition: var(--transition);
             display: flex;
@@ -534,75 +631,41 @@
 
         .solution-card:hover {
             border-color: var(--border-accent);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-md);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
         }
 
         .solution-icon {
-            width: 40px;
-            height: 40px;
+            width: 52px;
+            height: 52px;
             border-radius: var(--radius-md);
             background: var(--primary-light);
             color: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
-            margin-bottom: 0.85rem;
+            font-size: 1.35rem;
+            margin-bottom: 1.25rem;
         }
 
         .solution-title {
-            font-size: 0.95rem;
+            font-size: 1.15rem;
             font-weight: 700;
             color: var(--text-main);
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.5rem;
         }
 
         .solution-desc {
-            font-size: 0.8rem;
+            font-size: 0.95rem;
             color: var(--text-muted);
-            line-height: 1.5;
-        }
-
-        /* 4. DEMO PRODUK ATAU LAYANAN */
-        .demo-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-            align-items: stretch;
-            width: 100%;
-        }
-
-        .demo-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 1.25rem;
-            box-shadow: var(--shadow-sm);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .demo-img-box {
-            width: 100%;
-            height: 220px;
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            border: 1px solid var(--border-medium);
-            margin-bottom: 0.85rem;
-        }
-
-        .demo-img-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            line-height: 1.6;
         }
 
         /* 5. KEUNGGULAN SITENEXS */
         .utility-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 1.25rem;
+            gap: 1.5rem;
             width: 100%;
         }
 
@@ -610,65 +673,93 @@
             background-color: var(--bg-card);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
-            padding: 1.25rem;
+            padding: 1.75rem;
             display: flex;
-            gap: 1rem;
+            gap: 1.25rem;
             align-items: flex-start;
             transition: var(--transition);
+            box-shadow: var(--shadow-sm);
         }
 
         .utility-card:hover {
             border-color: var(--border-accent);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
         }
 
         .utility-icon-box {
-            width: 42px;
-            height: 42px;
-            min-width: 42px;
+            width: 50px;
+            height: 50px;
+            min-width: 50px;
             border-radius: var(--radius-md);
             background: var(--primary-light);
             color: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            font-size: 1.25rem;
             border: 1px solid rgba(37, 99, 235, 0.18);
+        }
+        
+        .utility-title {
+            font-weight: 800; 
+            font-size: 1.1rem; 
+            margin-bottom: 0.3rem;
+            color: var(--text-main);
+        }
+        
+        .utility-desc {
+            color: var(--text-muted); 
+            font-size: 0.95rem; 
+            line-height: 1.6;
         }
 
         /* 6. TENTANG SITENEXS */
         .about-info-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1.25rem;
+            gap: 1.5rem;
             width: 100%;
         }
 
         .info-card {
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 1.25rem;
+            border-radius: var(--radius-xl);
+            padding: 1.75rem;
             text-align: left;
             transition: var(--transition);
             box-shadow: var(--shadow-sm);
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         .info-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-4px);
             border-color: var(--border-accent);
+            box-shadow: var(--shadow-md);
+        }
+
+        .info-card-image-box {
+            width: 100%;
+            height: 180px;
+            border-radius: var(--radius-md);
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            border: 1px solid var(--border-medium);
+            box-shadow: var(--shadow-sm);
         }
 
         .info-card-image {
             width: 100%;
-            height: 140px;
+            height: 100%;
             object-fit: cover;
-            border-radius: var(--radius-md);
-            margin-bottom: 0.85rem;
-            border: 1px solid var(--border-medium);
-            box-shadow: var(--shadow-sm);
+            transition: transform 0.5s ease;
+        }
+        
+        .info-card:hover .info-card-image {
+            transform: scale(1.05);
         }
 
         .info-card-image-centered {
@@ -677,44 +768,34 @@
 
         .info-card-map {
             width: 100%;
-            height: 140px;
-            border-radius: var(--radius-md);
-            margin-bottom: 0.85rem;
-            border: 1px solid var(--border-medium);
-            box-shadow: var(--shadow-sm);
-            overflow: hidden;
-        }
-
-        .info-card-map iframe {
-            width: 100%;
             height: 100%;
             border: 0;
         }
 
         .info-card-title {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 0.35rem;
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
             color: var(--text-main);
         }
 
         .info-card-desc {
             color: var(--text-muted);
-            font-size: 0.825rem;
-            line-height: 1.55;
+            font-size: 0.95rem;
+            line-height: 1.6;
         }
 
         /* 7. PROFIL FOUNDER */
         .founder-card {
             background: #ffffff;
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 2.25rem 2.5rem;
+            border-radius: var(--radius-xl);
+            padding: 3.5rem;
             display: grid;
-            grid-template-columns: 220px 1fr;
-            gap: 2.5rem;
+            grid-template-columns: 260px 1fr;
+            gap: 3.5rem;
             align-items: center;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-lg);
             position: relative;
             overflow: hidden;
         }
@@ -724,7 +805,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 4px;
+            width: 6px;
             height: 100%;
             background: linear-gradient(180deg, var(--primary) 0%, var(--accent) 100%);
         }
@@ -738,15 +819,15 @@
 
         .founder-avatar-wrapper {
             position: relative;
-            padding: 5px;
+            padding: 6px;
             background: linear-gradient(135deg, rgba(37, 99, 235, 0.18) 0%, rgba(16, 185, 129, 0.18) 100%);
             border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-md);
         }
 
         .founder-img {
-            width: 180px;
-            height: 210px;
+            width: 220px;
+            height: 250px;
             object-fit: cover;
             object-position: center top;
             border-radius: calc(var(--radius-lg) - 4px);
@@ -755,27 +836,27 @@
         }
 
         .founder-badge-loc {
-            margin-top: 0.85rem;
+            margin-top: 1.25rem;
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
+            gap: 0.4rem;
             background: var(--bg-alt);
             border: 1px solid var(--border-subtle);
-            padding: 0.3rem 0.8rem;
+            padding: 0.4rem 1.2rem;
             border-radius: var(--radius-full);
-            font-size: 0.725rem;
+            font-size: 0.85rem;
             font-weight: 700;
             color: var(--text-main);
         }
 
         .founder-header {
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
             border-bottom: 1px solid var(--border-subtle);
-            padding-bottom: 0.85rem;
+            padding-bottom: 1rem;
         }
 
         .founder-name {
-            font-size: 1.45rem;
+            font-size: 1.8rem;
             font-weight: 800;
             color: var(--text-main);
             line-height: 1.2;
@@ -784,202 +865,69 @@
 
         .founder-role {
             color: var(--primary);
-            font-size: 0.85rem;
+            font-size: 1rem;
             font-weight: 700;
-            margin-top: 0.25rem;
+            margin-top: 0.4rem;
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.5rem;
         }
 
         .founder-bio {
             color: var(--text-muted);
-            font-size: 0.85rem;
-            line-height: 1.6;
-            margin-bottom: 1.15rem;
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
         }
 
         .founder-quote {
             background: var(--bg-body);
-            border-left: 3px solid var(--primary);
-            padding: 0.85rem 1rem;
+            border-left: 4px solid var(--primary);
+            padding: 1.25rem 1.5rem;
             border-radius: 0 var(--radius-md) var(--radius-md) 0;
-            margin-bottom: 1.5rem;
-            font-size: 0.825rem;
+            margin-bottom: 1.75rem;
+            font-size: 0.95rem;
             color: var(--text-main);
             font-style: italic;
-            line-height: 1.55;
+            line-height: 1.6;
         }
 
-        .founder-action {
-            display: flex;
-            align-items: center;
-        }
-
-        /* 8. TESTIMONI */
-        .testimonials-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.25rem;
-            width: 100%;
-            max-height: 520px;
-            overflow-y: auto;
-            padding: 0.35rem;
-            border-radius: var(--radius-lg);
-            scroll-behavior: smooth;
-        }
-
-        .testimonials-grid::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .testimonials-grid::-webkit-scrollbar-track {
-            background: rgba(226, 232, 240, 0.6);
-            border-radius: var(--radius-full);
-        }
-
-        .testimonials-grid::-webkit-scrollbar-thumb {
-            background: var(--border-medium);
-            border-radius: var(--radius-full);
-        }
-
-        .testimonials-grid::-webkit-scrollbar-thumb:hover {
-            background: var(--primary);
-        }
-
-        .testimonial-card {
-            background: var(--bg-card);
+        /* 8. KONTAK DAN AJAKAN BERTINDAK (CONTACT CARD) */
+        .contact-card {
+            background: #ffffff;
+            border-radius: var(--radius-xl);
+            box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.1);
+            padding: 3rem;
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 1.25rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-            height: 100%;
-            min-height: 180px;
-        }
-
-        .testimonial-card:hover {
-            border-color: var(--border-accent);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .stars-container {
-            color: #f59e0b;
-            font-size: 0.85rem;
-            margin-bottom: 0.65rem;
-            display: flex;
-            gap: 0.15rem;
-        }
-
-        .testimonial-text {
-            font-size: 0.825rem;
-            color: var(--text-main);
-            line-height: 1.55;
-            margin-bottom: 1rem;
-            font-style: italic;
-            word-break: break-word;
-        }
-
-        .testimonial-author {
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
-            border-top: 1px solid var(--border-subtle);
-            padding-top: 0.75rem;
-        }
-
-        .author-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius-full);
-            background: var(--primary-light);
-            color: var(--primary);
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            border: 1px solid rgba(37, 99, 235, 0.2);
-            flex-shrink: 0;
-        }
-
-        .author-info h5 {
-            font-size: 0.825rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .author-info p {
-            font-size: 0.725rem;
-            color: var(--text-muted);
-        }
-
-        .review-form-wrapper {
-            max-width: 600px;
-            margin: 0 auto 2rem auto;
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            box-shadow: var(--shadow-md);
-            display: none;
-        }
-
-        .star-rating-input {
-            display: flex;
-            gap: 0.35rem;
-            font-size: 1.5rem;
-            color: #cbd5e1;
-            cursor: pointer;
-            margin-bottom: 1rem;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-
-        .star-rating-input .fa-star {
-            transition: color 0.15s ease-in-out;
-        }
-
-        .star-rating-input .fa-star.active {
-            color: #f59e0b;
-        }
-
-        /* 9. KONTAK DAN AJAKAN BERTINDAK */
-        .form-container {
-            max-width: 580px;
+            max-width: 700px;
             margin: 0 auto;
-            width: 100%;
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.85rem;
+            gap: 1.25rem;
         }
 
         .form-group {
-            margin-bottom: 0.85rem;
+            margin-bottom: 1.25rem;
         }
 
         .form-group label {
             display: block;
-            font-size: 0.775rem;
+            font-size: 0.9rem;
             font-weight: 700;
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.5rem;
             color: var(--text-main);
         }
 
         .form-control {
             width: 100%;
-            padding: 0.65rem 0.85rem;
+            padding: 0.85rem 1.25rem;
             border-radius: var(--radius-md);
-            border: 1px solid var(--border-subtle);
-            background-color: #ffffff;
-            font-size: 0.825rem;
+            border: 1px solid var(--border-medium);
+            background-color: var(--bg-body);
+            font-size: 0.95rem;
             color: var(--text-main);
             transition: var(--transition);
         }
@@ -987,30 +935,36 @@
         .form-control:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+            background-color: #ffffff;
         }
 
-        /* 10. FOOTER */
-        footer {
-            background-color: #ffffff;
-            color: var(--text-muted);
-            padding: 2.5rem 0 1.25rem 0;
-            border-top: 1px solid var(--border-subtle);
-            font-size: 0.8rem;
+        /* 9. FOOTER CARD */
+        .footer-section {
+            background: var(--bg-body);
+            padding: 2rem 0 4rem 0;
+        }
+        
+        .footer-card {
+            background: #ffffff;
+            border-radius: var(--radius-xl);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+            padding: 3.5rem 3.5rem 2rem 3.5rem;
+            border: 1px solid var(--border-subtle);
         }
 
         .footer-grid {
             display: grid;
             grid-template-columns: 2fr 1fr 1.25fr;
-            gap: 2rem;
-            margin-bottom: 1.5rem;
+            gap: 3rem;
+            margin-bottom: 2.5rem;
         }
 
         .footer-title {
             color: var(--text-main);
-            font-weight: 700;
-            margin-bottom: 0.6rem;
-            font-size: 0.85rem;
+            font-weight: 800;
+            margin-bottom: 1.25rem;
+            font-size: 1.05rem;
         }
 
         .footer-links {
@@ -1018,79 +972,103 @@
         }
 
         .footer-links li {
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.75rem;
         }
 
         .footer-links a {
             transition: var(--transition);
+            color: var(--text-muted);
+            font-size: 0.95rem;
         }
 
         .footer-links a:hover {
             color: var(--primary);
         }
+        
+        .footer-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.85rem;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
 
-        /* 11. FLOATING WHATSAPP BUTTON */
+        /* 10. FLOATING WHATSAPP BUTTON */
         .whatsapp-float-container {
             position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
+            bottom: 2rem;
+            right: 2rem;
             z-index: 999;
         }
 
         .whatsapp-float {
-            width: 48px;
-            height: 48px;
+            width: 55px;
+            height: 55px;
             border-radius: var(--radius-full);
             background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
             color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+            font-size: 1.8rem;
+            box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);
             transition: var(--transition);
         }
 
         .whatsapp-float:hover {
-            transform: scale(1.06);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
         }
 
         /* RESPONSIF MOBILE & TABLET */
         @media (max-width: 1023px) {
-            .page-section { padding: 3.5rem 0; }
-            .hero { padding-top: 115px; padding-bottom: 3rem; margin-top: 0; }
-            .hero-highlights { grid-template-columns: 1fr; gap: 0.55rem; }
+            .page-section { padding: 4rem 0; }
+            .hero { padding-top: 140px; padding-bottom: 4rem; }
+            .hero-highlights { grid-template-columns: 1fr; gap: 0.75rem; }
             .solutions-grid { grid-template-columns: repeat(2, 1fr); }
-            .demo-grid { grid-template-columns: 1fr; }
             .about-info-grid { grid-template-columns: repeat(2, 1fr); }
-            .founder-card { grid-template-columns: 190px 1fr; gap: 1.75rem; padding: 1.75rem; }
+            .founder-card { grid-template-columns: 220px 1fr; gap: 2.5rem; padding: 2.5rem; }
             .utility-grid { grid-template-columns: 1fr; }
-            .testimonials-grid { grid-template-columns: repeat(2, 1fr); max-height: 520px; }
+            
+            .phone-mockup { transform: rotateY(-18deg) rotateX(5deg) rotateZ(2deg) scale(0.9); }
+            .phone-mockup-wrapper:hover .phone-mockup { transform: rotateY(-5deg) rotateX(2deg) rotateZ(0deg) scale(0.95); }
         }
 
         @media (max-width: 768px) {
             .nav-links { display: none; }
             .nav-auth-desktop { display: none !important; }
             .mobile-toggle { display: block; }
-            .hero { padding-top: 105px; padding-bottom: 2.5rem; }
-            .hero-card { padding: 1.75rem 1.25rem; border-radius: var(--radius-lg); }
+            .hero { padding-top: 120px; padding-bottom: 3rem; }
+            .hero-card { padding: 2rem 1.25rem; border-radius: var(--radius-lg); }
             .solutions-grid { grid-template-columns: 1fr; }
-            .about-info-grid { grid-template-columns: 1fr; gap: 1.1rem; }
-            .info-card { padding: 1.1rem; }
-            .info-card-image, .info-card-map { width: 100%; height: 160px; margin-bottom: 0.75rem; }
-            .founder-card { grid-template-columns: 1fr; text-align: center; padding: 1.5rem 1.25rem; gap: 1.25rem; }
-            .founder-card::before { width: 100%; height: 4px; }
-            .founder-img { width: 150px; height: 175px; }
+            .about-info-grid { grid-template-columns: 1fr; gap: 1.25rem; }
+            .info-card { padding: 1.5rem; }
+            .info-card-image-box { height: 200px; }
+            .founder-card { grid-template-columns: 1fr; text-align: center; padding: 2rem 1.5rem; gap: 1.5rem; }
+            .founder-card::before { width: 100%; height: 5px; }
+            .founder-img { width: 180px; height: 200px; }
             .founder-quote { text-align: left; }
             .founder-action { justify-content: center; }
-            .utility-grid { grid-template-columns: 1fr; gap: 0.85rem; }
-            .testimonials-grid { grid-template-columns: 1fr; max-height: 480px; }
+            .utility-grid { grid-template-columns: 1fr; gap: 1rem; }
+            
+            .contact-card { padding: 1.5rem; border-radius: var(--radius-lg); }
             .form-grid { grid-template-columns: 1fr; gap: 0; }
-            .footer-grid { grid-template-columns: 1fr; gap: 1.25rem; }
+            
+            .footer-card { padding: 2rem 1.5rem 1.5rem 1.5rem; border-radius: var(--radius-lg); }
+            .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+            
             .hero-buttons { flex-direction: column; width: 100%; }
             .hero-buttons .btn { width: 100%; }
             .hero-layanan-action .btn { width: 100%; }
-            .whatsapp-float-container { bottom: 1.25rem; right: 1.25rem; }
+            .whatsapp-float-container { bottom: 1.5rem; right: 1.5rem; }
+            .whatsapp-float { width: 50px; height: 50px; font-size: 1.5rem; }
+            
+            /* Penyesuaian HP Mockup di Mobile */
+            .demo-section-container { padding: 1rem 0; overflow: hidden; }
+            .phone-mockup-wrapper { perspective: 800px; }
+            .phone-mockup { transform: rotateY(-8deg) rotateX(2deg) scale(0.85); margin-top: -15px; margin-bottom: -15px; }
+            .phone-mockup-wrapper:hover .phone-mockup { transform: rotateY(0deg) rotateX(0deg) scale(0.9); }
         }
     </style>
 </head>
@@ -1104,28 +1082,31 @@
                 <span class="logo-text">Sitenexs</span>
             </a>
 
+            <!-- Nav Links Diperbesar -->
             <nav class="nav-links">
-                <a href="#solusi-digital">Solusi Digital</a>
-                <a href="#demo-produk">Demo Sistem</a>
+                <a href="#demo-produk">Demo</a>
+                <a href="#solusi-digital">Solusi</a>
                 <a href="#kegunaan">Keunggulan</a>
-                <a href="#tentang">Tentang Bisnis</a>
-                <a href="#pendiri">Profil Pendiri</a>
-                <a href="#testimoni">Testimoni</a>
+                <a href="#tentang">Tentang Kami</a>
                 <a href="#kontak">Kontak</a>
-                <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-layer-group text-primary" style="font-size: 0.8rem;"></i> Layanan
+                <div class="nav-divider"></div>
+                <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" class="nav-layanan-link">
+                    Layanan <i class="fas fa-arrow-up-right-from-square" style="font-size: 0.8rem;"></i>
                 </a>
             </nav>
 
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <!-- Tombol Auth: Masuk dan Daftar -->
                 <div class="nav-auth-desktop">
                     <a href="https://account.sitenexs.com/login" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
-                        <i class="fas fa-sign-in-alt text-primary"></i> Masuk
+                        Masuk
                     </a>
                     <a href="https://account.sitenexs.com/register" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
-                        <i class="fas fa-user-plus"></i> Daftar
+                        Daftar
                     </a>
                 </div>
+                
+                <!-- Toggle Button untuk Mobile Menu -->
                 <button id="mobile-menu-btn" class="mobile-toggle" aria-label="Open Menu">
                     <i class="fas fa-bars"></i>
                 </button>
@@ -1134,24 +1115,23 @@
 
         <!-- MOBILE MENU DROPDOWN -->
         <div id="mobile-menu">
-            <a href="#solusi-digital" class="nav-item">Solusi Digital <i class="fas fa-chevron-right" style="font-size: 0.75rem; color: var(--text-muted);"></i></a>
-            <a href="#demo-produk" class="nav-item">Demo Sistem <i class="fas fa-chevron-right" style="font-size: 0.75rem; color: var(--text-muted);"></i></a>
-            <a href="#kegunaan" class="nav-item">Keunggulan UMKM <i class="fas fa-chevron-right" style="font-size: 0.75rem; color: var(--text-muted);"></i></a>
-            <a href="#tentang" class="nav-item">Tentang Bisnis <i class="fas fa-chevron-right" style="font-size: 0.75rem; color: var(--text-muted);"></i></a>
-            <a href="#pendiri" class="nav-item">Profil Pendiri <i class="fas fa-chevron-right" style="font-size: 0.75rem; color: var(--text-muted);"></i></a>
-            <a href="#testimoni" class="nav-item">Testimoni <i class="fas fa-chevron-right" style="font-size: 0.75rem; color: var(--text-muted);"></i></a>
-            <a href="#kontak" class="nav-item">Kontak <i class="fas fa-chevron-right" style="font-size: 0.75rem; color: var(--text-muted);"></i></a>
+            <a href="#demo-produk" class="nav-item">Demo Sistem <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="#solusi-digital" class="nav-item">Solusi Digital <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="#kegunaan" class="nav-item">Keunggulan UMKM <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="#tentang" class="nav-item">Tentang Bisnis <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="#pendiri" class="nav-item">Profil Pendiri <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="#kontak" class="nav-item">Kontak <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" class="nav-item">
-                <span><i class="fas fa-layer-group text-primary" style="margin-right: 0.35rem;"></i> Layanan Sitenexs</span> 
-                <i class="fas fa-external-link-alt" style="font-size: 0.75rem; color: var(--text-muted);"></i>
+                <span><i class="fas fa-layer-group text-primary" style="margin-right: 0.5rem;"></i> Layanan Sitenexs</span> 
+                <i class="fas fa-external-link-alt text-muted" style="font-size: 0.8rem;"></i>
             </a>
             
-            <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px dashed var(--border-subtle); display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem;">
+            <div style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-subtle); display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                 <a href="https://account.sitenexs.com/login" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-block">
-                    <i class="fas fa-sign-in-alt text-primary"></i> Masuk
+                    Masuk
                 </a>
                 <a href="https://account.sitenexs.com/register" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-block">
-                    <i class="fas fa-user-plus"></i> Daftar
+                    Daftar
                 </a>
             </div>
         </div>
@@ -1162,7 +1142,8 @@
         <div class="container">
             <div class="hero-wrapper reveal">
                 <div class="hero-card">
-                    <div class="badge">
+                    
+                    <div class="badge" style="margin-top: 0.5rem;">
                         <i class="fas fa-shield-alt text-primary"></i> Mitra Digitalisasi UMKM Indonesia
                     </div>
                     
@@ -1184,8 +1165,8 @@
                     </div>
 
                     <div class="hero-layanan-action">
-                        <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">
-                            <i class="fas fa-layer-group"></i> Lihat Semua Layanan Sitenexs <i class="fas fa-arrow-right" style="font-size: 0.7rem; margin-left: 0.15rem;"></i>
+                        <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-layer-group"></i> Lihat Semua Layanan Sitenexs <i class="fas fa-arrow-right" style="font-size: 0.8rem; margin-left: 0.25rem;"></i>
                         </a>
                     </div>
                 </div>
@@ -1217,20 +1198,55 @@
         </div>
     </section>
 
-    <!-- 3. PILIHAN SOLUSI DIGITAL -->
+    <!-- 3. DEMO SISTEM KASIR (HP DI ATAS KATALOG) -->
+    <section id="demo-produk" class="page-section bg-square-grid">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-subtitle">Antarmuka Sistem</span>
+                <h2 class="section-title">Demo Tampilan Aplikasi Kasir Sitenexs</h2>
+                <p class="section-desc">Visualisasi langsung antarmuka interaktif yang menghubungkan operasional bisnis Anda.</p>
+            </div>
+
+            <div class="demo-section-container reveal">
+                <!-- 1 HP UTUH 3D DENGAN IFRAME -->
+                <div class="phone-mockup-wrapper">
+                    <div class="phone-mockup">
+                        <div class="phone-screen">
+                            <!-- Notch Kamera -->
+                            <div class="phone-notch"></div>
+                            
+                            <!-- Iframe Web Asli -->
+                            <iframe src="https://usahaweb.sitenexs.com/order/pesan" class="phone-iframe" title="Demo POS Sitenexs"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teks Penjelasan di Bawah HP -->
+            <div class="demo-text-box reveal">
+                <h3 class="demo-title">Aplikasi Kasir (POS) Mobile Modern</h3>
+                <p class="demo-desc">
+                    Silakan gulir dan interaksi langsung pada layar HP di atas! Sistem ini dirancang untuk bekerja secara sempurna di perangkat mobile, memudahkan staf dan pelanggan Anda melakukan pemesanan tanpa aplikasi tambahan.
+                </p>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- 4. PILIHAN SOLUSI DIGITAL (KATALOG) -->
     <section id="solusi-digital" class="page-section bg-gradient-soft">
         <div class="container">
             <div class="section-header reveal">
                 <span class="section-subtitle">Katalog Layanan</span>
                 <h2 class="section-title">Pilihan Solusi Digital UMKM</h2>
-                <p class="section-desc">Sistem operasional modern yang dirancang fleksibel untuk mempercepat pertumbuhan bisnis Anda.</p>
+                <p class="section-desc">Sistem operasional yang dirancang fleksibel untuk mempercepat pertumbuhan bisnis Anda, dari kasir hingga laporan keuangan.</p>
             </div>
 
             <div class="solutions-grid">
                 <div class="solution-card reveal">
                     <div class="solution-icon"><i class="fas fa-globe"></i></div>
                     <h3 class="solution-title">Website Profil Bisnis</h3>
-                    <p class="solution-desc">Website profesional ramah mobile untuk memperkenalkan produk, lokasi, dan identitas usaha Anda ke publik.</p>
+                    <p class="solution-desc">Website profesional ramah mobile untuk memperkenalkan produk, lokasi, dan identitas usaha Anda ke publik dengan elegan.</p>
                 </div>
 
                 <div class="solution-card reveal">
@@ -1242,13 +1258,13 @@
                 <div class="solution-card reveal">
                     <div class="solution-icon"><i class="fas fa-cash-register"></i></div>
                     <h3 class="solution-title">Aplikasi Kasir / POS Web</h3>
-                    <p class="solution-desc">Pencatatan transaksi penjualan instan, cetak struk, dan otomatisasi kalkulasi omzet harian.</p>
+                    <p class="solution-desc">Pencatatan transaksi penjualan instan, cetak struk, dan otomatisasi kalkulasi omzet harian secara langsung.</p>
                 </div>
 
                 <div class="solution-card reveal">
                     <div class="solution-icon"><i class="fas fa-user-clock"></i></div>
                     <h3 class="solution-title">Sistem Presensi Karyawan</h3>
-                    <p class="solution-desc">Memudahkan pencatatan jam masuk dan pulang staf secara digital dari perangkat masing-masing.</p>
+                    <p class="solution-desc">Memudahkan pencatatan jam masuk dan pulang staf secara digital dari perangkat masing-masing karyawan.</p>
                 </div>
 
                 <div class="solution-card reveal">
@@ -1266,74 +1282,45 @@
         </div>
     </section>
 
-    <!-- 4. DEMO PRODUK ATAU LAYANAN -->
-    <section id="demo-produk" class="page-section bg-square-grid">
-        <div class="container">
-            <div class="section-header reveal">
-                <span class="section-subtitle">Antarmuka Sistem</span>
-                <h2 class="section-title">Demo Tampilan Platform Sitenexs</h2>
-                <p class="section-desc">Visualisasi langsung dashboard interaktif dan arsitektur web siap pakai Sitenexs.</p>
-            </div>
-
-            <div class="demo-grid">
-                <div class="demo-card reveal">
-                    <div class="demo-img-box">
-                        <img src="https://sitenexs.com/assets/produk/laporankeuangan.png?auto=format&fit=crop&w=600&q=80" alt="Dashboard Laporan Keuangan Sitenexs">
-                    </div>
-                    <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-main);">Dashboard Laporan & Analytics</h3>
-                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Tampilan laporan keuangan presisi yang mudah dipahami pemilik usaha tanpa perlu menyusun rumus manual.</p>
-                </div>
-
-                <div class="demo-card reveal">
-                    <div class="demo-img-box">
-                        <img src="https://sitenexs.com/assets/grafik/grafik1.png?auto=format&fit=crop&w=600&q=80" alt="Pengembangan Sistem Sitenexs" style="object-position: center;">
-                    </div>
-                    <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-main);">Pengembangan Berbasis Cloud Modern</h3>
-                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Kode program terstruktur untuk memastikan performa website yang stabil, cepat, dan aman diakses kapan saja.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- 5. KEUNGGULAN SITENEXS -->
     <section id="kegunaan" class="page-section bg-gradient-section">
         <div class="container">
             <div class="section-header reveal">
                 <span class="section-subtitle">Nilai Tambah</span>
                 <h2 class="section-title">Bagaimana Sitenexs Membantu UMKM?</h2>
-                <p class="section-desc">Didesain secara adaptif untuk membawa dampak positif langsung terhadap efisiensi operasional.</p>
+                <p class="section-desc">Didesain secara adaptif untuk membawa dampak positif langsung terhadap efisiensi operasional harian.</p>
             </div>
 
             <div class="utility-grid">
                 <div class="utility-card reveal">
                     <div class="utility-icon-box"><i class="fas fa-clock"></i></div>
                     <div>
-                        <h4 style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.2rem;">Efisiensi Waktu Operasional</h4>
-                        <p style="color: var(--text-muted); font-size: 0.825rem; line-height: 1.5;">Menggantikan prosedur manual berbasis kertas dengan alur otomatis agar Anda lebih fokus pada strategi bisnis.</p>
+                        <h4 class="utility-title">Efisiensi Waktu Operasional</h4>
+                        <p class="utility-desc">Menggantikan prosedur manual berbasis kertas dengan alur otomatis agar Anda lebih fokus pada strategi bisnis.</p>
                     </div>
                 </div>
 
                 <div class="utility-card reveal">
                     <div class="utility-icon-box"><i class="fas fa-mobile-alt"></i></div>
                     <div>
-                        <h4 style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.2rem;">Akses Mudah Tanpa Perangkat Khusus</h4>
-                        <p style="color: var(--text-muted); font-size: 0.825rem; line-height: 1.5;">Sistem berbasis web dan fleksibel diakses dari smartphone, tablet, maupun laptop yang Anda miliki.</p>
+                        <h4 class="utility-title">Akses Mudah Tanpa Alat Khusus</h4>
+                        <p class="utility-desc">Sistem berbasis web yang ringan dan fleksibel diakses dari smartphone, tablet, maupun laptop yang Anda miliki.</p>
                     </div>
                 </div>
 
                 <div class="utility-card reveal">
                     <div class="utility-icon-box"><i class="fas fa-chart-line"></i></div>
                     <div>
-                        <h4 style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.2rem;">Meningkatkan Kredibilitas Usaha</h4>
-                        <p style="color: var(--text-muted); font-size: 0.825rem; line-height: 1.5;">Meningkatkan citra usaha menjadi lebih profesional di mata pelanggan lewat layanan terstruktur.</p>
+                        <h4 class="utility-title">Meningkatkan Kredibilitas Usaha</h4>
+                        <p class="utility-desc">Meningkatkan citra usaha menjadi lebih profesional di mata pelanggan lewat layanan digital yang terstruktur.</p>
                     </div>
                 </div>
 
                 <div class="utility-card reveal">
                     <div class="utility-icon-box"><i class="fas fa-headset"></i></div>
                     <div>
-                        <h4 style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.2rem;">Pendampingan Penggunaan Sistem</h4>
-                        <p style="color: var(--text-muted); font-size: 0.825rem; line-height: 1.5;">Komunikasi langsung dan panduan teknis berkala untuk memastikan seluruh staf siap mengoperasikan sistem.</p>
+                        <h4 class="utility-title">Pendampingan Penggunaan Sistem</h4>
+                        <p class="utility-desc">Komunikasi langsung dan panduan teknis berkala untuk memastikan seluruh staf siap mengoperasikan sistem.</p>
                     </div>
                 </div>
             </div>
@@ -1351,33 +1338,37 @@
 
             <div class="about-info-grid">
                 <div class="info-card reveal">
-                    <img src="https://sitenexs.com/assets/foto/ngoding.png?auto=format&fit=crop&w=600&q=80" alt="Pengembang Sitenexs" class="info-card-image info-card-image-centered">
+                    <div class="info-card-image-box">
+                        <img src="https://sitenexs.com/assets/foto/ngoding.png?auto=format&fit=crop&w=600&q=80" alt="Pengembang Sitenexs" class="info-card-image info-card-image-centered">
+                    </div>
                     <div>
-                        <h3 class="info-card-title">Dikembangkan pada tahun 2026</h3>
+                        <h3 class="info-card-title">Dikembangkan Tahun 2026</h3>
                         <p class="info-card-desc">
-                            Sitenexs mulai dikembangkan pada tanggal <strong>27/09/2026</strong> oleh seorang anak Sekolah Menengah Kejuruan.
+                            Sitenexs mulai dikembangkan pada tanggal <strong>27/09/2026</strong> oleh seorang talenta muda berdedikasi tinggi.
                         </p>
                     </div>
                 </div>
 
                 <div class="info-card reveal">
-                    <div class="info-card-map">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d127393.26871032898!2d102.22158864389947!3d-3.800412803816578!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e36b01e37e39279%3A0xa079b576e790a6ea!2sBengkulu%2C%20Kota%20Bengkulu%2C%20Bengkulu!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Peta Google Maps Bengkulu"></iframe>
+                    <div class="info-card-image-box">
+                        <iframe class="info-card-map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d127393.26871032898!2d102.22158864389947!3d-3.800412803816578!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e36b01e37e39279%3A0xa079b576e790a6ea!2sBengkulu%2C%20Kota%20Bengkulu%2C%20Bengkulu!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Peta Google Maps Bengkulu"></iframe>
                     </div>
                     <div>
                         <h3 class="info-card-title">Berpusat di Bengkulu</h3>
                         <p class="info-card-desc">
-                            Berlokasi di <strong>Kota Bengkulu, Indonesia</strong>, Sitenexs memberikan dukungan penuh secara nasional melalui infrastruktur cloud yang mudah diakses.
+                            Berlokasi di <strong>Kota Bengkulu, Indonesia</strong>, memberikan dukungan penuh secara nasional melalui infrastruktur cloud.
                         </p>
                     </div>
                 </div>
 
                 <div class="info-card reveal">
-                    <img src="https://sitenexs.com/assets/produk/laporankeuangan.png?auto=format&fit=crop&w=600&q=80" alt="Sistem Web Sitenexs" class="info-card-image">
+                    <div class="info-card-image-box">
+                        <img src="https://sitenexs.com/assets/produk/laporankeuangan.png?auto=format&fit=crop&w=600&q=80" alt="Sistem Web Sitenexs" class="info-card-image">
+                    </div>
                     <div>
                         <h3 class="info-card-title">Fokus Efisiensi UMKM</h3>
                         <p class="info-card-desc">
-                            Menghadirkan arsitektur web siap pakai yang ramah pengguna, sehingga operasional dapat berjalan tanpa pelatihan teknis rumit.
+                            Menghadirkan arsitektur web siap pakai yang ramah pengguna, beroperasi tanpa memerlukan pelatihan teknis yang rumit.
                         </p>
                     </div>
                 </div>
@@ -1389,9 +1380,9 @@
     <section id="pendiri" class="page-section bg-grid-pattern" style="background-color: var(--bg-body);">
         <div class="container">
             <div class="section-header reveal">
-                <span class="section-subtitle">Kepemimpinan & Software Engineering</span>
+                <span class="section-subtitle">Kepemimpinan & Engineering</span>
                 <h2 class="section-title">Profil Pendiri Sitenexs</h2>
-                <p class="section-desc">Sosok di balik arsitektur dan visi pengembang sistem Sitenexs.</p>
+                <p class="section-desc">Sosok visioner di balik arsitektur dan visi pengembang sistem Sitenexs.</p>
             </div>
 
             <div class="founder-card reveal">
@@ -1411,22 +1402,22 @@
                     <div class="founder-header">
                         <h3 class="founder-name">Syafaat Nuryadi</h3>
                         <div class="founder-role">
-                            <i class="fas fa-user-tie"></i> Founder Sitenexs
+                            <i class="fas fa-user-tie"></i> Founder & Lead Engineer
                         </div>
                     </div>
                     
                     <p class="founder-bio">
-                        Seorang pengembang perangkat lunak (Software Engineer) asal Bengkulu, Indonesia, yang berhasil mendirikan <strong>Sitenexs</strong> pada <strong>27/09/2026</strong>.
+                        Seorang pengembang perangkat lunak asal Bengkulu yang berhasil mendirikan <strong>Sitenexs</strong> pada <strong>27/09/2026</strong>. Berdedikasi untuk menciptakan solusi IT yang memecahkan masalah nyata bagi pemilik usaha lokal.
                     </p>
 
                     <div class="founder-quote">
-                        <i class="fas fa-quote-left text-primary" style="margin-right: 0.35rem; opacity: 0.7;"></i>
-                        "Menjadi pelopor inovasi digital yang menghadirkan teknologi modern, mudah digunakan, dan memberikan manfaat nyata bagi masyarakat."
+                        <i class="fas fa-quote-left text-primary" style="margin-right: 0.5rem; opacity: 0.7;"></i>
+                        "Menjadi pelopor inovasi digital yang menghadirkan teknologi modern, mudah digunakan, dan memberikan manfaat efisiensi nyata bagi masyarakat luas."
                     </div>
 
                     <div class="founder-action">
-                        <a href="https://founder.sitenexs.com" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
-                            <i class="fas fa-external-link-alt"></i> Lihat Selengkapnya
+                        <a href="https://founder.sitenexs.com" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                            <i class="fas fa-external-link-alt"></i> Lihat Profil Lengkap
                         </a>
                     </div>
                 </div>
@@ -1434,216 +1425,103 @@
         </div>
     </section>
 
-    <!-- 8. TESTIMONI -->
-    <section id="testimoni" class="page-section bg-square-grid">
+    <!-- 8. KONTAK (BERGAYA CARD) -->
+    <section id="kontak" class="page-section bg-gradient-soft">
         <div class="container">
             <div class="section-header reveal">
-                <span class="section-subtitle">Ulasan Pelanggan</span>
-                <h2 class="section-title">Apa Kata Mereka Tentang Sitenexs?</h2>
-                <p class="section-desc">Pengalaman nyata para pemilik usaha yang telah bertransformasi menggunakan solusi dari Sitenexs.</p>
-                <div style="margin-top: 1.25rem;">
-                    <button id="toggle-review-btn" class="btn btn-primary">
-                        <i class="fas fa-star" style="color: #fbbf24;"></i> Beri Ulasan Anda
-                    </button>
-                </div>
+                <span class="section-subtitle">Hubungi Kami</span>
+                <h2 class="section-title">Siap Bertransformasi Digital?</h2>
+                <p class="section-desc">Punya pertanyaan seputar layanan kami atau ingin berkonsultasi mengenai kebutuhan bisnis Anda? Kirimkan pesan sekarang.</p>
             </div>
 
-            <!-- FORM BERI ULASAN (TOGGLED) -->
-            <div id="review-form-container" class="review-form-wrapper reveal">
-                <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.3rem;">Tuliskan Ulasan Anda</h3>
-                <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 1rem;">Bagikan pengalaman Anda menggunakan platform Sitenexs.</p>
-
-                <form id="review-form">
+            <!-- Form Contact berubah menjadi Card yang tegas -->
+            <form id="contact-form" class="contact-card reveal">
+                <div class="form-grid">
                     <div class="form-group">
-                        <label>Pilih Rating Bintang *</label>
-                        <div class="star-rating-input" id="star-picker">
-                            <i class="fas fa-star active" data-rating="1"></i>
-                            <i class="fas fa-star active" data-rating="2"></i>
-                            <i class="fas fa-star active" data-rating="3"></i>
-                            <i class="fas fa-star active" data-rating="4"></i>
-                            <i class="fas fa-star active" data-rating="5"></i>
-                        </div>
-                        <input type="hidden" id="review-rating" value="5" required>
+                        <label>Nama Lengkap / Usaha</label>
+                        <input type="text" id="wa-name" required placeholder="Contoh: Budi (Kedai Kopi)" class="form-control">
                     </div>
-
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Nama Lengkap *</label>
-                            <input type="text" id="review-name" required placeholder="Contoh: Ahmad Rizky" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>Alamat Email *</label>
-                            <input type="email" id="review-email" required placeholder="nama@email.com" class="form-control">
-                        </div>
-                    </div>
-
                     <div class="form-group">
-                        <label>Nama Usaha / Bisnis *</label>
-                        <input type="text" id="review-business" required placeholder="Contoh: Cafe Kopi Kenangan / Resto Nusantara" class="form-control">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Komentar Ulasan *</label>
-                        <textarea id="review-comment" rows="3" required placeholder="Tuliskan pendapat atau ulasan Anda tentang sistem Sitenexs..." class="form-control"></textarea>
-                    </div>
-
-                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.5rem;">
-                        <button type="button" id="cancel-review-btn" class="btn btn-secondary btn-sm">Batal</button>
-                        <button type="submit" id="submit-review-btn" class="btn btn-primary btn-sm">
-                            <i class="fas fa-paper-plane"></i> Kirim Ulasan
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- DAFTAR TESTIMONI (TERINTEGRASI FIRESTORE) -->
-            <div id="testimonials-list" class="testimonials-grid reveal">
-                <!-- Testimoni Bawaan 1 -->
-                <div class="testimonial-card">
-                    <div>
-                        <div class="stars-container">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                        </div>
-                        <p class="testimonial-text">"Sistem pencatatan dan kasir dari Sitenexs sangat gampang dipakai staf resto saya. Tidak perlu antre lama lagi pas jam makan siang!"</p>
-                    </div>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">B</div>
-                        <div class="author-info">
-                            <h5>Bambang Hermanto</h5>
-                            <p>Pemilik Warung Makan Berkah</p>
-                        </div>
+                        <label>No. WhatsApp</label>
+                        <input type="tel" id="wa-phone" required placeholder="085177137899" class="form-control">
                     </div>
                 </div>
 
-                <!-- Testimoni Bawaan 2 -->
-                <div class="testimonial-card">
-                    <div>
-                        <div class="stars-container">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                        </div>
-                        <p class="testimonial-text">"Fitur laporan keuangannya presisi banget. Sekarang omzet bulanan bisa langsung dipantau dari HP tanpa pusing rumus Excel."</p>
-                    </div>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">S</div>
-                        <div class="author-info">
-                            <h5>Siti Rahmawati</h5>
-                            <p>Founder Kedai Kopi Bengkulu</p>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label>Subjek Pertanyaan</label>
+                    <select id="wa-subject" class="form-control">
+                        <option>Pertanyaan Umum Bisnis</option>
+                        <option>Konsultasi Kebutuhan UMKM</option>
+                        <option>Kemitraan & Kerjasama</option>
+                        <option>Lainnya</option>
+                    </select>
                 </div>
 
-                <!-- Testimoni Bawaan 3 -->
-                <div class="testimonial-card">
-                    <div>
-                        <div class="stars-container">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                        </div>
-                        <p class="testimonial-text">"Pelayanannya sangat ramah dan sabar membimbing dari awal. Cocok banget buat UMKM yang mau mulai go digital."</p>
-                    </div>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">D</div>
-                        <div class="author-info">
-                            <h5>Dedi Setiawan</h5>
-                            <p>Manajer Toko Grosir Jaya</p>
-                        </div>
-                    </div>
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label>Pesan Anda</label>
+                    <textarea id="wa-note" rows="5" placeholder="Tuliskan pesan Anda secara detail di sini..." class="form-control"></textarea>
                 </div>
-            </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fab fa-whatsapp"></i> Kirim Pesan via WhatsApp
+                </button>
+            </form>
         </div>
     </section>
 
-    <!-- 9. KONTAK DAN AJAKAN BERTINDAK -->
-    <section id="kontak" class="page-section bg-grid-pattern" style="background-color: var(--bg-body);">
+    <!-- 9. FOOTER (BERGAYA CARD) -->
+    <div class="footer-section">
         <div class="container">
-            <div class="section-header reveal">
-                <span class="section-subtitle">Kontak Kami</span>
-                <h2 class="section-title">Hubungi Tim Sitenexs</h2>
-                <p class="section-desc">Punya pertanyaan seputar bisnis kami atau ingin berkonsultasi? Silakan hubungi kami via WhatsApp.</p>
-            </div>
-
-            <div class="form-container">
-                <form id="contact-form" class="info-card reveal" style="padding: 1.5rem;">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Nama Lengkap / Usaha</label>
-                            <input type="text" id="wa-name" required placeholder="Contoh: Budi (Kedai Kopi)" class="form-control">
+            <footer class="footer-card reveal">
+                <div class="footer-grid">
+                    <div>
+                        <div class="logo" style="margin-bottom: 1.25rem;">
+                            <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff&size=64&rounded=true';">
+                            <span class="logo-text" style="font-size: 1.4rem;">Sitenexs</span>
                         </div>
-                        <div class="form-group">
-                            <label>No. WhatsApp</label>
-                            <input type="tel" id="wa-phone" required placeholder="085177137899" class="form-control">
+                        <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-muted); max-width: 320px;">
+                            Platform solusi digital inovatif yang didirikan di Bengkulu untuk mendorong modernisasi dan efisiensi operasional UMKM Indonesia.
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <div class="footer-title">Navigasi Halaman</div>
+                        <ul class="footer-links">
+                            <li><a href="#demo-produk">Demo Sistem Web</a></li>
+                            <li><a href="#solusi-digital">Katalog Solusi Digital</a></li>
+                            <li><a href="#kegunaan">Keunggulan UMKM</a></li>
+                            <li><a href="#tentang">Tentang Perusahaan</a></li>
+                            <li><a href="#pendiri">Profil Pendiri</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <div class="footer-title">Informasi Kontak</div>
+                        <div class="footer-contact-item">
+                            <i class="fas fa-map-marker-alt text-primary" style="width: 20px;"></i>
+                            <span>Kota Bengkulu, Bengkulu, ID</span>
+                        </div>
+                        <div class="footer-contact-item">
+                            <i class="fas fa-envelope text-primary" style="width: 20px;"></i>
+                            <span>sitenexs@gmail.com</span>
+                        </div>
+                        <div class="footer-contact-item">
+                            <i class="fas fa-phone text-primary" style="width: 20px;"></i>
+                            <span>+62 851-7713-7899</span>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label>Subjek Pertanyaan</label>
-                        <select id="wa-subject" class="form-control">
-                            <option>Pertanyaan Umum Bisnis</option>
-                            <option>Konsultasi Kebutuhan UMKM</option>
-                            <option>Kemitraan & Kerjasama</option>
-                            <option>Lainnya</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Pesan Anda</label>
-                        <textarea id="wa-note" rows="3" placeholder="Tuliskan pesan Anda..." class="form-control"></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary btn-block" style="margin-top: 0.5rem;">
-                        <i class="fab fa-whatsapp"></i> Kirim Pesan via WhatsApp
-                    </button>
-                </form>
-            </div>
+                </div>
+                
+                <div style="border-top: 1px solid var(--border-subtle); padding-top: 2rem; text-align: center; font-size: 0.9rem; color: var(--text-muted); margin-top: 1rem;">
+                    &copy; 2026 Sitenexs. Didirikan oleh <a href="https://founder.sitenexs.com" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 700;">Syafaat Nuryadi</a>. All rights reserved.
+                </div>
+            </footer>
         </div>
-    </section>
+    </div>
 
-    <!-- 10. FOOTER -->
-    <footer>
-        <div class="container">
-            <div class="footer-grid">
-                <div>
-                    <div class="logo" style="margin-bottom: 0.5rem;">
-                        <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff&size=64&rounded=true';">
-                        <span class="logo-text">Sitenexs</span>
-                    </div>
-                    <p style="font-size: 0.775rem; line-height: 1.6; max-width: 300px;">
-                        Platform digital yang didirikan oleh Syafaat Nuryadi di Bengkulu untuk mendorong efisiensi operasional UMKM Indonesia.
-                    </p>
-                </div>
-                <div>
-                    <div class="footer-title">Navigasi Halaman</div>
-                    <ul class="footer-links">
-                        <li><a href="#solusi-digital">Solusi Digital</a></li>
-                        <li><a href="#demo-produk">Demo Sistem</a></li>
-                        <li><a href="#kegunaan">Keunggulan UMKM</a></li>
-                        <li><a href="#tentang">Tentang Kami</a></li>
-                        <li><a href="#pendiri">Profil Pendiri</a></li>
-                        <li><a href="#testimoni">Testimoni Pelanggan</a></li>
-                        <li><a href="#kontak">Kontak Kami</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="footer-title">Informasi Kontak</div>
-                    <p style="font-size: 0.775rem; margin-bottom: 0.4rem;">
-                        <i class="fas fa-map-marker-alt text-primary" style="width: 18px;"></i>Kota Bengkulu, Bengkulu, Indonesia
-                    </p>
-                    <p style="font-size: 0.775rem; margin-bottom: 0.4rem;">
-                        <i class="fas fa-envelope text-primary" style="width: 18px;"></i> sitenexs@gmail.com
-                    </p>
-                    <p style="font-size: 0.775rem;">
-                        <i class="fas fa-phone text-primary" style="width: 18px;"></i> +62 851-7713-7899
-                    </p>
-                </div>
-            </div>
-            <div style="border-top: 1px solid var(--border-subtle); padding-top: 1rem; text-align: center; font-size: 0.75rem; color: var(--text-muted);">
-                &copy; 2026 Sitenexs. Didirikan oleh <a href="https://founder.sitenexs.com" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 700;">Syafaat Nuryadi</a>. All rights reserved.
-            </div>
-        </div>
-    </footer>
-
-    <!-- 11. FLOATING WHATSAPP BUTTON -->
+    <!-- 10. FLOATING WHATSAPP BUTTON -->
     <div class="whatsapp-float-container">
-        <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs" target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Chat WhatsApp">
+        <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20berkonsultasi" target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Chat WhatsApp">
             <i class="fab fa-whatsapp"></i>
         </a>
     </div>
@@ -1658,13 +1536,12 @@
 
             if (mobileMenuBtn && mobileMenu) {
                 mobileMenuBtn.addEventListener('click', () => {
-                    const isDisplayed = mobileMenu.style.display === 'block';
-                    mobileMenu.style.display = isDisplayed ? 'none' : 'block';
+                    mobileMenu.classList.toggle('show');
                 });
 
                 mobileNavItems.forEach(item => {
                     item.addEventListener('click', () => {
-                        mobileMenu.style.display = 'none';
+                        mobileMenu.classList.remove('show');
                     });
                 });
             }
@@ -1675,13 +1552,13 @@
                 const windowHeight = window.innerHeight;
                 reveals.forEach(element => {
                     const elementTop = element.getBoundingClientRect().top;
-                    if (elementTop < windowHeight - 40) {
+                    if (elementTop < windowHeight - 60) {
                         element.classList.add('active');
                     }
                 });
             }
             window.addEventListener('scroll', revealOnScroll);
-            revealOnScroll();
+            revealOnScroll(); // Trigger once on load
 
             // FORM KONTAK KE WHATSAPP
             const contactForm = document.getElementById('contact-form');
@@ -1697,195 +1574,7 @@
                     window.open(`https://wa.me/6285177137899?text=${encodeURIComponent(message)}`, '_blank');
                 });
             }
-
-            // TOGGLE REVIEW FORM
-            const toggleReviewBtn = document.getElementById('toggle-review-btn');
-            const cancelReviewBtn = document.getElementById('cancel-review-btn');
-            const reviewFormContainer = document.getElementById('review-form-container');
-
-            if (toggleReviewBtn && reviewFormContainer) {
-                toggleReviewBtn.addEventListener('click', () => {
-                    const isShown = reviewFormContainer.style.display === 'block';
-                    reviewFormContainer.style.display = isShown ? 'none' : 'block';
-                    if (!isShown) {
-                        reviewFormContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                });
-            }
-
-            if (cancelReviewBtn && reviewFormContainer) {
-                cancelReviewBtn.addEventListener('click', () => {
-                    reviewFormContainer.style.display = 'none';
-                });
-            }
-
-            // STAR RATING PICKER LOGIC
-            const starPicker = document.getElementById('star-picker');
-            const ratingInput = document.getElementById('review-rating');
-
-            if (starPicker && ratingInput) {
-                const stars = starPicker.querySelectorAll('i');
-                stars.forEach(star => {
-                    star.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const val = parseInt(this.getAttribute('data-rating'));
-                        ratingInput.value = val;
-                        
-                        stars.forEach((s, idx) => {
-                            if (idx < val) {
-                                s.classList.add('active');
-                            } else {
-                                s.classList.remove('active');
-                            }
-                        });
-                    });
-                });
-            }
         });
-    </script>
-
-    <!-- FIREBASE & FIRESTORE INTEGRATION -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-analytics.js";
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            onSnapshot, 
-            query, 
-            orderBy, 
-            serverTimestamp 
-        } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4",
-            authDomain: "sitenexs-62919.firebaseapp.com",
-            projectId: "sitenexs-62919",
-            storageBucket: "sitenexs-62919.firebasestorage.app",
-            messagingSenderId: "1060348110644",
-            appId: "1:1060348110644:web:e45af14d5f26a9cf8e6761",
-            measurementId: "G-C7YL0Q7YRQ"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const db = getFirestore(app);
-
-        const reviewsRef = collection(db, "reviews");
-
-        const testimonialsList = document.getElementById('testimonials-list');
-        const reviewForm = document.getElementById('review-form');
-        const reviewFormContainer = document.getElementById('review-form-container');
-        const submitBtn = document.getElementById('submit-review-btn');
-        const starPicker = document.getElementById('star-picker');
-
-        function escapeHTML(str) {
-            if (!str) return '';
-            return str.replace(/[&<>'"]/g, 
-                tag => ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    "'": '&#39;',
-                    '"': '&quot;'
-                }[tag] || tag)
-            );
-        }
-
-        function renderReviewCard(id, reviewData) {
-            let starsHTML = '';
-            const rating = parseInt(reviewData.rating) || 5;
-            for (let i = 1; i <= 5; i++) {
-                if (i <= rating) {
-                    starsHTML += '<i class="fas fa-star"></i>';
-                } else {
-                    starsHTML += '<i class="far fa-star" style="color:#cbd5e1;"></i>';
-                }
-            }
-
-            const initial = reviewData.name ? reviewData.name.charAt(0).toUpperCase() : 'U';
-
-            return `
-                <div class="testimonial-card reveal active" id="doc-${id}">
-                    <div>
-                        <div class="stars-container">${starsHTML}</div>
-                        <p class="testimonial-text">"${escapeHTML(reviewData.comment)}"</p>
-                    </div>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">${initial}</div>
-                        <div class="author-info">
-                            <h5>${escapeHTML(reviewData.name)}</h5>
-                            <p>${escapeHTML(reviewData.business)}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        const q = query(reviewsRef, orderBy("createdAt", "desc"));
-
-        onSnapshot(q, (snapshot) => {
-            let firestoreHTML = '';
-            snapshot.forEach((doc) => {
-                firestoreHTML += renderReviewCard(doc.id, doc.data());
-            });
-
-            if (snapshot.docs.length > 0) {
-                testimonialsList.innerHTML = firestoreHTML;
-            }
-        }, (error) => {
-            console.error("Gagal mengambil data dari Firestore: ", error);
-        });
-
-        if (reviewForm) {
-            reviewForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                const name = document.getElementById('review-name').value.trim();
-                const email = document.getElementById('review-email').value.trim();
-                const business = document.getElementById('review-business').value.trim();
-                const comment = document.getElementById('review-comment').value.trim();
-                const rating = parseInt(document.getElementById('review-rating').value) || 5;
-
-                if (!name || !email || !business || !comment) {
-                    alert('Silakan lengkapi seluruh kolom ulasan.');
-                    return;
-                }
-
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
-
-                try {
-                    await addDoc(reviewsRef, {
-                        name: name,
-                        email: email,
-                        business: business,
-                        comment: comment,
-                        rating: rating,
-                        createdAt: serverTimestamp()
-                    });
-
-                    reviewForm.reset();
-                    document.getElementById('review-rating').value = 5;
-                    if (starPicker) {
-                        const stars = starPicker.querySelectorAll('i');
-                        stars.forEach(s => s.classList.add('active'));
-                    }
-                    reviewFormContainer.style.display = 'none';
-                    testimonialsList.scrollTop = 0;
-
-                    alert('Terima kasih! Ulasan Anda telah berhasil terisi dan langsung tersimpan di sistem Sitenexs.');
-
-                } catch (error) {
-                    console.error("Error menambahkan dokumen ulasan: ", error);
-                    alert('Terjadi kesalahan saat menyimpan ulasan Anda ke Firestore. Silakan coba beberapa saat lagi.');
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Ulasan';
-                }
-            });
-        }
     </script>
 </body>
 </html>
