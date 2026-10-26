@@ -29,12 +29,12 @@
             --success: #16a34a;
             --warning: #d97706;
             --danger: #ef4444;
-            --radius-sm: 0.5rem;
-            --radius-md: 0.85rem;
+            --radius-sm: 0.4rem;
+            --radius-md: 0.65rem;
             --radius-lg: 1rem;
             --radius-full: 9999px;
-            --shadow-sm: 0 2px 6px -1px rgba(28, 25, 23, 0.06), 0 1px 3px -1px rgba(28, 25, 23, 0.04);
-            --shadow-md: 0 10px 25px -5px rgba(28, 25, 23, 0.1), 0 8px 10px -6px rgba(28, 25, 23, 0.08);
+            --shadow-sm: 0 2px 4px -1px rgba(28, 25, 23, 0.06);
+            --shadow-md: 0 8px 20px -5px rgba(28, 25, 23, 0.08);
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -44,18 +44,18 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
-            font-size: 0.85rem;
-            padding-bottom: 5.5rem;
+            font-size: 0.75rem; /* Base font diperkecil */
+            padding-bottom: 4.5rem; /* Ruang untuk floating bar */
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
         }
 
-        /* Container: Maksimal 1024px agar rapi di dashboard */
+        /* Container: Padding diperkecil agar pas di frame mockup */
         .container {
             width: 100%;
             max-width: 1024px;
             margin: 0 auto;
-            padding: 1rem 1.25rem;
+            padding: 0.75rem;
         }
 
         /* --- HEADER --- */
@@ -63,13 +63,13 @@
             background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-subtle);
-            padding: 1rem 1.25rem;
+            padding: 0.75rem;
             position: sticky;
             top: 0;
             z-index: 100;
             display: flex;
             align-items: center;
-            justify-content: center; /* Center content for desktop approach */
+            justify-content: center;
             box-shadow: var(--shadow-sm);
         }
         
@@ -81,103 +81,78 @@
             align-items: center;
         }
 
-        .header-brand h2 { font-size: clamp(1.05rem, 2vw, 1.2rem); font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
-        .header-brand p { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; }
+        .header-brand h2 { font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem; }
+        .header-brand p { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.1rem; }
         .guide-btn {
-            background: var(--primary-light);
-            border: 1px solid #fed7aa;
-            color: var(--primary);
-            width: 38px; height: 38px;
-            border-radius: var(--radius-full);
+            background: var(--primary-light); border: 1px solid #fed7aa; color: var(--primary);
+            width: 30px; height: 30px; border-radius: var(--radius-full);
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: var(--transition);
+            cursor: pointer; transition: var(--transition); font-size: 0.75rem;
         }
         .guide-btn:hover { background: var(--primary); color: #fff; transform: scale(1.05); }
 
         /* --- META BOX (Meja & Nama) --- */
         .order-meta-box {
             background: linear-gradient(135deg, var(--primary-light) 0%, #ffffff 100%);
-            border: 1px solid #fed7aa;
-            padding: 0.85rem;
-            border-radius: var(--radius-md);
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Adaptif */
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-            box-shadow: var(--shadow-sm);
+            border: 1px solid #fed7aa; padding: 0.6rem; border-radius: var(--radius-md);
+            display: grid; grid-template-columns: 1fr; gap: 0.5rem; /* Stack di mockup sempit */
+            margin-bottom: 0.85rem; box-shadow: var(--shadow-sm);
         }
         .order-meta-box div {
             display: flex; align-items: center; justify-content: space-between;
-            background: #fff; padding: 0.5rem 0.75rem;
-            border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);
+            background: #fff; padding: 0.4rem 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);
         }
-        .order-meta-box span { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem; }
+        .order-meta-box span { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; }
         .order-meta-box input {
             background: transparent; border: none; font-weight: 700; color: var(--primary);
-            font-size: 0.9rem; pointer-events: none; text-align: right; width: 100px;
+            font-size: 0.8rem; pointer-events: none; text-align: right; width: 80px;
         }
 
         /* --- FILTER & SEARCH --- */
-        .filter-control-box {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-        @media (max-width: 480px) {
-            .filter-control-box { grid-template-columns: 1fr; } /* Stack di HP kecil */
-        }
+        .filter-control-box { display: grid; grid-template-columns: 1fr auto; gap: 0.5rem; margin-bottom: 0.85rem; }
         .search-wrapper { position: relative; width: 100%; }
         .search-wrapper input {
-            width: 100%; padding: 0.6rem 1rem 0.6rem 2.2rem;
+            width: 100%; padding: 0.5rem 0.6rem 0.5rem 1.8rem;
             border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
-            font-size: 0.8rem; transition: var(--transition); box-shadow: var(--shadow-sm);
+            font-size: 0.75rem; transition: var(--transition); box-shadow: var(--shadow-sm);
         }
         .search-wrapper input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15); }
-        .search-wrapper i { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .search-wrapper i { position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.75rem; }
         
         .sort-select {
-            padding: 0.6rem 2.2rem 0.6rem 1rem;
+            padding: 0.5rem 1.6rem 0.5rem 0.75rem;
             border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
-            font-size: 0.8rem; font-weight: 600; color: var(--text-main);
+            font-size: 0.7rem; font-weight: 600; color: var(--text-main);
             appearance: none; box-shadow: var(--shadow-sm); background: #fff; cursor: pointer;
         }
         .sort-select-wrapper { position: relative; height: 100%; }
         .sort-select-wrapper::after {
             content: '\f0dc'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
-            position: absolute; right: 0.8rem; top: 50%; transform: translateY(-50%);
-            font-size: 0.75rem; color: var(--text-muted); pointer-events: none;
+            position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%);
+            font-size: 0.65rem; color: var(--text-muted); pointer-events: none;
         }
 
         /* --- KATEGORI SCROLL --- */
         .category-scroll {
-            display: flex; gap: 0.5rem; overflow-x: auto;
-            padding-bottom: 0.5rem; margin-bottom: 1.25rem;
-            scrollbar-width: none; /* Firefox */
+            display: flex; gap: 0.4rem; overflow-x: auto;
+            padding-bottom: 0.4rem; margin-bottom: 0.85rem; scrollbar-width: none;
         }
         .category-scroll::-webkit-scrollbar { display: none; }
         .cat-btn {
             background: #fff; border: 1px solid var(--border-subtle);
-            padding: 0.5rem 1rem; border-radius: var(--radius-full);
-            font-size: 0.78rem; font-weight: 600; color: var(--text-muted);
+            padding: 0.4rem 0.75rem; border-radius: var(--radius-full);
+            font-size: 0.7rem; font-weight: 600; color: var(--text-muted);
             cursor: pointer; transition: var(--transition); box-shadow: var(--shadow-sm); white-space: nowrap;
         }
-        .cat-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
         .cat-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-        /* --- MENU GRID ADAPTIF --- */
-        .section-title { font-size: 1.05rem; margin-bottom: 1rem; font-weight: 700; }
+        /* --- MENU GRID: Dibuat lebih kecil & pas 2 kolom --- */
+        .section-title { font-size: 0.9rem; margin-bottom: 0.75rem; font-weight: 700; }
         
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); /* Default HP */
-            gap: 0.75rem;
-        }
-        @media (min-width: 640px) {
-            .menu-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
-        }
-        @media (min-width: 1024px) {
-            .menu-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.25rem; }
+            grid-template-columns: repeat(2, 1fr); /* Wajib 2 kolom agar tidak terlalu besar */
+            gap: 0.5rem; /* Gap diperkecil */
         }
 
         .menu-card {
@@ -186,84 +161,56 @@
             display: flex; flex-direction: column; box-shadow: var(--shadow-sm);
             transition: var(--transition); animation: fadeIn 0.4s ease;
         }
-        .menu-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: #fdba74; }
         
         .menu-img-wrapper { position: relative; width: 100%; padding-bottom: 100%; overflow: hidden; background: #f5f5f4; cursor: pointer; }
-        .menu-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
-        .menu-card:hover .menu-img { transform: scale(1.08); }
+        .menu-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
         
-        .menu-body { padding: 0.6rem; flex: 1; display: flex; flex-direction: column; cursor: pointer; }
-        .menu-title { font-size: clamp(0.75rem, 1.5vw, 0.85rem); font-weight: 700; margin-bottom: 0.2rem; line-height: 1.3; }
-        .menu-price { font-size: clamp(0.75rem, 1.5vw, 0.85rem); color: var(--primary); font-weight: 700; margin-top: auto; }
+        .menu-body { padding: 0.4rem; flex: 1; display: flex; flex-direction: column; cursor: pointer; }
+        .menu-title { font-size: 0.7rem; font-weight: 700; margin-bottom: 0.15rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .menu-price { font-size: 0.75rem; color: var(--primary); font-weight: 700; margin-top: auto; }
         
-        /* Tombol Card Adaptif */
-        .menu-action { padding: 0 0.6rem 0.6rem 0.6rem; }
-        
+        .menu-action { padding: 0 0.4rem 0.4rem 0.4rem; }
         .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
-            padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 600;
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+            padding: 0.45rem 0.75rem; font-size: 0.75rem; font-weight: 600;
             border-radius: var(--radius-sm); cursor: pointer; border: none; transition: var(--transition); width: 100%;
         }
-        .menu-action .btn { padding: 0.4rem; font-size: 0.75rem; }
-        .btn:active { transform: scale(0.96); }
-        .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 2px 6px rgba(234, 88, 12, 0.2); }
-        .btn-secondary { background: #f5f5f4; color: var(--text-main); border: 1px solid var(--border-subtle); }
+        .menu-action .btn { padding: 0.35rem; font-size: 0.65rem; }
+        .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2); }
 
         /* --- FLOATING ACTIONS --- */
         .floating-actions {
-            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 100%; max-width: 1024px; /* Terpusat di desktop */
+            position: fixed; bottom: 0; left: 0; width: 100%;
             background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(12px);
-            border-top: 1px solid var(--border-subtle); padding: 0.75rem 1.25rem;
+            border-top: 1px solid var(--border-subtle); padding: 0.6rem 0.75rem;
             display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 -10px 25px -5px rgba(28, 25, 23, 0.08); z-index: 1000;
-            border-radius: var(--radius-md) var(--radius-md) 0 0; /* Radius atas */
+            box-shadow: 0 -8px 20px -5px rgba(28, 25, 23, 0.08); z-index: 1000;
         }
         
         .call-waiter-btn {
             background: #fffbeb; color: #d97706; border: 1px solid #fef3c7;
-            padding: 0.55rem 1rem; border-radius: var(--radius-full);
-            font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;
-            transition: var(--transition); box-shadow: var(--shadow-sm);
+            padding: 0.4rem 0.75rem; border-radius: var(--radius-full);
+            font-size: 0.7rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;
         }
-        .call-waiter-btn:hover { background: #fef3c7; transform: scale(1.03); }
+        .floating-actions .btn-primary { width: auto; padding: 0.45rem 0.75rem; font-size: 0.7rem; }
 
-        /* --- MODAL RESPONSIVE (SMART MODAL) --- */
+        /* --- MODAL --- */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(28, 25, 23, 0.6); backdrop-filter: blur(4px); z-index: 2000;
-            align-items: center; /* Default Desktop = Center */
-            justify-content: center; padding: 1rem; opacity: 0; transition: opacity 0.3s ease;
+            align-items: center; justify-content: center; padding: 1rem; opacity: 0; transition: opacity 0.3s ease;
         }
         .modal.show { display: flex; opacity: 1; }
 
         .modal-content {
-            background: #ffffff; width: 100%; max-width: 400px; max-height: 85vh;
-            border-radius: var(--radius-lg); padding: 1.5rem; overflow-y: auto;
+            background: #ffffff; width: 100%; max-width: 320px;
+            border-radius: var(--radius-lg); padding: 1.25rem; overflow-y: auto;
             transform: scale(0.95); transition: transform 0.3s ease; box-shadow: var(--shadow-md);
         }
         .modal.show .modal-content { transform: scale(1); }
 
-        /* Khusus Layar HP: Modal jadi Bottom-Sheet */
-        @media (max-width: 639px) {
-            .modal { align-items: flex-end; padding: 0; }
-            .modal-content {
-                border-radius: var(--radius-lg) var(--radius-lg) 0 0; max-width: 100%;
-                transform: translateY(100%); padding: 1.25rem 1.15rem 1.5rem 1.15rem;
-            }
-            .modal.show .modal-content { transform: translateY(0); }
-        }
-
-        .preview-img-container {
-            width: 100%; height: 180px; background: #f5f5f4; border-radius: var(--radius-sm);
-            margin-bottom: 1rem; display: flex; align-items: center; justify-content: center;
-            overflow: hidden; border: 1px solid var(--border-subtle);
-        }
-        #detail-img, #confirm-img { width: 100%; height: 100%; object-fit: cover; }
-        
         .modal-subscribe-content { text-align: center; }
-
-        /* Utility */
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -286,11 +233,11 @@
         <div class="order-meta-box">
             <div>
                 <span><i class="fas fa-chair" style="color:var(--primary)"></i> Meja</span>
-                <input type="text" value="..." readonly>
+                <input type="text" value="01" readonly>
             </div>
             <div>
                 <span><i class="fas fa-user" style="color:var(--primary)"></i> Nama</span>
-                <input type="text" value="..." readonly>
+                <input type="text" value="Nama kamu" readonly>
             </div>
         </div>
 
@@ -298,11 +245,11 @@
         <div class="filter-control-box">
             <div class="search-wrapper">
                 <i class="fas fa-search"></i>
-                <input type="text" id="search-input" placeholder="Cari menu favorit..." oninput="filterAndRenderMenu()">
+                <input type="text" id="search-input" placeholder="Cari menu..." oninput="filterAndRenderMenu()">
             </div>
             <div class="sort-select-wrapper">
                 <select id="sort-select" class="sort-select" onchange="filterAndRenderMenu()">
-                    <option value="default">Urutkan Harga</option>
+                    <option value="default">Urutkan</option>
                     <option value="termurah">Termurah</option>
                     <option value="tertinggi">Tertinggi</option>
                 </select>
@@ -312,9 +259,9 @@
         <!-- Kategori -->
         <div class="category-scroll">
             <button class="cat-btn active" onclick="filterCategory('all', this)">Semua Menu</button>
-            <button class="cat-btn" onclick="filterCategory('makanan', this)">Makanan Utama</button>
+            <button class="cat-btn" onclick="filterCategory('makanan', this)">Makanan</button>
             <button class="cat-btn" onclick="filterCategory('minuman', this)">Minuman</button>
-            <button class="cat-btn" onclick="filterCategory('snack', this)">Snack & Dessert</button>
+            <button class="cat-btn" onclick="filterCategory('snack', this)">Snack</button>
         </div>
 
         <h3 class="section-title">Daftar Menu</h3>
@@ -326,14 +273,14 @@
     <!-- Floating Bottom Bar -->
     <div class="floating-actions">
         <button class="call-waiter-btn" onclick="openModal('subscribe-modal')">
-            <i class="fas fa-bell"></i> Panggil Pelayan
+            <i class="fas fa-bell"></i> Pelayan
         </button>
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
             <div style="text-align: right;">
-                <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">1 Item</span>
-                <span style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">Rp 25.000</span>
+                <span style="font-size: 0.6rem; color: var(--text-muted); display: block;">1 Item</span>
+                <span style="font-size: 0.8rem; font-weight: 700; color: var(--primary);">Rp 25.000</span>
             </div>
-            <button class="btn btn-primary" style="width: auto; padding: 0.55rem 1rem;" onclick="openModal('subscribe-modal')">Lihat Pesanan</button>
+            <button class="btn btn-primary" onclick="openModal('subscribe-modal')">Pesanan</button>
         </div>
     </div>
 
@@ -341,15 +288,15 @@
     <div class="modal" id="guide-modal">
         <div class="modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="font-size: 1.1rem; font-weight: 700; display:flex; align-items:center; gap:0.5rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 700; display:flex; align-items:center; gap:0.4rem;">
                     <i class="fas fa-book-open" style="color:var(--primary);"></i> Panduan Mockup
                 </h3>
-                <button onclick="closeModal('guide-modal')" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--text-muted);"><i class="fas fa-times"></i></button>
+                <button onclick="closeModal('guide-modal')" style="background:none; border:none; font-size:1rem; cursor:pointer; color:var(--text-muted);"><i class="fas fa-times"></i></button>
             </div>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.5;">
-                Halaman ini adalah versi Mockup interaktif. Layout telah dioptimalkan agar responsif diletakkan di dalam Iframe atau Dashboard web.
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.5;">
+                Halaman ini adalah versi Mockup interaktif. Layout telah dioptimalkan agar responsif diletakkan di dalam Iframe atau Dashboard web berukuran kecil.
             </p>
-            <button class="btn btn-primary" onclick="closeModal('guide-modal')">Tutup Panduan</button>
+            <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.5rem;" onclick="closeModal('guide-modal')">Tutup</button>
         </div>
     </div>
 
@@ -357,32 +304,32 @@
     <div class="modal" id="detail-modal">
         <div class="modal-content">
             <div style="display: flex; justify-content: flex-end; margin-bottom: 0.5rem;">
-                <button onclick="closeModal('detail-modal')" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--text-muted);"><i class="fas fa-times"></i></button>
+                <button onclick="closeModal('detail-modal')" style="background:none; border:none; font-size:1rem; cursor:pointer; color:var(--text-muted);"><i class="fas fa-times"></i></button>
             </div>
-            <div class="preview-img-container">
-                <img id="detail-img" src="" alt="">
+            <div style="width: 100%; height: 140px; background: #f5f5f4; border-radius: var(--radius-sm); margin-bottom: 0.75rem; overflow: hidden;">
+                <img id="detail-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
-            <h3 id="detail-title" style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem;"></h3>
-            <div id="detail-price" style="font-size: 0.95rem; color: var(--primary); font-weight: 700; margin-bottom: 0.75rem;"></div>
-            <p id="detail-desc" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5;"></p>
-            <button class="btn btn-primary" onclick="closeModal('detail-modal'); openModal('subscribe-modal');">
-                <i class="fas fa-plus"></i> Tambah ke Pesanan
+            <h3 id="detail-title" style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem;"></h3>
+            <div id="detail-price" style="font-size: 0.85rem; color: var(--primary); font-weight: 700; margin-bottom: 0.5rem;"></div>
+            <p id="detail-desc" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;"></p>
+            <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.5rem;" onclick="closeModal('detail-modal'); openModal('subscribe-modal');">
+                <i class="fas fa-plus"></i> Tambah
             </button>
         </div>
     </div>
 
     <!-- Modal Berlangganan -->
     <div class="modal" id="subscribe-modal" style="z-index: 3000;">
-        <div class="modal-content modal-subscribe-content" style="max-width: 320px;">
-            <div style="display: flex; justify-content: flex-end; margin-bottom: -1rem;">
-                <button onclick="closeModal('subscribe-modal')" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--text-muted);"><i class="fas fa-times"></i></button>
+        <div class="modal-content modal-subscribe-content">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: -0.5rem;">
+                <button onclick="closeModal('subscribe-modal')" style="background:none; border:none; font-size:1.1rem; cursor:pointer; color:var(--text-muted);"><i class="fas fa-times"></i></button>
             </div>
-            <i class="fas fa-lock" style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1.25rem; display: block;"></i>
-            <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">Fitur Terkunci</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.75rem; line-height: 1.5;">
-                Silakan berlangganan ke versi Premium Sitenexs untuk membuka akses checkout, integrasi sistem pelayan, dan fitur manajemen lainnya.
+            <i class="fas fa-lock" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem; display: block;"></i>
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">Fitur Terkunci</h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5;">
+                Silakan berlangganan ke versi Premium Sitenexs untuk membuka akses checkout, integrasi sistem pelayan, dan fitur lainnya.
             </p>
-            <button class="btn btn-primary" onclick="closeModal('subscribe-modal')" style="padding: 0.8rem; border-radius: var(--radius-full); font-weight: 800; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);">
+            <button class="btn btn-primary" onclick="closeModal('subscribe-modal')" style="padding: 0.6rem; font-size: 0.75rem; border-radius: var(--radius-full); font-weight: 800;">
                 <i class="fas fa-crown" style="color: #fef08a;"></i> BERLANGGANAN SEKARANG
             </button>
         </div>
@@ -436,7 +383,7 @@
             container.innerHTML = '';
             
             if (result.length === 0) {
-                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: var(--text-muted);">Menu tidak ditemukan.</div>`;
+                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.75rem;">Menu tidak ditemukan.</div>`;
                 return;
             }
 
@@ -451,7 +398,7 @@
                             <div class="menu-price">Rp ${p.price.toLocaleString('id-ID')}</div>
                         </div>
                         <div class="menu-action">
-                            <button class="btn btn-primary" onclick="openModal('subscribe-modal')"><i class="fas fa-plus"></i> Tambah</button>
+                            <button class="btn btn-primary" onclick="openModal('subscribe-modal')"><i class="fas fa-plus"></i></button>
                         </div>
                     </div>
                 `;
@@ -481,4 +428,4 @@
         }
     </script>
 </body>
-  </html>
+</html>
