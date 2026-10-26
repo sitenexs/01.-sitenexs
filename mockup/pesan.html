@@ -48,283 +48,274 @@
             padding-bottom: 4.5rem;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
-            overflow-y: hidden; /* Kunci scroll saat splash */
+            /* Cegah scroll saat animasi berjalan */
+            overflow-y: hidden;
         }
 
-        /* =========================================
-           ANIMASI QR SCANNER (REALISTIS TANPA GAMBAR CAFE)
-        ========================================= */
+        /* --- ANIMASI QR SCAN SPLASH --- */
         #qr-splash {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            /* Latar belakang diganti warna gelap solid */
-            background: #1c1917; 
+            background: #1c1917; /* Gelap pekat */
             z-index: 9999;
             display: flex; flex-direction: column;
-            align-items: center; justify-content: flex-end;
+            align-items: center; justify-content: center;
             transition: opacity 0.6s ease, visibility 0.6s ease;
         }
-
-        #qr-splash.hidden { opacity: 0; visibility: hidden; }
-
-        .scene {
+        #qr-splash.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .qr-scanner-box {
             position: relative;
-            z-index: 1;
-            width: 100%;
-            height: 100%;
-            display: flex; justify-content: center; align-items: flex-end;
-            padding-bottom: 15vh; /* Jarak dari bawah */
-        }
-
-        /* Kontainer HP & Tangan (Lebih Besar) */
-        .hand-phone-container {
-            position: relative;
-            width: 280px;  /* HP Diperbesar */
-            height: 560px; /* HP Diperbesar */
-            transform: translateY(100%);
-            animation: slideUpPhone 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards 0.2s;
-        }
-
-        @keyframes slideUpPhone { to { transform: translateY(0); } }
-
-        /* Perangkat HP bergaya iPhone */
-        .phone-device {
-            position: absolute;
-            top: 0; left: 16px; right: 16px; bottom: -50px;
-            background: #111;
-            border-radius: 40px;
-            border: 8px solid #333;
-            box-shadow: inset 0 0 0 3px #000, 0 30px 60px rgba(0,0,0,0.8);
-            z-index: 2;
-            overflow: hidden;
-        }
-
-        /* Poni / Dynamic Island HP */
-        .phone-notch {
-            position: absolute;
-            top: 10px; left: 50%;
-            transform: translateX(-50%);
-            width: 85px; height: 24px;
-            background: #000;
-            border-radius: 15px;
-            z-index: 10;
-        }
-
-        /* Layar HP (Diganti warna gelap dengan efek cahaya kamera) */
-        .phone-screen {
-            width: 100%; height: 100%;
-            /* Efek cahaya senter/kamera menyorot meja */
-            background: radial-gradient(circle at center, #3a3633 0%, #111 80%);
-            position: relative;
+            width: 200px; height: 200px;
             display: flex; align-items: center; justify-content: center;
-            flex-direction: column;
+            margin-bottom: 2rem;
         }
-        /* Filter gelap sedikit agar scanner terlihat */
-        .phone-screen::before {
-            content: ''; position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        /* --- DESAIN TANGAN REALISTIS (CSS) --- */
-        
-        /* Jari-jari di belakang layar */
-        .fingers-back {
+        .qr-corner {
             position: absolute;
-            top: 220px; left: -8px;
-            width: 35px; height: 140px;
-            background: linear-gradient(to right, #dca37b, #b87c53); /* Warna kulit */
-            border-radius: 20px 0 0 20px;
-            z-index: 1;
-            box-shadow: inset 3px 0 8px rgba(255,255,255,0.15);
-        }
-        .fingers-back::before {
-            content: ''; position: absolute;
-            top: -60px; left: 0; width: 35px; height: 55px;
-            background: linear-gradient(to right, #dca37b, #b87c53);
-            border-radius: 20px 0 0 20px;
-            box-shadow: inset 3px 0 8px rgba(255,255,255,0.15);
-        }
-        .fingers-back::after {
-            content: ''; position: absolute;
-            bottom: -60px; left: 0; width: 35px; height: 55px;
-            background: linear-gradient(to right, #dca37b, #b87c53);
-            border-radius: 20px 0 0 20px;
-            box-shadow: inset 3px 0 8px rgba(255,255,255,0.15);
-        }
-
-        /* Jempol di depan layar */
-        .thumb-front {
-            position: absolute;
-            bottom: 70px; right: -12px;
-            width: 55px; height: 180px;
-            background: linear-gradient(135deg, #f3c7a8 0%, #dca37b 50%, #b87c53 100%);
-            border-radius: 40px;
-            transform: rotate(-14deg);
-            z-index: 3;
-            box-shadow: -8px 12px 25px rgba(0,0,0,0.6), inset -3px -5px 12px rgba(100,50,20,0.4);
-            border-left: 2px solid rgba(255,255,255,0.3);
-        }
-        /* Kuku Jempol */
-        .thumb-front::after {
-            content: ''; position: absolute;
-            top: 15px; right: 18px; width: 24px; height: 32px;
-            background: linear-gradient(to bottom, #fdf5e6, #f3d4c6);
-            border-radius: 40% 40% 50% 50%;
-            box-shadow: inset 0 -3px 5px rgba(0,0,0,0.15), 0 1px 2px rgba(255,255,255,0.6);
-        }
-        /* Lekukan Sendi Jempol */
-        .thumb-front::before {
-            content: ''; position: absolute;
-            top: 80px; left: 10px; width: 35px; height: 3px;
-            background: rgba(139,87,42,0.25);
-            border-radius: 50%;
-            box-shadow: 0 6px 0 rgba(139,87,42,0.15);
-        }
-
-        /* UI Scanner di Layar HP */
-        .scan-frame {
-            position: relative; z-index: 5;
-            width: 150px; height: 150px; /* Lebih besar */
-            display: flex; align-items: center; justify-content: center;
-            margin-top: -40px;
-        }
-        
-        .qr-target {
-            font-size: 6rem;
-            color: rgba(255,255,255,0.15);
-            transform: scale(0.8);
-            animation: focusQR 0.5s ease forwards 1.2s;
-        }
-
-        @keyframes focusQR {
-            to { transform: scale(1); color: rgba(255,255,255,0.9); }
-        }
-
-        .scan-frame .qr-corner {
-            position: absolute;
-            width: 30px; height: 30px;
+            width: 40px; height: 40px;
             border: 4px solid var(--primary);
             border-radius: 4px;
         }
-        .scan-frame .qr-top-left { top: -5px; left: -5px; border-right: none; border-bottom: none; }
-        .scan-frame .qr-top-right { top: -5px; right: -5px; border-left: none; border-bottom: none; }
-        .scan-frame .qr-bottom-left { bottom: -5px; left: -5px; border-right: none; border-top: none; }
-        .scan-frame .qr-bottom-right { bottom: -5px; right: -5px; border-left: none; border-top: none; }
-
+        .qr-top-left { top: 0; left: 0; border-right: none; border-bottom: none; }
+        .qr-top-right { top: 0; right: 0; border-left: none; border-bottom: none; }
+        .qr-bottom-left { bottom: 0; left: 0; border-right: none; border-top: none; }
+        .qr-bottom-right { bottom: 0; right: 0; border-left: none; border-top: none; }
+        
+        .qr-icon-center {
+            font-size: 5rem;
+            color: rgba(255, 255, 255, 0.1);
+        }
+        
         .qr-laser {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 3px;
+            position: absolute;
+            top: 0; left: 5%;
+            width: 90%; height: 3px;
             background: var(--primary);
             box-shadow: 0 0 15px var(--primary), 0 0 30px var(--primary);
-            opacity: 0;
-            animation: scanLaser 1.5s infinite linear alternate 1.2s;
+            animation: scanLaser 1.5s infinite linear alternate;
         }
-
         @keyframes scanLaser {
-            0% { top: 0%; opacity: 0; }
+            0% { top: 5%; opacity: 0; }
             10% { opacity: 1; }
             90% { opacity: 1; }
-            100% { top: 100%; opacity: 0; }
+            100% { top: 95%; opacity: 0; }
         }
 
         .qr-status-text {
-            position: absolute;
-            bottom: 4vh; left: 0; width: 100%;
-            z-index: 10;
-            color: #fff; font-size: 1.05rem; font-weight: 700;
-            letter-spacing: 0.5px; display: flex; flex-direction: column;
-            align-items: center; gap: 0.5rem; text-align: center;
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            animation: pulseText 1.5s infinite;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .qr-status-text i {
+            font-size: 1.5rem;
+        }
+        @keyframes pulseText {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
 
-        /* --- CSS WEB UTAMA --- */
-        .container { width: 100%; max-width: 1024px; margin: 0 auto; padding: 0.75rem; }
-        header { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-subtle); padding: 0.75rem; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); }
-        .header-content { width: 100%; max-width: 1024px; display: flex; justify-content: space-between; align-items: center; }
+        .container {
+            width: 100%;
+            max-width: 1024px;
+            margin: 0 auto;
+            padding: 0.75rem;
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0.75rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .header-content {
+            width: 100%;
+            max-width: 1024px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .header-brand h2 { font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem; }
         .header-brand p { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.1rem; }
-        .guide-btn { background: var(--primary-light); border: 1px solid #fed7aa; color: var(--primary); width: 30px; height: 30px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition); font-size: 0.75rem; }
+        .guide-btn {
+            background: var(--primary-light); border: 1px solid #fed7aa; color: var(--primary);
+            width: 30px; height: 30px; border-radius: var(--radius-full);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: var(--transition); font-size: 0.75rem;
+        }
         .guide-btn:hover { background: var(--primary); color: #fff; transform: scale(1.05); }
 
-        .order-meta-box { background: linear-gradient(135deg, var(--primary-light) 0%, #ffffff 100%); border: 1px solid #fed7aa; padding: 0.6rem; border-radius: var(--radius-md); display: grid; grid-template-columns: 1fr; gap: 0.5rem; margin-bottom: 0.85rem; box-shadow: var(--shadow-sm); }
-        .order-meta-box div { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 0.4rem 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); }
+        /* --- META BOX (Meja & Nama) --- */
+        .order-meta-box {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #ffffff 100%);
+            border: 1px solid #fed7aa; padding: 0.6rem; border-radius: var(--radius-md);
+            display: grid; grid-template-columns: 1fr; gap: 0.5rem;
+            margin-bottom: 0.85rem; box-shadow: var(--shadow-sm);
+        }
+        .order-meta-box div {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fff; padding: 0.4rem 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);
+        }
         .order-meta-box span { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; }
-        .order-meta-box input { background: transparent; border: none; font-weight: 700; color: var(--primary); font-size: 0.8rem; text-align: right; width: 120px; outline: none; }
+        .order-meta-box input {
+            background: transparent; border: none; font-weight: 700; color: var(--primary);
+            font-size: 0.8rem; text-align: right; width: 120px; outline: none;
+        }
 
+        /* --- FILTER & SEARCH --- */
         .filter-control-box { display: grid; grid-template-columns: 1fr auto; gap: 0.5rem; margin-bottom: 0.85rem; }
         .search-wrapper { position: relative; width: 100%; }
-        .search-wrapper input { width: 100%; padding: 0.5rem 0.6rem 0.5rem 1.8rem; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); font-size: 0.75rem; transition: var(--transition); box-shadow: var(--shadow-sm); }
+        .search-wrapper input {
+            width: 100%; padding: 0.5rem 0.6rem 0.5rem 1.8rem;
+            border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+            font-size: 0.75rem; transition: var(--transition); box-shadow: var(--shadow-sm);
+        }
         .search-wrapper input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15); }
         .search-wrapper i { position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.75rem; }
         
-        .category-scroll { display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.4rem; margin-bottom: 0.85rem; scrollbar-width: none; }
+        .sort-select {
+            padding: 0.5rem 1.6rem 0.5rem 0.75rem;
+            border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+            font-size: 0.7rem; font-weight: 600; color: var(--text-main);
+            appearance: none; box-shadow: var(--shadow-sm); background: #fff; cursor: pointer;
+        }
+        .sort-select-wrapper { position: relative; height: 100%; }
+        .sort-select-wrapper::after {
+            content: '\f0dc'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+            position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%);
+            font-size: 0.65rem; color: var(--text-muted); pointer-events: none;
+        }
+
+        /* --- KATEGORI SCROLL --- */
+        .category-scroll {
+            display: flex; gap: 0.4rem; overflow-x: auto;
+            padding-bottom: 0.4rem; margin-bottom: 0.85rem; scrollbar-width: none;
+        }
         .category-scroll::-webkit-scrollbar { display: none; }
-        .cat-btn { background: #fff; border: 1px solid var(--border-subtle); padding: 0.4rem 0.75rem; border-radius: var(--radius-full); font-size: 0.7rem; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: var(--transition); box-shadow: var(--shadow-sm); white-space: nowrap; }
+        .cat-btn {
+            background: #fff; border: 1px solid var(--border-subtle);
+            padding: 0.4rem 0.75rem; border-radius: var(--radius-full);
+            font-size: 0.7rem; font-weight: 600; color: var(--text-muted);
+            cursor: pointer; transition: var(--transition); box-shadow: var(--shadow-sm); white-space: nowrap;
+        }
         .cat-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
+        /* --- MENU GRID --- */
         .section-title { font-size: 0.9rem; margin-bottom: 0.75rem; font-weight: 700; }
-        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-        .menu-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); transition: var(--transition); }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .menu-card {
+            background: var(--bg-card); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md); overflow: hidden;
+            display: flex; flex-direction: column; box-shadow: var(--shadow-sm);
+            transition: var(--transition); animation: fadeIn 0.4s ease;
+        }
+        
         .menu-img-wrapper { position: relative; width: 100%; padding-bottom: 100%; overflow: hidden; background: #f5f5f4; cursor: pointer; }
         .menu-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        
         .menu-body { padding: 0.4rem; flex: 1; display: flex; flex-direction: column; cursor: pointer; }
-        .menu-title { font-size: 0.7rem; font-weight: 700; margin-bottom: 0.15rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .menu-title { font-size: 0.7rem; font-weight: 700; margin-bottom: 0.15rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .menu-price { font-size: 0.75rem; color: var(--primary); font-weight: 700; margin-top: auto; }
+        
         .menu-action { padding: 0 0.4rem 0.4rem 0.4rem; }
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem; padding: 0.45rem 0.75rem; font-size: 0.75rem; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; border: none; transition: var(--transition); width: 100%; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+            padding: 0.45rem 0.75rem; font-size: 0.75rem; font-weight: 600;
+            border-radius: var(--radius-sm); cursor: pointer; border: none; transition: var(--transition); width: 100%;
+        }
+        .menu-action .btn { padding: 0.35rem; font-size: 0.65rem; }
         .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2); }
 
-        .floating-actions { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(12px); border-top: 1px solid var(--border-subtle); padding: 0.6rem 0.75rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -8px 20px -5px rgba(28, 25, 23, 0.08); z-index: 1000; }
-        .call-waiter-btn { background: #fffbeb; color: #d97706; border: 1px solid #fef3c7; padding: 0.4rem 0.75rem; border-radius: var(--radius-full); font-size: 0.7rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(28, 25, 23, 0.6); backdrop-filter: blur(4px); z-index: 2000; align-items: center; justify-content: center; padding: 1rem; opacity: 0; transition: opacity 0.3s ease; }
+        /* --- FLOATING ACTIONS --- */
+        .floating-actions {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border-subtle); padding: 0.6rem 0.75rem;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 -8px 20px -5px rgba(28, 25, 23, 0.08); z-index: 1000;
+        }
+        
+        .call-waiter-btn {
+            background: #fffbeb; color: #d97706; border: 1px solid #fef3c7;
+            padding: 0.4rem 0.75rem; border-radius: var(--radius-full);
+            font-size: 0.7rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;
+        }
+        .floating-actions .btn-primary { width: auto; padding: 0.45rem 0.75rem; font-size: 0.7rem; }
+
+        /* --- MODAL --- */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(28, 25, 23, 0.6); backdrop-filter: blur(4px); z-index: 2000;
+            align-items: center; justify-content: center; padding: 1rem; opacity: 0; transition: opacity 0.3s ease;
+        }
         .modal.show { display: flex; opacity: 1; }
-        .modal-content { background: #ffffff; width: 100%; max-width: 320px; border-radius: var(--radius-lg); padding: 1.25rem; transform: scale(0.95); transition: transform 0.3s ease; box-shadow: var(--shadow-md); }
+
+        .modal-content {
+            background: #ffffff; width: 100%; max-width: 320px;
+            border-radius: var(--radius-lg); padding: 1.25rem; overflow-y: auto;
+            transform: scale(0.95); transition: transform 0.3s ease; box-shadow: var(--shadow-md);
+        }
         .modal.show .modal-content { transform: scale(1); }
+
+        /* --- QUANTITY CONTROLLER DI MODAL --- */
+        .qty-control {
+            display: flex; align-items: center; justify-content: center; gap: 1rem; margin: 1rem 0;
+        }
+        .qty-btn {
+            width: 32px; height: 32px; border-radius: var(--radius-full); border: 1px solid var(--border-subtle);
+            background: #fff; font-size: 0.85rem; font-weight: 700; color: var(--primary); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: var(--transition);
+        }
+        .qty-btn:hover { background: var(--primary-light); border-color: var(--primary); }
+        .qty-input {
+            width: 50px; text-align: center; font-size: 0.9rem; font-weight: 700;
+            border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.3rem; outline: none;
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <!-- ANIMASI SPLASH SCREEN (TANGAN, HP & KAMERA REALISTIS - TANPA GAMBAR) -->
+    <!-- Animasi QR Scanner -->
     <div id="qr-splash">
-        
-        <div class="scene">
-            <div class="hand-phone-container">
-                <!-- Jari Belakang -->
-                <div class="fingers-back"></div>
-                
-                <!-- Perangkat HP iPhone Style -->
-                <div class="phone-device">
-                    <div class="phone-notch"></div> <!-- Poni iPhone -->
-                    
-                    <div class="phone-screen" id="phone-screen">
-                        
-                        <!-- Frame Scan UI Dalam Kamera -->
-                        <div class="scan-frame" id="scan-frame">
-                            <div class="qr-corner qr-top-left"></div>
-                            <div class="qr-corner qr-top-right"></div>
-                            <div class="qr-corner qr-bottom-left"></div>
-                            <div class="qr-corner qr-bottom-right"></div>
-                            
-                            <i class="fas fa-qrcode qr-target"></i>
-                            
-                            <!-- Garis Laser -->
-                            <div class="qr-laser" id="qr-laser"></div>
-                        </div>
-
-                    </div>
-                </div>
-                
-                <!-- Jempol Depan -->
-                <div class="thumb-front"></div>
-            </div>
+        <div class="qr-scanner-box">
+            <div class="qr-corner qr-top-left"></div>
+            <div class="qr-corner qr-top-right"></div>
+            <div class="qr-corner qr-bottom-left"></div>
+            <div class="qr-corner qr-bottom-right"></div>
+            
+            <i class="fas fa-qrcode qr-icon-center"></i>
+            <div class="qr-laser" id="qr-laser"></div>
         </div>
-
         <div class="qr-status-text" id="qr-status">
-            <span style="opacity: 0.8; font-weight: 500; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">Membuka Kamera...</span>
+            <span>Memindai Meja...</span>
         </div>
     </div>
 
-    <!-- MAIN APP -->
     <header>
         <div class="header-content">
             <div class="header-brand">
@@ -350,13 +341,22 @@
             </div>
         </div>
 
+        <!-- Search & Sort -->
         <div class="filter-control-box">
             <div class="search-wrapper">
                 <i class="fas fa-search"></i>
                 <input type="text" id="search-input" placeholder="Cari menu..." oninput="filterAndRenderMenu()">
             </div>
+            <div class="sort-select-wrapper">
+                <select id="sort-select" class="sort-select" onchange="filterAndRenderMenu()">
+                    <option value="default">Urutkan</option>
+                    <option value="termurah">Termurah</option>
+                    <option value="tertinggi">Tertinggi</option>
+                </select>
+            </div>
         </div>
 
+        <!-- Kategori -->
         <div class="category-scroll">
             <button class="cat-btn active" onclick="filterCategory('all', this)">Semua Menu</button>
             <button class="cat-btn" onclick="filterCategory('makanan', this)">Makanan</button>
@@ -365,12 +365,14 @@
         </div>
 
         <h3 class="section-title">Daftar Menu</h3>
-        <div id="menu-list-container" class="menu-grid"></div>
+        <div id="menu-list-container" class="menu-grid">
+            <!-- Produk Dinamis -->
+        </div>
     </div>
 
     <!-- Floating Bottom Bar -->
     <div class="floating-actions">
-        <button class="call-waiter-btn" onclick="openModal('subscribe-modal')">
+        <button class="call-waiter-btn" onclick="openSubscribeModal()">
             <i class="fas fa-bell"></i> Pelayan
         </button>
         <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -378,22 +380,53 @@
                 <span id="cart-count" style="font-size: 0.6rem; color: var(--text-muted); display: block;">0 Item</span>
                 <span id="cart-total" style="font-size: 0.8rem; font-weight: 700; color: var(--primary);">Rp 0</span>
             </div>
-            <button class="btn btn-primary" onclick="openModal('subscribe-modal')">Pesanan</button>
+            <button class="btn btn-primary" onclick="openSubscribeModal()">Pesanan</button>
         </div>
     </div>
 
-    <!-- Modals -->
+    <!-- Modal Panduan -->
     <div class="modal" id="guide-modal">
         <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                <h3 style="font-size: 0.95rem; font-weight: 700;"><i class="fas fa-book-open" style="color:var(--primary);"></i> Panduan</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 700; display:flex; align-items:center; gap:0.4rem;">
+                    <i class="fas fa-book-open" style="color:var(--primary);"></i> Panduan Mockup
+                </h3>
                 <button onclick="closeModal('guide-modal')" style="background:none; border:none; font-size:1rem; cursor:pointer; color:var(--text-muted);"><i class="fas fa-times"></i></button>
             </div>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">Ini adalah Tampilan Demo</p>
-            <button class="btn btn-primary" style="width:100%" onclick="closeModal('guide-modal')">Tutup</button>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.5;">
+                Ini adalah Tampilan Demo
+            </p>
+            <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.5rem;" onclick="closeModal('guide-modal')">Tutup</button>
         </div>
     </div>
-    
+
+    <!-- Modal Input Jumlah Pesanan -->
+    <div class="modal" id="detail-modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 0.5rem;">
+                <button onclick="closeModal('detail-modal')" style="background:none; border:none; font-size:1rem; cursor:pointer; color:var(--text-muted);"><i class="fas fa-times"></i></button>
+            </div>
+            <div style="width: 100%; height: 120px; background: #f5f5f4; border-radius: var(--radius-sm); margin-bottom: 0.75rem; overflow: hidden;">
+                <img id="detail-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <h3 id="detail-title" style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem;"></h3>
+            <div id="detail-price" style="font-size: 0.85rem; color: var(--primary); font-weight: 700; margin-bottom: 0.5rem;"></div>
+            <p id="detail-desc" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; line-height: 1.4;"></p>
+            
+            <!-- Pengatur Jumlah -->
+            <div class="qty-control">
+                <button class="qty-btn" onclick="adjustModalQty(-1)"><i class="fas fa-minus"></i></button>
+                <input type="number" id="modal-qty" class="qty-input" value="1" min="1">
+                <button class="qty-btn" onclick="adjustModalQty(1)"><i class="fas fa-plus"></i></button>
+            </div>
+
+            <button id="detail-add-btn" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.5rem;">
+                <i class="fas fa-cart-plus"></i> Masukkan ke Pesanan
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Berlangganan -->
     <div class="modal" id="subscribe-modal" style="z-index: 3000;">
         <div class="modal-content" style="text-align: center;">
             <div style="display: flex; justify-content: flex-end; margin-bottom: -0.5rem;">
@@ -401,8 +434,12 @@
             </div>
             <i class="fas fa-lock" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem; display: block;"></i>
             <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">Fitur Terkunci</h3>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.25rem;">Silakan berlangganan Premium.</p>
-            <button class="btn btn-primary" style="width:100%" onclick="closeModal('subscribe-modal')"><i class="fas fa-crown" style="color:#fef08a;"></i> BERLANGGANAN SEKARANG</button>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5;">
+                Silakan berlangganan ke versi Premium Sitenexs untuk membuka akses checkout, integrasi sistem pelayan, dan fitur lainnya.
+            </p>
+            <button class="btn btn-primary" onclick="closeModal('subscribe-modal')" style="padding: 0.6rem; font-size: 0.75rem; border-radius: var(--radius-full); font-weight: 800;">
+                <i class="fas fa-crown" style="color: #fef08a;"></i> BERLANGGANAN SEKARANG
+            </button>
         </div>
     </div>
 
@@ -411,55 +448,35 @@
         window.addEventListener('load', () => {
             const splash = document.getElementById('qr-splash');
             const statusText = document.getElementById('qr-status');
-            const scanFrame = document.getElementById('scan-frame');
-            const phoneScreen = document.getElementById('phone-screen');
+            const laser = document.getElementById('qr-laser');
             
-            // 1. Teks menyesuaikan fokus kamera (1.1 Detik)
+            // Waktu simulasi pemindaian: 2.5 Detik
             setTimeout(() => {
-                statusText.innerHTML = '<span style="animation: pulseText 1s infinite alternate; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">Memfokuskan QR Code...</span>';
-            }, 1100);
-
-            // 2. Berhasil Scan (3.5 Detik)
-            setTimeout(() => {
-                scanFrame.style.display = 'none'; // Sembunyikan scanner frame
+                // Hentikan laser & ubah tulisan menjadi sukses
+                laser.style.display = 'none';
+                statusText.innerHTML = '<i class="fas fa-check-circle" style="color: var(--success); font-size:2.5rem;"></i><span style="color: var(--success); margin-top:0.5rem;">Meja Teridentifikasi</span>';
+                statusText.style.animation = 'none'; // Hentikan kedip
                 
-                // Munculkan UI Ceklis Sukses di Tengah Layar HP
-                phoneScreen.innerHTML += `
-                    <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:20;">
-                        <i class="fas fa-check-circle" style="color: #4ade80; font-size: 4rem; margin-bottom: 0.5rem; transform: scale(0); animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;"></i>
-                        <div style="color: #fff; font-size: 0.85rem; font-weight: bold; opacity:0; animation: fadeIn 0.5s forwards 0.3s;">Sukses</div>
-                    </div>
-                `;
-                
-                // Tambah keyframe Ceklis
-                const style = document.createElement('style');
-                style.innerHTML = `
-                    @keyframes popIn { to { transform: scale(1); } }
-                    @keyframes pulseText { from { opacity: 0.7; } to { opacity: 1; } }
-                    @keyframes fadeIn { to { opacity: 1; } }
-                `;
-                document.head.appendChild(style);
-
-                // Ubah Teks luar
-                statusText.innerHTML = '<span style="color: #4ade80; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));"><i class="fas fa-check"></i> Meja Teridentifikasi</span>';
-                
-                // 3. Hilangkan layar Splash secara perlahan (4.8 Detik)
+                // Delay sejenak sebelum splash hilang
                 setTimeout(() => {
                     splash.classList.add('hidden');
-                    document.body.style.overflowY = 'auto'; // Kembalikan scroll aplikasi
-                }, 1300);
+                    document.body.style.overflowY = 'auto'; // Mengembalikan scroll
+                }, 1000);
 
-            }, 3500);
+            }, 2500);
         });
 
-        // Supabase Logic SAMA PERSIS SEPERTI SEBELUMNYA
+        // Supabase Logic
         const SUPABASE_URL = 'https://xqcbyamxiekdxytntlno.supabase.co'; 
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxY2J5YW14aWVrZHh5dG50bG5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0MTM2NDIsImV4cCI6MjEwNTk4OTY0Mn0.pkytlWwjfKOQT9bWNS-nuNZReE7jFUi3ITk5ageyrkM';
+
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         let products = [];
         let currentCategory = 'all';
-        let cart = {}; 
+        let cart = {}; // { productId: quantity }
+        let selectedProductId = null;
 
         async function fetchMenuProducts() {
             const { data, error } = await _supabase.from('products').select('*');
@@ -470,6 +487,9 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             fetchMenuProducts();
+            _supabase.channel('public:products').on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, payload => {
+                fetchMenuProducts();
+            }).subscribe();
         });
 
         function filterCategory(cat, btn) {
@@ -481,26 +501,93 @@
 
         function filterAndRenderMenu() {
             const container = document.getElementById('menu-list-container');
+            const searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+            const sortOrder = document.getElementById('sort-select').value;
+
             let result = currentCategory === 'all' ? [...products] : products.filter(p => p.category === currentCategory);
+
+            if (searchQuery) {
+                result = result.filter(p => p.name.toLowerCase().includes(searchQuery) || (p.desc && p.desc.toLowerCase().includes(searchQuery)));
+            }
+
+            if (sortOrder === 'termurah') result.sort((a, b) => a.price - b.price);
+            else if (sortOrder === 'tertinggi') result.sort((a, b) => b.price - a.price);
+
             container.innerHTML = '';
-            if (result.length === 0) return;
+            
+            if (result.length === 0) {
+                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.75rem;">Menu tidak ditemukan.</div>`;
+                return;
+            }
 
             result.forEach(p => {
                 container.innerHTML += `
                     <div class="menu-card">
-                        <div class="menu-img-wrapper" onclick="openModal('subscribe-modal')">
+                        <div class="menu-img-wrapper" onclick="openDetailModal(${p.id})">
                             <img src="${p.img || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&auto=format&fit=crop&q=80'}" class="menu-img" alt="${p.name}">
                         </div>
-                        <div class="menu-body" onclick="openModal('subscribe-modal')">
+                        <div class="menu-body" onclick="openDetailModal(${p.id})">
                             <div class="menu-title">${p.name}</div>
                             <div class="menu-price">Rp ${p.price.toLocaleString('id-ID')}</div>
                         </div>
                         <div class="menu-action">
-                            <button class="btn btn-primary" onclick="openModal('subscribe-modal')"><i class="fas fa-plus"></i> Tambah</button>
+                            <button class="btn btn-primary" onclick="openDetailModal(${p.id})"><i class="fas fa-plus"></i> Tambah</button>
                         </div>
                     </div>
                 `;
             });
+        }
+
+        function openDetailModal(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+            
+            selectedProductId = product.id;
+            document.getElementById('detail-img').src = product.img || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&auto=format&fit=crop&q=80';
+            document.getElementById('detail-title').innerText = product.name;
+            document.getElementById('detail-price').innerText = 'Rp ' + product.price.toLocaleString('id-ID');
+            document.getElementById('detail-desc').innerText = product.desc || 'Menu lezat pilihan terbaik dari Sitenexs Cafe.';
+            document.getElementById('modal-qty').value = 1; // Reset jumlah ke 1 setiap kali dibuka
+
+            const addBtn = document.getElementById('detail-add-btn');
+            addBtn.onclick = () => {
+                let qty = parseInt(document.getElementById('modal-qty').value) || 1;
+                if (qty < 1) qty = 1;
+                cart[selectedProductId] = (cart[selectedProductId] || 0) + qty;
+                updateCartUI();
+                closeModal('detail-modal');
+            };
+
+            openModal('detail-modal');
+        }
+
+        function adjustModalQty(change) {
+            const input = document.getElementById('modal-qty');
+            let currentVal = parseInt(input.value) || 1;
+            currentVal += change;
+            if (currentVal < 1) currentVal = 1;
+            input.value = currentVal;
+        }
+
+        function updateCartUI() {
+            let totalItems = 0;
+            let totalPrice = 0;
+
+            for (let id in cart) {
+                let qty = cart[id];
+                let product = products.find(p => p.id == id);
+                if (product) {
+                    totalItems += qty;
+                    totalPrice += product.price * qty;
+                }
+            }
+
+            document.getElementById('cart-count').innerText = `${totalItems} Item`;
+            document.getElementById('cart-total').innerText = `Rp ${totalPrice.toLocaleString('id-ID')}`;
+        }
+
+        function openSubscribeModal() {
+            openModal('subscribe-modal');
         }
 
         function openModal(modalId) {
