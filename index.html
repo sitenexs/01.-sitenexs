@@ -83,6 +83,10 @@
             color: inherit;
         }
 
+        [hidden] {
+            display: none !important;
+        }
+
         button, input, select, textarea {
             font-family: inherit;
             outline: none;
@@ -1077,7 +1081,7 @@
     <!-- 1. NAVBAR -->
     <header id="navbar">
         <div class="container nav-container">
-            <a href="#" class="logo">
+            <a href="/" class="logo">
                 <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff&size=64&rounded=true';">
                 <span class="logo-text">SiteNexs</span>
             </a>
@@ -1088,6 +1092,7 @@
                 <a href="#solusi-digital">Solusi</a>
                 <a href="#kegunaan">Keunggulan</a>
                 <a href="#tentang">Tentang Kami</a>
+                <a href="https://account.sitenexs.com/profile/">Profil</a>
                 <a href="#kontak">Kontak</a>
                 <div class="nav-divider"></div>
                 <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" class="nav-layanan-link">
@@ -1096,13 +1101,9 @@
             </nav>
 
             <div style="display: flex; align-items: center; gap: 1rem;">
-                <!-- Tombol Auth: Masuk dan Daftar -->
                 <div class="nav-auth-desktop">
-                    <a href="https://account.sitenexs.com/login" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
-                        Masuk
-                    </a>
-                    <a href="https://account.sitenexs.com/register" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
-                        Daftar
+                    <a href="https://account.sitenexs.com/profile/" class="btn btn-secondary btn-sm">
+                        Profil
                     </a>
                 </div>
                 
@@ -1119,6 +1120,7 @@
             <a href="#solusi-digital" class="nav-item">Solusi Digital <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#kegunaan" class="nav-item">Keunggulan UMKM <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#tentang" class="nav-item">Tentang Bisnis <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="https://account.sitenexs.com/profile/" class="nav-item">Profil Saya <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#pendiri" class="nav-item">Profil Pendiri <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#kontak" class="nav-item">Kontak <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" class="nav-item">
@@ -1126,13 +1128,8 @@
                 <i class="fas fa-external-link-alt text-muted" style="font-size: 0.8rem;"></i>
             </a>
             
-            <div style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-subtle); display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                <a href="https://account.sitenexs.com/login" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-block">
-                    Masuk
-                </a>
-                <a href="https://account.sitenexs.com/register" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-block">
-                    Daftar
-                </a>
+            <div style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-subtle); display: grid; grid-template-columns: 1fr; gap: 0.75rem;">
+                <a href="https://account.sitenexs.com/profile/" class="btn btn-secondary btn-block">Profil</a>
             </div>
         </div>
     </header>
@@ -1416,7 +1413,7 @@
                     </div>
 
                     <div class="founder-action">
-                        <a href="https://founder.sitenexs.com" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                        <a href="/founder/" class="btn btn-primary">
                             <i class="fas fa-external-link-alt"></i> Lihat Profil Lengkap
                         </a>
                     </div>
@@ -1513,7 +1510,7 @@
                 </div>
                 
                 <div style="border-top: 1px solid var(--border-subtle); padding-top: 2rem; text-align: center; font-size: 0.9rem; color: var(--text-muted); margin-top: 1rem;">
-                    &copy; 2026 Sitenexs. Didirikan oleh <a href="https://founder.sitenexs.com" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 700;">Syafaat Nuryadi</a>. All rights reserved.
+                    &copy; 2026 Sitenexs. Didirikan oleh <a href="/founder/" style="color: var(--primary); font-weight: 700;">Syafaat Nuryadi</a>. All rights reserved.
                 </div>
             </footer>
         </div>
