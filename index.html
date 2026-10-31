@@ -292,7 +292,6 @@
             box-shadow: var(--shadow-sm);
         }
 
-        /* Diperbesar ukuran Nav Link */
         .nav-links {
             display: flex;
             align-items: center;
@@ -328,17 +327,6 @@
             display: flex;
             align-items: center;
             gap: 0.75rem; 
-        }
-        
-        .nav-login-text {
-            font-weight: 700;
-            font-size: 0.9rem;
-            color: var(--text-main);
-            transition: var(--transition);
-        }
-        
-        .nav-login-text:hover {
-            color: var(--primary);
         }
 
         .mobile-toggle {
@@ -529,7 +517,7 @@
         }
 
 
-        /* 3. DEMO PRODUK ATAU LAYANAN - 1 HP UTUH MENGHADAP SAMPING DI ATAS KATALOG */
+        /* 3. DEMO PRODUK */
         .demo-section-container {
             display: flex;
             align-items: center;
@@ -598,7 +586,6 @@
             border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; z-index: 10;
         }
 
-        /* Frame Web Asli di Dalam Mockup HP */
         .phone-iframe {
             width: 100%;
             height: 100%;
@@ -614,7 +601,7 @@
         .demo-desc { font-size: 1rem; color: var(--text-muted); line-height: 1.6; }
 
 
-        /* 4. PILIHAN SOLUSI DIGITAL (Katalog) */
+        /* 4. PILIHAN SOLUSI DIGITAL */
         .solutions-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -896,7 +883,144 @@
             line-height: 1.6;
         }
 
-        /* 8. KONTAK DAN AJAKAN BERTINDAK (CONTACT CARD) */
+        /* 8. KOMUNITAS / MITRA BERGABUNG (UPDATED: KECIL, SEARCH, SORT, KLIK) */
+        .community-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            max-width: 400px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-full);
+            padding: 0.4rem 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .control-group i {
+            color: var(--text-muted);
+        }
+
+        .search-box {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .sort-box {
+            border: 1px solid var(--border-medium);
+            outline: none;
+            background: var(--bg-card);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            color: var(--text-main);
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            font-weight: 600;
+        }
+
+        .members-grid {
+            display: grid;
+            /* Grid diperkecil agar memuat lebih banyak card (min 240px) */
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1rem;
+            width: 100%;
+        }
+
+        /* Diubah menjadi anchor (tautan) agar bisa diklik */
+        .member-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 1rem; /* Padding dikurangi */
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        .member-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--border-accent);
+            box-shadow: var(--shadow-md);
+            background: var(--primary-light);
+        }
+
+        .member-avatar-box {
+            width: 55px; /* Avatar dikecilkan */
+            height: 55px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #dbeafe, #f8fafc);
+            border: 2px solid rgba(37,99,235,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .member-avatar-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .member-info {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .member-name {
+            font-size: 0.95rem; /* Font dikecilkan */
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .member-business {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .member-category {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.2rem 0.5rem;
+            background: rgba(37,99,235,0.08);
+            color: var(--primary);
+            border-radius: var(--radius-sm);
+            font-size: 0.65rem;
+            font-weight: 700;
+            width: fit-content;
+        }
+
+        /* 9. KONTAK DAN AJAKAN BERTINDAK (CONTACT CARD) */
         .contact-card {
             background: #ffffff;
             border-radius: var(--radius-xl);
@@ -943,7 +1067,7 @@
             background-color: #ffffff;
         }
 
-        /* 9. FOOTER CARD */
+        /* 10. FOOTER CARD */
         .footer-section {
             background: var(--bg-body);
             padding: 2rem 0 4rem 0;
@@ -998,7 +1122,7 @@
             color: var(--text-muted);
         }
 
-        /* 10. FLOATING WHATSAPP BUTTON */
+        /* 11. FLOATING WHATSAPP BUTTON */
         .whatsapp-float-container {
             position: fixed;
             bottom: 2rem;
@@ -1056,6 +1180,11 @@
             .founder-action { justify-content: center; }
             .utility-grid { grid-template-columns: 1fr; gap: 1rem; }
             
+            /* Komunitas */
+            .community-controls { flex-direction: column; align-items: stretch; }
+            .control-group { max-width: 100%; }
+            .members-grid { grid-template-columns: 1fr; }
+            
             .contact-card { padding: 1.5rem; border-radius: var(--radius-lg); }
             .form-grid { grid-template-columns: 1fr; gap: 0; }
             
@@ -1068,7 +1197,6 @@
             .whatsapp-float-container { bottom: 1.5rem; right: 1.5rem; }
             .whatsapp-float { width: 50px; height: 50px; font-size: 1.5rem; }
             
-            /* Penyesuaian HP Mockup di Mobile */
             .demo-section-container { padding: 1rem 0; overflow: hidden; }
             .phone-mockup-wrapper { perspective: 800px; }
             .phone-mockup { transform: rotateY(-8deg) rotateX(2deg) scale(0.85); margin-top: -15px; margin-bottom: -15px; }
@@ -1086,13 +1214,12 @@
                 <span class="logo-text">SiteNexs</span>
             </a>
 
-            <!-- Nav Links Diperbesar -->
             <nav class="nav-links">
                 <a href="#demo-produk">Demo</a>
                 <a href="#solusi-digital">Solusi</a>
                 <a href="#kegunaan">Keunggulan</a>
                 <a href="#tentang">Tentang Kami</a>
-                <a href="https://account.sitenexs.com/profile/">Profil</a>
+                <a href="#mitra">Mitra Bergabung</a>
                 <a href="#kontak">Kontak</a>
                 <div class="nav-divider"></div>
                 <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" class="nav-layanan-link">
@@ -1107,21 +1234,19 @@
                     </a>
                 </div>
                 
-                <!-- Toggle Button untuk Mobile Menu -->
                 <button id="mobile-menu-btn" class="mobile-toggle" aria-label="Open Menu">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
         </div>
 
-        <!-- MOBILE MENU DROPDOWN -->
         <div id="mobile-menu">
             <a href="#demo-produk" class="nav-item">Demo Sistem <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#solusi-digital" class="nav-item">Solusi Digital <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#kegunaan" class="nav-item">Keunggulan UMKM <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#tentang" class="nav-item">Tentang Bisnis <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
-            <a href="https://account.sitenexs.com/profile/" class="nav-item">Profil Saya <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#pendiri" class="nav-item">Profil Pendiri <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="#mitra" class="nav-item">Mitra Bergabung <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#kontak" class="nav-item">Kontak <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" class="nav-item">
                 <span><i class="fas fa-layer-group text-primary" style="margin-right: 0.5rem;"></i> Layanan Sitenexs</span> 
@@ -1135,7 +1260,7 @@
     </header>
 
     <!-- 2. HERO SECTION -->
-    <section id="hero" class="page-section hero bg-gradient-hero bg-grid-pattern">
+    <section id="hero" class="page-section hero bg-gradient-soft bg-grid-pattern">
         <div class="container">
             <div class="hero-wrapper reveal">
                 <div class="hero-card">
@@ -1195,7 +1320,7 @@
         </div>
     </section>
 
-    <!-- 3. DEMO SISTEM KASIR (HP DI ATAS KATALOG) -->
+    <!-- 3. DEMO SISTEM KASIR -->
     <section id="demo-produk" class="page-section bg-square-grid">
         <div class="container">
             <div class="section-header reveal">
@@ -1205,21 +1330,16 @@
             </div>
 
             <div class="demo-section-container reveal">
-                <!-- 1 HP UTUH 3D DENGAN IFRAME -->
                 <div class="phone-mockup-wrapper">
                     <div class="phone-mockup">
                         <div class="phone-screen">
-                            <!-- Notch Kamera -->
                             <div class="phone-notch"></div>
-                            
-                            <!-- Iframe Web Asli -->
                             <iframe src="https://sitenexs.com/mockup/pesan.html" class="phone-iframe" title="Demo POS Sitenexs"></iframe>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Teks Penjelasan di Bawah HP -->
             <div class="demo-text-box reveal">
                 <h3 class="demo-title">Aplikasi Kasir (POS) Mobile Modern</h3>
                 <p class="demo-desc">
@@ -1230,7 +1350,7 @@
         </div>
     </section>
 
-    <!-- 4. PILIHAN SOLUSI DIGITAL (KATALOG) -->
+    <!-- 4. PILIHAN SOLUSI DIGITAL -->
     <section id="solusi-digital" class="page-section bg-gradient-soft">
         <div class="container">
             <div class="section-header reveal">
@@ -1422,8 +1542,45 @@
         </div>
     </section>
 
-    <!-- 8. KONTAK (BERGAYA CARD) -->
-    <section id="kontak" class="page-section bg-gradient-soft">
+    <!-- 8. KOMUNITAS / MITRA BERGABUNG (KECIL, SEARCH, SORT, DAN KLIK KE PROFIL) -->
+    <section id="mitra" class="page-section bg-gradient-soft">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-subtitle">Komunitas Sitenexs</span>
+                <h2 class="section-title">Mereka yang Telah Bergabung</h2>
+                <p class="section-desc">Para pemilik usaha mikro dan UMKM yang telah memulai langkah transformasi digital bersama solusi dari Sitenexs.</p>
+            </div>
+
+            <!-- Kontrol Pencarian & Pengurutan -->
+            <div class="community-controls reveal">
+                <div class="control-group">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchMitra" class="search-box" placeholder="Cari nama atau bisnis...">
+                </div>
+                
+                <select id="sortMitra" class="sort-box">
+                    <option value="newest">Baru Bergabung</option>
+                    <option value="oldest">Anggota Terlama</option>
+                </select>
+            </div>
+
+            <!-- Grid Data Mitra -->
+            <div id="members-grid" class="members-grid">
+                <p style="text-align: center; grid-column: 1 / -1; color: var(--text-muted);">
+                    <i class="fas fa-spinner fa-spin"></i> Memuat data komunitas...
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 3.5rem;" class="reveal">
+                <a href="https://account.sitenexs.com/sign-up/" class="btn btn-outline-primary">
+                    <i class="fas fa-user-plus"></i> Bergabung Menjadi Mitra
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. KONTAK (BERGAYA CARD) -->
+    <section id="kontak" class="page-section bg-square-grid">
         <div class="container">
             <div class="section-header reveal">
                 <span class="section-subtitle">Hubungi Kami</span>
@@ -1431,7 +1588,6 @@
                 <p class="section-desc">Punya pertanyaan seputar layanan kami atau ingin berkonsultasi mengenai kebutuhan bisnis Anda? Kirimkan pesan sekarang.</p>
             </div>
 
-            <!-- Form Contact berubah menjadi Card yang tegas -->
             <form id="contact-form" class="contact-card reveal">
                 <div class="form-grid">
                     <div class="form-group">
@@ -1466,7 +1622,7 @@
         </div>
     </section>
 
-    <!-- 9. FOOTER (BERGAYA CARD) -->
+    <!-- 10. FOOTER -->
     <div class="footer-section">
         <div class="container">
             <footer class="footer-card reveal">
@@ -1489,6 +1645,7 @@
                             <li><a href="#kegunaan">Keunggulan UMKM</a></li>
                             <li><a href="#tentang">Tentang Perusahaan</a></li>
                             <li><a href="#pendiri">Profil Pendiri</a></li>
+                            <li><a href="#mitra">Mitra Bergabung</a></li>
                         </ul>
                     </div>
                     
@@ -1516,17 +1673,16 @@
         </div>
     </div>
 
-    <!-- 10. FLOATING WHATSAPP BUTTON -->
+    <!-- 11. FLOATING WHATSAPP BUTTON -->
     <div class="whatsapp-float-container">
         <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20berkonsultasi" target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Chat WhatsApp">
             <i class="fab fa-whatsapp"></i>
         </a>
     </div>
 
-    <!-- JAVASCRIPT REGULER -->
+    <!-- JAVASCRIPT ANIMASI & UI DASAR -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // TOGGLE MOBILE MENU
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
             const mobileNavItems = document.querySelectorAll('#mobile-menu a');
@@ -1535,7 +1691,6 @@
                 mobileMenuBtn.addEventListener('click', () => {
                     mobileMenu.classList.toggle('show');
                 });
-
                 mobileNavItems.forEach(item => {
                     item.addEventListener('click', () => {
                         mobileMenu.classList.remove('show');
@@ -1543,7 +1698,6 @@
                 });
             }
 
-            // REVEAL ANIMATION ON SCROLL
             const reveals = document.querySelectorAll('.reveal');
             function revealOnScroll() {
                 const windowHeight = window.innerHeight;
@@ -1555,9 +1709,8 @@
                 });
             }
             window.addEventListener('scroll', revealOnScroll);
-            revealOnScroll(); // Trigger once on load
+            revealOnScroll();
 
-            // FORM KONTAK KE WHATSAPP
             const contactForm = document.getElementById('contact-form');
             if (contactForm) {
                 contactForm.addEventListener('submit', (e) => {
@@ -1572,6 +1725,134 @@
                 });
             }
         });
+    </script>
+
+    <!-- JAVASCRIPT UNTUK DATA KOMUNITAS (FIREBASE & SUPABASE) -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, query, limit } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
+            authDomain: 'sitenexs-62919.firebaseapp.com',
+            projectId: 'sitenexs-62919',
+            storageBucket: 'sitenexs-62919.firebasestorage.app',
+            messagingSenderId: '1060348110644',
+            appId: '1:1060348110644:web:e45af14d5f26a9cf8e6761',
+            measurementId: 'G-C7YL0Q7YRQ'
+        };
+
+        const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
+        const avatarBucket = 'profile-photos';
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Variabel global untuk menyimpan data sementara agar bisa di-search dan di-sort
+        let allMitraData = [];
+
+        async function fetchAndRenderMitra() {
+            const grid = document.getElementById('members-grid');
+            if (!grid) return;
+
+            try {
+                // Ambil data user dari Firestore (Limit dibesarkan ke 30 agar search & sort berfungsi maksimal di front-end)
+                const q = query(collection(db, "users"), limit(30)); 
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    grid.innerHTML = '<p style="text-align:center; grid-column: 1 / -1; color: var(--text-muted);">Belum ada mitra yang bergabung.</p>';
+                    return;
+                }
+
+                allMitraData = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    
+                    // Menyiapkan object data untuk dimasukkan ke array
+                    allMitraData.push({
+                        uid: data.uid || doc.id,
+                        nama: data.namaLengkap || data.namaDepan + (data.namaBelakang ? ' ' + data.namaBelakang : '') || 'Mitra Sitenexs',
+                        bisnisNama: data.bisnis?.nama || 'Bisnis Sitenexs',
+                        bisnisBidang: data.bisnis?.bidang || 'UMKM',
+                        createdAt: data.createdAt || new Date(0).toISOString() // Fallback time 
+                    });
+                });
+
+                // Jalankan fungsi filter & render pertama kali (otomatis disortir Newest)
+                filterAndRender();
+
+            } catch (error) {
+                console.error("Gagal memuat data mitra dari Firestore:", error);
+                grid.innerHTML = '<p style="text-align:center; grid-column: 1 / -1; color: var(--text-muted);">Gagal memuat data komunitas. Periksa jaringan Anda.</p>';
+            }
+        }
+
+        // Fungsi memfilter, menyortir, dan merender HTML
+        function filterAndRender() {
+            const grid = document.getElementById('members-grid');
+            const searchValue = document.getElementById('searchMitra').value.toLowerCase();
+            const sortValue = document.getElementById('sortMitra').value;
+
+            // 1. FILTER BUKAN PENCARIAN
+            let filteredData = allMitraData.filter(user => 
+                user.nama.toLowerCase().includes(searchValue) || 
+                user.bisnisNama.toLowerCase().includes(searchValue)
+            );
+
+            // 2. URUTKAN (SORTING)
+            filteredData.sort((a, b) => {
+                const dateA = new Date(a.createdAt).getTime();
+                const dateB = new Date(b.createdAt).getTime();
+                // newest: terbaru di atas | oldest: terlama di atas
+                return sortValue === 'newest' ? dateB - dateA : dateA - dateB;
+            });
+
+            // 3. RENDER KE LAYAR
+            grid.innerHTML = '';
+            
+            if(filteredData.length === 0) {
+                grid.innerHTML = `<p style="text-align:center; grid-column: 1 / -1; color: var(--text-muted);">Tidak ada mitra yang cocok dengan pencarian "${searchValue}".</p>`;
+                return;
+            }
+
+            filteredData.forEach(user => {
+                // Ikon Kategori Dinamis
+                let icon = 'fa-store';
+                const fieldLower = user.bisnisBidang.toLowerCase();
+                if (fieldLower.includes('cafe') || fieldLower.includes('resto')) icon = 'fa-coffee';
+                else if (fieldLower.includes('sekolah') || fieldLower.includes('instansi')) icon = 'fa-school';
+                else if (fieldLower.includes('bengkel')) icon = 'fa-wrench';
+                else if (fieldLower.includes('perusahaan')) icon = 'fa-building';
+
+                // URL Foto & Fallback
+                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo`;
+                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama)}&background=2563eb&color=fff&size=120`;
+
+                // Link diarahkan ke profil-komunitas.html membawa parameter uid user tersebut
+                const cardHTML = `
+                    <a href="profil-komunitas.html?uid=${encodeURIComponent(user.uid)}" class="member-card reveal active">
+                        <div class="member-avatar-box">
+                            <img src="${photoUrl}" alt="Avatar ${user.nama}" onerror="this.onerror=null; this.src='${fallbackUrl}';">
+                        </div>
+                        <div class="member-info">
+                            <h4 class="member-name">${user.nama}</h4>
+                            <div class="member-business">${user.bisnisNama}</div>
+                            <div class="member-category"><i class="fas ${icon}" style="margin-right: 0.3rem;"></i> ${user.bisnisBidang}</div>
+                        </div>
+                    </a>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
+
+        // Panggil fetch awal
+        fetchAndRenderMitra();
+
+        // Event Listener untuk input Search dan Dropdown Sort
+        document.getElementById('searchMitra').addEventListener('input', filterAndRender);
+        document.getElementById('sortMitra').addEventListener('change', filterAndRender);
+
     </script>
 </body>
 </html>
