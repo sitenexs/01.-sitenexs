@@ -601,7 +601,7 @@
         .demo-desc { font-size: 1rem; color: var(--text-muted); line-height: 1.6; }
 
 
-        /* 4. PILIHAN SOLUSI DIGITAL */
+        /* 4. PILIHAN SOLUSI DIGITAL (Katalog) */
         .solutions-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -996,6 +996,15 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .member-verification-icon {
+            width: 14px;
+            height: 14px;
+            object-fit: contain;
         }
 
         .member-business {
@@ -1775,6 +1784,7 @@
                         nama: data.namaLengkap || data.namaDepan + (data.namaBelakang ? ' ' + data.namaBelakang : '') || 'Mitra Sitenexs',
                         bisnisNama: data.bisnis?.nama || 'Bisnis Sitenexs',
                         bisnisBidang: data.bisnis?.bidang || 'UMKM',
+                        isVerified: data.isVerified || false,
                         createdAt: data.createdAt || new Date(0).toISOString() // Fallback time 
                     });
                 });
@@ -1829,14 +1839,22 @@
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama)}&background=2563eb&color=fff&size=120`;
 
+                // Logika Ikon Verified
+                const verifiedIconHTML = user.isVerified 
+                    ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`
+                    : '';
+
                 // Link diarahkan ke profil-komunitas.html membawa parameter uid user tersebut
                 const cardHTML = `
-                    <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(user.uid)}" class="member-card reveal active">
+                    <a href="profil-komunitas.html?uid=${encodeURIComponent(user.uid)}" class="member-card reveal active">
                         <div class="member-avatar-box">
                             <img src="${photoUrl}" alt="Avatar ${user.nama}" onerror="this.onerror=null; this.src='${fallbackUrl}';">
                         </div>
                         <div class="member-info">
-                            <h4 class="member-name">${user.nama}</h4>
+                            <h4 class="member-name">
+                                ${user.nama}
+                                ${verifiedIconHTML}
+                            </h4>
                             <div class="member-business">${user.bisnisNama}</div>
                             <div class="member-category"><i class="fas ${icon}" style="margin-right: 0.3rem;"></i> ${user.bisnisBidang}</div>
                         </div>
