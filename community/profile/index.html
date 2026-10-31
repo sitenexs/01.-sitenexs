@@ -131,51 +131,46 @@
             border-bottom: 1px solid var(--border-subtle);
         }
 
-        /* GAYA UNTUK AVATAR & LOGO BERTUMPUK DENGAN UKURAN SAMA */
+        /* GAYA UNTUK AVATAR & LOGO BISNIS SEJAJAR */
         .avatar-group {
-            position: relative;
-            margin-bottom: 1.5rem;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 40px; 
-        }
-
-        .business-logo-stacked {
-            position: absolute;
-            top: 15px;
-            right: -40px;
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 4px solid rgba(255, 255, 255, 0.95);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            z-index: 1;
-            display: none;
-            overflow: hidden;
-        }
-
-        .business-logo-stacked img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
+            gap: 1.5rem; /* Jarak antara foto profil dan logo bisnis */
+            margin-bottom: 1.5rem;
         }
 
         .avatar-box {
-            position: relative;
-            z-index: 2;
-            width: 140px;
-            height: 140px;
+            width: 130px;
+            height: 130px;
             border-radius: 50%;
             background: #ffffff;
             border: 4px solid rgba(255, 255, 255, 0.95);
             padding: 4px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+            flex-shrink: 0;
         }
 
         .avatar-box img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .business-logo-stacked {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 4px solid rgba(255, 255, 255, 0.95);
+            padding: 4px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+            flex-shrink: 0;
+            display: none; /* Dimunculkan lewat JS jika ada */
+        }
+
+        .business-logo-stacked img {
             width: 100%;
             height: 100%;
             border-radius: 50%;
@@ -308,8 +303,9 @@
             .profile-header { padding: 2.5rem 1.5rem 1.5rem 1.5rem; }
             .profile-body { padding: 1.5rem; }
             .info-grid { grid-template-columns: 1fr; gap: 1rem; }
-            .business-logo-stacked { right: -30px; top: 10px; }
-            .avatar-group { margin-right: 30px; }
+            /* Penyesuaian agar keduanya tetap muat berdampingan di layar HP kecil */
+            .avatar-group { gap: 1rem; }
+            .avatar-box, .business-logo-stacked { width: 100px; height: 100px; }
         }
     </style>
 </head>
@@ -346,12 +342,13 @@
         <div id="profile-card" class="profile-card" style="display: none;">
             <div class="profile-header">
                 
+                <!-- Grup Avatar (Berjajar: Foto Profil Utama dan Logo Bisnis) -->
                 <div class="avatar-group">
-                    <div id="p-bg-logo" class="business-logo-stacked">
-                        <img id="p-b-logo-img" src="" alt="Logo Bisnis">
-                    </div>
                     <div class="avatar-box">
                         <img id="p-avatar" src="" alt="Avatar Utama">
+                    </div>
+                    <div id="p-bg-logo" class="business-logo-stacked">
+                        <img id="p-b-logo-img" src="" alt="Logo Bisnis">
                     </div>
                 </div>
 
@@ -409,7 +406,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
-        // Konfigurasi Database
+        // Konfigurasi Database Sesuai Profil
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
             authDomain: 'sitenexs-62919.firebaseapp.com',
@@ -426,7 +423,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Ambil parameter UID
+        // Ambil parameter UID dari URL (misal: profil-komunitas.html?uid=xyz123)
         const urlParams = new URLSearchParams(window.location.search);
         const uid = urlParams.get('uid');
 
@@ -441,6 +438,7 @@
             }
 
             try {
+                // Ambil data langsung dari Firestore spesifik untuk 1 user
                 const docRef = doc(db, "users", uid);
                 const docSnap = await getDoc(docRef);
 
@@ -451,6 +449,7 @@
 
                 const data = docSnap.data();
                 
+                // Parsing Data
                 let name = data.namaLengkap || data.namaDepan + (data.namaBelakang ? ' ' + data.namaBelakang : '');
                 if (!name || name.trim() === '') name = 'Mitra Sitenexs';
 
@@ -465,12 +464,14 @@
                 const bLogo = business.logoUrl || null;
                 const isVerified = data.isVerified || false;
 
+                // Format Tanggal
                 let joinedDate = 'Baru-baru ini';
                 if (data.createdAt) {
                     const d = new Date(data.createdAt);
                     joinedDate = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
                 }
 
+                // Kategori Ikon
                 let icon = 'fa-store';
                 const fieldLower = bField.toLowerCase();
                 if (fieldLower.includes('cafe') || fieldLower.includes('resto')) icon = 'fa-coffee';
@@ -478,6 +479,7 @@
                 else if (fieldLower.includes('bengkel')) icon = 'fa-wrench';
                 else if (fieldLower.includes('perusahaan')) icon = 'fa-building';
 
+                // Set Foto Utama (Supabase -> Fallback ui-avatars)
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2563eb&color=fff&size=200`;
                 
@@ -485,7 +487,7 @@
                 imgEl.src = photoUrl;
                 imgEl.onerror = () => { imgEl.src = fallbackUrl; };
 
-                // Menampilkan Logo Bisnis jika ada
+                // Memasukkan Logo Bisnis berjajar (jika ada)
                 if (bLogo) {
                     const bgLogoBox = document.getElementById('p-bg-logo');
                     const bgLogoImg = document.getElementById('p-b-logo-img');
@@ -498,6 +500,7 @@
                     document.getElementById('p-verified').style.display = 'inline-block';
                 }
 
+                // Isi Data ke DOM
                 document.title = `Profil: ${name} - Sitenexs`;
                 document.getElementById('p-name').textContent = name;
                 document.getElementById('p-business').textContent = bName;
@@ -507,6 +510,7 @@
                 document.getElementById('p-email').textContent = bEmail;
                 document.getElementById('p-date').textContent = joinedDate;
 
+                // Logika Tombol WhatsApp
                 if (bPhone && bPhone.trim() !== '') {
                     let cleanPhone = bPhone.replace(/\D/g, '');
                     if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1);
@@ -515,9 +519,10 @@
                     const waText = encodeURIComponent(`Halo, saya melihat profil bisnis ${bName} di komunitas Sitenexs.`);
                     document.getElementById('btn-whatsapp').href = `https://wa.me/${cleanPhone}?text=${waText}`;
                 } else {
-                    document.getElementById('contact-area').style.display = 'none';
+                    document.getElementById('contact-area').style.display = 'none'; // Sembunyikan jika tidak ada nomor
                 }
 
+                // Tampilkan Card
                 loadingState.style.display = 'none';
                 profileCard.style.display = 'flex';
 
@@ -533,6 +538,7 @@
             errorState.style.display = 'block';
         }
 
+        // Inisiasi pemuatan data
         loadProfile();
     </script>
 </body>
