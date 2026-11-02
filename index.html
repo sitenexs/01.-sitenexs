@@ -6,8 +6,8 @@
     <title>Sitenexs — Tentang Kami & Solusi Digital UMKM</title>
     
     <!-- Meta SEO -->
-    <meta name="description" content="Profil Sitenexs, mitra transformasi digital UMKM Indonesia yang didirikan oleh Syafaat Nuryadi untuk membantu efisiensi operasional usaha.">
-    <meta name="keywords" content="SiteNexs, Profil SiteNexs, Syafaat Nuryadi, Solusi Digital UMKM, Digitalisasi Usaha Indonesia">
+    <meta name="description" content="Profil Sitenexs, mitra transformasi digital UMKM Indonesia yang didirikan untuk membantu efisiensi operasional usaha.">
+    <meta name="keywords" content="SiteNexs, Profil SiteNexs, Solusi Digital UMKM, Digitalisasi Usaha Indonesia">
     <meta name="author" content="SiteNexs">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://sitenexs.com/">
@@ -16,7 +16,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sitenexs.com/">
     <meta property="og:title" content="SiteNexs — Mengenal Mitra Digital UMKM Indonesia">
-    <meta property="og:description" content="Mengenal Sitenexs, lokasi, sejarah pendirian, profil pendiri Syafaat Nuryadi, serta dedikasi kami untuk memajukan UMKM Indonesia.">
+    <meta property="og:description" content="Mengenal Sitenexs, lokasi, sejarah pendirian, profil pendiri, serta dedikasi kami untuk memajukan UMKM Indonesia.">
     <meta property="og:image" content="https://sitenexs.com/assets/logo/logo.png">
 
     <!-- Favicon -->
@@ -246,7 +246,7 @@
             line-height: 1.6;
         }
 
-        /* 1. NAVBAR */
+        /* NAVBAR */
         #navbar {
             position: fixed;
             top: 0;
@@ -303,6 +303,7 @@
         .nav-links a {
             color: var(--text-muted);
             transition: var(--transition);
+            cursor: pointer;
         }
 
         .nav-links a:hover {
@@ -372,9 +373,10 @@
             font-weight: 600;
             color: var(--text-main);
             border-bottom: 1px solid var(--border-subtle);
+            cursor: pointer;
         }
 
-        /* 2. HERO SECTION */
+        /* HERO SECTION */
         .hero { 
             text-align: center;
             padding-top: 160px; 
@@ -516,8 +518,7 @@
             margin-top: 0.2rem;
         }
 
-
-        /* 3. DEMO PRODUK */
+        /* DEMO PRODUK */
         .demo-section-container {
             display: flex;
             align-items: center;
@@ -600,8 +601,7 @@
         .demo-title { font-size: 1.4rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem; }
         .demo-desc { font-size: 1rem; color: var(--text-muted); line-height: 1.6; }
 
-
-        /* 4. PILIHAN SOLUSI DIGITAL (Katalog) */
+        /* PILIHAN SOLUSI DIGITAL */
         .solutions-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -652,7 +652,7 @@
             line-height: 1.6;
         }
 
-        /* 5. KEUNGGULAN SITENEXS */
+        /* KEUNGGULAN SITENEXS */
         .utility-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -705,7 +705,7 @@
             line-height: 1.6;
         }
 
-        /* 6. TENTANG SITENEXS */
+        /* TENTANG SITENEXS */
         .about-info-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -776,114 +776,97 @@
             line-height: 1.6;
         }
 
-        /* 7. PROFIL FOUNDER */
-        .founder-card {
-            background: #ffffff;
+        /* -------------------------------------
+           MITRA PENGEMBANG (SWIPEABLE CARD, SMALLER)
+           ------------------------------------- */
+        .dev-carousel {
+            display: flex;
+            gap: 1.25rem;
+            overflow-x: auto;
+            padding: 1rem 0.5rem 2rem 0.5rem;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none; /* Firefox */
+        }
+        
+        .dev-carousel::-webkit-scrollbar {
+            display: none; /* Chrome, Safari */
+        }
+        
+        .dev-card {
+            scroll-snap-align: start;
+            flex: 0 0 200px; /* Ukuran diperkecil dari 280px ke 200px */
+            background: var(--bg-card);
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-xl);
-            padding: 3.5rem;
-            display: grid;
-            grid-template-columns: 260px 1fr;
-            gap: 3.5rem;
-            align-items: center;
-            box-shadow: var(--shadow-lg);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .founder-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 6px;
-            height: 100%;
-            background: linear-gradient(180deg, var(--primary) 0%, var(--accent) 100%);
-        }
-
-        .founder-media {
+            border-radius: var(--radius-lg);
+            padding: 1.5rem 1rem; /* Padding lebih ramping */
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
+            text-decoration: none;
+            color: inherit;
         }
-
-        .founder-avatar-wrapper {
-            position: relative;
-            padding: 6px;
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.18) 0%, rgba(16, 185, 129, 0.18) 100%);
-            border-radius: var(--radius-lg);
+        
+        .dev-card:hover {
+            transform: translateY(-5px);
             box-shadow: var(--shadow-md);
+            border-color: var(--border-accent);
         }
-
-        .founder-img {
-            width: 220px;
-            height: 250px;
+        
+        .dev-avatar-wrapper {
+            position: relative;
+            width: 70px; /* Diperkecil */
+            height: 70px;
+            border-radius: 50%;
+            padding: 4px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .dev-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
             object-fit: cover;
-            object-position: center top;
-            border-radius: calc(var(--radius-lg) - 4px);
-            background-color: var(--bg-alt);
-            display: block;
+            background-color: var(--bg-body);
+            border: 2px solid #fff;
         }
-
-        .founder-badge-loc {
-            margin-top: 1.25rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            background: var(--bg-alt);
-            border: 1px solid var(--border-subtle);
-            padding: 0.4rem 1.2rem;
-            border-radius: var(--radius-full);
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .founder-header {
-            margin-bottom: 1.25rem;
-            border-bottom: 1px solid var(--border-subtle);
-            padding-bottom: 1rem;
-        }
-
-        .founder-name {
-            font-size: 1.8rem;
+        
+        .dev-name {
+            font-size: 1.05rem; /* Agak kecil */
             font-weight: 800;
             color: var(--text-main);
-            line-height: 1.2;
-            letter-spacing: -0.01em;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
         }
-
-        .founder-role {
-            color: var(--primary);
-            font-size: 1rem;
+        
+        .dev-role {
+            font-size: 0.75rem; /* Diperkecil */
             font-weight: 700;
-            margin-top: 0.4rem;
+            color: var(--primary);
+            background: rgba(37,99,235,0.08);
+            padding: 0.25rem 0.6rem;
+            border-radius: var(--radius-full);
+            margin-bottom: 0.5rem;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.3rem;
         }
-
-        .founder-bio {
+        
+        .dev-business {
+            font-size: 0.75rem; /* Diperkecil */
             color: var(--text-muted);
-            font-size: 1rem;
-            line-height: 1.7;
-            margin-bottom: 1.5rem;
         }
 
-        .founder-quote {
-            background: var(--bg-body);
-            border-left: 4px solid var(--primary);
-            padding: 1.25rem 1.5rem;
-            border-radius: 0 var(--radius-md) var(--radius-md) 0;
-            margin-bottom: 1.75rem;
-            font-size: 0.95rem;
-            color: var(--text-main);
-            font-style: italic;
-            line-height: 1.6;
-        }
-
-        /* 8. KOMUNITAS / MITRA BERGABUNG (VERTICAL SCROLL DALAM KOTAK) */
+        /* -------------------------------------
+           KOMUNITAS / MITRA BERGABUNG 
+           ------------------------------------- */
         .community-controls {
             display: flex;
             justify-content: space-between;
@@ -932,27 +915,20 @@
             font-weight: 600;
         }
 
-        /* Container dengan Scroll Vertikal */
         .members-grid {
             display: grid;
-            /* Menggunakan grid agar rapi, menyesuaikan ukuran layar */
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 1rem;
             width: 100%;
-            
-            /* -- KUNCI SCROLL KE BAWAH -- */
-            max-height: 420px; /* Dibatasi tingginya agar memuat sekitar 4 profil berderet */
-            overflow-y: auto; /* Mengaktifkan scroll ke bawah */
-            padding: 0.5rem; /* Sedikit jarak agar shadow card tidak terpotong */
-            
-            /* Desain scrollbar */
+            max-height: 420px;
+            overflow-y: auto;
+            padding: 0.5rem;
             scrollbar-width: thin;
             scrollbar-color: var(--border-medium) transparent;
         }
 
-        /* Scrollbar untuk Chrome/Safari */
         .members-grid::-webkit-scrollbar {
-            width: 6px; /* Lebar scrollbar vertikal */
+            width: 6px;
         }
         .members-grid::-webkit-scrollbar-thumb {
             background-color: var(--border-medium);
@@ -972,6 +948,7 @@
             text-decoration: none;
             color: inherit;
             cursor: pointer;
+            position: relative;
         }
 
         .member-card:hover {
@@ -982,7 +959,7 @@
         }
 
         .member-avatar-box {
-            width: 55px; /* Avatar dikecilkan */
+            width: 55px; 
             height: 55px;
             border-radius: 50%;
             background: linear-gradient(135deg, #dbeafe, #f8fafc);
@@ -1007,7 +984,7 @@
         }
 
         .member-name {
-            font-size: 0.95rem; /* Font dikecilkan */
+            font-size: 0.95rem;
             font-weight: 800;
             color: var(--text-main);
             margin-bottom: 0.1rem;
@@ -1047,7 +1024,7 @@
             width: fit-content;
         }
 
-        /* 9. KONTAK DAN AJAKAN BERTINDAK (CONTACT CARD) */
+        /* KONTAK DAN AJAKAN BERTINDAK (CONTACT CARD) */
         .contact-card {
             background: #ffffff;
             border-radius: var(--radius-xl);
@@ -1094,7 +1071,7 @@
             background-color: #ffffff;
         }
 
-        /* 10. FOOTER CARD */
+        /* FOOTER CARD */
         .footer-section {
             background: var(--bg-body);
             padding: 2rem 0 4rem 0;
@@ -1134,6 +1111,7 @@
             transition: var(--transition);
             color: var(--text-muted);
             font-size: 0.95rem;
+            cursor: pointer;
         }
 
         .footer-links a:hover {
@@ -1149,7 +1127,7 @@
             color: var(--text-muted);
         }
 
-        /* 11. FLOATING WHATSAPP BUTTON */
+        /* FLOATING WHATSAPP BUTTON */
         .whatsapp-float-container {
             position: fixed;
             bottom: 2rem;
@@ -1176,6 +1154,114 @@
             box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
         }
 
+        /* -------------------------------------
+           MODAL POP-UP PROFIL FOUNDER 
+           ------------------------------------- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 1.5rem;
+            transform: scale(0.95) translateY(10px);
+            transition: all 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: var(--radius-xl);
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+        
+        .modal-close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.05);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            z-index: 10;
+            transition: var(--transition);
+        }
+        
+        .modal-close-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        /* Card dalam Modal */
+        .founder-card {
+            background: #ffffff;
+            border-radius: var(--radius-xl);
+            padding: 3.5rem;
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 3.5rem;
+            align-items: center;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .founder-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0;
+            width: 6px; height: 100%;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--accent) 100%);
+        }
+
+        .founder-media { display: flex; flex-direction: column; align-items: center; position: relative; }
+        .founder-avatar-wrapper {
+            position: relative; padding: 6px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.18) 0%, rgba(16, 185, 129, 0.18) 100%);
+            border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+        }
+        .founder-img {
+            width: 220px; height: 250px; object-fit: cover; object-position: center top;
+            border-radius: calc(var(--radius-lg) - 4px); background-color: var(--bg-alt); display: block;
+        }
+        .founder-badge-loc {
+            margin-top: 1.25rem; display: inline-flex; align-items: center; gap: 0.4rem;
+            background: var(--bg-alt); border: 1px solid var(--border-subtle); padding: 0.4rem 1.2rem;
+            border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 700; color: var(--text-main);
+        }
+        .founder-header { margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; }
+        .founder-name { font-size: 1.8rem; font-weight: 800; color: var(--text-main); line-height: 1.2; letter-spacing: -0.01em; }
+        .founder-role { color: var(--primary); font-size: 1rem; font-weight: 700; margin-top: 0.4rem; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .founder-bio { color: var(--text-muted); font-size: 1rem; line-height: 1.7; margin-bottom: 1.5rem; }
+        .founder-quote {
+            background: var(--bg-body); border-left: 4px solid var(--primary); padding: 1.25rem 1.5rem;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0; margin-bottom: 1.75rem; font-size: 0.95rem;
+            color: var(--text-main); font-style: italic; line-height: 1.6;
+        }
+
         /* RESPONSIF MOBILE & TABLET */
         @media (max-width: 1023px) {
             .page-section { padding: 4rem 0; }
@@ -1183,7 +1269,6 @@
             .hero-highlights { grid-template-columns: 1fr; gap: 0.75rem; }
             .solutions-grid { grid-template-columns: repeat(2, 1fr); }
             .about-info-grid { grid-template-columns: repeat(2, 1fr); }
-            .founder-card { grid-template-columns: 220px 1fr; gap: 2.5rem; padding: 2.5rem; }
             .utility-grid { grid-template-columns: 1fr; }
             
             .phone-mockup { transform: rotateY(-18deg) rotateX(5deg) rotateZ(2deg) scale(0.9); }
@@ -1200,17 +1285,21 @@
             .about-info-grid { grid-template-columns: 1fr; gap: 1.25rem; }
             .info-card { padding: 1.5rem; }
             .info-card-image-box { height: 200px; }
-            .founder-card { grid-template-columns: 1fr; text-align: center; padding: 2rem 1.5rem; gap: 1.5rem; }
+            
+            /* Modal / Founder Card di Mobile */
+            .modal-content { margin: 1rem; }
+            .founder-card { grid-template-columns: 1fr; text-align: center; padding: 2.5rem 1.5rem 2rem 1.5rem; gap: 1.5rem; }
             .founder-card::before { width: 100%; height: 5px; }
             .founder-img { width: 180px; height: 200px; }
             .founder-quote { text-align: left; }
             .founder-action { justify-content: center; }
+            .modal-close-btn { top: 1rem; right: 1rem; background: rgba(0,0,0,0.1); }
+            
             .utility-grid { grid-template-columns: 1fr; gap: 1rem; }
             
-            /* Komunitas */
             .community-controls { flex-direction: column; align-items: stretch; }
             .control-group { max-width: 100%; }
-            .members-grid { grid-template-columns: 1fr; } /* Pastikan di mobile 1 kolom */
+            .members-grid { grid-template-columns: 1fr; } 
             
             .contact-card { padding: 1.5rem; border-radius: var(--radius-lg); }
             .form-grid { grid-template-columns: 1fr; gap: 0; }
@@ -1233,7 +1322,7 @@
 </head>
 <body>
 
-    <!-- 1. NAVBAR -->
+    <!-- NAVBAR -->
     <header id="navbar">
         <div class="container nav-container">
             <a href="/" class="logo">
@@ -1246,8 +1335,8 @@
                 <a href="#solusi-digital">Solusi</a>
                 <a href="#kegunaan">Keunggulan</a>
                 <a href="#tentang">Tentang Kami</a>
-                <a href="#mitra">Mitra Bergabung</a>
-                <a href="#kontak">Kontak</a>
+                <a href="#pengembang">Pengembang</a>
+                <a href="#mitra">Mitra</a>
                 <div class="nav-divider"></div>
                 <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" class="nav-layanan-link">
                     Layanan <i class="fas fa-arrow-up-right-from-square" style="font-size: 0.8rem;"></i>
@@ -1272,9 +1361,9 @@
             <a href="#solusi-digital" class="nav-item">Solusi Digital <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#kegunaan" class="nav-item">Keunggulan UMKM <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#tentang" class="nav-item">Tentang Bisnis <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
-            <a href="#pendiri" class="nav-item">Profil Pendiri <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="#pengembang" class="nav-item">Tim Pengembang <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#mitra" class="nav-item">Mitra Bergabung <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
-            <a href="#kontak" class="nav-item">Kontak <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a class="nav-item open-founder-modal">Profil Pendiri <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" class="nav-item">
                 <span><i class="fas fa-layer-group text-primary" style="margin-right: 0.5rem;"></i> Layanan Sitenexs</span> 
                 <i class="fas fa-external-link-alt text-muted" style="font-size: 0.8rem;"></i>
@@ -1286,7 +1375,7 @@
         </div>
     </header>
 
-    <!-- 2. HERO SECTION -->
+    <!-- HERO SECTION -->
     <section id="hero" class="page-section hero bg-gradient-soft bg-grid-pattern">
         <div class="container">
             <div class="hero-wrapper reveal">
@@ -1347,7 +1436,7 @@
         </div>
     </section>
 
-    <!-- 3. DEMO SISTEM KASIR -->
+    <!-- DEMO SISTEM KASIR -->
     <section id="demo-produk" class="page-section bg-square-grid">
         <div class="container">
             <div class="section-header reveal">
@@ -1373,11 +1462,10 @@
                     Silakan gulir dan interaksi langsung pada layar HP di atas! Sistem ini dirancang untuk bekerja secara sempurna di perangkat mobile, memudahkan staf dan pelanggan Anda melakukan pemesanan tanpa aplikasi tambahan.
                 </p>
             </div>
-            
         </div>
     </section>
 
-    <!-- 4. PILIHAN SOLUSI DIGITAL -->
+    <!-- PILIHAN SOLUSI DIGITAL -->
     <section id="solusi-digital" class="page-section bg-gradient-soft">
         <div class="container">
             <div class="section-header reveal">
@@ -1426,7 +1514,7 @@
         </div>
     </section>
 
-    <!-- 5. KEUNGGULAN SITENEXS -->
+    <!-- KEUNGGULAN SITENEXS -->
     <section id="kegunaan" class="page-section bg-gradient-section">
         <div class="container">
             <div class="section-header reveal">
@@ -1471,7 +1559,7 @@
         </div>
     </section>
 
-    <!-- 6. TENTANG SITENEXS -->
+    <!-- TENTANG SITENEXS -->
     <section id="tentang" class="page-section bg-gradient-soft">
         <div class="container">
             <div class="section-header reveal">
@@ -1520,56 +1608,25 @@
         </div>
     </section>
 
-    <!-- 7. PROFIL FOUNDER -->
-    <section id="pendiri" class="page-section bg-grid-pattern" style="background-color: var(--bg-body);">
+    <!-- TIM PENGEMBANG (PENGGANTI PROFIL FOUNDER) -->
+    <section id="pengembang" class="page-section bg-grid-pattern" style="background-color: var(--bg-body);">
         <div class="container">
             <div class="section-header reveal">
-                <span class="section-subtitle">Kepemimpinan & Engineering</span>
-                <h2 class="section-title">Profil Pendiri Sitenexs</h2>
-                <p class="section-desc">Sosok visioner di balik arsitektur dan visi pengembang sistem Sitenexs.</p>
+                <span class="section-subtitle">Engineering & Inovasi</span>
+                <h2 class="section-title">Mitra Pengembang Sitenexs</h2>
+                <p class="section-desc">Para talenta kreatif yang berada di balik keandalan fitur dan arsitektur sistem operasional Sitenexs. Silakan geser untuk melihat.</p>
             </div>
 
-            <div class="founder-card reveal">
-                <div class="founder-media">
-                    <div class="founder-avatar-wrapper">
-                        <img src="https://sitenexs.com/assets/founder/founder.png" 
-                             alt="Syafaat Nuryadi — Founder Sitenexs" 
-                             class="founder-img"
-                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Syafaat+Nuryadi&background=2563eb&color=fff&size=256';">
-                    </div>
-                    <div class="founder-badge-loc">
-                        <i class="fas fa-map-marker-alt text-primary"></i> Bengkulu, Indonesia
-                    </div>
-                </div>
-
-                <div class="founder-content">
-                    <div class="founder-header">
-                        <h3 class="founder-name">Syafaat Nuryadi</h3>
-                        <div class="founder-role">
-                            <i class="fas fa-user-tie"></i> Founder & Lead Engineer
-                        </div>
-                    </div>
-                    
-                    <p class="founder-bio">
-                        Seorang pengembang perangkat lunak asal Bengkulu yang berhasil mendirikan <strong>Sitenexs</strong> pada <strong>27/09/2026</strong>. Berdedikasi untuk menciptakan solusi IT yang memecahkan masalah nyata bagi pemilik usaha lokal.
-                    </p>
-
-                    <div class="founder-quote">
-                        <i class="fas fa-quote-left text-primary" style="margin-right: 0.5rem; opacity: 0.7;"></i>
-                        "Menjadi pelopor inovasi digital yang menghadirkan teknologi modern, mudah digunakan, dan memberikan manfaat efisiensi nyata bagi masyarakat luas."
-                    </div>
-
-                    <div class="founder-action">
-                        <a href="/founder/" class="btn btn-primary">
-                            <i class="fas fa-external-link-alt"></i> Lihat Profil Lengkap
-                        </a>
-                    </div>
-                </div>
+            <!-- Kontainer Scroll/Swipe untuk Pengembang -->
+            <div id="dev-carousel" class="dev-carousel reveal">
+                <p style="text-align: center; width: 100%; color: var(--text-muted);">
+                    <i class="fas fa-spinner fa-spin"></i> Memuat data tim pengembang...
+                </p>
             </div>
         </div>
     </section>
 
-    <!-- 8. KOMUNITAS / MITRA BERGABUNG (VERTICAL SCROLL DALAM KOTAK) -->
+    <!-- KOMUNITAS / MITRA BERGABUNG -->
     <section id="mitra" class="page-section bg-gradient-soft">
         <div class="container">
             <div class="section-header reveal">
@@ -1606,7 +1663,7 @@
         </div>
     </section>
 
-    <!-- 9. KONTAK (BERGAYA CARD) -->
+    <!-- KONTAK (BERGAYA CARD) -->
     <section id="kontak" class="page-section bg-square-grid">
         <div class="container">
             <div class="section-header reveal">
@@ -1649,7 +1706,7 @@
         </div>
     </section>
 
-    <!-- 10. FOOTER -->
+    <!-- FOOTER -->
     <div class="footer-section">
         <div class="container">
             <footer class="footer-card reveal">
@@ -1671,7 +1728,7 @@
                             <li><a href="#solusi-digital">Katalog Solusi Digital</a></li>
                             <li><a href="#kegunaan">Keunggulan UMKM</a></li>
                             <li><a href="#tentang">Tentang Perusahaan</a></li>
-                            <li><a href="#pendiri">Profil Pendiri</a></li>
+                            <li><a class="open-founder-modal">Profil Pendiri</a></li> <!-- Tautan ke Modal -->
                             <li><a href="#mitra">Mitra Bergabung</a></li>
                         </ul>
                     </div>
@@ -1694,25 +1751,66 @@
                 </div>
                 
                 <div style="border-top: 1px solid var(--border-subtle); padding-top: 2rem; text-align: center; font-size: 0.9rem; color: var(--text-muted); margin-top: 1rem;">
-                    &copy; 2026 Sitenexs. Didirikan oleh <a href="/founder/" style="color: var(--primary); font-weight: 700;">Syafaat Nuryadi</a>. All rights reserved.
+                    &copy; 2026 Sitenexs. Didirikan oleh <a href="#" class="open-founder-modal" style="color: var(--primary); font-weight: 700;" id="footerFounderName">Syafaat Nuryadi</a>. All rights reserved.
                 </div>
             </footer>
         </div>
     </div>
 
-    <!-- 11. FLOATING WHATSAPP BUTTON -->
+    <!-- FLOATING WHATSAPP BUTTON -->
     <div class="whatsapp-float-container">
         <a href="https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20berkonsultasi" target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Chat WhatsApp">
             <i class="fab fa-whatsapp"></i>
         </a>
     </div>
 
+    <!-- MODAL POP-UP: PROFIL PENDIRI -->
+    <div id="founderModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" id="closeFounderModal" aria-label="Tutup Profil"><i class="fas fa-times"></i></button>
+            
+            <div class="founder-card">
+                <div class="founder-media">
+                    <div class="founder-avatar-wrapper">
+                        <img src="https://sitenexs.com/assets/founder/founder.png" 
+                             alt="Founder Sitenexs" 
+                             class="founder-img"
+                             id="modalFounderImg"
+                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Syafaat+Nuryadi&background=2563eb&color=fff&size=256';">
+                    </div>
+                    <div class="founder-badge-loc">
+                        <i class="fas fa-map-marker-alt text-primary"></i> <span id="modalFounderLoc">Bengkulu, Indonesia</span>
+                    </div>
+                </div>
+
+                <div class="founder-content">
+                    <div class="founder-header">
+                        <h3 class="founder-name" id="modalFounderName">Syafaat Nuryadi</h3>
+                        <div class="founder-role">
+                            <i class="fas fa-user-tie"></i> <span id="modalFounderRole">Founder & Lead Engineer</span>
+                        </div>
+                    </div>
+                    
+                    <p class="founder-bio">
+                        Seorang pengembang perangkat lunak asal Bengkulu yang berhasil mendirikan <strong>Sitenexs</strong> pada <strong>27/09/2026</strong>. Berdedikasi untuk menciptakan solusi IT yang memecahkan masalah nyata bagi pemilik usaha lokal.
+                    </p>
+
+                    <div class="founder-quote">
+                        <i class="fas fa-quote-left text-primary" style="margin-right: 0.5rem; opacity: 0.7;"></i>
+                        "Menjadi pelopor inovasi digital yang menghadirkan teknologi modern, mudah digunakan, dan memberikan manfaat efisiensi nyata bagi masyarakat luas."
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JAVASCRIPT ANIMASI & UI DASAR -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Mobile Menu
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
-            const mobileNavItems = document.querySelectorAll('#mobile-menu a');
+            const mobileNavItems = document.querySelectorAll('#mobile-menu a.nav-item');
 
             if (mobileMenuBtn && mobileMenu) {
                 mobileMenuBtn.addEventListener('click', () => {
@@ -1725,6 +1823,7 @@
                 });
             }
 
+            // Animasi Scroll Reveal
             const reveals = document.querySelectorAll('.reveal');
             function revealOnScroll() {
                 const windowHeight = window.innerHeight;
@@ -1738,6 +1837,7 @@
             window.addEventListener('scroll', revealOnScroll);
             revealOnScroll();
 
+            // Contact Form WhatsApp
             const contactForm = document.getElementById('contact-form');
             if (contactForm) {
                 contactForm.addEventListener('submit', (e) => {
@@ -1751,6 +1851,31 @@
                     window.open(`https://wa.me/6285177137899?text=${encodeURIComponent(message)}`, '_blank');
                 });
             }
+
+            // Logika Modal Pop-up Profil Founder
+            const founderModal = document.getElementById('founderModal');
+            const openModalBtns = document.querySelectorAll('.open-founder-modal');
+            const closeModalBtn = document.getElementById('closeFounderModal');
+
+            openModalBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    founderModal.classList.add('active');
+                });
+            });
+
+            if(closeModalBtn) {
+                closeModalBtn.addEventListener('click', () => {
+                    founderModal.classList.remove('active');
+                });
+            }
+
+            // Tutup modal jika klik di luar area konten
+            founderModal.addEventListener('click', (e) => {
+                if (e.target === founderModal) {
+                    founderModal.classList.remove('active');
+                }
+            });
         });
     </script>
 
@@ -1775,15 +1900,14 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Variabel global untuk menyimpan data sementara agar bisa di-search dan di-sort
         let allMitraData = [];
+        let autoScrollDev;
 
         async function fetchAndRenderMitra() {
             const grid = document.getElementById('members-grid');
             if (!grid) return;
 
             try {
-                // Ambil data user dari Firestore (Limit dibesarkan ke 30 agar search & sort berfungsi maksimal di front-end)
                 const q = query(collection(db, "users"), limit(30)); 
                 const querySnapshot = await getDocs(q);
 
@@ -1796,47 +1920,151 @@
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     
-                    // Menyiapkan object data untuk dimasukkan ke array
                     allMitraData.push({
                         uid: data.uid || doc.id,
                         nama: data.namaLengkap || data.namaDepan + (data.namaBelakang ? ' ' + data.namaBelakang : '') || 'Mitra Sitenexs',
                         bisnisNama: data.bisnis?.nama || 'Bisnis Sitenexs',
                         bisnisBidang: data.bisnis?.bidang || 'UMKM',
                         isVerified: data.isVerified || false,
-                        createdAt: data.createdAt || new Date(0).toISOString() // Fallback time 
+                        isDeveloper: data.isDeveloper || false,
+                        isFounder: data.isFounder || false, // Properti Founder
+                        jabatanPengembang: data.jabatanPengembang || 'Pengembang',
+                        createdAt: data.createdAt || new Date(0).toISOString()
                     });
                 });
 
-                // Jalankan fungsi filter & render pertama kali (otomatis disortir Newest)
+                renderDevelopers();
                 filterAndRender();
 
             } catch (error) {
-                console.error("Gagal memuat data mitra dari Firestore:", error);
+                console.error("Gagal memuat data dari Firestore:", error);
                 grid.innerHTML = '<p style="text-align:center; grid-column: 1 / -1; width: 100%; color: var(--text-muted);">Gagal memuat data komunitas. Periksa jaringan Anda.</p>';
             }
         }
 
-        // Fungsi memfilter, menyortir, dan merender HTML
+        // FUNGSI RENDER MITRA PENGEMBANG
+        function renderDevelopers() {
+            const devCarousel = document.getElementById('dev-carousel');
+            if (!devCarousel) return;
+
+            // Pisahkan yang Founder dan Pengembang biasa
+            const founders = allMitraData.filter(user => user.isFounder);
+            const developers = allMitraData.filter(user => user.isDeveloper && !user.isFounder);
+
+            devCarousel.innerHTML = '';
+
+            if (founders.length === 0 && developers.length === 0) {
+                devCarousel.innerHTML = '<p style="text-align: center; width: 100%; color: var(--text-muted);">Belum ada data pengembang terdaftar.</p>';
+                return;
+            }
+
+            // Loop untuk mencetak semua user dengan status Founder terlebih dahulu (di urutan pertama)
+            founders.forEach((founder, index) => {
+                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(founder.uid)}/profile-photo`;
+                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(founder.nama)}&background=2563eb&color=fff&size=256`;
+                const verifiedCheck = founder.isVerified 
+                    ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` 
+                    : '';
+
+                // Memperbarui UI di Modal dan Footer untuk founder pertama yang ditemukan
+                if(index === 0) {
+                    const modalImg = document.getElementById('modalFounderImg');
+                    const modalName = document.getElementById('modalFounderName');
+                    const modalRole = document.getElementById('modalFounderRole');
+                    const footerName = document.getElementById('footerFounderName');
+
+                    if(modalImg) { modalImg.src = photoUrl; modalImg.onerror = () => modalImg.src = fallbackUrl; }
+                    if(modalName) modalName.innerHTML = founder.nama;
+                    if(modalRole) modalRole.innerHTML = founder.jabatanPengembang || 'Founder';
+                    if(footerName) footerName.innerHTML = founder.nama;
+                }
+
+                const founderCardHTML = `
+                    <a class="dev-card open-founder-modal" style="cursor: pointer; border: 2px solid var(--primary); background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);">
+                        <div class="dev-avatar-wrapper" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);">
+                            <img src="${photoUrl}" alt="${founder.nama}" class="dev-avatar" onerror="this.onerror=null; this.src='${fallbackUrl}';">
+                        </div>
+                        <h3 class="dev-name">${founder.nama} ${verifiedCheck}</h3>
+                        <div class="dev-role" style="background: var(--primary); color: #ffffff;">
+                            <i class="fas fa-crown"></i> ${founder.jabatanPengembang || 'Founder'}
+                        </div>
+                        <div class="dev-business">
+                            <i class="fas fa-building text-muted"></i> ${founder.bisnisNama}
+                        </div>
+                    </a>
+                `;
+                devCarousel.insertAdjacentHTML('beforeend', founderCardHTML);
+            });
+
+            // Re-bind click event buat tombol class 'open-founder-modal' yang baru saja dicetak
+            document.querySelectorAll('.open-founder-modal').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.getElementById('founderModal').classList.add('active');
+                });
+            });
+
+            // Loop dan mencetak para Pengembang Biasa
+            developers.forEach(dev => {
+                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(dev.uid)}/profile-photo`;
+                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(dev.nama)}&background=2563eb&color=fff&size=150`;
+                
+                const verifiedCheck = dev.isVerified 
+                    ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` 
+                    : '';
+
+                const devCardHTML = `
+                    <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(dev.uid)}" class="dev-card">
+                        <div class="dev-avatar-wrapper">
+                            <img src="${photoUrl}" alt="Foto ${dev.nama}" class="dev-avatar" onerror="this.onerror=null; this.src='${fallbackUrl}';">
+                        </div>
+                        <h3 class="dev-name">${dev.nama} ${verifiedCheck}</h3>
+                        <div class="dev-role">
+                            <i class="fas fa-code"></i> ${dev.jabatanPengembang}
+                        </div>
+                        <div class="dev-business">
+                            <i class="fas fa-store text-muted"></i> ${dev.bisnisNama}
+                        </div>
+                    </a>
+                `;
+                devCarousel.insertAdjacentHTML('beforeend', devCardHTML);
+            });
+
+            // Auto-Scroll Logic
+            let isTouching = false;
+            devCarousel.addEventListener('touchstart', () => isTouching = true);
+            devCarousel.addEventListener('touchend', () => setTimeout(() => isTouching = false, 2000));
+            devCarousel.addEventListener('mouseenter', () => isTouching = true);
+            devCarousel.addEventListener('mouseleave', () => isTouching = false);
+
+            autoScrollDev = setInterval(() => {
+                if (isTouching) return; 
+                const maxScroll = devCarousel.scrollWidth - devCarousel.clientWidth;
+                if (devCarousel.scrollLeft >= maxScroll - 10) {
+                    devCarousel.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    devCarousel.scrollBy({ left: 220, behavior: 'smooth' });
+                }
+            }, 3500); 
+        }
+
+        // FUNGSI FILTER & RENDER SEMUA MITRA (GRID BAWAH)
         function filterAndRender() {
             const grid = document.getElementById('members-grid');
             const searchValue = document.getElementById('searchMitra').value.toLowerCase();
             const sortValue = document.getElementById('sortMitra').value;
 
-            // 1. FILTER BUKAN PENCARIAN
             let filteredData = allMitraData.filter(user => 
                 user.nama.toLowerCase().includes(searchValue) || 
                 user.bisnisNama.toLowerCase().includes(searchValue)
             );
 
-            // 2. URUTKAN (SORTING)
             filteredData.sort((a, b) => {
                 const dateA = new Date(a.createdAt).getTime();
                 const dateB = new Date(b.createdAt).getTime();
-                // newest: terbaru di atas | oldest: terlama di atas
                 return sortValue === 'newest' ? dateB - dateA : dateA - dateB;
             });
 
-            // 3. RENDER KE LAYAR
             grid.innerHTML = '';
             
             if(filteredData.length === 0) {
@@ -1845,7 +2073,6 @@
             }
 
             filteredData.forEach(user => {
-                // Ikon Kategori Dinamis
                 let icon = 'fa-store';
                 const fieldLower = user.bisnisBidang.toLowerCase();
                 if (fieldLower.includes('cafe') || fieldLower.includes('resto')) icon = 'fa-coffee';
@@ -1853,16 +2080,13 @@
                 else if (fieldLower.includes('bengkel')) icon = 'fa-wrench';
                 else if (fieldLower.includes('perusahaan')) icon = 'fa-building';
 
-                // URL Foto & Fallback
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama)}&background=2563eb&color=fff&size=120`;
 
-                // Logika Ikon Verified
                 const verifiedIconHTML = user.isVerified 
                     ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`
                     : '';
 
-                // Link diarahkan ke profil-komunitas.html membawa parameter uid user tersebut
                 const cardHTML = `
                     <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(user.uid)}" class="member-card reveal active">
                         <div class="member-avatar-box">
@@ -1882,10 +2106,8 @@
             });
         }
 
-        // Panggil fetch awal
         fetchAndRenderMitra();
 
-        // Event Listener untuk input Search dan Dropdown Sort
         document.getElementById('searchMitra').addEventListener('input', filterAndRender);
         document.getElementById('sortMitra').addEventListener('change', filterAndRender);
 
