@@ -883,7 +883,7 @@
             line-height: 1.6;
         }
 
-        /* 8. KOMUNITAS / MITRA BERGABUNG (UPDATED: KECIL, SEARCH, SORT, KLIK) */
+        /* 8. KOMUNITAS / MITRA BERGABUNG (VERTICAL SCROLL DALAM KOTAK) */
         .community-controls {
             display: flex;
             justify-content: space-between;
@@ -932,20 +932,38 @@
             font-weight: 600;
         }
 
+        /* Container dengan Scroll Vertikal */
         .members-grid {
             display: grid;
-            /* Grid diperkecil agar memuat lebih banyak card (min 240px) */
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            /* Menggunakan grid agar rapi, menyesuaikan ukuran layar */
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 1rem;
             width: 100%;
+            
+            /* -- KUNCI SCROLL KE BAWAH -- */
+            max-height: 420px; /* Dibatasi tingginya agar memuat sekitar 4 profil berderet */
+            overflow-y: auto; /* Mengaktifkan scroll ke bawah */
+            padding: 0.5rem; /* Sedikit jarak agar shadow card tidak terpotong */
+            
+            /* Desain scrollbar */
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-medium) transparent;
         }
 
-        /* Diubah menjadi anchor (tautan) agar bisa diklik */
+        /* Scrollbar untuk Chrome/Safari */
+        .members-grid::-webkit-scrollbar {
+            width: 6px; /* Lebar scrollbar vertikal */
+        }
+        .members-grid::-webkit-scrollbar-thumb {
+            background-color: var(--border-medium);
+            border-radius: var(--radius-full);
+        }
+
         .member-card {
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
-            padding: 1rem; /* Padding dikurangi */
+            padding: 1rem; 
             display: flex;
             align-items: center;
             gap: 1rem;
@@ -1192,7 +1210,7 @@
             /* Komunitas */
             .community-controls { flex-direction: column; align-items: stretch; }
             .control-group { max-width: 100%; }
-            .members-grid { grid-template-columns: 1fr; }
+            .members-grid { grid-template-columns: 1fr; } /* Pastikan di mobile 1 kolom */
             
             .contact-card { padding: 1.5rem; border-radius: var(--radius-lg); }
             .form-grid { grid-template-columns: 1fr; gap: 0; }
@@ -1551,7 +1569,7 @@
         </div>
     </section>
 
-    <!-- 8. KOMUNITAS / MITRA BERGABUNG (KECIL, SEARCH, SORT, DAN KLIK KE PROFIL) -->
+    <!-- 8. KOMUNITAS / MITRA BERGABUNG (VERTICAL SCROLL DALAM KOTAK) -->
     <section id="mitra" class="page-section bg-gradient-soft">
         <div class="container">
             <div class="section-header reveal">
@@ -1574,13 +1592,13 @@
             </div>
 
             <!-- Grid Data Mitra -->
-            <div id="members-grid" class="members-grid">
-                <p style="text-align: center; grid-column: 1 / -1; color: var(--text-muted);">
+            <div id="members-grid" class="members-grid reveal">
+                <p style="text-align: center; grid-column: 1 / -1; color: var(--text-muted); width: 100%;">
                     <i class="fas fa-spinner fa-spin"></i> Memuat data komunitas...
                 </p>
             </div>
 
-            <div style="text-align: center; margin-top: 3.5rem;" class="reveal">
+            <div style="text-align: center; margin-top: 2rem;" class="reveal">
                 <a href="https://account.sitenexs.com/sign-up/" class="btn btn-outline-primary">
                     <i class="fas fa-user-plus"></i> Bergabung Menjadi Mitra
                 </a>
@@ -1770,7 +1788,7 @@
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
-                    grid.innerHTML = '<p style="text-align:center; grid-column: 1 / -1; color: var(--text-muted);">Belum ada mitra yang bergabung.</p>';
+                    grid.innerHTML = '<p style="text-align:center; grid-column: 1 / -1; width: 100%; color: var(--text-muted);">Belum ada mitra yang bergabung.</p>';
                     return;
                 }
 
@@ -1794,7 +1812,7 @@
 
             } catch (error) {
                 console.error("Gagal memuat data mitra dari Firestore:", error);
-                grid.innerHTML = '<p style="text-align:center; grid-column: 1 / -1; color: var(--text-muted);">Gagal memuat data komunitas. Periksa jaringan Anda.</p>';
+                grid.innerHTML = '<p style="text-align:center; grid-column: 1 / -1; width: 100%; color: var(--text-muted);">Gagal memuat data komunitas. Periksa jaringan Anda.</p>';
             }
         }
 
@@ -1822,7 +1840,7 @@
             grid.innerHTML = '';
             
             if(filteredData.length === 0) {
-                grid.innerHTML = `<p style="text-align:center; grid-column: 1 / -1; color: var(--text-muted);">Tidak ada mitra yang cocok dengan pencarian "${searchValue}".</p>`;
+                grid.innerHTML = `<p style="text-align:center; grid-column: 1 / -1; width: 100%; color: var(--text-muted);">Tidak ada mitra yang cocok dengan pencarian "${searchValue}".</p>`;
                 return;
             }
 
