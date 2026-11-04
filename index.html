@@ -1949,18 +1949,28 @@
             const mobileAuthBtn = document.getElementById('mobileAuthBtn');
             
             if (user) {
-                // JIKA USER SUDAH LOGIN: Ubah teks menjadi Profil
+                // Jika sudah login (Arahkan ke Profil)
                 if (desktopAuthBtn) {
-                    desktopAuthBtn.innerHTML = 'Profil';
+                    desktopAuthBtn.innerHTML = '<i class="fas fa-user-circle" style="margin-right: 0.3rem;"></i> Profil';
                     desktopAuthBtn.href = 'https://account.sitenexs.com/profile/';
                 }
                 if (mobileAuthBtn) {
-                    mobileAuthBtn.innerHTML = 'Profil';
+                    mobileAuthBtn.innerHTML = '<i class="fas fa-user-circle" style="margin-right: 0.3rem;"></i> Profil';
                     mobileAuthBtn.href = 'https://account.sitenexs.com/profile/';
                 }
+            } else {
+                // Jika belum login (Arahkan ke Sign-in)
+                if (desktopAuthBtn) {
+                    desktopAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar';
+                    desktopAuthBtn.href = 'https://account.sitenexs.com/sign-in/';
+                }
+                if (mobileAuthBtn) {
+                    mobileAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar';
+                    mobileAuthBtn.href = 'https://account.sitenexs.com/sign-in/';
+                }
             }
-            // JIKA BELUM LOGIN: Biarkan saja, karena default di HTML sudah "Masuk / Daftar"
         });
+
 
         // ============================================
         // 1. RENDER PAKET HARGA DINAMIS DARI FIREBASE
