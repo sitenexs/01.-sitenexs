@@ -1949,7 +1949,7 @@
             const mobileAuthBtn = document.getElementById('mobileAuthBtn');
             
             if (user) {
-                // Jika sudah login
+                // JIKA USER SUDAH LOGIN: Ubah teks menjadi Profil
                 if (desktopAuthBtn) {
                     desktopAuthBtn.innerHTML = 'Profil';
                     desktopAuthBtn.href = 'https://account.sitenexs.com/profile/';
@@ -1958,17 +1958,8 @@
                     mobileAuthBtn.innerHTML = 'Profil';
                     mobileAuthBtn.href = 'https://account.sitenexs.com/profile/';
                 }
-            } else {
-                // Jika belum login
-                if (desktopAuthBtn) {
-                    desktopAuthBtn.innerHTML = 'Masuk / Daftar';
-                    desktopAuthBtn.href = 'https://account.sitenexs.com/sign-in/';
-                }
-                if (mobileAuthBtn) {
-                    mobileAuthBtn.innerHTML = 'Masuk / Daftar';
-                    mobileAuthBtn.href = 'https://account.sitenexs.com/sign-in/';
-                }
             }
+            // JIKA BELUM LOGIN: Biarkan saja, karena default di HTML sudah "Masuk / Daftar"
         });
 
         // ============================================
