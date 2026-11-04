@@ -652,6 +652,25 @@
             line-height: 1.6;
         }
 
+        /* PAKET HARGA (Di-render dinamis & lebih ringkas) */
+        .pricing-card {
+            background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); 
+            padding: 1.5rem; display: flex; flex-direction: column; text-align: center;
+            box-shadow: var(--shadow-sm); transition: var(--transition); position: relative;
+        }
+        .pricing-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--border-medium); }
+        .pricing-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; padding: 0.25rem 1rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700; box-shadow: var(--shadow-sm); white-space: nowrap; }
+        .pricing-icon { width: 45px; height: 45px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin: 0 auto 0.75rem auto; }
+        .pricing-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.2rem; }
+        .pricing-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.4; }
+        .pricing-price-box { margin-bottom: 1.25rem; background: var(--bg-alt); padding: 0.8rem; border-radius: var(--radius-md); }
+        .pricing-strike { font-size: 0.85rem; color: #ef4444; text-decoration: line-through; display: block; font-weight: 600; margin-bottom: 0.1rem; }
+        .pricing-final { font-size: 1.8rem; font-weight: 800; color: var(--text-main); line-height: 1; }
+        .pricing-final span { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+        .pricing-features { text-align: left; list-style: none; margin-bottom: 1.5rem; color: var(--text-muted); font-size: 0.85rem; flex-grow: 1; }
+        .pricing-features li { margin-bottom: 0.6rem; display: flex; align-items: flex-start; gap: 0.5rem; }
+        .pricing-features li i { margin-top: 0.2rem; }
+        
         /* KEUNGGULAN SITENEXS */
         .utility-grid {
             display: grid;
@@ -1333,6 +1352,7 @@
             <nav class="nav-links">
                 <a href="#demo-produk">Demo</a>
                 <a href="#solusi-digital">Solusi</a>
+                <a href="#harga">Harga</a>
                 <a href="#kegunaan">Keunggulan</a>
                 <a href="#tentang">Tentang Kami</a>
                 <a href="#pengembang">Pengembang</a>
@@ -1345,8 +1365,8 @@
 
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <div class="nav-auth-desktop">
-                    <a href="https://account.sitenexs.com/profile/" class="btn btn-secondary btn-sm">
-                        Profil
+                    <a href="https://account.sitenexs.com/profile/" id="desktopAuthBtn" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-spinner fa-spin" style="margin-right: 0.3rem;"></i> Profil
                     </a>
                 </div>
                 
@@ -1359,6 +1379,7 @@
         <div id="mobile-menu">
             <a href="#demo-produk" class="nav-item">Demo Sistem <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#solusi-digital" class="nav-item">Solusi Digital <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="#harga" class="nav-item">Paket Harga <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#kegunaan" class="nav-item">Keunggulan UMKM <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#tentang" class="nav-item">Tentang Bisnis <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
             <a href="#pengembang" class="nav-item">Tim Pengembang <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
@@ -1370,7 +1391,9 @@
             </a>
             
             <div style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-subtle); display: grid; grid-template-columns: 1fr; gap: 0.75rem;">
-                <a href="https://account.sitenexs.com/profile/" class="btn btn-secondary btn-block">Profil</a>
+                <a href="https://account.sitenexs.com/profile/" id="mobileAuthBtn" class="btn btn-secondary btn-block">
+                    <i class="fas fa-spinner fa-spin" style="margin-right: 0.3rem;"></i> Profil
+                </a>
             </div>
         </div>
     </header>
@@ -1510,6 +1533,22 @@
                     <h3 class="solution-title">Sistem Custom Khusus</h3>
                     <p class="solution-desc">Pengembangan arsitektur web khusus yang disesuaikan dengan alur kerja serta kebutuhan unik bisnis Anda.</p>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PAKET HARGA LANGGANAN (RENDER DINAMIS) -->
+    <section id="harga" class="page-section bg-grid-pattern">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-subtitle">Investasi Digital</span>
+                <h2 class="section-title">Pilih Paket Langganan Anda</h2>
+                <p class="section-desc">Transparan tanpa biaya tersembunyi. Skala operasional Anda kapan saja seiring bertumbuhnya bisnis.</p>
+            </div>
+
+            <!-- Kontainer tempat paket akan dirender dari Firebase -->
+            <div class="utility-grid" id="pricing-container" style="align-items: stretch;">
+                <p style="text-align: center; width: 100%; color: var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Memuat paket harga...</p>
             </div>
         </div>
     </section>
@@ -1728,7 +1767,7 @@
                             <li><a href="#solusi-digital">Katalog Solusi Digital</a></li>
                             <li><a href="#kegunaan">Keunggulan UMKM</a></li>
                             <li><a href="#tentang">Tentang Perusahaan</a></li>
-                            <li><a class="open-founder-modal">Profil Pendiri</a></li> <!-- Tautan ke Modal -->
+                            <li><a class="open-founder-modal">Profil Pendiri</a></li>
                             <li><a href="#mitra">Mitra Bergabung</a></li>
                         </ul>
                     </div>
@@ -1879,10 +1918,11 @@
         });
     </script>
 
-    <!-- JAVASCRIPT UNTUK DATA KOMUNITAS (FIREBASE & SUPABASE) -->
+    <!-- JAVASCRIPT FIREBASE & SUPABASE -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getFirestore, collection, getDocs, query, limit } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
 
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
@@ -1899,7 +1939,143 @@
         
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
+        // ============================================
+        // 0. AUTHENTICATION (Cek Login Status)
+        // ============================================
+        onAuthStateChanged(auth, (user) => {
+            const desktopAuthBtn = document.getElementById('desktopAuthBtn');
+            const mobileAuthBtn = document.getElementById('mobileAuthBtn');
+            
+            if (user) {
+                // Jika sudah login
+                if (desktopAuthBtn) {
+                    desktopAuthBtn.innerHTML = 'Profil';
+                    desktopAuthBtn.href = 'https://account.sitenexs.com/profile/';
+                }
+                if (mobileAuthBtn) {
+                    mobileAuthBtn.innerHTML = 'Profil';
+                    mobileAuthBtn.href = 'https://account.sitenexs.com/profile/';
+                }
+            } else {
+                // Jika belum login
+                if (desktopAuthBtn) {
+                    desktopAuthBtn.innerHTML = 'Masuk / Daftar';
+                    desktopAuthBtn.href = 'https://account.sitenexs.com/sign-up/';
+                }
+                if (mobileAuthBtn) {
+                    mobileAuthBtn.innerHTML = 'Masuk / Daftar';
+                    mobileAuthBtn.href = 'https://account.sitenexs.com/sign-up/';
+                }
+            }
+        });
+
+        // ============================================
+        // 1. RENDER PAKET HARGA DINAMIS DARI FIREBASE
+        // ============================================
+        function formatRupiah(angka) {
+            if(angka === 0) return 'Gratis';
+            return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        async function fetchPricing() {
+            const pricingContainer = document.getElementById('pricing-container');
+            if(!pricingContainer) return;
+
+            try {
+                const querySnapshot = await getDocs(collection(db, "packages"));
+                if (querySnapshot.empty) {
+                    pricingContainer.innerHTML = '<p style="text-align: center; width: 100%;">Belum ada paket yang tersedia. Harap atur di menu Admin.</p>';
+                    return;
+                }
+
+                let packages = [];
+                querySnapshot.forEach((doc) => { packages.push(doc.data()); });
+                
+                // Urutkan dari yang termurah (Basic dulu baru Pro)
+                packages.sort((a, b) => a.hargaAsli - b.hargaAsli);
+                pricingContainer.innerHTML = '';
+
+                packages.forEach(pkg => {
+                    // Logic Coret Harga
+                    let priceHTML = '';
+                    if (pkg.hargaDiskon > 0 && pkg.hargaDiskon < pkg.hargaAsli) {
+                        priceHTML = `
+                            <div class="pricing-price-box">
+                                <span class="pricing-strike">${formatRupiah(pkg.hargaAsli)}</span>
+                                <div class="pricing-final">${formatRupiah(pkg.hargaDiskon)}<span>/bulan</span></div>
+                            </div>
+                        `;
+                    } else if (pkg.hargaAsli > 0) {
+                        priceHTML = `
+                            <div class="pricing-price-box">
+                                <div class="pricing-final">${formatRupiah(pkg.hargaAsli)}<span>/bulan</span></div>
+                            </div>
+                        `;
+                    } else {
+                        priceHTML = `
+                            <div class="pricing-price-box">
+                                <div class="pricing-final">Gratis</div>
+                            </div>
+                        `;
+                    }
+
+                    // Parse fitur (+ untuk hijau, - untuk coret/abu-abu)
+                    const featureLines = pkg.fitur ? pkg.fitur.split('\n') : [];
+                    let featureHTML = '<ul class="pricing-features">';
+                    
+                    featureLines.forEach(line => {
+                        const text = line.substring(1).trim();
+                        if(line.startsWith('+')) {
+                            featureHTML += `<li><i class="fas fa-check text-accent"></i> <span>${text}</span></li>`;
+                        } else if(line.startsWith('-')) {
+                            featureHTML += `<li style="opacity:0.6;"><i class="fas fa-times text-muted"></i> <del>${text}</del></li>`;
+                        } else if(text !== '') {
+                            featureHTML += `<li><span>${line.trim()}</span></li>`;
+                        }
+                    });
+                    featureHTML += '</ul>';
+
+                    // Styling untuk badge & border "Paling Diminati"
+                    const badgePopuler = pkg.isPopuler ? `<div class="pricing-badge">Paling Diminati</div>` : '';
+                    const borderStyle = pkg.isPopuler ? 'border-top: 4px solid var(--primary); transform: scale(1.02);' : 'border-top: 4px solid var(--border-medium);';
+                    const titleStyle = pkg.isPopuler ? 'color: var(--primary);' : '';
+                    const btnClass = pkg.isPopuler ? 'btn-primary' : 'btn-outline-primary';
+                    const linkUrl = pkg.hargaAsli === 0 ? 'https://account.sitenexs.com/sign-up/' : `https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20berlangganan%20${encodeURIComponent(pkg.namaPaket)}.`;
+                    
+                    // Ikon
+                    const iconClass = pkg.icon || 'fa-box';
+
+                    const cardHTML = `
+                        <div class="pricing-card reveal active" style="${borderStyle}">
+                            ${badgePopuler}
+                            
+                            <div class="pricing-icon"><i class="fas ${iconClass}"></i></div>
+                            
+                            <h3 class="pricing-title" style="${titleStyle}">${pkg.namaPaket}</h3>
+                            <p class="pricing-desc">${pkg.deskripsi}</p>
+                            
+                            ${priceHTML}
+                            ${featureHTML}
+                            
+                            <a href="${linkUrl}" target="_blank" class="btn ${btnClass} btn-block" style="margin-top: auto;">${pkg.hargaAsli === 0 ? 'Mulai Gratis' : 'Berlangganan Sekarang'}</a>
+                        </div>
+                    `;
+
+                    pricingContainer.insertAdjacentHTML('beforeend', cardHTML);
+                });
+
+            } catch (error) {
+                console.error("Error fetching pricing: ", error);
+                pricingContainer.innerHTML = '<p style="color:red; text-align:center; width:100%;">Gagal memuat harga. Silakan refresh halaman.</p>';
+            }
+        }
+        fetchPricing();
+
+        // ============================================
+        // 2. DATA KOMUNITAS & MITRA PENGEMBANG
+        // ============================================
         let allMitraData = [];
         let autoScrollDev;
 
@@ -1919,7 +2095,6 @@
                 allMitraData = [];
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    
                     allMitraData.push({
                         uid: data.uid || doc.id,
                         nama: data.namaLengkap || data.namaDepan + (data.namaBelakang ? ' ' + data.namaBelakang : '') || 'Mitra Sitenexs',
@@ -1927,9 +2102,10 @@
                         bisnisBidang: data.bisnis?.bidang || 'UMKM',
                         isVerified: data.isVerified || false,
                         isDeveloper: data.isDeveloper || false,
-                        isFounder: data.isFounder || false, // Properti Founder
+                        isFounder: data.isFounder || false, 
                         jabatanPengembang: data.jabatanPengembang || 'Pengembang',
-                        createdAt: data.createdAt || new Date(0).toISOString()
+                        createdAt: data.createdAt || new Date(0).toISOString(),
+                        paketLangganan: data.paketLangganan || 'Basic'
                     });
                 });
 
@@ -1942,15 +2118,12 @@
             }
         }
 
-        // FUNGSI RENDER MITRA PENGEMBANG
         function renderDevelopers() {
             const devCarousel = document.getElementById('dev-carousel');
             if (!devCarousel) return;
 
-            // Pisahkan yang Founder dan Pengembang biasa
             const founders = allMitraData.filter(user => user.isFounder);
             const developers = allMitraData.filter(user => user.isDeveloper && !user.isFounder);
-
             devCarousel.innerHTML = '';
 
             if (founders.length === 0 && developers.length === 0) {
@@ -1958,15 +2131,11 @@
                 return;
             }
 
-            // Loop untuk mencetak semua user dengan status Founder terlebih dahulu (di urutan pertama)
             founders.forEach((founder, index) => {
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(founder.uid)}/profile-photo`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(founder.nama)}&background=2563eb&color=fff&size=256`;
-                const verifiedCheck = founder.isVerified 
-                    ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` 
-                    : '';
+                const verifiedCheck = founder.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` : '';
 
-                // Memperbarui UI di Modal dan Footer untuk founder pertama yang ditemukan
                 if(index === 0) {
                     const modalImg = document.getElementById('modalFounderImg');
                     const modalName = document.getElementById('modalFounderName');
@@ -1985,18 +2154,13 @@
                             <img src="${photoUrl}" alt="${founder.nama}" class="dev-avatar" onerror="this.onerror=null; this.src='${fallbackUrl}';">
                         </div>
                         <h3 class="dev-name">${founder.nama} ${verifiedCheck}</h3>
-                        <div class="dev-role" style="background: var(--primary); color: #ffffff;">
-                            <i class="fas fa-crown"></i> ${founder.jabatanPengembang || 'Founder'}
-                        </div>
-                        <div class="dev-business">
-                            <i class="fas fa-building text-muted"></i> ${founder.bisnisNama}
-                        </div>
+                        <div class="dev-role" style="background: var(--primary); color: #ffffff;"><i class="fas fa-crown"></i> ${founder.jabatanPengembang || 'Founder'}</div>
+                        <div class="dev-business"><i class="fas fa-building text-muted"></i> ${founder.bisnisNama}</div>
                     </a>
                 `;
                 devCarousel.insertAdjacentHTML('beforeend', founderCardHTML);
             });
 
-            // Re-bind click event buat tombol class 'open-founder-modal' yang baru saja dicetak
             document.querySelectorAll('.open-founder-modal').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -2004,33 +2168,22 @@
                 });
             });
 
-            // Loop dan mencetak para Pengembang Biasa
             developers.forEach(dev => {
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(dev.uid)}/profile-photo`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(dev.nama)}&background=2563eb&color=fff&size=150`;
-                
-                const verifiedCheck = dev.isVerified 
-                    ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` 
-                    : '';
+                const verifiedCheck = dev.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` : '';
 
                 const devCardHTML = `
                     <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(dev.uid)}" class="dev-card">
-                        <div class="dev-avatar-wrapper">
-                            <img src="${photoUrl}" alt="Foto ${dev.nama}" class="dev-avatar" onerror="this.onerror=null; this.src='${fallbackUrl}';">
-                        </div>
+                        <div class="dev-avatar-wrapper"><img src="${photoUrl}" alt="Foto ${dev.nama}" class="dev-avatar" onerror="this.onerror=null; this.src='${fallbackUrl}';"></div>
                         <h3 class="dev-name">${dev.nama} ${verifiedCheck}</h3>
-                        <div class="dev-role">
-                            <i class="fas fa-code"></i> ${dev.jabatanPengembang}
-                        </div>
-                        <div class="dev-business">
-                            <i class="fas fa-store text-muted"></i> ${dev.bisnisNama}
-                        </div>
+                        <div class="dev-role"><i class="fas fa-code"></i> ${dev.jabatanPengembang}</div>
+                        <div class="dev-business"><i class="fas fa-store text-muted"></i> ${dev.bisnisNama}</div>
                     </a>
                 `;
                 devCarousel.insertAdjacentHTML('beforeend', devCardHTML);
             });
 
-            // Auto-Scroll Logic
             let isTouching = false;
             devCarousel.addEventListener('touchstart', () => isTouching = true);
             devCarousel.addEventListener('touchend', () => setTimeout(() => isTouching = false, 2000));
@@ -2040,23 +2193,18 @@
             autoScrollDev = setInterval(() => {
                 if (isTouching) return; 
                 const maxScroll = devCarousel.scrollWidth - devCarousel.clientWidth;
-                if (devCarousel.scrollLeft >= maxScroll - 10) {
-                    devCarousel.scrollTo({ left: 0, behavior: 'smooth' });
-                } else {
-                    devCarousel.scrollBy({ left: 220, behavior: 'smooth' });
-                }
+                if (devCarousel.scrollLeft >= maxScroll - 10) { devCarousel.scrollTo({ left: 0, behavior: 'smooth' });
+                } else { devCarousel.scrollBy({ left: 220, behavior: 'smooth' }); }
             }, 3500); 
         }
 
-        // FUNGSI FILTER & RENDER SEMUA MITRA (GRID BAWAH)
         function filterAndRender() {
             const grid = document.getElementById('members-grid');
             const searchValue = document.getElementById('searchMitra').value.toLowerCase();
             const sortValue = document.getElementById('sortMitra').value;
 
             let filteredData = allMitraData.filter(user => 
-                user.nama.toLowerCase().includes(searchValue) || 
-                user.bisnisNama.toLowerCase().includes(searchValue)
+                user.nama.toLowerCase().includes(searchValue) || user.bisnisNama.toLowerCase().includes(searchValue)
             );
 
             filteredData.sort((a, b) => {
@@ -2082,10 +2230,9 @@
 
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama)}&background=2563eb&color=fff&size=120`;
+                const verifiedIconHTML = user.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` : '';
 
-                const verifiedIconHTML = user.isVerified 
-                    ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`
-                    : '';
+                const proBadgeHTML = user.paketLangganan === 'Pro' ? `<span style="background: #fef08a; color: #854d0e; font-size: 0.6rem; padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 5px; font-weight: 800;">PRO</span>` : '';
 
                 const cardHTML = `
                     <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(user.uid)}" class="member-card reveal active">
@@ -2093,10 +2240,7 @@
                             <img src="${photoUrl}" alt="Avatar ${user.nama}" onerror="this.onerror=null; this.src='${fallbackUrl}';">
                         </div>
                         <div class="member-info">
-                            <h4 class="member-name">
-                                ${user.nama}
-                                ${verifiedIconHTML}
-                            </h4>
+                            <h4 class="member-name">${user.nama} ${verifiedIconHTML} ${proBadgeHTML}</h4>
                             <div class="member-business">${user.bisnisNama}</div>
                             <div class="member-category"><i class="fas ${icon}" style="margin-right: 0.3rem;"></i> ${user.bisnisBidang}</div>
                         </div>
@@ -2107,10 +2251,8 @@
         }
 
         fetchAndRenderMitra();
-
         document.getElementById('searchMitra').addEventListener('input', filterAndRender);
         document.getElementById('sortMitra').addEventListener('change', filterAndRender);
-
     </script>
 </body>
 </html>
