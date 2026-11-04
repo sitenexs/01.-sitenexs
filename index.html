@@ -1695,7 +1695,7 @@
             </div>
 
             <div style="text-align: center; margin-top: 2rem;" class="reveal">
-                <a href="https://account.sitenexs.com/sign-up/" class="btn btn-outline-primary">
+                <a href="https://account.sitenexs.com/sign-in/" class="btn btn-outline-primary">
                     <i class="fas fa-user-plus"></i> Bergabung Menjadi Mitra
                 </a>
             </div>
@@ -1962,11 +1962,11 @@
                 // Jika belum login
                 if (desktopAuthBtn) {
                     desktopAuthBtn.innerHTML = 'Masuk / Daftar';
-                    desktopAuthBtn.href = 'https://account.sitenexs.com/sign-up/';
+                    desktopAuthBtn.href = 'https://account.sitenexs.com/sign-in/';
                 }
                 if (mobileAuthBtn) {
                     mobileAuthBtn.innerHTML = 'Masuk / Daftar';
-                    mobileAuthBtn.href = 'https://account.sitenexs.com/sign-up/';
+                    mobileAuthBtn.href = 'https://account.sitenexs.com/sign-in/';
                 }
             }
         });
@@ -2042,7 +2042,7 @@
                     const borderStyle = pkg.isPopuler ? 'border-top: 4px solid var(--primary); transform: scale(1.02);' : 'border-top: 4px solid var(--border-medium);';
                     const titleStyle = pkg.isPopuler ? 'color: var(--primary);' : '';
                     const btnClass = pkg.isPopuler ? 'btn-primary' : 'btn-outline-primary';
-                    const linkUrl = pkg.hargaAsli === 0 ? 'https://account.sitenexs.com/sign-up/' : `https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20berlangganan%20${encodeURIComponent(pkg.namaPaket)}.`;
+                    const linkUrl = pkg.hargaAsli === 0 ? 'https://account.sitenexs.com/sign-in/' : `https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20berlangganan%20${encodeURIComponent(pkg.namaPaket)}.`;
                     
                     // Ikon
                     const iconClass = pkg.icon || 'fa-box';
