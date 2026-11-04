@@ -1940,36 +1940,38 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-
+      
         // ============================================
-        // 0. AUTHENTICATION (Cek Login Status)
+        // 0. AUTHENTICATION (Cek Langsung dari Perangkat)
         // ============================================
-        onAuthStateChanged(auth, (user) => {
-            const desktopAuthBtn = document.getElementById('desktopAuthBtn');
-            const mobileAuthBtn = document.getElementById('mobileAuthBtn');
-            
-            if (user) {
-                // Jika sudah login (Arahkan ke Profil)
-                if (desktopAuthBtn) {
-                    desktopAuthBtn.innerHTML = '<i class="fas fa-user-circle" style="margin-right: 0.3rem;"></i> Profil';
-                    desktopAuthBtn.href = 'https://account.sitenexs.com/profile/';
-                }
-                if (mobileAuthBtn) {
-                    mobileAuthBtn.innerHTML = '<i class="fas fa-user-circle" style="margin-right: 0.3rem;"></i> Profil';
-                    mobileAuthBtn.href = 'https://account.sitenexs.com/profile/';
-                }
-            } else {
-                // Jika belum login (Arahkan ke Sign-in)
-                if (desktopAuthBtn) {
-                    desktopAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar';
-                    desktopAuthBtn.href = 'https://account.sitenexs.com/sign-in/';
-                }
-                if (mobileAuthBtn) {
-                    mobileAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar';
-                    mobileAuthBtn.href = 'https://account.sitenexs.com/sign-in/';
-                }
+        // Membaca data seketika tanpa nunggu Firebase
+        const isLoggedIn = document.cookie.includes('isLoggedIn=true');
+        
+        const desktopAuthBtn = document.getElementById('desktopAuthBtn');
+        const mobileAuthBtn = document.getElementById('mobileAuthBtn');
+        
+        if (isLoggedIn) {
+            // Jika di perangkat ada data login
+            if (desktopAuthBtn) {
+                desktopAuthBtn.innerHTML = '<i class="fas fa-user-circle" style="margin-right: 0.3rem;"></i> Profil';
+                desktopAuthBtn.href = 'https://account.sitenexs.com/profile/';
             }
-        });
+            if (mobileAuthBtn) {
+                mobileAuthBtn.innerHTML = '<i class="fas fa-user-circle" style="margin-right: 0.3rem;"></i> Profil';
+                mobileAuthBtn.href = 'https://account.sitenexs.com/profile/';
+            }
+        } else {
+            // Jika belum login
+            if (desktopAuthBtn) {
+                desktopAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar';
+                desktopAuthBtn.href = 'https://account.sitenexs.com/sign-in/';
+            }
+            if (mobileAuthBtn) {
+                mobileAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar';
+                mobileAuthBtn.href = 'https://account.sitenexs.com/sign-in/';
+            }
+        }
+
 
 
         // ============================================
