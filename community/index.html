@@ -387,7 +387,9 @@
             }
         }
 
-        // DETEKSI GANDA: Tangkap dari URL parameter (?uid=...) ATAU Firebase Auth
+        // AUTO-REDIRECT PENGECEKAN OTOMATIS:
+        // Jika tidak ada parameter UID di URL dan tidak ada data aktif di localStorage,
+        // maka halaman akan langsung diarahkan ke halaman login.
         const urlParams = new URLSearchParams(window.location.search);
         const urlUid = urlParams.get('uid');
 
@@ -395,24 +397,23 @@
             localStorage.setItem('sitenexs_uid', urlUid);
             localStorage.setItem('sitenexs_logged_in', 'true');
             fetchUserProfile(urlUid);
-        }
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                await fetchUserProfile(user.uid, user.displayName);
-            } else if (!urlUid) {
-                const savedUid = localStorage.getItem('sitenexs_uid');
-                const isLogged = localStorage.getItem('sitenexs_logged_in') === 'true';
-
-                if (isLogged && savedUid) {
-                    await fetchUserProfile(savedUid);
+        } else {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    await fetchUserProfile(user.uid, user.displayName);
                 } else {
-                    currentUserData = null;
-                    avatarImg.src = "https://ui-avatars.com/api/?name=Tamu&background=cbd5e1&color=fff";
-                    promptText.innerText = "Masuk untuk membuat postingan diskusi...";
+                    const savedUid = localStorage.getItem('sitenexs_uid');
+                    const isLogged = localStorage.getItem('sitenexs_logged_in') === 'true';
+
+                    if (isLogged && savedUid) {
+                        await fetchUserProfile(savedUid);
+                    } else {
+                        // BELUM LOGIN: Otomatis alihkan ke halaman sign-in
+                        window.location.replace("https://account.sitenexs.com/sign-in/community/sign-in/");
+                    }
                 }
-            }
-        });
+            });
+        }
 
         window.checkAuthAndOpenModal = async function() {
             const savedUid = localStorage.getItem('sitenexs_uid');
@@ -423,7 +424,6 @@
             }
 
             if (!currentUserData && !auth.currentUser && !isLogged && !savedUid) {
-                alert("Anda harus masuk (login) ke akun Sitenexs terlebih dahulu untuk membuat postingan.");
                 window.location.href = "https://account.sitenexs.com/sign-in/";
                 return;
             }
@@ -517,7 +517,6 @@
             }
 
             if (!currentUserData && !auth.currentUser && !isLogged && !savedUid) {
-                alert("Sesi login berakhir. Silakan masuk kembali.");
                 window.location.href = "https://account.sitenexs.com/sign-in/";
                 return;
             }
