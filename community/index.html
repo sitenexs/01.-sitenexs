@@ -97,7 +97,7 @@
         .action-btns { display: flex; gap: 0.5rem; }
         .action-btns button { padding: 0.5rem 0.75rem; border-radius: var(--radius-md); color: var(--text-muted); font-weight: 600; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 0.4rem; }
         .action-btns button:hover { background: var(--bg-alt); color: var(--primary); }
-        .btn-post { background: var(--primary); color: #fff; padding: 0.5rem 1.25rem; border-radius: var(--radius-full); font-weight: 700; cursor: pointer; transition: var(--transition); }
+        .btn-post { background: var(--primary); color: #fff; padding: 0.5rem 1.25rem; border-radius: var(--radius-full); font-weight: 700; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; justify-content: center; }
         .btn-post:hover { background: var(--primary-dark); }
         .btn-post:disabled { background: var(--border-medium); cursor: not-allowed; }
 
@@ -191,7 +191,7 @@
             <div class="card create-post-card">
                 <div class="create-post-top">
                     <img src="https://ui-avatars.com/api/?name=Guest&background=e2e8f0&color=475569" id="postAvatarImg" class="create-post-avatar">
-                    <textarea class="create-post-input" id="postInput" placeholder="Bagikan insight, pertanyaan, atau perkembangan bisnis Anda hari ini..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                    <textarea class="create-post-input" id="postInput" placeholder="Bagikan insight, pertanyaan, atau perkembangan bisnis Anda hari ini..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" disabled></textarea>
                 </div>
                 <div class="create-post-actions">
                     <div class="action-btns">
@@ -258,24 +258,39 @@
         let currentUserData = null; 
         const userCache = {}; // Cache data author agar hemat pembacaan database
 
-        // --- 1. CEK AUTH & UPDATE PROFIL MINI ---
+        // --- 1. CEK AUTH & UPDATE PROFIL MINI (VERSI PERBAIKAN) ---
         onAuthStateChanged(auth, async (user) => {
             const nameEl = document.getElementById('miniProfileName');
             const bizEl = document.getElementById('miniProfileBiz');
             const loginBtn = document.getElementById('miniProfileLoginBtn');
             const inputEl = document.getElementById('postInput');
+            
+            // Deteksi cookie fallback seperti di index.html kamu
+            const isCookieLoggedIn = document.cookie.includes('isLoggedIn=true');
 
             if (user) {
-                // Fetch data user dari collection users
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                if (userDoc.exists()) {
-                    currentUserData = { uid: user.uid, ...userDoc.data() };
+                try {
+                    // Fetch data user dari collection users
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
                     
-                    const nama = currentUserData.namaLengkap || currentUserData.namaDepan || "Mitra Sitenexs";
-                    const bisnis = currentUserData.bisnis?.nama || "UMKM Indonesia";
+                    let nama = "Mitra Sitenexs";
+                    let bisnis = "UMKM Indonesia";
+                    let isVerified = '';
+                    
+                    // Jika data user ada di database
+                    if (userDoc.exists()) {
+                        currentUserData = { uid: user.uid, ...userDoc.data() };
+                        nama = currentUserData.namaLengkap || currentUserData.namaDepan || nama;
+                        bisnis = currentUserData.bisnis?.nama || bisnis;
+                        isVerified = currentUserData.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon" style="margin-left:4px;">` : '';
+                    } else {
+                        // Jika login berhasil tapi data belum ada di Firestore
+                        currentUserData = { uid: user.uid };
+                        nama = user.displayName || nama;
+                    }
+
                     const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${user.uid}/profile-photo`;
                     const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(nama)}&background=2563eb&color=fff`;
-                    const isVerified = currentUserData.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon" style="margin-left:4px;">` : '';
 
                     nameEl.innerHTML = `${nama} ${isVerified}`;
                     bizEl.innerHTML = bisnis;
@@ -287,14 +302,32 @@
                     document.getElementById('navAvatarImg').src = photoUrl;
                     document.getElementById('navAvatarImg').onerror = function(){this.src = fallback};
                     
+                    loginBtn.style.display = "none";
                     inputEl.placeholder = `Bagikan insight bisnis Anda hari ini, ${nama.split(' ')[0]}...`;
+                    inputEl.disabled = false; // Buka kunci input
+                    
+                } catch (error) {
+                    console.error("Gagal mengambil profil Firestore:", error);
+                    nameEl.innerHTML = "Gagal Memuat Profil";
+                    bizEl.innerHTML = "Periksa aturan (Rules) Firestore";
                 }
+            } else if (isCookieLoggedIn) {
+                // Fallback jika Firebase belum deteksi tapi Cookie ada (Isu Subdomain)
+                nameEl.innerHTML = "Sesi Tidak Sinkron";
+                bizEl.innerHTML = "Klik login ulang untuk sinkronisasi";
+                loginBtn.style.display = "block";
+                loginBtn.innerHTML = `<a href="https://account.sitenexs.com/sign-in/" class="btn-post" style="text-decoration:none; display:inline-block; font-size:0.85rem;">Sinkronkan Sesi</a>`;
+                inputEl.placeholder = "Sesi Firebase terputus karena beda subdomain...";
+                inputEl.disabled = true;
             } else {
+                // Benar-benar belum login
                 currentUserData = null;
                 nameEl.innerHTML = "Pengunjung Sitenexs";
                 bizEl.innerHTML = "Belum Login";
                 loginBtn.style.display = "block";
+                loginBtn.innerHTML = `<a href="https://account.sitenexs.com/sign-in/" class="btn-post" style="text-decoration:none; display:inline-block; font-size:0.85rem;">Masuk / Daftar</a>`;
                 inputEl.placeholder = "Silakan login untuk mulai memposting diskusi...";
+                inputEl.disabled = true;
             }
         });
 
