@@ -204,7 +204,7 @@
             </a>
             <div style="display: flex; gap: 1rem; align-items: center;">
                 <a href="https://sitenexs.com/community" class="btn btn-secondary btn-sm"><i class="fas fa-users"></i> Direktori Mitra</a>
-                <a href="https://account.sitenexs.com/profile/" id="authNavBtn" class="btn btn-primary btn-sm"><i class="fas fa-user-circle"></i> Akun</a>
+                <a href="https://sitenexs.com/profile/" id="authNavBtn" class="btn btn-primary btn-sm"><i class="fas fa-user-circle"></i> Akun</a>
             </div>
         </div>
     </header>
@@ -311,10 +311,9 @@
 
     <!-- SCRIPT FIREBASE & SUPABASE INTEGRATION -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
-        import { getDoc, doc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, getDoc } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
@@ -344,7 +343,6 @@
         // Pengecekan Status Login User Sitenexs secara Real-time
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // User sudah login, ambil data profil aslinya dari Firestore (koleksi "users")
                 try {
                     const userDocRef = doc(db, "users", user.uid);
                     const userDocSnap = await getDoc(userDocRef);
@@ -358,7 +356,7 @@
                         isVerified = d.isVerified || false;
                     }
 
-                    const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo`;
+                    const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo?t=${Date.now()}`;
                     const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff`;
 
                     currentUserData = {
