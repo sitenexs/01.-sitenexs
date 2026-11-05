@@ -65,7 +65,6 @@
         @media (min-width: 768px) { .community-container { grid-template-columns: 280px 1fr; } }
         @media (min-width: 1024px) { .community-container { grid-template-columns: 260px 1fr 300px; padding: 0 1.5rem; } }
 
-        /* Sidebar Kiri & Kanan */
         .sidebar { position: sticky; top: 90px; display: none; flex-direction: column; gap: 1.25rem; }
         @media (min-width: 768px) { .left-sidebar { display: flex; } }
         @media (min-width: 1024px) { .right-sidebar { display: flex; } }
@@ -87,7 +86,6 @@
         /* === FEED UTAMA === */
         .main-feed { display: flex; flex-direction: column; gap: 1.25rem; }
 
-        /* Buat Postingan */
         .create-post-card { padding: 1.25rem; }
         .create-post-top { display: flex; gap: 1rem; align-items: flex-start; }
         .create-post-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
@@ -101,7 +99,6 @@
         .btn-post:hover { background: var(--primary-dark); }
         .btn-post:disabled { background: var(--border-medium); cursor: not-allowed; }
 
-        /* Card Postingan */
         .post-card { padding: 0; overflow: hidden; }
         .post-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 1.25rem 1.25rem 0.5rem 1.25rem; }
         .post-author { display: flex; gap: 0.75rem; align-items: center; cursor: pointer; }
@@ -123,7 +120,6 @@
         .post-action-btn.liked i { animation: pop 0.3s ease; }
         @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
 
-        /* Komentar */
         .comments-section { background: var(--bg-alt); padding: 1rem 1.25rem; border-top: 1px solid var(--border-subtle); display: none; }
         .comments-section.show { display: block; }
         .comment-input-area { display: flex; gap: 0.75rem; margin-bottom: 1.25rem; }
@@ -149,7 +145,7 @@
 
     <header id="navbar">
         <div class="nav-container">
-            <a href="index.html" class="logo">
+            <a href="https://sitenexs.com/" class="logo">
                 <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img">
                 <span style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SiteNexs</span>
             </a>
@@ -182,7 +178,7 @@
                 <a href="#" class="active"><i class="fas fa-home"></i> Beranda Feed</a>
                 <a href="#"><i class="fas fa-compass"></i> Eksplorasi UMKM</a>
                 <a href="#"><i class="fas fa-store"></i> Grup Kategori</a>
-                <a href="index.html" style="margin-top: 1rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;"><i class="fas fa-arrow-left"></i> Kembali ke Web Utama</a>
+                <a href="https://sitenexs.com/" style="margin-top: 1rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;"><i class="fas fa-arrow-left"></i> Kembali ke Web Utama</a>
             </div>
         </aside>
 
@@ -235,10 +231,9 @@
          ========================================== -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
-        import { getFirestore, collection, doc, getDoc, addDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, query, orderBy, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+        import { getFirestore, collection, doc, getDoc, addDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, query, orderBy, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
-        // Konfigurasi Firebase dari Index
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
             authDomain: 'sitenexs-62919.firebaseapp.com',
@@ -250,84 +245,75 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
         const auth = getAuth(app);
+        const db = getFirestore(app);
         const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
         const avatarBucket = 'profile-photos';
 
         let currentUserData = null; 
-        const userCache = {}; // Cache data author agar hemat pembacaan database
+        const userCache = {}; // Cache author
 
-        // --- 1. CEK AUTH & UPDATE PROFIL MINI (VERSI PERBAIKAN) ---
+        // --- 1. CEK AUTH SESUAI DENGAN METODE DI PROFIL.HTML ---
         onAuthStateChanged(auth, async (user) => {
             const nameEl = document.getElementById('miniProfileName');
             const bizEl = document.getElementById('miniProfileBiz');
             const loginBtn = document.getElementById('miniProfileLoginBtn');
             const inputEl = document.getElementById('postInput');
+            const btnSubmit = document.getElementById('btnSubmitPost');
             
-            // Deteksi cookie fallback seperti di index.html kamu
-            const isCookieLoggedIn = document.cookie.includes('isLoggedIn=true');
-
             if (user) {
                 try {
-                    // Fetch data user dari collection users
-                    const userDoc = await getDoc(doc(db, "users", user.uid));
-                    
-                    let nama = "Mitra Sitenexs";
-                    let bisnis = "UMKM Indonesia";
-                    let isVerified = '';
-                    
-                    // Jika data user ada di database
-                    if (userDoc.exists()) {
-                        currentUserData = { uid: user.uid, ...userDoc.data() };
-                        nama = currentUserData.namaLengkap || currentUserData.namaDepan || nama;
-                        bisnis = currentUserData.bisnis?.nama || bisnis;
-                        isVerified = currentUserData.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon" style="margin-left:4px;">` : '';
-                    } else {
-                        // Jika login berhasil tapi data belum ada di Firestore
-                        currentUserData = { uid: user.uid };
-                        nama = user.displayName || nama;
-                    }
+                    // Logic pemanggilan data persis seperti loadRegistrationData() di profil.html
+                    const snap = await getDoc(doc(db, 'users', user.uid));
+                    const data = snap.exists() ? snap.data() : {};
+                    const business = data.bisnis || {};
 
-                    const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${user.uid}/profile-photo`;
+                    currentUserData = { uid: user.uid, ...data };
+                    
+                    const nama = data.namaLengkap || data.namaDepan || user.displayName || 'Mitra Sitenexs';
+                    const bisnis = business.nama || 'UMKM Indonesia';
+                    const isVerified = data.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon" style="margin-left:4px; width:14px; height:14px; object-fit:contain;">` : '';
+
+                    // Logic render Avatar persis seperti di profil.html
+                    const profilePhotoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo?t=${Date.now()}`;
                     const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(nama)}&background=2563eb&color=fff`;
 
                     nameEl.innerHTML = `${nama} ${isVerified}`;
                     bizEl.innerHTML = bisnis;
                     
-                    document.getElementById('miniProfileImg').src = photoUrl;
-                    document.getElementById('miniProfileImg').onerror = function(){this.src = fallback};
-                    document.getElementById('postAvatarImg').src = photoUrl;
-                    document.getElementById('postAvatarImg').onerror = function(){this.src = fallback};
-                    document.getElementById('navAvatarImg').src = photoUrl;
-                    document.getElementById('navAvatarImg').onerror = function(){this.src = fallback};
+                    const applyImage = (id) => {
+                        const img = document.getElementById(id);
+                        if (img) {
+                            img.onerror = () => { img.src = fallback; };
+                            img.src = profilePhotoUrl;
+                        }
+                    };
                     
-                    loginBtn.style.display = "none";
+                    applyImage('miniProfileImg');
+                    applyImage('postAvatarImg');
+                    applyImage('navAvatarImg');
+
+                    loginBtn.style.display = 'none';
                     inputEl.placeholder = `Bagikan insight bisnis Anda hari ini, ${nama.split(' ')[0]}...`;
-                    inputEl.disabled = false; // Buka kunci input
+                    inputEl.disabled = false;
+                    
+                    // Trigger input event supaya tombol posting aktif jika text area sudah diisi
+                    inputEl.dispatchEvent(new Event('input'));
                     
                 } catch (error) {
-                    console.error("Gagal mengambil profil Firestore:", error);
-                    nameEl.innerHTML = "Gagal Memuat Profil";
-                    bizEl.innerHTML = "Periksa aturan (Rules) Firestore";
+                    console.error('Gagal memuat profil Firestore:', error);
+                    nameEl.innerHTML = "Gagal Memuat";
+                    bizEl.innerHTML = "Periksa koneksi Anda";
                 }
-            } else if (isCookieLoggedIn) {
-                // Fallback jika Firebase belum deteksi tapi Cookie ada (Isu Subdomain)
-                nameEl.innerHTML = "Sesi Tidak Sinkron";
-                bizEl.innerHTML = "Klik login ulang untuk sinkronisasi";
-                loginBtn.style.display = "block";
-                loginBtn.innerHTML = `<a href="https://account.sitenexs.com/sign-in/" class="btn-post" style="text-decoration:none; display:inline-block; font-size:0.85rem;">Sinkronkan Sesi</a>`;
-                inputEl.placeholder = "Sesi Firebase terputus karena beda subdomain...";
-                inputEl.disabled = true;
             } else {
-                // Benar-benar belum login
                 currentUserData = null;
-                nameEl.innerHTML = "Pengunjung Sitenexs";
-                bizEl.innerHTML = "Belum Login";
-                loginBtn.style.display = "block";
+                nameEl.innerHTML = 'Pengunjung Sitenexs';
+                bizEl.innerHTML = 'Belum Login';
+                loginBtn.style.display = 'block';
                 loginBtn.innerHTML = `<a href="https://account.sitenexs.com/sign-in/" class="btn-post" style="text-decoration:none; display:inline-block; font-size:0.85rem;">Masuk / Daftar</a>`;
-                inputEl.placeholder = "Silakan login untuk mulai memposting diskusi...";
+                inputEl.placeholder = 'Silakan login untuk mulai memposting diskusi...';
                 inputEl.disabled = true;
+                btnSubmit.disabled = true;
             }
         });
 
@@ -335,16 +321,15 @@
         async function getAuthorData(uid) {
             if (userCache[uid]) return userCache[uid];
             try {
-                const userDoc = await getDoc(doc(db, "users", uid));
-                if (userDoc.exists()) {
-                    userCache[uid] = userDoc.data();
+                const snap = await getDoc(doc(db, "users", uid));
+                if (snap.exists()) {
+                    userCache[uid] = snap.data();
                     return userCache[uid];
                 }
             } catch (e) { console.error("Gagal get author", e); }
             return { namaLengkap: "Pengguna Anonim", bisnis: { nama: "Tidak diketahui" } };
         }
 
-        // --- Helper: Format Waktu Relatif ---
         function timeAgo(date) {
             if (!date) return "Baru saja";
             const seconds = Math.floor((new Date() - date) / 1000);
@@ -365,8 +350,6 @@
             }
 
             let htmlString = "";
-            
-            // Loop data dari database
             for (const documentSnapshot of snapshot.docs) {
                 const post = documentSnapshot.data();
                 const postId = documentSnapshot.id;
@@ -374,10 +357,11 @@
 
                 const namaAuthor = author.namaLengkap || author.namaDepan || "Mitra Sitenexs";
                 const bisnisAuthor = author.bisnis?.nama || "UMKM";
-                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${post.uid}/profile-photo`;
+                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(post.uid)}/profile-photo`;
                 const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaAuthor)}&background=2563eb&color=fff`;
                 
-                const isVerified = author.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon">` : '';
+                const isVerified = author.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon" style="margin-left:4px; width:14px; height:14px; object-fit:contain;">` : '';
+                
                 let badgeHTML = '';
                 if (author.isFounder || author.isDeveloper) {
                     badgeHTML = `<span class="badge-admin"><i class="fas fa-shield-alt"></i> Pengembang</span>`;
@@ -388,12 +372,10 @@
                 const postTime = post.createdAt ? timeAgo(post.createdAt.toDate()) : "Baru saja";
                 const textContent = (post.text || '').replace(/\n/g, '<br>');
 
-                // Logic Like
                 const myUid = currentUserData ? currentUserData.uid : null;
                 const isLiked = post.likedBy && post.likedBy.includes(myUid);
                 const likeIcon = isLiked ? 'fas fa-heart' : 'far fa-heart';
                 const likeColorClass = isLiked ? 'liked' : '';
-
                 const likesCount = post.likedBy ? post.likedBy.length : 0;
                 const commentsCount = post.commentsCount || 0;
 
@@ -428,25 +410,21 @@
                             </button>
                         </div>
 
-                        <!-- Kolom Komentar Tersembunyi -->
                         <div class="comments-section" id="comment-sec-${postId}">
                             <div class="comment-input-area">
-                                <img src="${currentUserData ? `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${currentUserData.uid}/profile-photo` : 'https://ui-avatars.com/api/?name=Guest&background=e2e8f0&color=475569'}" onerror="this.src='https://ui-avatars.com/api/?name=Anda&background=2563eb&color=fff'">
+                                <img src="${currentUserData ? `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(currentUserData.uid)}/profile-photo` : 'https://ui-avatars.com/api/?name=Guest&background=e2e8f0&color=475569'}" onerror="this.src='https://ui-avatars.com/api/?name=Anda&background=2563eb&color=fff'">
                                 <div class="comment-box">
                                     <input type="text" placeholder="${currentUserData ? 'Tulis komentar balasan...' : 'Login untuk berkomentar'}" id="input-com-${postId}" ${currentUserData ? '' : 'disabled'}>
                                     <button class="send-comment-btn" onclick="window.submitCommentDB('${postId}')"><i class="fas fa-paper-plane"></i></button>
                                 </div>
                             </div>
-                            
                             <div class="comment-thread" id="comment-list-${postId}">
-                                <!-- Komentar akan di-load ke sini saat tombol komentar diklik -->
                                 <div style="text-align:center; font-size:0.8rem; color:var(--text-muted);">Memuat komentar...</div>
                             </div>
                         </div>
                     </article>
                 `;
             }
-
             feedContainer.innerHTML = htmlString;
         });
 
@@ -479,7 +457,7 @@
                     createdAt: serverTimestamp()
                 });
                 postInput.value = '';
-                postInput.style.height = 'auto'; // Reset textarea height
+                postInput.style.height = 'auto';
             } catch (e) {
                 console.error("Gagal posting", e);
                 alert("Terjadi kesalahan. Coba lagi.");
@@ -496,7 +474,6 @@
             const btn = document.getElementById(`btn-like-${postId}`);
             const isLiked = btn.classList.contains('liked');
 
-            // Optimistic UI Update (Update visualnya duluan biar ga nunggu loading lambat)
             const icon = btn.querySelector('i');
             const countText = document.getElementById(`like-count-text-${postId}`);
             let currentCount = parseInt(countText.innerText.replace(/[^0-9]/g, '')) || 0;
@@ -505,34 +482,23 @@
                 btn.classList.remove('liked');
                 icon.className = 'far fa-heart';
                 countText.innerHTML = `<i class="fas fa-heart text-muted"></i> ${currentCount - 1} Suka`;
-                
-                // Update ke Database
                 await updateDoc(postRef, { likedBy: arrayRemove(currentUserData.uid) });
             } else {
                 btn.classList.add('liked');
                 icon.className = 'fas fa-heart';
                 countText.innerHTML = `<i class="fas fa-heart text-muted"></i> ${currentCount + 1} Suka`;
-                
-                // Update ke Database
                 await updateDoc(postRef, { likedBy: arrayUnion(currentUserData.uid) });
             }
         };
 
-        // --- 5. BUKA KOMENTAR & LOAD DATA KOMENTAR ---
-        // Variabel penanda apakah komentar di sebuah postingan sudah di-load agar tidak double baca DB
+        // --- 5. BUKA & LOAD KOMENTAR ---
         const loadedComments = {}; 
-
         window.toggleCommentUI = (postId) => {
             const section = document.getElementById(`comment-sec-${postId}`);
             section.classList.toggle('show');
-            
             if (section.classList.contains('show')) {
                 document.getElementById(`input-com-${postId}`).focus();
-                
-                // Load komentar dari database jika belum di-load
-                if (!loadedComments[postId]) {
-                    loadComments(postId);
-                }
+                if (!loadedComments[postId]) loadComments(postId);
             }
         };
 
@@ -540,9 +506,8 @@
             const listContainer = document.getElementById(`comment-list-${postId}`);
             const commentsQuery = query(collection(db, "community_posts", postId, "comments"), orderBy("createdAt", "asc"));
             
-            // Listen realtime khusus untuk subkoleksi komentar postingan ini
             onSnapshot(commentsQuery, async (snapshot) => {
-                loadedComments[postId] = true; // Tandai sudah diload
+                loadedComments[postId] = true;
                 if (snapshot.empty) {
                     listContainer.innerHTML = '<div style="text-align:center; font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">Jadilah yang pertama berkomentar.</div>';
                     return;
@@ -553,11 +518,10 @@
                     const comment = cDoc.data();
                     const author = await getAuthorData(comment.uid);
                     const namaAuthor = author.namaLengkap || author.namaDepan || "Pengguna";
-                    const photo = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${comment.uid}/profile-photo`;
+                    const photo = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(comment.uid)}/profile-photo`;
                     const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaAuthor)}&background=2563eb&color=fff`;
                     const time = comment.createdAt ? timeAgo(comment.createdAt.toDate()) : "Baru saja";
 
-                    // Badge jika author komen adalah dirinya sendiri (User)
                     const isMe = currentUserData && comment.uid === currentUserData.uid;
                     const badgeMe = isMe ? `<span class="badge-premium" style="background:#dbeafe; color:#1d4ed8; padding:0 0.3rem;">Anda</span>` : '';
 
@@ -588,9 +552,7 @@
             let text = inputEl.value.trim();
             if (!text) return;
 
-            inputEl.disabled = true; // Kunci input sementara proses
-            
-            // Format mention (jika diawali @nama)
+            inputEl.disabled = true;
             if(text.startsWith('@')) {
                 const parts = text.split(' ');
                 const mentioned = parts.shift();
@@ -598,14 +560,12 @@
             }
 
             try {
-                // Tambah ke sub-koleksi comments
                 await addDoc(collection(db, "community_posts", postId, "comments"), {
                     uid: currentUserData.uid,
                     text: text,
                     createdAt: serverTimestamp()
                 });
 
-                // Update jumlah komentar di postingan utama
                 const postRef = doc(db, "community_posts", postId);
                 const postDoc = await getDoc(postRef);
                 const currentCount = postDoc.data().commentsCount || 0;
