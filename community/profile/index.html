@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil Akun Mitra — Sitenexs</title>
+    <title>Profil Anggota — Komunitas Sitenexs</title>
     
     <!-- Meta SEO -->
-    <meta name="description" content="Kelola informasi akun, profil, foto, dan riwayat aktivitas Anda di ekosistem Sitenexs.">
+    <meta name="description" content="Profil resmi anggota dan pelaku UMKM yang tergabung dalam ekosistem digital Sitenexs.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://sitenexs.com/community/profile">
+
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://sitenexs.com/assets/logo/logo.png">
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Font Awesome -->
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Supabase JS Client untuk Upload Foto -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -26,8 +27,9 @@
             --primary-dark: #1d4ed8;
             --primary-light: #eff6ff;
             --accent: #10b981;
-            --bg-body: #f1f5f9;
+            --bg-body: #f8fafc;
             --bg-card: #ffffff;
+            --bg-alt: #f1f5f9;
             --text-main: #0f172a;
             --text-muted: #475569;
             --border-subtle: #e2e8f0;
@@ -35,6 +37,7 @@
             --border-accent: #93c5fd;
             --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
             --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 15px 30px -5px rgba(15, 23, 42, 0.08);
             --radius-sm: 0.375rem;
             --radius-md: 0.625rem;
             --radius-lg: 1rem;
@@ -43,231 +46,360 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         a { text-decoration: none; color: inherit; }
-        ul { list-style: none; }
-        button, input, textarea, select { font-family: inherit; outline: none; border: none; }
 
-        .container { width: 100%; max-width: 1000px; margin: 0 auto; padding: 0 1rem; }
-
-        .text-primary { color: var(--primary); }
-        .text-muted { color: var(--text-muted); }
-
-        /* BUTTONS */
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
-            padding: 0.6rem 1.2rem; font-size: 0.85rem; font-weight: 700;
-            border-radius: var(--radius-full); cursor: pointer; transition: var(--transition);
-            white-space: nowrap;
-        }
-        .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
-        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-        .btn-secondary { background: #fff; border: 1px solid var(--border-medium); color: var(--text-main); }
-        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
-        .btn-danger { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; }
-        .btn-danger:hover { background: #ef4444; color: #fff; }
-        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
-
-        /* NAVBAR */
-        #navbar {
-            position: sticky; top: 0; z-index: 1000; background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);
-        }
-        .nav-container { display: flex; align-items: center; justify-content: space-between; height: 65px; width: 100%; max-width: 1000px; }
-        .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.1rem; color: var(--text-main); }
-        .logo img { height: 30px; width: 30px; border-radius: 50%; object-fit: cover; }
-        .nav-actions { display: flex; gap: 0.5rem; align-items: center; }
-
-        /* PROFILE LAYOUT */
-        .profile-wrapper { padding: 2rem 0 4rem 0; width: 100%; }
-        
-        .profile-header-card {
-            background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl);
-            padding: 2rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; align-items: center;
-            text-align: center; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
         }
 
-        .profile-avatar-container {
-            position: relative; width: 90px; height: 90px; margin-bottom: 1rem;
+        /* BACKGROUND PATTERN */
+        .bg-grid-pattern {
+            background-image: 
+                linear-gradient(to right, rgba(37, 99, 235, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(37, 99, 235, 0.05) 1px, transparent 1px);
+            background-size: 32px 32px;
         }
-        .profile-avatar {
-            width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-light);
-            box-shadow: var(--shadow-md); background: #cbd5e1;
-        }
-        .upload-avatar-btn {
-            position: absolute; bottom: 0; right: 0; background: var(--primary); color: #fff;
-            width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 0.75rem; cursor: pointer; border: 2px solid #fff; transition: var(--transition);
-        }
-        .upload-avatar-btn:hover { background: var(--primary-dark); transform: scale(1.05); }
 
-        .profile-name-row { display: flex; align-items: center; justify-content: center; gap: 0.4rem; margin-bottom: 0.2rem; }
-        .profile-name { font-size: 1.25rem; font-weight: 800; color: var(--text-main); }
-        .verified-badge { width: 16px; height: 16px; object-fit: contain; }
-        .profile-email { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; }
-
-        .profile-stats {
-            display: flex; gap: 2rem; border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);
-            padding: 0.75rem 2rem; width: 100%; justify-content: center; margin-bottom: 1.5rem;
+        /* NAVBAR SEDERHANA */
+        .profile-nav {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
         }
-        .stat-item { text-align: center; }
-        .stat-value { font-weight: 800; font-size: 1rem; color: var(--text-main); }
-        .stat-label { font-size: 0.75rem; color: var(--text-muted); }
 
-        /* FORM SECTION */
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: var(--text-main);
+        }
+
+        .logo-img {
+            height: 35px;
+            width: 35px;
+            border-radius: var(--radius-full);
+            object-fit: cover;
+            border: 2px solid #fff;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: var(--transition);
+            background: var(--bg-alt);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .back-btn:hover {
+            color: var(--primary);
+            border-color: var(--border-accent);
+            background: var(--primary-light);
+        }
+
+        /* MAIN CONTENT SECTION */
+        .profile-section {
+            padding: 3rem 0;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .profile-card {
-            background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl);
-            padding: 1.5rem; box-shadow: var(--shadow-sm); margin-bottom: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            padding: 2.5rem;
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            position: relative;
+            overflow: hidden;
         }
-        .card-title { font-size: 1rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text-main); }
-        
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        @media(max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
 
-        .form-group { margin-bottom: 1rem; }
-        .form-label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.3rem; }
-        .form-control {
-            width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--border-medium);
-            border-radius: var(--radius-md); font-size: 0.85rem; background: var(--bg-body); color: var(--text-main);
+        .profile-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
         }
-        .form-control:focus { background: #fff; border-color: var(--primary); }
-        .form-control:disabled { opacity: 0.7; cursor: not-allowed; }
 
-        /* POSTINGAN SAYA */
-        .my-posts-list { display: flex; flex-direction: column; gap: 0.75rem; }
-        .my-post-item {
-            background: var(--bg-body); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
-            padding: 0.85rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+        /* LOADING & ERROR STATES */
+        .state-box {
+            text-align: center;
+            padding: 3rem 1rem;
         }
-        .my-post-info { min-width: 0; flex: 1; }
-        .my-post-title { font-weight: 700; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .my-post-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
-        .my-post-actions { display: flex; gap: 0.5rem; align-items: center; }
 
-        .loader-container { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem; }
-
-        #alertBox {
-            padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.85rem; font-weight: 600;
-            margin-bottom: 1rem; display: none;
+        .state-box i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
         }
-        .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+        .state-box h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .state-box p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* PROFILE HEADER LAYOUT */
+        .profile-header-flex {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            min-width: 110px;
+            border-radius: 50%;
+            padding: 4px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            box-shadow: var(--shadow-md);
+        }
+
+        .profile-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--bg-body);
+            border: 3px solid #fff;
+        }
+
+        .profile-meta h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .verified-icon {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+        }
+
+        .profile-role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 0.3rem 0.8rem;
+            border-radius: var(--radius-full);
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(37, 99, 235, 0.15);
+        }
+
+        .profile-joined {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* DETAILS GRID */
+        .profile-details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .detail-item {
+            background: var(--bg-body);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+        }
+
+        .detail-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .detail-value {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* BIO / DESCRIPTION */
+        .profile-bio-box {
+            background: var(--bg-alt);
+            border-left: 4px solid var(--primary);
+            padding: 1.25rem;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            margin-bottom: 2rem;
+        }
+
+        .bio-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+            text-transform: uppercase;
+        }
+
+        .bio-text {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* ACTION BUTTON */
+        .profile-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: var(--radius-full);
+            transition: var(--transition);
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-align: center;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-secondary {
+            background-color: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-medium);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 640px) {
+            .profile-card { padding: 1.5rem; }
+            .profile-header-flex { flex-direction: column; text-align: center; gap: 1rem; }
+            .profile-meta h1 { justify-content: center; }
+            .profile-joined { justify-content: center; }
+            .profile-details-grid { grid-template-columns: 1fr; }
+            .profile-actions { flex-direction: column; }
+        }
     </style>
 </head>
-<body>
+<body class="bg-grid-pattern">
 
     <!-- NAVBAR -->
-    <header id="navbar">
-        <div class="container nav-container">
-            <a href="https://sitenexs.com/" class="logo">
-                <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" onerror="this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff'">
-                <span>Akun Saya</span>
+    <header class="profile-nav">
+        <div class="container nav-content">
+            <a href="https://sitenexs.com" class="logo">
+                <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img">
+                <span>SiteNexs</span>
             </a>
-            <div class="nav-actions">
-                <a href="https://sitenexs.com/" class="btn btn-secondary btn-sm" title="Menu Utama"><i class="fas fa-home"></i> Beranda</a>
-                <a href="https://sitenexs.com/community/" class="btn btn-secondary btn-sm"><i class="fas fa-comments"></i> Komunitas</a>
-            </div>
+            <a href="https://sitenexs.com/#mitra" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Kembali ke Beranda
+            </a>
         </div>
     </header>
 
-    <!-- KONTEN UTAMA PROFIL -->
-    <main class="container profile-wrapper">
-        
-        <div id="alertBox"></div>
-
-        <!-- HEADER KARTU PROFIL -->
-        <div class="profile-header-card">
-            <div class="profile-avatar-container">
-                <img id="profileAvatarImg" src="https://ui-avatars.com/api/?name=User&background=cbd5e1&color=fff" alt="Avatar" class="profile-avatar">
-                <label for="avatarFileInput" class="upload-avatar-btn" title="Ganti Foto Profil">
-                    <i class="fas fa-camera"></i>
-                </label>
-                <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" onchange="uploadProfilePhoto(event)">
-            </div>
-
-            <div class="profile-name-row">
-                <h1 id="profileHeaderName" class="profile-name">Memuat Nama...</h1>
-                <img id="profileVerifiedIcon" src="https://sitenexs.com/assets/logo/verified.png" class="verified-badge" alt="Verified" style="display: none;">
-            </div>
-            <p id="profileHeaderEmail" class="profile-email">Memuat email...</p>
-
-            <div class="profile-stats">
-                <div class="stat-item">
-                    <div id="statPostCount" class="stat-value">0</div>
-                    <div class="stat-label">Diskusi Dibuat</div>
-                </div>
-                <div class="stat-item">
-                    <div id="statLikeCount" class="stat-value text-primary">0</div>
-                    <div class="stat-label">Total Like Diterima</div>
+    <!-- KONTEN PROFIL -->
+    <main class="profile-section">
+        <div class="container">
+            <div id="profile-card-container" class="profile-card">
+                <!-- State Loading Awal -->
+                <div class="state-box">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <h3>Memuat Profil Anggota...</h3>
+                    <p>Mohon tunggu sebentar sementara kami mengambil data dari server.</p>
                 </div>
             </div>
         </div>
-
-        <!-- FORM EDIT INFORMASI PROFIL -->
-        <div class="profile-card">
-            <h3 class="card-title"><i class="fas fa-user-edit text-primary"></i> Informasi Pribadi & Usaha</h3>
-            <form id="updateProfileForm" onsubmit="saveProfileChanges(event)">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Nama Depan</label>
-                        <input type="text" id="inputNamaDepan" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Nama Belakang</label>
-                        <input type="text" id="inputNamaBelakang" class="form-control">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Nama Lengkap (Tampil di Forum)</label>
-                    <input type="text" id="inputNamaLengkap" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Email Akun (Tidak dapat diubah)</label>
-                    <input type="email" id="inputEmail" class="form-control" disabled>
-                </div>
-                <div style="display: flex; justify-content: flex-end; margin-top: 1.25rem;">
-                    <button type="submit" class="btn btn-primary" id="saveBtn">
-                        <i class="fas fa-save"></i> Simpan Perubahan
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- RIWAYAT DISKUSI SAYA -->
-        <div class="profile-card">
-            <h3 class="card-title"><i class="fas fa-comments text-primary"></i> Riwayat Diskusi Saya</h3>
-            <div class="my-posts-list" id="myPostsContainer">
-                <div class="loader-container">
-                    <i class="fas fa-circle-notch fa-spin fa-2x"></i>
-                    <p style="margin-top: 0.5rem;">Memuat daftar postingan Anda...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- TOMBOL KELUAR DI BAGIAN PALING BAWAH (MERAH) -->
-        <div style="margin-top: 2rem;">
-            <button onclick="handleLogout()" class="btn btn-danger" style="width: 100%; padding: 0.85rem; font-size: 0.95rem; justify-content: center; border-radius: var(--radius-lg); font-weight: 800;">
-                <i class="fas fa-sign-out-alt"></i> Keluar dari Akun
-            </button>
-        </div>
-
     </main>
 
-    <!-- SCRIPT FIREBASE & SUPABASE INTEGRATION -->
+    <!-- SCRIPT FIREBASE & SUPABASE -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
-        import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
@@ -275,243 +407,138 @@
             projectId: 'sitenexs-62919',
             storageBucket: 'sitenexs-62919.firebasestorage.app',
             messagingSenderId: '1060348110644',
-            appId: '1:1060348110644:web:e45af14d5f26a9cf8e6761'
+            appId: '1:1060348110644:web:e45af14d5f26a9cf8e6761',
+            measurementId: 'G-C7YL0Q7YRQ'
         };
 
         const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxY2J5YW14aWVrZHh5dG50bG5vIiwicm9sZSI6ImFub24iLCJpZWF0aWN0aW9uOiJzdXAxYmlsaXR5Ij09fQ=='; 
         const avatarBucket = 'profile-photos';
-
-        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
-        
-        setPersistence(auth, browserLocalPersistence).catch(err => console.log(err));
 
-        let currentUid = null;
+        async function loadUserProfile() {
+            const container = document.getElementById('profile-card-container');
+            const urlParams = new URLSearchParams(window.location.search);
+            const uid = urlParams.get('uid');
 
-        const avatarImg = document.getElementById('profileAvatarImg');
-        const headerName = document.getElementById('profileHeaderName');
-        const headerEmail = document.getElementById('profileHeaderEmail');
-        const verifiedIcon = document.getElementById('profileVerifiedIcon');
-        const statPostCount = document.getElementById('statPostCount');
-        const statLikeCount = document.getElementById('statLikeCount');
-        
-        const inputNamaDepan = document.getElementById('inputNamaDepan');
-        const inputNamaBelakang = document.getElementById('inputNamaBelakang');
-        const inputNamaLengkap = document.getElementById('inputNamaLengkap');
-        const inputEmail = document.getElementById('inputEmail');
-        const myPostsContainer = document.getElementById('myPostsContainer');
-        const alertBox = document.getElementById('alertBox');
-
-        function showAlert(message, type = 'success') {
-            alertBox.innerText = message;
-            alertBox.className = type === 'success' ? 'alert-success' : 'alert-error';
-            alertBox.style.display = 'block';
-            setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
-        }
-
-        async function loadUserData(uid, fallbackEmail = "", fallbackName = "Mitra Sitenexs") {
-            currentUid = uid;
-            try {
-                const userDocRef = doc(db, "users", uid);
-                const userDocSnap = await getDoc(userDocRef);
-
-                let d = {
-                    namaDepan: fallbackName.split(' ')[0] || '',
-                    namaBelakang: fallbackName.split(' ').slice(1).join(' ') || '',
-                    namaLengkap: fallbackName,
-                    email: fallbackEmail || auth.currentUser?.email || '',
-                    isVerified: false
-                };
-
-                if (userDocSnap.exists()) {
-                    const data = userDocSnap.data();
-                    d.namaDepan = data.namaDepan || d.namaDepan;
-                    d.namaBelakang = data.namaBelakang || d.namaBelakang;
-                    d.namaLengkap = data.namaLengkap || (d.namaDepan + ' ' + d.namaBelakang).trim() || fallbackName;
-                    d.email = data.email || d.email;
-                    d.isVerified = data.isVerified || false;
-                }
-
-                inputNamaDepan.value = d.namaDepan;
-                inputNamaBelakang.value = d.namaBelakang;
-                inputNamaLengkap.value = d.namaLengkap;
-                inputEmail.value = d.email;
-
-                headerName.innerText = d.namaLengkap;
-                headerEmail.innerText = d.email;
-
-                if (d.isVerified) {
-                    verifiedIcon.style.display = 'inline-block';
-                }
-
-                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo?t=${Date.now()}`;
-                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(d.namaLengkap)}&background=2563eb&color=fff`;
-                
-                avatarImg.src = photoUrl;
-                avatarImg.onerror = () => { avatarImg.src = fallbackUrl; };
-
-                loadUserPosts(uid);
-
-            } catch (err) {
-                console.error("Gagal memuat profil:", err);
-                showAlert("Gagal memuat data profil.", "error");
+            if (!uid) {
+                container.innerHTML = `
+                    <div class="state-box">
+                        <i class="fas fa-user-slash" style="color: #ef4444;"></i>
+                        <h3>UID Pengguna Tidak Ditemukan</h3>
+                        <p>Tautan profil yang Anda akses tidak valid atau tidak menyertakan parameter UID.</p>
+                        <a href="https://sitenexs.com/#mitra" class="btn btn-primary" style="margin-top: 1.5rem; display: inline-flex; width: auto;">Kembali ke Beranda</a>
+                    </div>
+                `;
+                return;
             }
-        }
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlUid = urlParams.get('uid');
-
-        if (urlUid) {
-            localStorage.setItem('sitenexs_uid', urlUid);
-            localStorage.setItem('sitenexs_logged_in', 'true');
-            loadUserData(urlUid);
-        } else {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    loadUserData(user.uid, user.email, user.displayName);
-                } else {
-                    const savedUid = localStorage.getItem('sitenexs_uid');
-                    const isLogged = localStorage.getItem('sitenexs_logged_in') === 'true';
-
-                    if (isLogged && savedUid) {
-                        loadUserData(savedUid);
-                    } else {
-                        window.location.replace("https://account.sitenexs.com/sign-in/");
-                    }
-                }
-            });
-        }
-
-        window.saveProfileChanges = async function(e) {
-            e.preventDefault();
-            if (!currentUid) return;
-
-            const saveBtn = document.getElementById('saveBtn');
-            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
-            saveBtn.disabled = true;
 
             try {
-                const userDocRef = doc(db, "users", currentUid);
-                const updatedData = {
-                    namaDepan: inputNamaDepan.value.trim(),
-                    namaBelakang: inputNamaBelakang.value.trim(),
-                    namaLengkap: inputNamaLengkap.value.trim(),
-                    updatedAt: new Date()
-                };
+                const docRef = doc(db, "users", uid);
+                const docSnap = await getDoc(docRef);
 
-                await setDoc(userDocRef, updatedData, { merge: true });
-                headerName.innerText = updatedData.namaLengkap;
-                showAlert("Profil berhasil diperbarui!");
-            } catch (err) {
-                console.error("Gagal menyimpan profil:", err);
-                showAlert("Terjadi kesalahan saat menyimpan.", "error");
-            } finally {
-                saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan';
-                saveBtn.disabled = false;
-            }
-        }
-
-        window.uploadProfilePhoto = async function(event) {
-            const file = event.target.files[0];
-            if (!file || !currentUid) return;
-
-            showAlert("Mengunggah foto profil...", "success");
-
-            try {
-                const filePath = `${currentUid}/profile-photo`;
-                const { error } = await supabaseClient.storage
-                    .from(avatarBucket)
-                    .upload(filePath, file, { upsert: true, contentType: file.type });
-
-                if (error) throw error;
-
-                const newPhotoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${filePath}?t=${Date.now()}`;
-                avatarImg.src = newPhotoUrl;
-                showAlert("Foto profil berhasil diperbarui!");
-            } catch (err) {
-                console.error("Gagal upload foto:", err);
-                showAlert("Gagal mengunggah foto. Pastikan ukuran file tidak terlalu besar.", "error");
-            }
-        }
-
-        async function loadUserPosts(uid) {
-            try {
-                const qPosts = query(collection(db, "forum_posts"), where("authorUid", "==", uid));
-                const querySnapshot = await getDocs(qPosts);
-
-                statPostCount.innerText = querySnapshot.size;
-
-                let totalLikes = 0;
-                querySnapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    if (data.likes && Array.isArray(data.likes)) {
-                        totalLikes += data.likes.length;
-                    }
-                });
-                statLikeCount.innerText = totalLikes;
-
-                if (querySnapshot.empty) {
-                    myPostsContainer.innerHTML = '<div class="loader-container"><p>Anda belum pernah membuat diskusi.</p></div>';
+                if (!docSnap.exists()) {
+                    container.innerHTML = `
+                        <div class="state-box">
+                            <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
+                            <h3>Profil Tidak Ditemukan</h3>
+                            <p>Pengguna dengan ID tersebut tidak terdaftar di dalam sistem komunitas Sitenexs.</p>
+                            <a href="https://sitenexs.com/#mitra" class="btn btn-primary" style="margin-top: 1.5rem; display: inline-flex; width: auto;">Kembali ke Beranda</a>
+                        </div>
+                    `;
                     return;
                 }
 
-                let html = "";
-                querySnapshot.forEach((docSnap) => {
-                    const postId = docSnap.id;
-                    const post = docSnap.data();
-                    const dateStr = post.createdAt ? new Date(post.createdAt.toDate()).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Baru saja';
-                    
-                    html += `
-                        <div class="my-post-item" id="post-row-${postId}">
-                            <div class="my-post-info">
-                                <div class="my-post-title">${post.judul}</div>
-                                <div class="my-post-meta">Kategori: <strong>${post.kategori}</strong> • Diposting pada ${dateStr}</div>
+                const data = docSnap.data();
+                const namaLengkap = data.namaLengkap || `${data.namaDepan || ''} ${data.namaBelakang || ''}`.trim() || 'Anggota Sitenexs';
+                const bisnisNama = data.bisnis?.nama || 'Belum diatur';
+                const bisnisBidang = data.bisnis?.bidang || 'UMKM / Umum';
+                const telepon = data.telepon || data.whatsapp || '-';
+                const bio = data.bio || 'Pengusaha mikro yang berkomitmen melakukan transformasi digital bersama Sitenexs.';
+                const isVerified = data.isVerified || false;
+                const isDeveloper = data.isDeveloper || false;
+                const jabatan = data.jabatanPengembang || (isDeveloper ? 'Mitra Pengembang' : 'Pelaku UMKM');
+                const paket = data.paketLangganan || 'Basic';
+                
+                // Format Tanggal Bergabung
+                let tanggalBergabung = 'Belum tercatat';
+                if (data.createdAt) {
+                    const dateObj = new Date(data.createdAt);
+                    tanggalBergabung = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                }
+
+                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo`;
+                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff&size=256`;
+                const verifiedBadgeHTML = isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon" alt="Verified">` : '';
+
+                // Render HTML Profil
+                container.innerHTML = `
+                    <div class="profile-header-flex">
+                        <div class="avatar-container">
+                            <img src="${photoUrl}" alt="Avatar ${namaLengkap}" class="profile-avatar" onerror="this.onerror=null; this.src='${fallbackUrl}';">
+                        </div>
+                        <div class="profile-meta">
+                            <div class="profile-role-badge">
+                                <i class="fas ${isDeveloper ? 'fa-code' : 'fa-store'}"></i> ${jabatan}
                             </div>
-                            <div class="my-post-actions">
-                                <a href="https://sitenexs.com/forum/" target="_blank" class="btn btn-secondary btn-sm" title="Lihat"><i class="fas fa-external-link-alt"></i></a>
-                                <button onclick="deletePost('${postId}')" class="btn btn-danger btn-sm" title="Hapus Diskusi"><i class="fas fa-trash-alt"></i></button>
+                            <h1>${namaLengkap} ${verifiedBadgeHTML}</h1>
+                            <div class="profile-joined">
+                                <i class="fas fa-calendar-alt text-primary"></i> Bergabung sejak ${tanggalBergabung}
                             </div>
                         </div>
-                    `;
-                });
+                    </div>
 
-                myPostsContainer.innerHTML = html;
-            } catch (err) {
-                console.error("Gagal memuat postingan:", err);
-                myPostsContainer.innerHTML = '<div class="loader-container"><p style="color:red;">Gagal memuat riwayat diskusi.</p></div>';
+                    <div class="profile-bio-box">
+                        <div class="bio-title"><i class="fas fa-quote-left"></i> Tentang Anggota</div>
+                        <p class="bio-text">${bio}</p>
+                    </div>
+
+                    <div class="profile-details-grid">
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-building text-primary"></i> Nama Usaha / Bisnis</div>
+                            <div class="detail-value">${bisnisNama}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-tag text-primary"></i> Bidang Usaha</div>
+                            <div class="detail-value">${bisnisBidang}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-box-open text-primary"></i> Paket Layanan</div>
+                            <div class="detail-value" style="text-transform: uppercase; color: var(--primary);">${paket}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-phone-alt text-primary"></i> Kontak WhatsApp</div>
+                            <div class="detail-value">${telepon}</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-actions">
+                        ${telepon !== '-' ? `
+                            <a href="https://wa.me/${telepon.replace(/[^0-9]/g, '')}?text=Halo%20${encodeURIComponent(namaLengkap)},%20saya%20menemukan%20profil%20Anda%20di%20komunitas%20Sitenexs." target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                                <i class="fab fa-whatsapp"></i> Hubungi via WhatsApp
+                            </a>
+                        ` : ''}
+                        <a href="https://sitenexs.com/#mitra" class="btn btn-secondary">
+                            <i class="fas fa-users"></i> Lihat Anggota Lainnya
+                        </a>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error("Gagal memuat profil:", error);
+                container.innerHTML = `
+                    <div class="state-box">
+                        <i class="fas fa-wifi" style="color: #ef4444;"></i>
+                        <h3>Terjadi Kesalahan Jaringan</h3>
+                        <p>Gagal memuat informasi profil dari server. Silakan coba beberapa saat lagi.</p>
+                        <a href="https://sitenexs.com/#mitra" class="btn btn-primary" style="margin-top: 1.5rem; display: inline-flex; width: auto;">Kembali ke Beranda</a>
+                    </div>
+                `;
             }
         }
 
-        window.deletePost = async function(postId) {
-            if (confirm("Apakah Anda yakin ingin menghapus diskusi ini? Tindakan ini tidak dapat dibatalkan.")) {
-                try {
-                    await deleteDoc(doc(db, "forum_posts", postId));
-                    showAlert("Diskusi berhasil dihapus!");
-                    if (currentUid) {
-                        loadUserPosts(currentUid);
-                    }
-                } catch (err) {
-                    console.error("Gagal menghapus postingan:", err);
-                    showAlert("Gagal menghapus diskusi.", "error");
-                }
-            }
-        }
-
-        window.handleLogout = async function() {
-            if (confirm("Apakah Anda yakin ingin keluar dari akun Sitenexs?")) {
-                localStorage.removeItem('sitenexs_uid');
-                localStorage.removeItem('sitenexs_logged_in');
-                try {
-                    await signOut(auth);
-                } catch(e) {}
-                // Mengarahkan ke halaman login yang diminta
-                window.location.replace("https://account.sitenexs.com/sign-in/community/sign-in/");
-            }
-        }
+        loadUserProfile();
     </script>
 </body>
 </html>
