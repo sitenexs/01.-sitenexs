@@ -129,6 +129,7 @@
             align-items: center;
             text-align: center;
             border-bottom: 1px solid var(--border-subtle);
+            position: relative; /* Ditambahkan untuk badge absolute jika perlu */
         }
 
         /* GAYA UNTUK AVATAR & LOGO BISNIS SEJAJAR */
@@ -177,11 +178,19 @@
             object-fit: cover;
         }
 
+        .profile-name-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-bottom: 0.3rem;
+            flex-wrap: wrap; /* Agar rapi di layar kecil */
+        }
+
         .profile-name {
             font-size: 1.8rem;
             font-weight: 800;
             color: var(--text-main);
-            margin-bottom: 0.3rem;
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
@@ -193,6 +202,11 @@
             height: 18px;
             object-fit: contain;
             display: none; /* Akan dimunculkan lewat JS jika akun diverifikasi */
+        }
+
+        /* GAYA UNTUK BADGE PAKET DINAMIS */
+        #p-paket-badge {
+            display: none; /* Disembunyikan secara default, dimunculkan lewat JS */
         }
 
         .profile-business {
@@ -352,11 +366,16 @@
                     </div>
                 </div>
 
-                <h1 class="profile-name">
-                    <span id="p-name">-</span>
-                    <!-- Ikon Verified Sitenexs -->
-                    <img id="p-verified" src="https://sitenexs.com/assets/logo/verified.png" alt="Verified" class="verification-icon">
-                </h1>
+                <!-- Kontainer Nama, Verified, dan Badge Paket -->
+                <div class="profile-name-container">
+                    <h1 class="profile-name">
+                        <span id="p-name">-</span>
+                        <!-- Ikon Verified Sitenexs -->
+                        <img id="p-verified" src="https://sitenexs.com/assets/logo/verified.png" alt="Verified" class="verification-icon">
+                    </h1>
+                    <!-- Badge Paket Dinamis -->
+                    <span id="p-paket-badge"></span>
+                </div>
                 
                 <div id="p-business" class="profile-business">-</div>
                 <div class="badge-category">
@@ -463,6 +482,10 @@
                 // Variabel untuk Logo Bisnis & Status Verifikasi
                 const bLogo = business.logoUrl || null;
                 const isVerified = data.isVerified || false;
+                
+                // Ambil data paket langganan (default: Basic)
+                const paket = (data.paketLangganan || 'Basic').toLowerCase();
+                const namaPaketAsli = data.paketLangganan || 'Basic';
 
                 // Format Tanggal
                 let joinedDate = 'Baru-baru ini';
@@ -499,6 +522,26 @@
                 if (isVerified) {
                     document.getElementById('p-verified').style.display = 'inline-block';
                 }
+
+                // -----------------------------------------------------
+                // LOGIKA BADGE PAKET DINAMIS (Sama seperti index.html)
+                // -----------------------------------------------------
+                const badgeEl = document.getElementById('p-paket-badge');
+                
+                // Jangan tampilkan badge jika paketnya Basic atau Gratis
+                if (!paket.includes('basic') && !paket.includes('gratis')) {
+                    let paketBadgeStyle = "background: #fef08a; color: #854d0e;"; // Warna Pro/Berbayar
+                    let paketIcon = "fa-crown";
+
+                    if (paket.includes('premium') || paket.includes('vip') || paket.includes('ultimate')) {
+                        paketBadgeStyle = "background: #e9d5ff; color: #6b21a8;"; // Warna Premium
+                        paketIcon = "fa-gem";
+                    }
+
+                    badgeEl.innerHTML = `<span style="${paketBadgeStyle} font-size: 0.75rem; padding: 0.25rem 0.6rem; border-radius: var(--radius-md); font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fas ${paketIcon}"></i> ${namaPaketAsli.toUpperCase()}</span>`;
+                    badgeEl.style.display = 'inline-block';
+                }
+                // -----------------------------------------------------
 
                 // Isi Data ke DOM
                 document.title = `Profil: ${name} - Sitenexs`;
