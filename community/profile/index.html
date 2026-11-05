@@ -204,11 +204,6 @@
             display: none; /* Akan dimunculkan lewat JS jika akun diverifikasi */
         }
 
-        /* GAYA UNTUK BADGE PAKET DINAMIS */
-        #p-paket-badge {
-            display: none; /* Disembunyikan secara default, dimunculkan lewat JS */
-        }
-
         .profile-business {
             font-size: 1.1rem;
             font-weight: 600;
@@ -228,6 +223,20 @@
             font-weight: 700;
             color: var(--text-muted);
             box-shadow: var(--shadow-sm);
+        }
+
+        /* GAYA UNTUK BADGE PAKET DINAMIS */
+        #p-paket-badge {
+            display: none; /* Disembunyikan secara default, dimunculkan lewat JS */
+        }
+
+        /* Container untuk kategori bisnis & badge paket agar berdampingan */
+        .business-badges-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
         }
 
         .profile-body {
@@ -366,20 +375,25 @@
                     </div>
                 </div>
 
-                <!-- Kontainer Nama, Verified, dan Badge Paket -->
+                <!-- Kontainer Nama, Verified -->
                 <div class="profile-name-container">
                     <h1 class="profile-name">
                         <span id="p-name">-</span>
                         <!-- Ikon Verified Sitenexs -->
                         <img id="p-verified" src="https://sitenexs.com/assets/logo/verified.png" alt="Verified" class="verification-icon">
                     </h1>
-                    <!-- Badge Paket Dinamis -->
-                    <span id="p-paket-badge"></span>
                 </div>
                 
+                <!-- Nama Bisnis -->
                 <div id="p-business" class="profile-business">-</div>
-                <div class="badge-category">
-                    <i id="p-icon" class="fas fa-store"></i> <span id="p-field">UMKM</span>
+
+                <!-- Kontainer Badge Kategori & Badge Paket Langganan -->
+                <div class="business-badges-wrapper">
+                    <div class="badge-category">
+                        <i id="p-icon" class="fas fa-store"></i> <span id="p-field">UMKM</span>
+                    </div>
+                    <!-- Badge Paket Dinamis (Hanya tampil jika Pro/Premium) -->
+                    <span id="p-paket-badge"></span>
                 </div>
             </div>
 
@@ -524,7 +538,7 @@
                 }
 
                 // -----------------------------------------------------
-                // LOGIKA BADGE PAKET DINAMIS (Sama seperti index.html)
+                // LOGIKA BADGE PAKET DINAMIS (Tidak Tampil Jika Basic/Gratis)
                 // -----------------------------------------------------
                 const badgeEl = document.getElementById('p-paket-badge');
                 
@@ -538,7 +552,7 @@
                         paketIcon = "fa-gem";
                     }
 
-                    badgeEl.innerHTML = `<span style="${paketBadgeStyle} font-size: 0.75rem; padding: 0.25rem 0.6rem; border-radius: var(--radius-md); font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fas ${paketIcon}"></i> ${namaPaketAsli.toUpperCase()}</span>`;
+                    badgeEl.innerHTML = `<span style="${paketBadgeStyle} font-size: 0.85rem; padding: 0.4rem 1rem; border-radius: 99px; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: var(--shadow-sm);"><i class="fas ${paketIcon}"></i> ${namaPaketAsli.toUpperCase()}</span>`;
                     badgeEl.style.display = 'inline-block';
                 }
                 // -----------------------------------------------------
