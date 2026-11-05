@@ -48,7 +48,7 @@
         .btn-post:disabled { background: #94a3b8; cursor: not-allowed; }
 
         /* Login Overlay */
-        .login-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); backdrop-filter: blur(2px); display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: var(--radius-lg); z-index: 10; }
+        .login-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); backdrop-filter: blur(2px); display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: var(--radius-lg); z-index: 10; display: none; }
         .btn-login { background: var(--primary); color: white; text-decoration: none; padding: 0.6rem 1.5rem; border-radius: var(--radius-full); font-weight: 700; margin-top: 0.5rem; }
 
         /* Post Card */
@@ -93,7 +93,8 @@
         
         <!-- Box Bikin Postingan -->
         <div class="create-post-card" id="createPostBox">
-            <!-- Overlay Jika Belum Login -->
+            
+            <!-- Overlay Login -->
             <div class="login-overlay" id="loginOverlay">
                 <i class="fas fa-lock" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem;"></i>
                 <p style="font-weight: 600; color: var(--text-main);">Masuk untuk mulai berinteraksi</p>
@@ -101,9 +102,9 @@
             </div>
 
             <div class="create-post-header">
-                <img src="https://ui-avatars.com/api/?name=User&background=f1f5f9&color=94a3b8" class="avatar" id="myAvatar" alt="Avatar">
+                <img src="https://ui-avatars.com/api/?name=US&background=f1f5f9&color=94a3b8" class="avatar" id="myAvatar" alt="Avatar">
                 <div>
-                    <div style="font-weight: 700; font-size: 0.9rem;" id="myName">Memuat profil...</div>
+                    <div style="font-weight: 700; font-size: 0.9rem;" id="myName">Menarik profil asli...</div>
                     <div style="font-size: 0.75rem; color: var(--text-muted);">Posting ke Publik</div>
                 </div>
             </div>
@@ -133,9 +134,6 @@
     </div>
 
     <script type="module">
-        // ============================================
-        // IMPORT FIREBASE
-        // ============================================
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc, getDoc, arrayUnion, arrayRemove, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
         import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-storage.js';
@@ -158,86 +156,83 @@
         const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
         const avatarBucket = 'profile-photos';
         
-        let currentUser = null;
+        // Setup User Sementara (Biar layarnya nggak ngunci & nggak error)
+        let currentUser = {
+            uid: "anon_" + Date.now(),
+            actualName: "Mitra Sitenexs",
+            role: "Anggota Komunitas"
+        };
 
         // ============================================
-        // 1. BUKA KUNCI MENGGUNAKAN DATA LOKAL / COOKIE
+        // 1. BUKA GEMBOK SECARA INSTAN PAKAI COOKIE LOKAL
         // ============================================
         const isLoggedInLocal = document.cookie.includes('isLoggedIn=true') || localStorage.getItem('isLoggedIn') === 'true';
-        const localUid = localStorage.getItem('user_uid'); 
-
-        // Fungsi untuk mengambil data dan membuka UI
-        async function unlockUI(uid) {
-            document.getElementById('loginOverlay').style.display = 'none'; // Paksa buka
-            
-            try {
-                const userDoc = await getDoc(doc(db, "users", uid));
-                let namaLengkap = "Mitra Sitenexs";
-                let roleUser = "Anggota Komunitas";
-
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
-                    namaLengkap = data.namaLengkap || data.namaDepan + (data.namaBelakang ? ' ' + data.namaBelakang : '') || namaLengkap;
-                    
-                    if (data.isFounder) {
-                        roleUser = "Founder Sitenexs";
-                    } else if (data.isDeveloper) {
-                        roleUser = data.jabatanPengembang || "Pengembang Sitenexs";
-                    } else {
-                        roleUser = data.bisnis?.nama || "Mitra UMKM";
-                    }
-                }
-
-                currentUser = {
-                    uid: uid,
-                    actualName: namaLengkap,
-                    role: roleUser
-                };
-
-                document.getElementById('myName').innerHTML = `
-                    ${namaLengkap} 
-                    <span style="font-size:0.65rem; background:var(--primary-light); color:var(--primary); padding:0.15rem 0.5rem; border-radius:10px; margin-left:0.4rem; font-weight:700;">
-                        <i class="fas ${userDoc.exists() && userDoc.data().isVerified ? 'fa-check-circle' : 'fa-user'}"></i> ${roleUser}
-                    </span>
-                `;
-                
-                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo`;
-                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff`;
-                
-                const avatarEl = document.getElementById('myAvatar');
-                avatarEl.src = photoUrl;
-                avatarEl.onerror = () => { avatarEl.src = fallbackUrl; };
-
-            } catch (error) {
-                console.error("Gagal menarik profil:", error);
-                currentUser = { uid: uid, actualName: "Mitra Sitenexs", role: "Anggota Komunitas" };
-                document.getElementById('myName').innerText = currentUser.actualName;
-            }
-        }
-
-        // Semak jika ada cookie atau data lokal, terus buka kunci
+        
         if (isLoggedInLocal) {
+            // Hilangkan layar gembok tanpa ba-bi-bu
             document.getElementById('loginOverlay').style.display = 'none';
-            if (localUid) {
-                unlockUI(localUid);
-            } else {
-                // Fallback jika tiada UID dalam local storage
-                currentUser = { uid: "anon_" + Date.now(), actualName: "Mitra Sitenexs", role: "Anggota Komunitas" };
-                document.getElementById('myName').innerText = "Mitra Sitenexs";
-            }
         } else {
-            // Backup menggunakan Firebase Auth jika tiada data lokal
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    unlockUI(user.uid);
-                } else {
-                    document.getElementById('loginOverlay').style.display = 'flex';
-                }
-            });
+            // Kalau memang nggak ada cookie sama sekali, baru ditutup
+            document.getElementById('loginOverlay').style.display = 'flex';
         }
 
         // ============================================
-        // 2. PREVIEW FOTO POSTINGAN
+        // 2. DIAM-DIAM TARIK PROFIL ASLI DI LATAR BELAKANG
+        // ============================================
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Pastikan gembok tetap hilang kalau Firebase ternyata mendeteksi login
+                document.getElementById('loginOverlay').style.display = 'none';
+                
+                try {
+                    // Cari data asli dari database
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    let namaLengkap = user.displayName || "Mitra Sitenexs";
+                    let roleUser = "Anggota Komunitas";
+
+                    if (userDoc.exists()) {
+                        const data = userDoc.data();
+                        namaLengkap = data.namaLengkap || data.namaDepan + (data.namaBelakang ? ' ' + data.namaBelakang : '') || namaLengkap;
+                        
+                        if (data.isFounder) {
+                            roleUser = "Founder Sitenexs";
+                        } else if (data.isDeveloper) {
+                            roleUser = data.jabatanPengembang || "Pengembang Sitenexs";
+                        } else {
+                            roleUser = data.bisnis?.nama || "Mitra UMKM";
+                        }
+                    }
+
+                    // Update data global dengan profil asli
+                    currentUser = {
+                        uid: user.uid,
+                        actualName: namaLengkap,
+                        role: roleUser
+                    };
+
+                    // Ganti UI di layar pakai data asli (Bukan "US" lagi)
+                    document.getElementById('myName').innerHTML = `
+                        ${namaLengkap} 
+                        <span style="font-size:0.65rem; background:var(--primary-light); color:var(--primary); padding:0.15rem 0.5rem; border-radius:10px; margin-left:0.4rem; font-weight:700;">
+                            <i class="fas ${userDoc.exists() && userDoc.data().isVerified ? 'fa-check-circle' : 'fa-user'}"></i> ${roleUser}
+                        </span>
+                    `;
+                    
+                    const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo`;
+                    const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff`;
+                    
+                    const avatarEl = document.getElementById('myAvatar');
+                    avatarEl.src = photoUrl;
+                    avatarEl.onerror = () => { avatarEl.src = fallbackUrl; };
+
+                } catch (error) {
+                    console.error("Gagal menarik profil asli dari database:", error);
+                }
+            }
+        });
+
+        // ============================================
+        // 3. PREVIEW FOTO POSTINGAN
         // ============================================
         const postText = document.getElementById('postText');
         const imageUpload = document.getElementById('imageUpload');
@@ -280,10 +275,13 @@
         });
 
         // ============================================
-        // 3. KIRIM POSTINGAN KE DATABASE FIREBASE
+        // 4. KIRIM POSTINGAN KE DATABASE FIREBASE
         // ============================================
         btnPost.addEventListener('click', async function() {
-            if (!currentUser) return;
+            if (currentUser.uid.startsWith("anon_")) {
+                alert("Mohon tunggu sebentar sampai sistem selesai memuat profil asli Anda...");
+                return;
+            }
             
             btnPost.disabled = true;
             btnPost.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
@@ -312,7 +310,7 @@
                 removeImageBtn.click();
             } catch (error) {
                 console.error("Gagal memposting: ", error);
-                alert("Gagal mengirim postingan. Pastikan aturan Firebase membenarkan kebenaran menulis.");
+                alert("Gagal mengirim postingan. Pastikan database mengizinkan akses tulis.");
             } finally {
                 btnPost.innerHTML = 'Posting';
                 checkInput();
@@ -320,7 +318,7 @@
         });
 
         // ============================================
-        // 4. BACA DATA REALTIME DARI FIREBASE (FEED)
+        // 5. BACA DATA REALTIME DARI FIREBASE (FEED)
         // ============================================
         const q = query(collection(db, "komunitas_posts"), orderBy("createdAt", "desc"));
         
@@ -346,7 +344,7 @@
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(post.authorName)}&background=2563eb&color=fff`;
 
                 const likesArray = post.likes || [];
-                const isLikedByMe = currentUser ? likesArray.includes(currentUser.uid) : false;
+                const isLikedByMe = (currentUser && !currentUser.uid.startsWith("anon_")) ? likesArray.includes(currentUser.uid) : false;
                 const isLikedClass = isLikedByMe ? 'liked' : '';
                 const likeIcon = isLikedByMe ? 'fas fa-heart' : 'far fa-heart';
 
@@ -412,12 +410,11 @@
         });
 
         // ============================================
-        // 5. FUNGSI LIKE POSTINGAN
+        // 6. FUNGSI LIKE POSTINGAN
         // ============================================
         window.toggleLike = async function(postId, currentlyLiked) {
-            if (!currentUser) {
-                alert("Sila log masuk/daftar terlebih dahulu untuk menyukai postingan.");
-                window.location.href = "https://account.sitenexs.com/sign-in/";
+            if (!currentUser || currentUser.uid.startsWith("anon_")) {
+                alert("Silakan tunggu sebentar, sistem sedang memuat data Anda...");
                 return;
             }
 
@@ -430,7 +427,7 @@
         };
 
         // ============================================
-        // 6. FUNGSI BUKA TUTUP KOMENTAR
+        // 7. FUNGSI BUKA TUTUP KOMENTAR
         // ============================================
         window.toggleComment = function(postId) {
             const section = document.getElementById(`comments-${postId}`);
@@ -443,12 +440,11 @@
         };
 
         // ============================================
-        // 7. FUNGSI KIRIM KOMENTAR
+        // 8. FUNGSI KIRIM KOMENTAR
         // ============================================
         window.sendComment = async function(postId) {
-            if (!currentUser) {
-                alert("Sila log masuk/daftar terlebih dahulu untuk berkomentar.");
-                window.location.href = "https://account.sitenexs.com/sign-in/";
+            if (!currentUser || currentUser.uid.startsWith("anon_")) {
+                alert("Silakan tunggu sebentar, sistem sedang memuat data Anda...");
                 return;
             }
 
@@ -472,7 +468,7 @@
                 
                 inputEl.value = '';
             } catch (error) {
-                console.error("Gagal menghantar komen", error);
+                console.error("Gagal kirim komentar", error);
             } finally {
                 inputEl.disabled = false;
             }
