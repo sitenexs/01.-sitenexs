@@ -320,7 +320,7 @@
     <!-- SCRIPT FIREBASE & SUPABASE INTEGRATION -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+        import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
         import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
         const firebaseConfig = {
@@ -338,6 +338,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        
+        // Memastikan sesi auth tersimpan lokal secara stabil di browser
+        setPersistence(auth, browserLocalPersistence).catch(err => console.log(err));
+
         const forumCollection = collection(db, "forum_posts");
 
         let currentUserData = null;
@@ -348,19 +352,12 @@
         const avatarImg = document.getElementById('currentUserAvatar');
         const promptText = document.getElementById('createPostPromptText');
 
-        // Fungsi bantu membaca cookie lintas subdomain
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-        }
-
-        async function fetchUserProfile(uid, fallbackName = "Mitra Sitenexs") {
+        async function fetchUserProfile(user) {
             try {
-                const userDocRef = doc(db, "users", uid);
+                const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
 
-                let namaLengkap = fallbackName;
+                let namaLengkap = user.displayName || "Mitra Sitenexs";
                 let isVerified = false;
 
                 if (userDocSnap.exists()) {
@@ -369,11 +366,11 @@
                     isVerified = d.isVerified || false;
                 }
 
-                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo?t=${Date.now()}`;
+                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo?t=${Date.now()}`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff`;
 
                 currentUserData = {
-                    uid: uid,
+                    uid: user.uid,
                     nama: namaLengkap,
                     isVerified: isVerified,
                     avatar: photoUrl,
@@ -388,34 +385,23 @@
             }
         }
 
-        // Pengecekan ganda: Cek Firebase Auth SDK + Cookie/LocalStorage cross-subdomain
+        // Deteksi status login murni dari Firebase Auth SDK
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                await fetchUserProfile(user.uid, user.displayName);
+                await fetchUserProfile(user);
             } else {
-                // Cek cadangan dari cookie/localStorage jika auth tertunda oleh cross-subdomain
-                const savedUid = localStorage.getItem('sitenexs_uid') || getCookie('sitenexs_uid');
-                const isLogged = localStorage.getItem('sitenexs_logged_in') === 'true' || getCookie('isLoggedIn') === 'true';
-
-                if (isLogged && savedUid) {
-                    await fetchUserProfile(savedUid);
-                } else {
-                    currentUserData = null;
-                    avatarImg.src = "https://ui-avatars.com/api/?name=Tamu&background=cbd5e1&color=fff";
-                    promptText.innerText = "Masuk untuk membuat postingan diskusi...";
-                }
+                currentUserData = null;
+                avatarImg.src = "https://ui-avatars.com/api/?name=Tamu&background=cbd5e1&color=fff";
+                promptText.innerText = "Masuk untuk membuat postingan diskusi...";
             }
         });
 
         window.checkAuthAndOpenModal = async function() {
-            const savedUid = localStorage.getItem('sitenexs_uid') || getCookie('sitenexs_uid');
-            const isLogged = localStorage.getItem('sitenexs_logged_in') === 'true' || getCookie('isLoggedIn') === 'true';
-
-            if (!currentUserData && (auth.currentUser || savedUid)) {
-                await fetchUserProfile(auth.currentUser ? auth.currentUser.uid : savedUid);
+            if (!currentUserData && auth.currentUser) {
+                await fetchUserProfile(auth.currentUser);
             }
 
-            if (!currentUserData && !auth.currentUser && !isLogged && !savedUid) {
+            if (!currentUserData && !auth.currentUser) {
                 alert("Anda harus masuk (login) ke akun Sitenexs terlebih dahulu untuk membuat postingan.");
                 window.location.href = "https://account.sitenexs.com/sign-in/";
                 return;
@@ -502,15 +488,9 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const savedUid = localStorage.getItem('sitenexs_uid') || getCookie('sitenexs_uid');
-            const isLogged = localStorage.getItem('sitenexs_logged_in') === 'true' || getCookie('isLoggedIn') === 'true';
-
-            if (!currentUserData && (auth.currentUser || savedUid)) {
-                await fetchUserProfile(auth.currentUser ? auth.currentUser.uid : savedUid);
-            }
-
-            if (!currentUserData && !auth.currentUser && !isLogged && !savedUid) {
-                alert("Sesi login berakhir. Silakan masuk kembali.");
+            const activeUser = currentUserData || auth.currentUser;
+            if (!activeUser) {
+                alert("Sesi login berakhir atau Anda belum masuk. Silakan login kembali.");
                 window.location.href = "https://account.sitenexs.com/sign-in/";
                 return;
             }
@@ -525,15 +505,10 @@
             submitBtn.disabled = true;
 
             try {
-                const activeUser = currentUserData || auth.currentUser;
-                const uidVal = activeUser ? activeUser.uid : savedUid;
-                const nameVal = activeUser ? activeUser.nama : "Mitra Sitenexs";
-                const verifiedVal = activeUser ? activeUser.isVerified : false;
-
                 await addDoc(forumCollection, {
-                    authorUid: uidVal,
-                    penulis: nameVal,
-                    isVerified: verifiedVal,
+                    authorUid: activeUser.uid,
+                    penulis: currentUserData ? currentUserData.nama : (auth.currentUser.displayName || "Mitra Sitenexs"),
+                    isVerified: currentUserData ? currentUserData.isVerified : false,
                     kategori: category,
                     judul: title,
                     isi: content,
