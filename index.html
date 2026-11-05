@@ -1025,7 +1025,7 @@
             font-size: 0.8rem;
             font-weight: 600;
             color: var(--text-muted);
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.2rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -2235,7 +2235,23 @@
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama)}&background=2563eb&color=fff&size=120`;
                 const verifiedIconHTML = user.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` : '';
 
-                const proBadgeHTML = user.paketLangganan === 'Pro' ? `<span style="background: #fef08a; color: #854d0e; font-size: 0.6rem; padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 5px; font-weight: 800;">PRO</span>` : '';
+                // --- LOGIKA BADGE PAKET DINAMIS ---
+                let dynamicBadgeHTML = "";
+                const paketStr = (user.paketLangganan || 'Basic').toLowerCase();
+
+                // Hanya render badge jika bukan Basic atau Gratis
+                if (!paketStr.includes('basic') && !paketStr.includes('gratis')) {
+                    let paketBadgeStyle = "background: #fef08a; color: #854d0e;"; // Warna Pro/Default Berbayar
+                    let paketIcon = "fa-crown";
+
+                    if (paketStr.includes('premium') || paketStr.includes('vip') || paketStr.includes('ultimate')) {
+                        paketBadgeStyle = "background: #e9d5ff; color: #6b21a8;"; // Warna Premium
+                        paketIcon = "fa-gem";
+                    }
+
+                    dynamicBadgeHTML = `<span style="${paketBadgeStyle} font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: var(--radius-sm); font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fas ${paketIcon}"></i> ${user.paketLangganan.toUpperCase()}</span>`;
+                }
+                // ----------------------------------
 
                 const cardHTML = `
                     <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(user.uid)}" class="member-card reveal active">
@@ -2243,9 +2259,14 @@
                             <img src="${photoUrl}" alt="Avatar ${user.nama}" onerror="this.onerror=null; this.src='${fallbackUrl}';">
                         </div>
                         <div class="member-info">
-                            <h4 class="member-name">${user.nama} ${verifiedIconHTML} ${proBadgeHTML}</h4>
+                            <h4 class="member-name">${user.nama} ${verifiedIconHTML}</h4>
                             <div class="member-business">${user.bisnisNama}</div>
-                            <div class="member-category"><i class="fas ${icon}" style="margin-right: 0.3rem;"></i> ${user.bisnisBidang}</div>
+                            
+                            <!-- Kategori Bisnis & Badge Paket berdampingan di bawah nama bisnis -->
+                            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.1rem;">
+                                <div class="member-category"><i class="fas ${icon}" style="margin-right: 0.3rem;"></i> ${user.bisnisBidang}</div>
+                                ${dynamicBadgeHTML}
+                            </div>
                         </div>
                     </a>
                 `;
