@@ -17,13 +17,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* === VARIABEL WARNA DARI INDEX.HTML === */
+        /* === VARIABEL WARNA === */
         :root {
             --primary: #2563eb;
             --primary-dark: #1d4ed8;
             --primary-light: #eff6ff;
             --accent: #10b981;
-            --bg-body: #f1f5f9; /* Sedikit lebih gelap untuk halaman feed */
+            --bg-body: #f1f5f9;
             --bg-card: #ffffff;
             --bg-alt: #f8fafc;
             --text-main: #0f172a;
@@ -44,7 +44,7 @@
         a { text-decoration: none; color: inherit; cursor: pointer; }
         button, input, textarea { font-family: inherit; outline: none; border: none; background: none; }
         
-        /* === NAVBAR (Versi Komunitas) === */
+        /* === NAVBAR === */
         #navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: rgba(255, 255, 255, 0.98); border-bottom: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm); }
         .nav-container { display: flex; align-items: center; justify-content: space-between; height: 70px; max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
         .logo { display: flex; align-items: center; gap: 0.75rem; font-weight: 800; font-size: 1.2rem; color: var(--text-main); }
@@ -60,7 +60,7 @@
         .nav-icon-btn:hover { background: var(--border-subtle); color: var(--primary); }
         .nav-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary-light); cursor: pointer; object-fit: cover; }
 
-        /* === LAYOUT KOMUNITAS (3 Kolom Grid) === */
+        /* === LAYOUT KOMUNITAS === */
         .community-container { max-width: 1200px; margin: 90px auto 2rem auto; padding: 0 1rem; display: grid; gap: 1.5rem; grid-template-columns: 1fr; align-items: start; }
         @media (min-width: 768px) { .community-container { grid-template-columns: 280px 1fr; } }
         @media (min-width: 1024px) { .community-container { grid-template-columns: 260px 1fr 300px; padding: 0 1.5rem; } }
@@ -70,26 +70,21 @@
         @media (min-width: 768px) { .left-sidebar { display: flex; } }
         @media (min-width: 1024px) { .right-sidebar { display: flex; } }
 
-        /* Card Global */
         .card { background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm); padding: 1.25rem; }
         
-        /* Widget Profil Mini (Kiri) */
+        /* Widget Profil Mini */
         .mini-profile { text-align: center; }
         .mini-profile-banner { height: 70px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); margin: -1.25rem -1.25rem 0 -1.25rem; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
         .mini-profile-img { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #fff; margin-top: -35px; object-fit: cover; background: #fff; }
-        .mini-profile-name { font-weight: 800; font-size: 1.05rem; margin-top: 0.5rem; color: var(--text-main); }
+        .mini-profile-name { font-weight: 800; font-size: 1.05rem; margin-top: 0.5rem; color: var(--text-main); display: flex; justify-content: center; align-items: center; gap: 0.25rem;}
         .mini-profile-biz { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem; }
-        .stat-box h5 { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
-        .stat-box p { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-
-        /* Menu Samping */
+        
         .side-menu { display: flex; flex-direction: column; gap: 0.25rem; }
         .side-menu a { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-weight: 600; color: var(--text-muted); transition: var(--transition); }
         .side-menu a:hover, .side-menu a.active { background: var(--primary-light); color: var(--primary); }
         .side-menu i { width: 20px; font-size: 1.1rem; }
 
-        /* === FEED UTAMA (Tengah) === */
+        /* === FEED UTAMA === */
         .main-feed { display: flex; flex-direction: column; gap: 1.25rem; }
 
         /* Buat Postingan */
@@ -116,471 +111,483 @@
         .verified-icon { width: 14px; height: 14px; }
         .author-meta { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem; }
         .badge-premium { background: #e9d5ff; color: #6b21a8; font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: var(--radius-sm); font-weight: 700; }
-        .post-options { color: var(--text-muted); background: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; }
-        .post-options:hover { background: var(--bg-alt); }
+        .badge-admin { background: var(--primary-light); color: var(--primary-dark); font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: var(--radius-sm); font-weight: 700; }
 
         .post-content { padding: 0.5rem 1.25rem; font-size: 0.95rem; color: var(--text-main); white-space: pre-wrap; line-height: 1.6; }
-        .post-image { width: 100%; max-height: 400px; object-fit: cover; border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); margin-top: 0.75rem; }
-
-        /* Stats & Aksi Post */
+        
         .post-stats { display: flex; justify-content: space-between; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border-subtle); font-size: 0.85rem; color: var(--text-muted); }
         .post-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 0.25rem 1.25rem; }
         .post-action-btn { display: flex; justify-content: center; align-items: center; gap: 0.5rem; padding: 0.75rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; cursor: pointer; border-radius: var(--radius-md); transition: var(--transition); }
         .post-action-btn:hover { background: var(--bg-alt); color: var(--primary); }
         .post-action-btn.liked { color: #ef4444; }
         .post-action-btn.liked i { animation: pop 0.3s ease; }
-        
-        @keyframes pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-            100% { transform: scale(1); }
-        }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
 
-        /* Area Komentar (Hidden default, toggle JS) */
+        /* Komentar */
         .comments-section { background: var(--bg-alt); padding: 1rem 1.25rem; border-top: 1px solid var(--border-subtle); display: none; }
         .comments-section.show { display: block; }
-        
         .comment-input-area { display: flex; gap: 0.75rem; margin-bottom: 1.25rem; }
         .comment-input-area img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
         .comment-box { flex: 1; position: relative; }
         .comment-box input { width: 100%; background: #fff; border: 1px solid var(--border-subtle); padding: 0.6rem 2.5rem 0.6rem 1rem; border-radius: var(--radius-full); font-size: 0.9rem; }
         .comment-box input:focus { border-color: var(--primary); }
         .send-comment-btn { position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); color: var(--primary); cursor: pointer; padding: 0.2rem; }
-
-        /* Item Komentar & Nested Reply */
+        
         .comment-thread { margin-bottom: 1rem; }
-        .comment-item { display: flex; gap: 0.75rem; margin-bottom: 0.5rem; }
+        .comment-item { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; }
         .comment-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
         .comment-content { flex: 1; }
         .comment-bubble { background: #fff; border: 1px solid var(--border-subtle); padding: 0.6rem 0.85rem; border-radius: 0 var(--radius-md) var(--radius-md) var(--radius-md); font-size: 0.9rem; }
         .comment-bubble .name { font-weight: 700; color: var(--text-main); font-size: 0.85rem; margin-bottom: 0.1rem; }
         .comment-actions { display: flex; gap: 1rem; margin-top: 0.25rem; padding-left: 0.5rem; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
-        .comment-action-btn { cursor: pointer; }
-        .comment-action-btn:hover { color: var(--primary); text-decoration: underline; }
 
-        .replies { margin-left: 2.5rem; border-left: 2px solid var(--border-subtle); padding-left: 1rem; margin-top: 0.5rem; }
-
-        /* === WIDGET KANAN === */
-        .widget-title { font-size: 1rem; font-weight: 800; margin-bottom: 1rem; color: var(--text-main); }
-        .trending-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-        .tag { background: var(--bg-alt); border: 1px solid var(--border-subtle); padding: 0.3rem 0.75rem; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: var(--transition); }
-        .tag:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary-light); }
-
-        .suggested-user { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-        .sug-user-info { display: flex; align-items: center; gap: 0.75rem; }
-        .sug-user-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .sug-name { font-size: 0.9rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
-        .sug-biz { font-size: 0.75rem; color: var(--text-muted); }
-        .btn-follow { font-size: 0.8rem; font-weight: 700; color: var(--primary); background: var(--primary-light); padding: 0.3rem 0.75rem; border-radius: var(--radius-full); cursor: pointer; }
-        .btn-follow:hover { background: var(--primary); color: #fff; }
-
-        /* Floating Button Khusus Mobile untuk Buat Post */
         .fab-post { display: none; position: fixed; bottom: 2rem; right: 1.5rem; width: 55px; height: 55px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 1.5rem; box-shadow: var(--shadow-md); z-index: 99; align-items: center; justify-content: center; cursor: pointer; }
-        @media (max-width: 767px) { 
-            .fab-post { display: flex; } 
-            .create-post-card { display: none; /* Sembunyikan form di atas jika di mobile, atau biarkan tetap ada sesuai selera */ }
-        }
+        @media (max-width: 767px) { .fab-post { display: flex; } }
     </style>
 </head>
 <body>
 
-    <!-- NAVBAR KOMUNITAS -->
     <header id="navbar">
         <div class="nav-container">
             <a href="index.html" class="logo">
                 <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img">
                 <span style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SiteNexs</span>
             </a>
-
             <div class="nav-search">
                 <i class="fas fa-search"></i>
                 <input type="text" placeholder="Cari postingan, mitra, atau topik...">
             </div>
-
             <div class="nav-actions">
-                <button class="nav-icon-btn" title="Notifikasi"><i class="fas fa-bell"></i></button>
-                <img src="https://ui-avatars.com/api/?name=Syafaat+Nuryadi&background=2563eb&color=fff" class="nav-avatar" alt="Profil Saya" onclick="window.location.href='profil.html'">
+                <button class="nav-icon-btn"><i class="fas fa-bell"></i></button>
+                <img src="https://ui-avatars.com/api/?name=Guest&background=e2e8f0&color=475569" id="navAvatarImg" class="nav-avatar" onclick="window.location.href='https://account.sitenexs.com/profile/'">
             </div>
         </div>
     </header>
 
-    <!-- LAYOUT GRID -->
     <main class="community-container">
         
-        <!-- KOLOM KIRI: Navigasi & Profil Mini -->
+        <!-- KOLOM KIRI -->
         <aside class="sidebar left-sidebar">
-            <!-- Mini Profil Box -->
             <div class="card mini-profile">
                 <div class="mini-profile-banner"></div>
-                <!-- Gambar Dummy User Login (Ganti dgn dinamis Firebase) -->
-                <img src="https://ui-avatars.com/api/?name=Syafaat+Nuryadi&background=2563eb&color=fff" alt="User" class="mini-profile-img">
-                <h3 class="mini-profile-name">Syafaat Nuryadi <img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon" alt="Verified"></h3>
-                <p class="mini-profile-biz">Founder Sitenexs</p>
-                <div class="stat-grid">
-                    <div class="stat-box">
-                        <h5>142</h5>
-                        <p>Koneksi</p>
-                    </div>
-                    <div class="stat-box">
-                        <h5>38</h5>
-                        <p>Postingan</p>
-                    </div>
+                <img src="https://ui-avatars.com/api/?name=Guest&background=e2e8f0&color=475569" id="miniProfileImg" class="mini-profile-img">
+                <h3 class="mini-profile-name" id="miniProfileName">Memuat...</h3>
+                <p class="mini-profile-biz" id="miniProfileBiz">Harap tunggu</p>
+                <div id="miniProfileLoginBtn" style="display:none; margin-top: 1rem;">
+                    <a href="https://account.sitenexs.com/sign-in/" class="btn-post" style="text-decoration:none; display:inline-block; font-size:0.85rem;">Masuk / Daftar</a>
                 </div>
             </div>
 
-            <!-- Navigasi Menu -->
             <div class="card side-menu">
                 <a href="#" class="active"><i class="fas fa-home"></i> Beranda Feed</a>
                 <a href="#"><i class="fas fa-compass"></i> Eksplorasi UMKM</a>
-                <a href="#"><i class="fas fa-bookmark"></i> Tersimpan</a>
-                <a href="#"><i class="fas fa-store"></i> Grup Kategori Bisnis</a>
-                <a href="index.html" style="margin-top: 1rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;"><i class="fas fa-arrow-left"></i> Kembali ke Website Utama</a>
+                <a href="#"><i class="fas fa-store"></i> Grup Kategori</a>
+                <a href="index.html" style="margin-top: 1rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;"><i class="fas fa-arrow-left"></i> Kembali ke Web Utama</a>
             </div>
         </aside>
 
-        <!-- KOLOM TENGAH: Feed Utama -->
+        <!-- KOLOM TENGAH: FEED -->
         <section class="main-feed">
-            
-            <!-- Buat Postingan Baru -->
             <div class="card create-post-card">
                 <div class="create-post-top">
-                    <img src="https://ui-avatars.com/api/?name=Syafaat+Nuryadi&background=2563eb&color=fff" class="create-post-avatar" alt="Avatar">
-                    <!-- Gunakan oninput untuk auto-resize tinggi textarea -->
+                    <img src="https://ui-avatars.com/api/?name=Guest&background=e2e8f0&color=475569" id="postAvatarImg" class="create-post-avatar">
                     <textarea class="create-post-input" id="postInput" placeholder="Bagikan insight, pertanyaan, atau perkembangan bisnis Anda hari ini..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
                 </div>
                 <div class="create-post-actions">
                     <div class="action-btns">
-                        <button title="Lampirkan Gambar"><i class="fas fa-image text-accent"></i> Foto</button>
-                        <button title="Lampirkan Link"><i class="fas fa-link" style="color: #3b82f6;"></i> Link</button>
+                        <button><i class="fas fa-image text-accent"></i> Foto</button>
                     </div>
                     <button class="btn-post" id="btnSubmitPost" disabled>Posting</button>
                 </div>
             </div>
 
-            <!-- FEED KONTEN (Dinamis dari Database nantinya) -->
+            <!-- Kontainer Postingan Dinamis -->
             <div id="feed-container">
-                
-                <!-- Contoh Post 1 (Ada Gambar) -->
-                <article class="card post-card">
-                    <div class="post-header">
-                        <div class="post-author" onclick="window.location.href='profil_orang.html'">
-                            <img src="https://ui-avatars.com/api/?name=Budi+Santoso&background=10b981&color=fff" class="post-author-img" alt="Budi">
-                            <div class="post-author-info">
-                                <span class="author-name">Budi Santoso <span class="badge-premium"><i class="fas fa-crown"></i> PRO</span></span>
-                                <span class="author-meta">Kedai Kopi Senja • 2 jam yang lalu</span>
-                            </div>
-                        </div>
-                        <button class="post-options"><i class="fas fa-ellipsis-h"></i></button>
-                    </div>
-                    
-                    <div class="post-content">Hari ini baru saja mencoba fitur POS dari Sitenexs untuk kafe kami. Antreannya jadi jauh lebih rapi dan laporan keuangan harian langsung klop! Ada yang punya tips untuk setting diskon otomatis di sistem ini?</div>
-                    
-                    <!-- Contoh jika ada gambar yang diupload -->
-                    <img src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?auto=format&fit=crop&w=800&q=80" class="post-image" alt="Kedai Kopi">
-
-                    <div class="post-stats">
-                        <span id="like-count-1"><i class="fas fa-heart text-muted"></i> 24 Suka</span>
-                        <span id="comment-count-1">5 Komentar</span>
-                    </div>
-
-                    <div class="post-actions">
-                        <button class="post-action-btn like-btn" onclick="toggleLike(this, 'like-count-1')"><i class="far fa-heart"></i> Suka</button>
-                        <button class="post-action-btn" onclick="toggleComment('comment-sec-1')"><i class="far fa-comment"></i> Komentar</button>
-                        <button class="post-action-btn"><i class="fas fa-share"></i> Bagikan</button>
-                    </div>
-
-                    <!-- Area Komentar (Hidden) -->
-                    <div class="comments-section" id="comment-sec-1">
-                        <div class="comment-input-area">
-                            <img src="https://ui-avatars.com/api/?name=Syafaat+Nuryadi&background=2563eb&color=fff" alt="Anda">
-                            <div class="comment-box">
-                                <input type="text" placeholder="Tulis komentar..." id="input-com-1">
-                                <button class="send-comment-btn" onclick="addComment('1')"><i class="fas fa-paper-plane"></i></button>
-                            </div>
-                        </div>
-                        
-                        <!-- List Komentar -->
-                        <div class="comment-thread">
-                            <div class="comment-item">
-                                <img src="https://ui-avatars.com/api/?name=Siti+Aminah&background=f59e0b&color=fff" class="comment-avatar">
-                                <div class="comment-content">
-                                    <div class="comment-bubble">
-                                        <div class="name">Siti Aminah</div>
-                                        Wah mantap pak Budi! Untuk diskon otomatis, bisa disetting di menu Admin > Promo > Buat Aturan Baru. Nanti terpotong otomatis di kasir.
-                                    </div>
-                                    <div class="comment-actions">
-                                        <span>1 jam lalu</span>
-                                        <span class="comment-action-btn">Suka (2)</span>
-                                        <span class="comment-action-btn" onclick="replyTo('Siti Aminah', 'input-com-1')">Balas</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Nested Reply (Balasan) -->
-                            <div class="replies">
-                                <div class="comment-item">
-                                    <img src="https://ui-avatars.com/api/?name=Budi+Santoso&background=10b981&color=fff" class="comment-avatar">
-                                    <div class="comment-content">
-                                        <div class="comment-bubble">
-                                            <div class="name">Budi Santoso</div>
-                                            <span style="color: var(--primary);">@Siti Aminah</span> Ah iya, ketemu! Terima kasih banyak infonya bu.
-                                        </div>
-                                        <div class="comment-actions">
-                                            <span>45 menit lalu</span>
-                                            <span class="comment-action-btn">Suka</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </article>
-
-                <!-- Contoh Post 2 (Tanpa Gambar, Text panjang) -->
-                <article class="card post-card">
-                    <div class="post-header">
-                        <div class="post-author">
-                            <img src="https://sitenexs.com/assets/founder/founder.png" class="post-author-img" onerror="this.src='https://ui-avatars.com/api/?name=Syafaat+Nuryadi&background=2563eb&color=fff'">
-                            <div class="post-author-info">
-                                <span class="author-name">Syafaat Nuryadi <img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon"></span>
-                                <span class="author-meta">Founder Sitenexs • 5 jam yang lalu</span>
-                            </div>
-                        </div>
-                        <button class="post-options"><i class="fas fa-ellipsis-h"></i></button>
-                    </div>
-                    <div class="post-content">Selamat datang di forum komunitas Sitenexs! 🎉<br><br>Gunakan ruang ini untuk saling berjejaring antar pelaku UMKM. Jika Anda punya kendala penggunaan sistem, mencari vendor bahan baku, atau sekadar ingin pamer omzet hari ini (hehe), silakan buat postingan.<br><br>Mari bertumbuh dan Go-Digital bersama! 🚀</div>
-                    
-                    <div class="post-stats">
-                        <span id="like-count-2"><i class="fas fa-heart text-muted"></i> 156 Suka</span>
-                        <span id="comment-count-2">12 Komentar</span>
-                    </div>
-
-                    <div class="post-actions">
-                        <button class="post-action-btn like-btn" onclick="toggleLike(this, 'like-count-2')"><i class="far fa-heart"></i> Suka</button>
-                        <button class="post-action-btn" onclick="toggleComment('comment-sec-2')"><i class="far fa-comment"></i> Komentar</button>
-                        <button class="post-action-btn"><i class="fas fa-share"></i> Bagikan</button>
-                    </div>
-
-                    <div class="comments-section" id="comment-sec-2">
-                         <div class="comment-input-area">
-                            <img src="https://ui-avatars.com/api/?name=Syafaat+Nuryadi&background=2563eb&color=fff" alt="Anda">
-                            <div class="comment-box">
-                                <input type="text" placeholder="Tulis komentar..." id="input-com-2">
-                                <button class="send-comment-btn"><i class="fas fa-paper-plane"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                </article>
-
+                <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p style="margin-top: 1rem;">Memuat postingan komunitas...</p>
+                </div>
             </div>
-            
-            <!-- Loading Indicator kalau discroll ke bawah -->
-            <div style="text-align: center; color: var(--text-muted); padding: 1rem;">
-                <i class="fas fa-spinner fa-spin"></i> Memuat postingan lawas...
-            </div>
-            
         </section>
 
-        <!-- KOLOM KANAN: Widget Pendukung -->
+        <!-- KOLOM KANAN -->
         <aside class="sidebar right-sidebar">
-            
-            <!-- Widget Mitra Sugesti -->
             <div class="card">
-                <h4 class="widget-title">Mitra Baru Bergabung</h4>
-                
-                <div class="suggested-user">
-                    <div class="sug-user-info">
-                        <img src="https://ui-avatars.com/api/?name=Toko+Berkah&background=8b5cf6&color=fff">
-                        <div>
-                            <div class="sug-name">Toko Sembako Berkah</div>
-                            <div class="sug-biz">Retail</div>
-                        </div>
-                    </div>
-                    <button class="btn-follow"><i class="fas fa-plus"></i> Ikuti</button>
-                </div>
-
-                <div class="suggested-user">
-                    <div class="sug-user-info">
-                        <img src="https://ui-avatars.com/api/?name=Jaya+Motor&background=ef4444&color=fff">
-                        <div>
-                            <div class="sug-name">Bengkel Jaya Motor</div>
-                            <div class="sug-biz">Otomotif</div>
-                        </div>
-                    </div>
-                    <button class="btn-follow"><i class="fas fa-plus"></i> Ikuti</button>
-                </div>
-                
-                <a href="#" style="font-size: 0.85rem; color: var(--primary); font-weight: 700; text-align: center; display: block; margin-top: 1rem;">Lihat Semua Mitra</a>
-            </div>
-
-            <!-- Widget Topik Hangat -->
-            <div class="card">
-                <h4 class="widget-title">Topik Hangat</h4>
-                <div class="trending-tags">
-                    <span class="tag">#TipsKasir</span>
-                    <span class="tag">#PajakUMKM</span>
-                    <span class="tag">#UpdateSitenexs</span>
-                    <span class="tag">#MarketingDigital</span>
-                    <span class="tag">#SupplierBengkulu</span>
+                <h4 style="font-size: 1rem; font-weight: 800; margin-bottom: 1rem;">Topik Hangat</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    <span style="background: var(--bg-alt); border: 1px solid var(--border-subtle); padding: 0.3rem 0.75rem; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">#TipsKasir</span>
+                    <span style="background: var(--bg-alt); border: 1px solid var(--border-subtle); padding: 0.3rem 0.75rem; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">#UMKMNaikKelas</span>
+                    <span style="background: var(--bg-alt); border: 1px solid var(--border-subtle); padding: 0.3rem 0.75rem; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">#SitenexsUpdate</span>
                 </div>
             </div>
-
-            <!-- Copyright Samping -->
             <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">
                 &copy; 2026 Sitenexs Community.<br>Developed by Syafaat Nuryadi.
             </div>
-
         </aside>
-
     </main>
 
-    <!-- Tombol Float Mobile -->
     <button class="fab-post" onclick="document.getElementById('postInput').focus(); window.scrollTo(0,0);">
         <i class="fas fa-pen"></i>
     </button>
 
     <!-- ==========================================
-         LOGIKA JAVASCRIPT UI (TANPA BACKEND DULU) 
-         Gunakan script ini sebagai pondasi sebelum dicolok Firestore
+         FIREBASE & LOGIKA REAL-TIME
          ========================================== -->
-    <script>
-        // 1. Validasi Tombol Post (Cuma aktif kalau ada teks)
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
+        import { getFirestore, collection, doc, getDoc, addDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, query, orderBy, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+
+        // Konfigurasi Firebase dari Index
+        const firebaseConfig = {
+            apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
+            authDomain: 'sitenexs-62919.firebaseapp.com',
+            projectId: 'sitenexs-62919',
+            storageBucket: 'sitenexs-62919.firebasestorage.app',
+            messagingSenderId: '1060348110644',
+            appId: '1:1060348110644:web:e45af14d5f26a9cf8e6761',
+            measurementId: 'G-C7YL0Q7YRQ'
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
+        const avatarBucket = 'profile-photos';
+
+        let currentUserData = null; 
+        const userCache = {}; // Cache data author agar hemat pembacaan database
+
+        // --- 1. CEK AUTH & UPDATE PROFIL MINI ---
+        onAuthStateChanged(auth, async (user) => {
+            const nameEl = document.getElementById('miniProfileName');
+            const bizEl = document.getElementById('miniProfileBiz');
+            const loginBtn = document.getElementById('miniProfileLoginBtn');
+            const inputEl = document.getElementById('postInput');
+
+            if (user) {
+                // Fetch data user dari collection users
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    currentUserData = { uid: user.uid, ...userDoc.data() };
+                    
+                    const nama = currentUserData.namaLengkap || currentUserData.namaDepan || "Mitra Sitenexs";
+                    const bisnis = currentUserData.bisnis?.nama || "UMKM Indonesia";
+                    const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${user.uid}/profile-photo`;
+                    const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(nama)}&background=2563eb&color=fff`;
+                    const isVerified = currentUserData.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon" style="margin-left:4px;">` : '';
+
+                    nameEl.innerHTML = `${nama} ${isVerified}`;
+                    bizEl.innerHTML = bisnis;
+                    
+                    document.getElementById('miniProfileImg').src = photoUrl;
+                    document.getElementById('miniProfileImg').onerror = function(){this.src = fallback};
+                    document.getElementById('postAvatarImg').src = photoUrl;
+                    document.getElementById('postAvatarImg').onerror = function(){this.src = fallback};
+                    document.getElementById('navAvatarImg').src = photoUrl;
+                    document.getElementById('navAvatarImg').onerror = function(){this.src = fallback};
+                    
+                    inputEl.placeholder = `Bagikan insight bisnis Anda hari ini, ${nama.split(' ')[0]}...`;
+                }
+            } else {
+                currentUserData = null;
+                nameEl.innerHTML = "Pengunjung Sitenexs";
+                bizEl.innerHTML = "Belum Login";
+                loginBtn.style.display = "block";
+                inputEl.placeholder = "Silakan login untuk mulai memposting diskusi...";
+            }
+        });
+
+        // --- Helper: Ambil Data User (Author) ---
+        async function getAuthorData(uid) {
+            if (userCache[uid]) return userCache[uid];
+            try {
+                const userDoc = await getDoc(doc(db, "users", uid));
+                if (userDoc.exists()) {
+                    userCache[uid] = userDoc.data();
+                    return userCache[uid];
+                }
+            } catch (e) { console.error("Gagal get author", e); }
+            return { namaLengkap: "Pengguna Anonim", bisnis: { nama: "Tidak diketahui" } };
+        }
+
+        // --- Helper: Format Waktu Relatif ---
+        function timeAgo(date) {
+            if (!date) return "Baru saja";
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return "Baru saja";
+            if (seconds < 3600) return Math.floor(seconds / 60) + " menit yang lalu";
+            if (seconds < 86400) return Math.floor(seconds / 3600) + " jam yang lalu";
+            return Math.floor(seconds / 86400) + " hari yang lalu";
+        }
+
+        // --- 2. RENDER POSTINGAN REAL-TIME ---
+        const feedContainer = document.getElementById('feed-container');
+        const q = query(collection(db, "community_posts"), orderBy("createdAt", "desc"), limit(30));
+
+        onSnapshot(q, async (snapshot) => {
+            if (snapshot.empty) {
+                feedContainer.innerHTML = '<p style="text-align:center; padding: 2rem; color:var(--text-muted);">Belum ada postingan. Jadilah yang pertama berdiskusi!</p>';
+                return;
+            }
+
+            let htmlString = "";
+            
+            // Loop data dari database
+            for (const documentSnapshot of snapshot.docs) {
+                const post = documentSnapshot.data();
+                const postId = documentSnapshot.id;
+                const author = await getAuthorData(post.uid);
+
+                const namaAuthor = author.namaLengkap || author.namaDepan || "Mitra Sitenexs";
+                const bisnisAuthor = author.bisnis?.nama || "UMKM";
+                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${post.uid}/profile-photo`;
+                const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaAuthor)}&background=2563eb&color=fff`;
+                
+                const isVerified = author.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon">` : '';
+                let badgeHTML = '';
+                if (author.isFounder || author.isDeveloper) {
+                    badgeHTML = `<span class="badge-admin"><i class="fas fa-shield-alt"></i> Pengembang</span>`;
+                } else if (author.paketLangganan && author.paketLangganan.toLowerCase() !== 'basic') {
+                    badgeHTML = `<span class="badge-premium"><i class="fas fa-crown"></i> PRO</span>`;
+                }
+
+                const postTime = post.createdAt ? timeAgo(post.createdAt.toDate()) : "Baru saja";
+                const textContent = (post.text || '').replace(/\n/g, '<br>');
+
+                // Logic Like
+                const myUid = currentUserData ? currentUserData.uid : null;
+                const isLiked = post.likedBy && post.likedBy.includes(myUid);
+                const likeIcon = isLiked ? 'fas fa-heart' : 'far fa-heart';
+                const likeColorClass = isLiked ? 'liked' : '';
+
+                const likesCount = post.likedBy ? post.likedBy.length : 0;
+                const commentsCount = post.commentsCount || 0;
+
+                htmlString += `
+                    <article class="card post-card" id="post-${postId}">
+                        <div class="post-header">
+                            <div class="post-author" onclick="window.location.href='https://sitenexs.com/community/profile?uid=${post.uid}'">
+                                <img src="${photoUrl}" class="post-author-img" onerror="this.src='${fallback}'">
+                                <div class="post-author-info">
+                                    <span class="author-name">${namaAuthor} ${isVerified} ${badgeHTML}</span>
+                                    <span class="author-meta"><i class="fas fa-store"></i> ${bisnisAuthor} • ${postTime}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="post-content">${textContent}</div>
+
+                        <div class="post-stats">
+                            <span id="like-count-text-${postId}"><i class="fas fa-heart text-muted"></i> ${likesCount} Suka</span>
+                            <span id="comment-count-text-${postId}">${commentsCount} Komentar</span>
+                        </div>
+
+                        <div class="post-actions">
+                            <button class="post-action-btn ${likeColorClass}" id="btn-like-${postId}" onclick="window.toggleLikeDB('${postId}')">
+                                <i class="${likeIcon}"></i> Suka
+                            </button>
+                            <button class="post-action-btn" onclick="window.toggleCommentUI('${postId}')">
+                                <i class="far fa-comment"></i> Komentar
+                            </button>
+                            <button class="post-action-btn" onclick="navigator.share({title:'Sitenexs Community', url: window.location.href})">
+                                <i class="fas fa-share"></i> Bagikan
+                            </button>
+                        </div>
+
+                        <!-- Kolom Komentar Tersembunyi -->
+                        <div class="comments-section" id="comment-sec-${postId}">
+                            <div class="comment-input-area">
+                                <img src="${currentUserData ? `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${currentUserData.uid}/profile-photo` : 'https://ui-avatars.com/api/?name=Guest&background=e2e8f0&color=475569'}" onerror="this.src='https://ui-avatars.com/api/?name=Anda&background=2563eb&color=fff'">
+                                <div class="comment-box">
+                                    <input type="text" placeholder="${currentUserData ? 'Tulis komentar balasan...' : 'Login untuk berkomentar'}" id="input-com-${postId}" ${currentUserData ? '' : 'disabled'}>
+                                    <button class="send-comment-btn" onclick="window.submitCommentDB('${postId}')"><i class="fas fa-paper-plane"></i></button>
+                                </div>
+                            </div>
+                            
+                            <div class="comment-thread" id="comment-list-${postId}">
+                                <!-- Komentar akan di-load ke sini saat tombol komentar diklik -->
+                                <div style="text-align:center; font-size:0.8rem; color:var(--text-muted);">Memuat komentar...</div>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }
+
+            feedContainer.innerHTML = htmlString;
+        });
+
+        // --- 3. BUAT POSTINGAN BARU ---
         const postInput = document.getElementById('postInput');
         const btnSubmit = document.getElementById('btnSubmitPost');
-        
-        if(postInput) {
-            postInput.addEventListener('input', function() {
-                if(this.value.trim().length > 0) {
-                    btnSubmit.removeAttribute('disabled');
-                } else {
-                    btnSubmit.setAttribute('disabled', 'true');
+
+        postInput.addEventListener('input', () => {
+            if(postInput.value.trim().length > 0 && currentUserData) {
+                btnSubmit.removeAttribute('disabled');
+            } else {
+                btnSubmit.setAttribute('disabled', 'true');
+            }
+        });
+
+        btnSubmit.addEventListener('click', async () => {
+            if (!currentUserData) return alert("Anda harus login untuk membuat postingan.");
+            const text = postInput.value.trim();
+            if (!text) return;
+
+            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btnSubmit.disabled = true;
+
+            try {
+                await addDoc(collection(db, "community_posts"), {
+                    uid: currentUserData.uid,
+                    text: text,
+                    likedBy: [],
+                    commentsCount: 0,
+                    createdAt: serverTimestamp()
+                });
+                postInput.value = '';
+                postInput.style.height = 'auto'; // Reset textarea height
+            } catch (e) {
+                console.error("Gagal posting", e);
+                alert("Terjadi kesalahan. Coba lagi.");
+            } finally {
+                btnSubmit.innerHTML = 'Posting';
+            }
+        });
+
+        // --- 4. LIKE POSTINGAN ---
+        window.toggleLikeDB = async (postId) => {
+            if (!currentUserData) return alert("Silakan login untuk menyukai postingan.");
+            
+            const postRef = doc(db, "community_posts", postId);
+            const btn = document.getElementById(`btn-like-${postId}`);
+            const isLiked = btn.classList.contains('liked');
+
+            // Optimistic UI Update (Update visualnya duluan biar ga nunggu loading lambat)
+            const icon = btn.querySelector('i');
+            const countText = document.getElementById(`like-count-text-${postId}`);
+            let currentCount = parseInt(countText.innerText.replace(/[^0-9]/g, '')) || 0;
+
+            if (isLiked) {
+                btn.classList.remove('liked');
+                icon.className = 'far fa-heart';
+                countText.innerHTML = `<i class="fas fa-heart text-muted"></i> ${currentCount - 1} Suka`;
+                
+                // Update ke Database
+                await updateDoc(postRef, { likedBy: arrayRemove(currentUserData.uid) });
+            } else {
+                btn.classList.add('liked');
+                icon.className = 'fas fa-heart';
+                countText.innerHTML = `<i class="fas fa-heart text-muted"></i> ${currentCount + 1} Suka`;
+                
+                // Update ke Database
+                await updateDoc(postRef, { likedBy: arrayUnion(currentUserData.uid) });
+            }
+        };
+
+        // --- 5. BUKA KOMENTAR & LOAD DATA KOMENTAR ---
+        // Variabel penanda apakah komentar di sebuah postingan sudah di-load agar tidak double baca DB
+        const loadedComments = {}; 
+
+        window.toggleCommentUI = (postId) => {
+            const section = document.getElementById(`comment-sec-${postId}`);
+            section.classList.toggle('show');
+            
+            if (section.classList.contains('show')) {
+                document.getElementById(`input-com-${postId}`).focus();
+                
+                // Load komentar dari database jika belum di-load
+                if (!loadedComments[postId]) {
+                    loadComments(postId);
                 }
+            }
+        };
+
+        async function loadComments(postId) {
+            const listContainer = document.getElementById(`comment-list-${postId}`);
+            const commentsQuery = query(collection(db, "community_posts", postId, "comments"), orderBy("createdAt", "asc"));
+            
+            // Listen realtime khusus untuk subkoleksi komentar postingan ini
+            onSnapshot(commentsQuery, async (snapshot) => {
+                loadedComments[postId] = true; // Tandai sudah diload
+                if (snapshot.empty) {
+                    listContainer.innerHTML = '<div style="text-align:center; font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">Jadilah yang pertama berkomentar.</div>';
+                    return;
+                }
+
+                let html = '';
+                for (const cDoc of snapshot.docs) {
+                    const comment = cDoc.data();
+                    const author = await getAuthorData(comment.uid);
+                    const namaAuthor = author.namaLengkap || author.namaDepan || "Pengguna";
+                    const photo = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${comment.uid}/profile-photo`;
+                    const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaAuthor)}&background=2563eb&color=fff`;
+                    const time = comment.createdAt ? timeAgo(comment.createdAt.toDate()) : "Baru saja";
+
+                    // Badge jika author komen adalah dirinya sendiri (User)
+                    const isMe = currentUserData && comment.uid === currentUserData.uid;
+                    const badgeMe = isMe ? `<span class="badge-premium" style="background:#dbeafe; color:#1d4ed8; padding:0 0.3rem;">Anda</span>` : '';
+
+                    html += `
+                        <div class="comment-item">
+                            <img src="${photo}" class="comment-avatar" onerror="this.src='${fallback}'">
+                            <div class="comment-content">
+                                <div class="comment-bubble">
+                                    <div class="name">${namaAuthor} ${badgeMe}</div>
+                                    ${comment.text}
+                                </div>
+                                <div class="comment-actions">
+                                    <span>${time}</span>
+                                    <span class="comment-action-btn" style="cursor:pointer;" onclick="document.getElementById('input-com-${postId}').value = '@${namaAuthor} '; document.getElementById('input-com-${postId}').focus();">Balas</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                listContainer.innerHTML = html;
             });
         }
 
-        // 2. Fungsi Toggle Like
-        function toggleLike(btnElement, countId) {
-            const countElement = document.getElementById(countId);
-            const icon = btnElement.querySelector('i');
+        // --- 6. KIRIM KOMENTAR ---
+        window.submitCommentDB = async (postId) => {
+            if (!currentUserData) return alert("Silakan login untuk membalas.");
+            const inputEl = document.getElementById(`input-com-${postId}`);
+            let text = inputEl.value.trim();
+            if (!text) return;
+
+            inputEl.disabled = true; // Kunci input sementara proses
             
-            // Ambil angka dari teks (misal: "24 Suka" -> 24)
-            let currentNum = parseInt(countElement.innerText.replace(/[^0-9]/g, '')) || 0;
-
-            if (btnElement.classList.contains('liked')) {
-                // Hapus Like
-                btnElement.classList.remove('liked');
-                icon.classList.remove('fas'); // Solid
-                icon.classList.add('far'); // Outline
-                currentNum--;
-            } else {
-                // Tambah Like
-                btnElement.classList.add('liked');
-                icon.classList.remove('far');
-                icon.classList.add('fas');
-                currentNum++;
-            }
-            
-            // Update UI Angka
-            countElement.innerHTML = `<i class="fas fa-heart text-muted"></i> ${currentNum} Suka`;
-        }
-
-        // 3. Fungsi Buka/Tutup Kolom Komentar
-        function toggleComment(sectionId) {
-            const section = document.getElementById(sectionId);
-            if (section) {
-                section.classList.toggle('show');
-                // Auto focus ke input saat dibuka
-                if(section.classList.contains('show')) {
-                    section.querySelector('input').focus();
-                }
-            }
-        }
-
-        // 4. Fungsi Balas (Reply To) -> Mengisi @nama di kotak komentar
-        function replyTo(username, inputId) {
-            const inputField = document.getElementById(inputId);
-            if (inputField) {
-                inputField.value = `@${username} `;
-                inputField.focus();
-            }
-        }
-
-        // 5. Fungsi Dummy Tambah Komentar ke UI (Buat Testing sebelum Firestore)
-        function addComment(postId) {
-            const inputField = document.getElementById(`input-com-${postId}`);
-            const commentText = inputField.value.trim();
-            
-            if (commentText === '') return;
-
-            const threadContainer = document.querySelector(`#comment-sec-${postId} .comment-thread`);
-            if(!threadContainer) return; // Jika blm ada thread, bisa di-handle utk create div baru
-
-            // Cek apakah balasan (mengandung @) - Hanya visualisasi regex ringan
-            let formattedText = commentText;
-            if(formattedText.startsWith('@')) {
-                const parts = formattedText.split(' ');
+            // Format mention (jika diawali @nama)
+            if(text.startsWith('@')) {
+                const parts = text.split(' ');
                 const mentioned = parts.shift();
-                formattedText = `<span style="color: var(--primary);">${mentioned}</span> ` + parts.join(' ');
+                text = `<span style="color: var(--primary); font-weight:600;">${mentioned}</span> ` + parts.join(' ');
             }
 
-            const newCommentHTML = `
-                <div class="comment-item" style="animation: pop 0.3s ease;">
-                    <img src="https://ui-avatars.com/api/?name=Syafaat+Nuryadi&background=2563eb&color=fff" class="comment-avatar">
-                    <div class="comment-content">
-                        <div class="comment-bubble">
-                            <div class="name">Syafaat Nuryadi <span class="badge-premium" style="background:#dbeafe; color:#1d4ed8">Anda</span></div>
-                            ${formattedText}
-                        </div>
-                        <div class="comment-actions">
-                            <span>Baru saja</span>
-                            <span class="comment-action-btn">Suka</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Jika balasan, masukkan ke class replies, jika tidak, masukkan biasa
-            if(commentText.startsWith('@') && threadContainer.querySelector('.replies')) {
-                threadContainer.querySelector('.replies').insertAdjacentHTML('beforeend', newCommentHTML);
-            } else {
-                threadContainer.insertAdjacentHTML('beforeend', newCommentHTML);
-            }
-
-            inputField.value = ''; // Kosongkan input
-        }
-
-        // ==========================================
-        // STRUKTUR KONEKSI FIREBASE (Siap Dipakai)
-        // ==========================================
-        /*
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
-        
-        // ... (inisialisasi DB seperti di index.html) ...
-
-        // A. Fungsi Create Post
-        btnSubmit.addEventListener('click', async () => {
-            const text = postInput.value;
-            // set disabled true saat loading
             try {
-                await addDoc(collection(db, "community_posts"), {
-                    uid: "uid_user_login", 
+                // Tambah ke sub-koleksi comments
+                await addDoc(collection(db, "community_posts", postId, "comments"), {
+                    uid: currentUserData.uid,
                     text: text,
-                    likes: 0,
                     createdAt: serverTimestamp()
                 });
-                postInput.value = ''; // bersihkan form
-            } catch (e) {
-                console.error(e);
-            }
-        });
 
-        // B. Fungsi Render Realtime (onSnapshot)
-        const q = query(collection(db, "community_posts"), orderBy("createdAt", "desc"));
-        onSnapshot(q, (snapshot) => {
-            // Bersihkan #feed-container, loop snapshot.docs
-            // Render HTML <article class="post-card"> menggunakan data dari doc.data()
-            // Mirip logika render harga di index.html
-        });
-        */
+                // Update jumlah komentar di postingan utama
+                const postRef = doc(db, "community_posts", postId);
+                const postDoc = await getDoc(postRef);
+                const currentCount = postDoc.data().commentsCount || 0;
+                await updateDoc(postRef, { commentsCount: currentCount + 1 });
+
+                inputEl.value = '';
+            } catch (e) {
+                console.error("Gagal kirim komentar", e);
+                alert("Gagal membalas komentar.");
+            } finally {
+                inputEl.disabled = false;
+                inputEl.focus();
+            }
+        };
+
     </script>
 </body>
 </html>
