@@ -15,7 +15,7 @@
             --primary: #2563eb; --primary-dark: #1d4ed8; --primary-light: #eff6ff;
             --bg-body: #f8fafc; --bg-card: #ffffff; --bg-alt: #f1f5f9;
             --text-main: #0f172a; --text-muted: #475569;
-            --border-subtle: #e2e8f0;
+            --border-subtle: #e2e8f0; --border-medium: #cbd5e1;
             --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
             --radius-md: 0.625rem; --radius-lg: 1rem; --radius-full: 9999px;
             --transition: all 0.3s ease;
@@ -71,9 +71,9 @@
         /* Comments Section */
         .comments-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border-subtle); display: none; }
         .comment-item { display: flex; gap: 0.75rem; margin-bottom: 1rem; background: var(--bg-alt); padding: 0.75rem; border-radius: var(--radius-md); }
-        .comment-avatar { width: 30px; height: 30px; border-radius: 50%; }
+        .comment-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
         .comment-content { flex: 1; }
-        .comment-author { font-weight: 700; font-size: 0.85rem; margin-bottom: 0.2rem; }
+        .comment-author { font-weight: 700; font-size: 0.85rem; margin-bottom: 0.2rem; color: var(--text-main); }
         .comment-text { font-size: 0.9rem; color: var(--text-muted); }
         
         .comment-input-box { display: flex; gap: 0.5rem; margin-top: 1rem; }
@@ -93,6 +93,7 @@
         
         <!-- Box Bikin Postingan -->
         <div class="create-post-card" id="createPostBox">
+            <!-- Overlay Jika Belum Login -->
             <div class="login-overlay" id="loginOverlay">
                 <i class="fas fa-lock" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem;"></i>
                 <p style="font-weight: 600; color: var(--text-main);">Masuk untuk mulai berinteraksi</p>
@@ -131,14 +132,13 @@
 
     </div>
 
-    <!-- FIREBASE MODULES -->
+    <!-- FIREBASE MODULES (Hanya Firestore & Storage, Tanpa Auth) -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc, arrayUnion, arrayRemove, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
         import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-storage.js';
 
-        // Konfigurasi Database Sitenexs Anda
+        // Konfigurasi Database Sitenexs
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
             authDomain: 'sitenexs-62919.firebaseapp.com',
@@ -150,15 +150,57 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
         const storage = getStorage(app);
 
-        // State User Login
-        let currentUser = null;
         const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
         const avatarBucket = 'profile-photos';
 
-        // Elemen DOM Create Post
+        // ============================================
+        // 1. CEK LOGIN DARI LOKAL (COOKIE / LOCAL STORAGE)
+        // ============================================
+        // Mengecek status login murni dari cookie seperti di index.html
+        const isLoggedInCookie = document.cookie.includes('isLoggedIn=true');
+        // Atau mengecek dari localStorage jika Anda menyimpannya di sana
+        const isLoggedInStorage = localStorage.getItem('isLoggedIn') === 'true';
+        
+        let currentUser = null;
+
+        if (isLoggedInCookie || isLoggedInStorage) {
+            // User dianggap login. Kita ambil detail datanya dari localStorage.
+            // Pastikan saat user login, Anda menyimpan data ini di localStorage.
+            currentUser = {
+                uid: localStorage.getItem('user_uid') || 'uid_anonim_' + Math.floor(Math.random() * 10000),
+                actualName: localStorage.getItem('user_name') || 'Mitra Sitenexs',
+                role: localStorage.getItem('user_role') || 'Anggota Komunitas'
+            };
+
+            document.getElementById('loginOverlay').style.display = 'none';
+
+            // Tampilkan Nama & Role ke Kotak Posting
+            document.getElementById('myName').innerHTML = `
+                ${currentUser.actualName} 
+                <span style="font-size:0.65rem; background:var(--primary-light); color:var(--primary); padding:0.15rem 0.5rem; border-radius:10px; margin-left:0.4rem; font-weight:700;">
+                    <i class="fas fa-check-circle"></i> ${currentUser.role}
+                </span>
+            `;
+            
+            // Render Avatar dari Supabase
+            const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(currentUser.uid)}/profile-photo`;
+            const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.actualName)}&background=2563eb&color=fff`;
+            
+            const avatarEl = document.getElementById('myAvatar');
+            avatarEl.src = photoUrl;
+            avatarEl.onerror = () => { avatarEl.src = fallbackUrl; };
+
+        } else {
+            // Jika belum login di sistem lokal, tampilkan overlay
+            currentUser = null;
+            document.getElementById('loginOverlay').style.display = 'flex';
+        }
+
+        // ============================================
+        // 2. PREVIEW FOTO POSTINGAN
+        // ============================================
         const postText = document.getElementById('postText');
         const imageUpload = document.getElementById('imageUpload');
         const imagePreviewContainer = document.getElementById('imagePreviewContainer');
@@ -168,29 +210,6 @@
         const postsFeed = document.getElementById('postsFeed');
         let currentBase64Image = null;
 
-        // 1. CEK STATUS LOGIN USER
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                document.getElementById('loginOverlay').style.display = 'none';
-                
-                // Set Nama & Foto Profil di Kotak Posting
-                const userName = user.displayName || "Mitra Sitenexs";
-                document.getElementById('myName').innerText = userName;
-                
-                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo`;
-                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=2563eb&color=fff`;
-                
-                const avatarEl = document.getElementById('myAvatar');
-                avatarEl.src = photoUrl;
-                avatarEl.onerror = () => { avatarEl.src = fallbackUrl; };
-            } else {
-                currentUser = null;
-                document.getElementById('loginOverlay').style.display = 'flex';
-            }
-        });
-
-        // 2. PREVIEW FOTO POSTINGAN
         postText.addEventListener('input', checkInput);
         function checkInput() {
             if (postText.value.trim().length > 0 || currentBase64Image !== null) {
@@ -205,7 +224,7 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    currentBase64Image = event.target.result; // Base64
+                    currentBase64Image = event.target.result;
                     imagePreview.src = currentBase64Image;
                     imagePreviewContainer.style.display = 'block';
                     checkInput();
@@ -222,7 +241,9 @@
             checkInput();
         });
 
+        // ============================================
         // 3. KIRIM POSTINGAN KE DATABASE FIREBASE
+        // ============================================
         btnPost.addEventListener('click', async function() {
             if (!currentUser) return;
             
@@ -231,7 +252,6 @@
             
             try {
                 let finalImageUrl = null;
-                const userName = currentUser.displayName || "Mitra Sitenexs";
 
                 // Jika ada foto, upload dulu ke Firebase Storage
                 if (currentBase64Image) {
@@ -243,11 +263,12 @@
                 // Simpan text & data ke Firestore
                 await addDoc(collection(db, "komunitas_posts"), {
                     uid: currentUser.uid,
-                    authorName: userName,
+                    authorName: currentUser.actualName,
+                    role: currentUser.role,
                     content: postText.value.trim(),
                     imageUrl: finalImageUrl,
-                    likes: [], // Array UID yang me-like
-                    comments: [], // Array komentar
+                    likes: [], 
+                    comments: [], 
                     createdAt: serverTimestamp()
                 });
 
@@ -256,14 +277,16 @@
                 removeImageBtn.click();
             } catch (error) {
                 console.error("Gagal memposting: ", error);
-                alert("Gagal mengirim postingan. Coba lagi.");
+                alert("Gagal mengirim postingan. Pastikan aturan database Firestore mengizinkan penulisan.");
             } finally {
                 btnPost.innerHTML = 'Posting';
                 checkInput();
             }
         });
 
-        // 4. BACA DATA REALTIME DARI FIREBASE (Semua user lihat otomatis)
+        // ============================================
+        // 4. BACA DATA REALTIME DARI FIREBASE (FEED)
+        // ============================================
         const q = query(collection(db, "komunitas_posts"), orderBy("createdAt", "desc"));
         
         onSnapshot(q, (snapshot) => {
@@ -295,7 +318,6 @@
                 const isLikedClass = isLikedByMe ? 'liked' : '';
                 const likeIcon = isLikedByMe ? 'fas fa-heart' : 'far fa-heart';
 
-                // Logika Gambar Postingan
                 const imageHTML = post.imageUrl ? `<img src="${post.imageUrl}" class="post-image" loading="lazy" alt="Foto">` : '';
 
                 // Logika Komentar
@@ -314,14 +336,20 @@
                     `;
                 });
 
-                // Bungkus HTML per postingan
+                const postRole = post.role || 'Anggota Komunitas';
+
                 const postHTML = `
                     <div class="post-card">
                         <div class="post-header">
                             <div class="post-author-info">
                                 <img src="${photoUrl}" class="avatar" alt="${post.authorName}" onerror="this.onerror=null; this.src='${fallbackUrl}';">
                                 <div>
-                                    <div class="post-author-name">${post.authorName} <i class="fas fa-check-circle" style="color:var(--primary); font-size:0.8rem;"></i></div>
+                                    <div class="post-author-name">
+                                        ${post.authorName} 
+                                        <span style="font-size:0.65rem; background:var(--bg-alt); color:var(--text-muted); padding:0.15rem 0.5rem; border-radius:10px; font-weight:600;">
+                                            ${postRole}
+                                        </span>
+                                    </div>
                                     <div class="post-time">${timeString}</div>
                                 </div>
                             </div>
@@ -339,7 +367,6 @@
                             </button>
                         </div>
 
-                        <!-- Area Komentar -->
                         <div class="comments-section" id="comments-${postId}">
                             ${commentsHTML}
                             <div class="comment-input-box">
@@ -353,7 +380,9 @@
             });
         });
 
-        // 5. FUNGSI LIKE POSTINGAN (Disematkan ke Window agar bisa dipanggil HTML)
+        // ============================================
+        // 5. FUNGSI LIKE POSTINGAN
+        // ============================================
         window.toggleLike = async function(postId, currentlyLiked) {
             if (!currentUser) {
                 alert("Silakan masuk/daftar terlebih dahulu untuk menyukai postingan.");
@@ -369,7 +398,9 @@
             }
         };
 
+        // ============================================
         // 6. FUNGSI BUKA TUTUP KOMENTAR
+        // ============================================
         window.toggleComment = function(postId) {
             const section = document.getElementById(`comments-${postId}`);
             if(section.style.display === 'block') {
@@ -380,7 +411,9 @@
             }
         };
 
+        // ============================================
         // 7. FUNGSI KIRIM KOMENTAR
+        // ============================================
         window.sendComment = async function(postId) {
             if (!currentUser) {
                 alert("Silakan masuk/daftar terlebih dahulu untuk berkomentar.");
@@ -396,12 +429,11 @@
 
             try {
                 const postRef = doc(db, "komunitas_posts", postId);
-                const userName = currentUser.displayName || "Mitra Sitenexs";
                 
                 await updateDoc(postRef, {
                     comments: arrayUnion({
                         uid: currentUser.uid,
-                        name: userName,
+                        name: currentUser.actualName,
                         text: text,
                         timestamp: Date.now()
                     })
