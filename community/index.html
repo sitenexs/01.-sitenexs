@@ -320,7 +320,7 @@
     <!-- SCRIPT FIREBASE & SUPABASE INTEGRATION -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+        import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
         import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
         const firebaseConfig = {
@@ -338,6 +338,9 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        
+        setPersistence(auth, browserLocalPersistence).catch(err => console.log(err));
+
         const forumCollection = collection(db, "forum_posts");
 
         let currentUserData = null;
@@ -348,13 +351,12 @@
         const avatarImg = document.getElementById('currentUserAvatar');
         const promptText = document.getElementById('createPostPromptText');
 
-        // Fungsi sinkronisasi profil pengguna (menyamakan struktur data seperti di profil.html)
-        async function fetchUserProfile(user) {
+        async function fetchUserProfile(uid, fallbackName = "Mitra Sitenexs") {
             try {
-                const userDocRef = doc(db, "users", user.uid);
+                const userDocRef = doc(db, "users", uid);
                 const userDocSnap = await getDoc(userDocRef);
 
-                let namaLengkap = user.displayName || "Mitra Sitenexs";
+                let namaLengkap = fallbackName;
                 let isVerified = false;
 
                 if (userDocSnap.exists()) {
@@ -363,20 +365,19 @@
                     isVerified = d.isVerified || false;
                 }
 
-                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo?t=${Date.now()}`;
+                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo?t=${Date.now()}`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff`;
 
                 currentUserData = {
-                    uid: user.uid,
+                    uid: uid,
                     nama: namaLengkap,
                     isVerified: isVerified,
                     avatar: photoUrl,
                     fallbackAvatar: fallbackUrl
                 };
 
-                // Menyimpan status sesi ke localStorage agar halaman komunitas mengenali login secara instan
                 localStorage.setItem('sitenexs_logged_in', 'true');
-                localStorage.setItem('sitenexs_uid', user.uid);
+                localStorage.setItem('sitenexs_uid', uid);
 
                 avatarImg.src = photoUrl;
                 avatarImg.onerror = () => { avatarImg.src = fallbackUrl; };
@@ -386,31 +387,42 @@
             }
         }
 
-        const isLoggedLocal = localStorage.getItem('sitenexs_logged_in') === 'true';
+        // DETEKSI GANDA: Tangkap dari URL parameter (?uid=...) ATAU Firebase Auth
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlUid = urlParams.get('uid');
 
-        // Pengecekan Sesi Masuk (Auth)
+        if (urlUid) {
+            localStorage.setItem('sitenexs_uid', urlUid);
+            localStorage.setItem('sitenexs_logged_in', 'true');
+            fetchUserProfile(urlUid);
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                await fetchUserProfile(user);
-            } else {
-                if (!isLoggedLocal) {
+                await fetchUserProfile(user.uid, user.displayName);
+            } else if (!urlUid) {
+                const savedUid = localStorage.getItem('sitenexs_uid');
+                const isLogged = localStorage.getItem('sitenexs_logged_in') === 'true';
+
+                if (isLogged && savedUid) {
+                    await fetchUserProfile(savedUid);
+                } else {
                     currentUserData = null;
                     avatarImg.src = "https://ui-avatars.com/api/?name=Tamu&background=cbd5e1&color=fff";
                     promptText.innerText = "Masuk untuk membuat postingan diskusi...";
-                } else if (auth.currentUser) {
-                    await fetchUserProfile(auth.currentUser);
                 }
             }
         });
 
         window.checkAuthAndOpenModal = async function() {
-            const activeLogged = localStorage.getItem('sitenexs_logged_in') === 'true';
+            const savedUid = localStorage.getItem('sitenexs_uid');
+            const isLogged = localStorage.getItem('sitenexs_logged_in') === 'true';
 
-            if (!currentUserData && auth.currentUser) {
-                await fetchUserProfile(auth.currentUser);
+            if (!currentUserData && (auth.currentUser || savedUid)) {
+                await fetchUserProfile(auth.currentUser ? auth.currentUser.uid : savedUid);
             }
 
-            if (!activeLogged && !currentUserData && !auth.currentUser) {
+            if (!currentUserData && !auth.currentUser && !isLogged && !savedUid) {
                 alert("Anda harus masuk (login) ke akun Sitenexs terlebih dahulu untuk membuat postingan.");
                 window.location.href = "https://account.sitenexs.com/sign-in/";
                 return;
@@ -496,8 +508,19 @@
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const activeLogged = localStorage.getItem('sitenexs_logged_in') === 'true';
-            if (!activeLogged && !currentUserData && !auth.currentUser) return;
+            
+            const savedUid = localStorage.getItem('sitenexs_uid');
+            const isLogged = localStorage.getItem('sitenexs_logged_in') === 'true';
+
+            if (!currentUserData && (auth.currentUser || savedUid)) {
+                await fetchUserProfile(auth.currentUser ? auth.currentUser.uid : savedUid);
+            }
+
+            if (!currentUserData && !auth.currentUser && !isLogged && !savedUid) {
+                alert("Sesi login berakhir. Silakan masuk kembali.");
+                window.location.href = "https://account.sitenexs.com/sign-in/";
+                return;
+            }
 
             const category = document.getElementById('postCategory').value;
             const title = document.getElementById('postTitle').value.trim();
@@ -509,9 +532,10 @@
             submitBtn.disabled = true;
 
             try {
-                const uidVal = currentUserData ? currentUserData.uid : (auth.currentUser ? auth.currentUser.uid : localStorage.getItem('sitenexs_uid'));
-                const nameVal = currentUserData ? currentUserData.nama : (auth.currentUser ? auth.currentUser.displayName : 'Mitra Sitenexs');
-                const verifiedVal = currentUserData ? currentUserData.isVerified : false;
+                const activeUser = currentUserData || auth.currentUser;
+                const uidVal = activeUser ? activeUser.uid : savedUid;
+                const nameVal = activeUser ? activeUser.nama : "Mitra Sitenexs";
+                const verifiedVal = activeUser ? activeUser.isVerified : false;
 
                 await addDoc(forumCollection, {
                     authorUid: uidVal,
