@@ -48,7 +48,7 @@
         .btn-post:disabled { background: #94a3b8; cursor: not-allowed; }
 
         /* Login Overlay */
-        .login-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); backdrop-filter: blur(2px); display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: var(--radius-lg); z-index: 10; display: none; }
+        .login-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); backdrop-filter: blur(2px); display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: var(--radius-lg); z-index: 10; }
         .btn-login { background: var(--primary); color: white; text-decoration: none; padding: 0.6rem 1.5rem; border-radius: var(--radius-full); font-weight: 700; margin-top: 0.5rem; }
 
         /* Post Card */
@@ -134,14 +134,13 @@
 
     <script type="module">
         // ============================================
-        // IMPORT FIREBASE LENGKAP (TERMASUK AUTH & GETDOC)
+        // IMPORT FIREBASE
         // ============================================
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc, getDoc, arrayUnion, arrayRemove, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
         import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-storage.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
 
-        // Konfigurasi Database Sitenexs
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
             authDomain: 'sitenexs-62919.firebaseapp.com',
@@ -162,68 +161,80 @@
         let currentUser = null;
 
         // ============================================
-        // 1. CEK STATUS LOGIN LANGSUNG DARI PERANGKAT (FIREBASE AUTH)
+        // 1. BUKA KUNCI MENGGUNAKAN DATA LOKAL / COOKIE
         // ============================================
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                // Sembunyikan layar blokir
-                document.getElementById('loginOverlay').style.display = 'none';
-                document.getElementById('myName').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat profil asli...';
+        const isLoggedInLocal = document.cookie.includes('isLoggedIn=true') || localStorage.getItem('isLoggedIn') === 'true';
+        const localUid = localStorage.getItem('user_uid'); 
 
-                try {
-                    // Ambil detail data profil asli dari database Firestore
-                    const userDoc = await getDoc(doc(db, "users", user.uid));
+        // Fungsi untuk mengambil data dan membuka UI
+        async function unlockUI(uid) {
+            document.getElementById('loginOverlay').style.display = 'none'; // Paksa buka
+            
+            try {
+                const userDoc = await getDoc(doc(db, "users", uid));
+                let namaLengkap = "Mitra Sitenexs";
+                let roleUser = "Anggota Komunitas";
+
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    namaLengkap = data.namaLengkap || data.namaDepan + (data.namaBelakang ? ' ' + data.namaBelakang : '') || namaLengkap;
                     
-                    let namaLengkap = user.displayName || "Mitra Sitenexs";
-                    let roleUser = "Anggota Komunitas";
-
-                    if (userDoc.exists()) {
-                        const data = userDoc.data();
-                        namaLengkap = data.namaLengkap || data.namaDepan + (data.namaBelakang ? ' ' + data.namaBelakang : '') || namaLengkap;
-                        
-                        if (data.isFounder) {
-                            roleUser = "Founder Sitenexs";
-                        } else if (data.isDeveloper) {
-                            roleUser = data.jabatanPengembang || "Pengembang Sitenexs";
-                        } else {
-                            roleUser = data.bisnis?.nama || "Mitra UMKM";
-                        }
+                    if (data.isFounder) {
+                        roleUser = "Founder Sitenexs";
+                    } else if (data.isDeveloper) {
+                        roleUser = data.jabatanPengembang || "Pengembang Sitenexs";
+                    } else {
+                        roleUser = data.bisnis?.nama || "Mitra UMKM";
                     }
-
-                    // Simpan ke variabel global
-                    currentUser = {
-                        uid: user.uid,
-                        actualName: namaLengkap,
-                        role: roleUser
-                    };
-
-                    // Tampilkan Nama & Role ke Kotak Posting
-                    document.getElementById('myName').innerHTML = `
-                        ${namaLengkap} 
-                        <span style="font-size:0.65rem; background:var(--primary-light); color:var(--primary); padding:0.15rem 0.5rem; border-radius:10px; margin-left:0.4rem; font-weight:700;">
-                            <i class="fas ${userDoc.exists() && userDoc.data().isVerified ? 'fa-check-circle' : 'fa-user'}"></i> ${roleUser}
-                        </span>
-                    `;
-                    
-                    // Render Avatar Asli dari Supabase
-                    const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo`;
-                    const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff`;
-                    
-                    const avatarEl = document.getElementById('myAvatar');
-                    avatarEl.src = photoUrl;
-                    avatarEl.onerror = () => { avatarEl.src = fallbackUrl; };
-
-                } catch (error) {
-                    console.error("Gagal menarik profil:", error);
-                    currentUser = { uid: user.uid, actualName: user.displayName || "Mitra Sitenexs", role: "Anggota Komunitas" };
-                    document.getElementById('myName').innerText = currentUser.actualName;
                 }
 
-            } else {
-                currentUser = null;
-                document.getElementById('loginOverlay').style.display = 'flex';
+                currentUser = {
+                    uid: uid,
+                    actualName: namaLengkap,
+                    role: roleUser
+                };
+
+                document.getElementById('myName').innerHTML = `
+                    ${namaLengkap} 
+                    <span style="font-size:0.65rem; background:var(--primary-light); color:var(--primary); padding:0.15rem 0.5rem; border-radius:10px; margin-left:0.4rem; font-weight:700;">
+                        <i class="fas ${userDoc.exists() && userDoc.data().isVerified ? 'fa-check-circle' : 'fa-user'}"></i> ${roleUser}
+                    </span>
+                `;
+                
+                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo`;
+                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff`;
+                
+                const avatarEl = document.getElementById('myAvatar');
+                avatarEl.src = photoUrl;
+                avatarEl.onerror = () => { avatarEl.src = fallbackUrl; };
+
+            } catch (error) {
+                console.error("Gagal menarik profil:", error);
+                currentUser = { uid: uid, actualName: "Mitra Sitenexs", role: "Anggota Komunitas" };
+                document.getElementById('myName').innerText = currentUser.actualName;
             }
-        });
+        }
+
+        // Semak jika ada cookie atau data lokal, terus buka kunci
+        if (isLoggedInLocal) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            if (localUid) {
+                unlockUI(localUid);
+            } else {
+                // Fallback jika tiada UID dalam local storage
+                currentUser = { uid: "anon_" + Date.now(), actualName: "Mitra Sitenexs", role: "Anggota Komunitas" };
+                document.getElementById('myName').innerText = "Mitra Sitenexs";
+            }
+        } else {
+            // Backup menggunakan Firebase Auth jika tiada data lokal
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    unlockUI(user.uid);
+                } else {
+                    document.getElementById('loginOverlay').style.display = 'flex';
+                }
+            });
+        }
 
         // ============================================
         // 2. PREVIEW FOTO POSTINGAN
@@ -301,7 +312,7 @@
                 removeImageBtn.click();
             } catch (error) {
                 console.error("Gagal memposting: ", error);
-                alert("Gagal mengirim postingan. Pastikan database mengizinkan akses tulis.");
+                alert("Gagal mengirim postingan. Pastikan aturan Firebase membenarkan kebenaran menulis.");
             } finally {
                 btnPost.innerHTML = 'Posting';
                 checkInput();
@@ -405,7 +416,7 @@
         // ============================================
         window.toggleLike = async function(postId, currentlyLiked) {
             if (!currentUser) {
-                alert("Silakan masuk/daftar terlebih dahulu untuk menyukai postingan.");
+                alert("Sila log masuk/daftar terlebih dahulu untuk menyukai postingan.");
                 window.location.href = "https://account.sitenexs.com/sign-in/";
                 return;
             }
@@ -436,7 +447,7 @@
         // ============================================
         window.sendComment = async function(postId) {
             if (!currentUser) {
-                alert("Silakan masuk/daftar terlebih dahulu untuk berkomentar.");
+                alert("Sila log masuk/daftar terlebih dahulu untuk berkomentar.");
                 window.location.href = "https://account.sitenexs.com/sign-in/";
                 return;
             }
@@ -461,7 +472,7 @@
                 
                 inputEl.value = '';
             } catch (error) {
-                console.error("Gagal kirim komentar", error);
+                console.error("Gagal menghantar komen", error);
             } finally {
                 inputEl.disabled = false;
             }
