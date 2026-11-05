@@ -174,8 +174,7 @@
                 <span>Akun Saya</span>
             </a>
             <div class="nav-actions">
-                <a href="https://sitenexs.com/forum/" class="btn btn-secondary btn-sm"><i class="fas fa-comments"></i> Forum</a>
-                <button onclick="handleLogout()" class="btn btn-danger btn-sm"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+                <a href="https://sitenexs.com/community/" class="btn btn-secondary btn-sm"><i class="fas fa-comments"></i> Komunitas</a>
             </div>
         </div>
     </header>
@@ -252,6 +251,13 @@
                     <p style="margin-top: 0.5rem;">Memuat daftar postingan Anda...</p>
                 </div>
             </div>
+        </div>
+
+        <!-- TOMBOL KELUAR DI BAGIAN PALING BAWAH -->
+        <div style="margin-top: 2rem;">
+            <button onclick="handleLogout()" class="btn btn-danger" style="width: 100%; padding: 0.85rem; font-size: 0.95rem; justify-content: center; border-radius: var(--radius-lg);">
+                <i class="fas fa-sign-out-alt"></i> Keluar dari Akun & Kembali ke Menu Utama
+            </button>
         </div>
 
     </main>
@@ -479,13 +485,11 @@
             }
         }
 
-        // Fungsi Hapus Postingan
         window.deletePost = async function(postId) {
             if (confirm("Apakah Anda yakin ingin menghapus diskusi ini? Tindakan ini tidak dapat dibatalkan.")) {
                 try {
                     await deleteDoc(doc(db, "forum_posts", postId));
                     showAlert("Diskusi berhasil dihapus!");
-                    // Refresh data postingan
                     if (currentUid) {
                         loadUserPosts(currentUid);
                     }
@@ -503,7 +507,8 @@
                 try {
                     await signOut(auth);
                 } catch(e) {}
-                window.location.replace("https://account.sitenexs.com/sign-in/");
+                // Mengarahkan ke menu utama Sitenexs
+                window.location.replace("https://sitenexs.com/");
             }
         }
     </script>
