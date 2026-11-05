@@ -3,9 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Komunitas Sitenexs — Ruang Diskusi UMKM Indonesia</title>
+    <title>Komunitas & Direktori Mitra — Sitenexs</title>
     
-    <meta name="description" content="Bergabunglah dengan komunitas Sitenexs. Tempat berbagi insight, diskusi bisnis, dan networking antar pelaku UMKM.">
+    <!-- Meta SEO -->
+    <meta name="description" content="Jelajahi direktori komunitas dan pelaku UMKM Indonesia yang telah bergabung serta bertransformasi digital bersama Sitenexs.">
+    <meta name="keywords" content="Komunitas Sitenexs, Direktori UMKM, Mitra Sitenexs, Digitalisasi UMKM Indonesia">
+    <meta name="author" content="SiteNexs">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://sitenexs.com/community">
+
+    <!-- Open Graph / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sitenexs.com/community">
+    <meta property="og:title" content="Komunitas & Direktori Mitra — Sitenexs">
+    <meta property="og:description" content="Temukan jaringan pelaku usaha mikro, kecil, dan menengah serta pengembang yang tergabung dalam ekosistem Sitenexs.">
+    <meta property="og:image" content="https://sitenexs.com/assets/logo/logo.png">
+
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://sitenexs.com/assets/logo/logo.png">
 
     <!-- Google Fonts: Plus Jakarta Sans -->
@@ -17,225 +31,606 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* === VARIABEL WARNA === */
         :root {
             --primary: #2563eb;
             --primary-dark: #1d4ed8;
             --primary-light: #eff6ff;
             --accent: #10b981;
-            --bg-body: #f1f5f9;
+            --bg-body: #f8fafc;
             --bg-card: #ffffff;
-            --bg-alt: #f8fafc;
+            --bg-alt: #f1f5f9;
             --text-main: #0f172a;
             --text-muted: #475569;
             --border-subtle: #e2e8f0;
             --border-medium: #cbd5e1;
+            --border-accent: #93c5fd;
             --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
             --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 15px 30px -5px rgba(15, 23, 42, 0.08);
             --radius-sm: 0.375rem;
             --radius-md: 0.625rem;
             --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
             --radius-full: 9999px;
-            --transition: all 0.2s ease;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-body); color: var(--text-main); line-height: 1.5; -webkit-font-smoothing: antialiased; }
-        a { text-decoration: none; color: inherit; cursor: pointer; }
-        button, input, textarea { font-family: inherit; outline: none; border: none; background: none; }
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 15px;
+            width: 100%;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            width: 100%;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* BACKGROUND PATTERNS */
+        .bg-grid-pattern {
+            background-image: 
+                linear-gradient(to right, rgba(37, 99, 235, 0.06) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(37, 99, 235, 0.06) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
         
-        /* === NAVBAR === */
-        #navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: rgba(255, 255, 255, 0.98); border-bottom: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm); }
-        .nav-container { display: flex; align-items: center; justify-content: space-between; height: 70px; max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
-        .logo { display: flex; align-items: center; gap: 0.75rem; font-weight: 800; font-size: 1.2rem; color: var(--text-main); }
-        .logo-img { height: 36px; width: 36px; border-radius: var(--radius-full); object-fit: cover; }
+        .bg-gradient-soft {
+            background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
+        }
+
+        .page-section { 
+            position: relative;
+            width: 100%;
+            padding: 5.5rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            scroll-margin-top: 70px;
+        }
+
+        /* UTILITIES */
+        .text-primary { color: var(--primary); }
+        .text-accent { color: var(--accent); }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border-radius: var(--radius-full);
+            transition: var(--transition);
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1.25rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-secondary {
+            background-color: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-medium);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* NAVBAR */
+        #navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 75px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--text-main);
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-img {
+            height: 40px;
+            width: 40px;
+            border-radius: var(--radius-full);
+            object-fit: cover;
+            border: 2px solid #fff;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2.25rem;
+            font-size: 1.05rem; 
+            font-weight: 600;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary);
+        }
         
-        .nav-search { flex: 1; max-width: 350px; margin: 0 2rem; position: relative; display: none; }
-        @media (min-width: 768px) { .nav-search { display: block; } }
-        .nav-search input { width: 100%; background: var(--bg-body); border: 1px solid var(--border-subtle); padding: 0.5rem 1rem 0.5rem 2.5rem; border-radius: var(--radius-full); font-size: 0.9rem; color: var(--text-main); }
-        .nav-search i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem; }
+        .nav-divider {
+            width: 1px;
+            height: 20px;
+            background-color: var(--border-medium);
+        }
+
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-main);
+            padding: 0.4rem 0.8rem;
+            transition: var(--transition);
+        }
         
-        .nav-actions { display: flex; align-items: center; gap: 1rem; }
-        .nav-icon-btn { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-muted); background: var(--bg-alt); font-size: 1.1rem; transition: var(--transition); cursor: pointer; }
-        .nav-icon-btn:hover { background: var(--border-subtle); color: var(--primary); }
-        .nav-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary-light); cursor: pointer; object-fit: cover; }
-
-        /* === LAYOUT KOMUNITAS === */
-        .community-container { max-width: 1200px; margin: 90px auto 2rem auto; padding: 0 1rem; display: grid; gap: 1.5rem; grid-template-columns: 1fr; align-items: start; }
-        @media (min-width: 768px) { .community-container { grid-template-columns: 280px 1fr; } }
-        @media (min-width: 1024px) { .community-container { grid-template-columns: 260px 1fr 300px; padding: 0 1.5rem; } }
-
-        .sidebar { position: sticky; top: 90px; display: none; flex-direction: column; gap: 1.25rem; }
-        @media (min-width: 768px) { .left-sidebar { display: flex; } }
-        @media (min-width: 1024px) { .right-sidebar { display: flex; } }
-
-        .card { background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm); padding: 1.25rem; }
+        #mobile-menu {
+            display: none;
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            box-shadow: var(--shadow-md);
+        }
         
-        /* Widget Profil Mini */
-        .mini-profile { text-align: center; }
-        .mini-profile-banner { height: 70px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); margin: -1.25rem -1.25rem 0 -1.25rem; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
-        .mini-profile-img { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #fff; margin-top: -35px; object-fit: cover; background: #fff; }
-        .mini-profile-name { font-weight: 800; font-size: 1.05rem; margin-top: 0.5rem; color: var(--text-main); display: flex; justify-content: center; align-items: center; gap: 0.25rem;}
-        .mini-profile-biz { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; }
+        #mobile-menu.show {
+            display: block;
+            animation: slideDown 0.3s ease forwards;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #mobile-menu a.nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        /* HEADER SECTION */
+        .community-hero {
+            padding-top: 140px;
+            padding-bottom: 3rem;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            color: var(--primary);
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+            padding: 0.3rem 1rem;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: var(--radius-full);
+            border: 1px solid rgba(37, 99, 235, 0.18);
+        }
+
+        .section-title {
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+        }
+
+        .section-desc {
+            font-size: 1rem;
+            color: var(--text-muted);
+            max-width: 650px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* CONTROLS & FILTER */
+        .community-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            background: var(--bg-card);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-sm);
+        }
         
-        .side-menu { display: flex; flex-direction: column; gap: 0.25rem; }
-        .side-menu a { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-weight: 600; color: var(--text-muted); transition: var(--transition); }
-        .side-menu a:hover, .side-menu a.active { background: var(--primary-light); color: var(--primary); }
-        .side-menu i { width: 20px; font-size: 1.1rem; }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+            min-width: 260px;
+            background: var(--bg-body);
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-full);
+            padding: 0.5rem 1.25rem;
+        }
 
-        /* === FEED UTAMA === */
-        .main-feed { display: flex; flex-direction: column; gap: 1.25rem; }
+        .control-group i {
+            color: var(--text-muted);
+        }
 
-        .create-post-card { padding: 1.25rem; }
-        .create-post-top { display: flex; gap: 1rem; align-items: flex-start; }
-        .create-post-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-        .create-post-input { flex: 1; background: var(--bg-alt); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.85rem 1rem; font-size: 0.95rem; resize: none; min-height: 50px; overflow: hidden; transition: var(--transition); }
-        .create-post-input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-        .create-post-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle); }
-        .action-btns { display: flex; gap: 0.5rem; }
-        .action-btns button { padding: 0.5rem 0.75rem; border-radius: var(--radius-md); color: var(--text-muted); font-weight: 600; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 0.4rem; }
-        .action-btns button:hover { background: var(--bg-alt); color: var(--primary); }
-        .btn-post { background: var(--primary); color: #fff; padding: 0.5rem 1.25rem; border-radius: var(--radius-full); font-weight: 700; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; justify-content: center; }
-        .btn-post:hover { background: var(--primary-dark); }
-        .btn-post:disabled { background: var(--border-medium); cursor: not-allowed; }
+        .search-box {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
 
-        .post-card { padding: 0; overflow: hidden; }
-        .post-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 1.25rem 1.25rem 0.5rem 1.25rem; }
-        .post-author { display: flex; gap: 0.75rem; align-items: center; cursor: pointer; }
-        .post-author-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
-        .post-author-info { display: flex; flex-direction: column; }
-        .author-name { font-weight: 800; color: var(--text-main); font-size: 0.95rem; display: flex; align-items: center; gap: 0.25rem; }
-        .verified-icon { width: 14px; height: 14px; }
-        .author-meta { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem; }
-        .badge-premium { background: #e9d5ff; color: #6b21a8; font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: var(--radius-sm); font-weight: 700; }
-        .badge-admin { background: var(--primary-light); color: var(--primary-dark); font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: var(--radius-sm); font-weight: 700; }
+        .sort-box {
+            border: 1px solid var(--border-medium);
+            outline: none;
+            background: var(--bg-body);
+            padding: 0.6rem 1.25rem;
+            border-radius: var(--radius-full);
+            font-size: 0.9rem;
+            color: var(--text-main);
+            cursor: pointer;
+            font-weight: 600;
+        }
 
-        .post-content { padding: 0.5rem 1.25rem; font-size: 0.95rem; color: var(--text-main); white-space: pre-wrap; line-height: 1.6; }
+        /* MEMBERS GRID */
+        .members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            margin-bottom: 4rem;
+        }
+
+        .member-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem; 
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .member-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-accent);
+            box-shadow: var(--shadow-md);
+            background: var(--primary-light);
+        }
+
+        .member-avatar-box {
+            width: 65px; 
+            height: 65px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #dbeafe, #f8fafc);
+            border: 2px solid rgba(37,99,235,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .member-avatar-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .member-info {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .member-name {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.2rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .member-verification-icon {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
+        }
+
+        .member-business {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .member-category-row {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .member-category {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.2rem 0.6rem;
+            background: rgba(37,99,235,0.08);
+            color: var(--primary);
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        /* FOOTER */
+        .footer-section {
+            background: var(--bg-body);
+            padding: 2rem 0 4rem 0;
+            border-top: 1px solid var(--border-subtle);
+        }
         
-        .post-stats { display: flex; justify-content: space-between; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border-subtle); font-size: 0.85rem; color: var(--text-muted); }
-        .post-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 0.25rem 1.25rem; }
-        .post-action-btn { display: flex; justify-content: center; align-items: center; gap: 0.5rem; padding: 0.75rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; cursor: pointer; border-radius: var(--radius-md); transition: var(--transition); }
-        .post-action-btn:hover { background: var(--bg-alt); color: var(--primary); }
-        .post-action-btn.liked { color: #ef4444; }
-        .post-action-btn.liked i { animation: pop 0.3s ease; }
-        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        .footer-card {
+            background: #ffffff;
+            border-radius: var(--radius-xl);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+            padding: 3rem;
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
 
-        .comments-section { background: var(--bg-alt); padding: 1rem 1.25rem; border-top: 1px solid var(--border-subtle); display: none; }
-        .comments-section.show { display: block; }
-        .comment-input-area { display: flex; gap: 0.75rem; margin-bottom: 1.25rem; }
-        .comment-input-area img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
-        .comment-box { flex: 1; position: relative; }
-        .comment-box input { width: 100%; background: #fff; border: 1px solid var(--border-subtle); padding: 0.6rem 2.5rem 0.6rem 1rem; border-radius: var(--radius-full); font-size: 0.9rem; }
-        .comment-box input:focus { border-color: var(--primary); }
-        .send-comment-btn { position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); color: var(--primary); cursor: pointer; padding: 0.2rem; }
-        
-        .comment-thread { margin-bottom: 1rem; }
-        .comment-item { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; }
-        .comment-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-        .comment-content { flex: 1; }
-        .comment-bubble { background: #fff; border: 1px solid var(--border-subtle); padding: 0.6rem 0.85rem; border-radius: 0 var(--radius-md) var(--radius-md) var(--radius-md); font-size: 0.9rem; }
-        .comment-bubble .name { font-weight: 700; color: var(--text-main); font-size: 0.85rem; margin-bottom: 0.1rem; }
-        .comment-actions { display: flex; gap: 1rem; margin-top: 0.25rem; padding-left: 0.5rem; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
-
-        .fab-post { display: none; position: fixed; bottom: 2rem; right: 1.5rem; width: 55px; height: 55px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 1.5rem; box-shadow: var(--shadow-md); z-index: 99; align-items: center; justify-content: center; cursor: pointer; }
-        @media (max-width: 767px) { .fab-post { display: flex; } }
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .mobile-toggle { display: block; }
+            .community-hero { padding-top: 120px; }
+            .community-controls { flex-direction: column; align-items: stretch; }
+            .control-group { width: 100%; }
+            .members-grid { grid-template-columns: 1fr; }
+            .footer-card { flex-direction: column; text-align: center; padding: 2rem; }
+        }
     </style>
 </head>
 <body>
 
+    <!-- NAVBAR -->
     <header id="navbar">
-        <div class="nav-container">
+        <div class="container nav-container">
             <a href="https://sitenexs.com/" class="logo">
-                <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img">
-                <span style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SiteNexs</span>
+                <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff&size=64&rounded=true';">
+                <span class="logo-text">SiteNexs</span>
             </a>
-            <div class="nav-search">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Cari postingan, mitra, atau topik...">
+
+            <nav class="nav-links">
+                <a href="https://sitenexs.com/">Beranda</a>
+                <a href="https://sitenexs.com/#solusi-digital">Solusi</a>
+                <a href="https://sitenexs.com/#harga">Harga</a>
+                <a href="https://sitenexs.com/#tentang">Tentang Kami</a>
+                <div class="nav-divider"></div>
+                <a href="https://sitenexs.com/community" class="active">Komunitas</a>
+                <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 700;">
+                    Layanan <i class="fas fa-arrow-up-right-from-square" style="font-size: 0.8rem;"></i>
+                </a>
+            </nav>
+
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="https://account.sitenexs.com/sign-in/" class="btn btn-secondary btn-sm" id="desktopAuthBtn">
+                    Masuk / Daftar
+                </a>
+                <button id="mobile-menu-btn" class="mobile-toggle" aria-label="Open Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
-            <div class="nav-actions">
-                <button class="nav-icon-btn"><i class="fas fa-bell"></i></button>
-                <img src="https://ui-avatars.com/api/?name=Guest&background=e2e8f0&color=475569" id="navAvatarImg" class="nav-avatar" onclick="window.location.href='https://account.sitenexs.com/profile/'">
+        </div>
+
+        <div id="mobile-menu">
+            <a href="https://sitenexs.com/" class="nav-item">Beranda <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="https://sitenexs.com/#solusi-digital" class="nav-item">Solusi Digital <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="https://sitenexs.com/#harga" class="nav-item">Paket Harga <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="https://sitenexs.com/community" class="nav-item" style="color: var(--primary);">Komunitas Sitenexs <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" class="nav-item">
+                <span><i class="fas fa-layer-group text-primary" style="margin-right: 0.5rem;"></i> Layanan Sitenexs</span> 
+                <i class="fas fa-external-link-alt text-muted" style="font-size: 0.8rem;"></i>
+            </a>
+            <div style="margin-top: 1.25rem;">
+                <a href="https://account.sitenexs.com/sign-in/" class="btn btn-secondary btn-sm" style="width: 100%; text-align: center;">Masuk / Daftar</a>
             </div>
         </div>
     </header>
 
-    <main class="community-container">
-        
-        <!-- KOLOM KIRI -->
-        <aside class="sidebar left-sidebar">
-            <div class="card mini-profile">
-                <div class="mini-profile-banner"></div>
-                <img src="https://ui-avatars.com/api/?name=Guest&background=e2e8f0&color=475569" id="miniProfileImg" class="mini-profile-img">
-                <h3 class="mini-profile-name" id="miniProfileName">Memuat...</h3>
-                <p class="mini-profile-biz" id="miniProfileBiz">Harap tunggu</p>
-                <div id="miniProfileLoginBtn" style="display:none; margin-top: 1rem;">
-                    <a href="https://account.sitenexs.com/sign-in/" class="btn-post" style="text-decoration:none; display:inline-block; font-size:0.85rem;">Masuk / Daftar</a>
+    <!-- HERO KOMUNITAS -->
+    <section class="community-hero bg-gradient-soft bg-grid-pattern">
+        <div class="container">
+            <span class="section-subtitle">Jaringan Ekosistem</span>
+            <h1 class="section-title">Direktori Komunitas Sitenexs</h1>
+            <p class="section-desc">
+                Temukan para pelaku usaha mikro, kecil, dan menengah serta talenta pengembang di seluruh Indonesia yang telah bergabung dan bertransformasi digital bersama Sitenexs.
+            </p>
+        </div>
+    </section>
+
+    <!-- UTAMA DIREKTORI -->
+    <section class="page-section" style="padding-top: 1rem;">
+        <div class="container">
+            
+            <!-- Kontrol Pencarian & Pengurutan -->
+            <div class="community-controls">
+                <div class="control-group">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchMitra" class="search-box" placeholder="Cari berdasarkan nama anggota atau bisnis...">
                 </div>
+                
+                <select id="sortMitra" class="sort-box">
+                    <option value="newest">Anggota Terbaru</option>
+                    <option value="oldest">Anggota Terlama</option>
+                </select>
             </div>
 
-            <div class="card side-menu">
-                <a href="#" class="active"><i class="fas fa-home"></i> Beranda Feed</a>
-                <a href="#"><i class="fas fa-compass"></i> Eksplorasi UMKM</a>
-                <a href="#"><i class="fas fa-store"></i> Grup Kategori</a>
-                <a href="https://sitenexs.com/" style="margin-top: 1rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;"><i class="fas fa-arrow-left"></i> Kembali ke Web Utama</a>
+            <!-- Grid Anggota -->
+            <div id="members-grid" class="members-grid">
+                <p style="text-align: center; grid-column: 1 / -1; padding: 3rem 0; color: var(--text-muted); width: 100%;">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i><br><br>Memuat data komunitas Sitenexs...
+                </p>
             </div>
-        </aside>
 
-        <!-- KOLOM TENGAH: FEED -->
-        <section class="main-feed">
-            <div class="card create-post-card">
-                <div class="create-post-top">
-                    <img src="https://ui-avatars.com/api/?name=Guest&background=e2e8f0&color=475569" id="postAvatarImg" class="create-post-avatar">
-                    <textarea class="create-post-input" id="postInput" placeholder="Bagikan insight, pertanyaan, atau perkembangan bisnis Anda hari ini..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" disabled></textarea>
-                </div>
-                <div class="create-post-actions">
-                    <div class="action-btns">
-                        <button><i class="fas fa-image text-accent"></i> Foto</button>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div class="footer-section">
+        <div class="container">
+            <footer class="footer-card">
+                <div>
+                    <div class="logo" style="margin-bottom: 0.5rem;">
+                        <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff&size=64&rounded=true';">
+                        <span class="logo-text" style="font-size: 1.2rem;">Sitenexs Community</span>
                     </div>
-                    <button class="btn-post" id="btnSubmitPost" disabled>Posting</button>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">
+                        Mitra transformasi digital UMKM Indonesia. Didirikan di Bengkulu, 2026.
+                    </p>
                 </div>
-            </div>
-
-            <!-- Kontainer Postingan Dinamis -->
-            <div id="feed-container">
-                <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                    <i class="fas fa-spinner fa-spin fa-2x"></i>
-                    <p style="margin-top: 1rem;">Memuat postingan komunitas...</p>
+                <div>
+                    <a href="https://sitenexs.com/" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left"></i> Kembali ke Beranda Sitenexs
+                    </a>
                 </div>
-            </div>
-        </section>
+            </footer>
+        </div>
+    </div>
 
-        <!-- KOLOM KANAN -->
-        <aside class="sidebar right-sidebar">
-            <div class="card">
-                <h4 style="font-size: 1rem; font-weight: 800; margin-bottom: 1rem;">Topik Hangat</h4>
-                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                    <span style="background: var(--bg-alt); border: 1px solid var(--border-subtle); padding: 0.3rem 0.75rem; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">#TipsKasir</span>
-                    <span style="background: var(--bg-alt); border: 1px solid var(--border-subtle); padding: 0.3rem 0.75rem; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">#UMKMNaikKelas</span>
-                    <span style="background: var(--bg-alt); border: 1px solid var(--border-subtle); padding: 0.3rem 0.75rem; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">#SitenexsUpdate</span>
-                </div>
-            </div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">
-                &copy; 2026 Sitenexs Community.<br>Developed by Syafaat Nuryadi.
-            </div>
-        </aside>
-    </main>
+    <!-- SCRIPT MOBILE MENU & FIREBASE -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
 
-    <button class="fab-post" onclick="document.getElementById('postInput').focus(); window.scrollTo(0,0);">
-        <i class="fas fa-pen"></i>
-    </button>
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('show');
+                });
+            }
 
-    <!-- ==========================================
-         FIREBASE & LOGIKA REAL-TIME
-         ========================================== -->
-        <!-- ==========================================
-         FIREBASE & LOGIKA REAL-TIME (LOCAL STORAGE)
-         ========================================== -->
+            // Auth cookie check
+            const isLoggedIn = document.cookie.includes('isLoggedIn=true');
+            const desktopAuthBtn = document.getElementById('desktopAuthBtn');
+            if (isLoggedIn && desktopAuthBtn) {
+                desktopAuthBtn.innerHTML = '<i class="fas fa-user-circle" style="margin-right: 0.3rem;"></i> Profil';
+                desktopAuthBtn.href = 'https://account.sitenexs.com/profile/';
+            }
+        });
+    </script>
+
+    <!-- FIREBASE & SUPABASE LOADER -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
-        import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
-        import { getFirestore, collection, doc, getDoc, addDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, query, orderBy, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, query, limit } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
@@ -247,348 +642,119 @@
             measurementId: 'G-C7YL0Q7YRQ'
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
         const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
         const avatarBucket = 'profile-photos';
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-        let currentUserData = null; 
-        const userCache = {}; 
+        let allMitraData = [];
 
-        // PAKSA FIREBASE MENYIMPAN LOGIN DI LOCAL STORAGE PERANGKAT
-        setPersistence(auth, browserLocalPersistence)
-            .then(() => {
-                // --- 1. CEK AUTH SETELAH LOCAL STORAGE DIAKTIFKAN ---
-                onAuthStateChanged(auth, async (user) => {
-                    const nameEl = document.getElementById('miniProfileName');
-                    const bizEl = document.getElementById('miniProfileBiz');
-                    const loginBtn = document.getElementById('miniProfileLoginBtn');
-                    const inputEl = document.getElementById('postInput');
-                    const btnSubmit = document.getElementById('btnSubmitPost');
-                    
-                    if (user) {
-                        try {
-                            const snap = await getDoc(doc(db, 'users', user.uid));
-                            const data = snap.exists() ? snap.data() : {};
-                            const business = data.bisnis || {};
-
-                            currentUserData = { uid: user.uid, ...data };
-                            
-                            const nama = data.namaLengkap || data.namaDepan || user.displayName || 'Mitra Sitenexs';
-                            const bisnis = business.nama || 'UMKM Indonesia';
-                            const isVerified = data.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon" style="margin-left:4px; width:14px; height:14px; object-fit:contain;">` : '';
-
-                            const profilePhotoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo?t=${Date.now()}`;
-                            const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(nama)}&background=2563eb&color=fff`;
-
-                            nameEl.innerHTML = `${nama} ${isVerified}`;
-                            bizEl.innerHTML = bisnis;
-                            
-                            const applyImage = (id) => {
-                                const img = document.getElementById(id);
-                                if (img) {
-                                    img.onerror = () => { img.src = fallback; };
-                                    img.src = profilePhotoUrl;
-                                }
-                            };
-                            
-                            applyImage('miniProfileImg');
-                            applyImage('postAvatarImg');
-                            applyImage('navAvatarImg');
-
-                            loginBtn.style.display = 'none';
-                            inputEl.placeholder = `Bagikan insight bisnis Anda hari ini, ${nama.split(' ')[0]}...`;
-                            inputEl.disabled = false;
-                            
-                            inputEl.dispatchEvent(new Event('input'));
-                            
-                        } catch (error) {
-                            console.error('Gagal memuat profil Firestore:', error);
-                            nameEl.innerHTML = "Gagal Memuat";
-                            bizEl.innerHTML = "Periksa koneksi Anda";
-                        }
-                    } else {
-                        // Jika tidak ada data login di Local Storage
-                        currentUserData = null;
-                        nameEl.innerHTML = 'Pengunjung Sitenexs';
-                        bizEl.innerHTML = 'Belum Login';
-                        loginBtn.style.display = 'block';
-                        loginBtn.innerHTML = `<a href="https://account.sitenexs.com/sign-in/" class="btn-post" style="text-decoration:none; display:inline-block; font-size:0.85rem;">Masuk / Daftar</a>`;
-                        inputEl.placeholder = 'Silakan login untuk mulai memposting diskusi...';
-                        inputEl.disabled = true;
-                        btnSubmit.disabled = true;
-                    }
-                });
-            })
-            .catch((error) => {
-                console.error("Gagal mengatur Local Storage:", error);
-            });
-
-        // --- Helper: Ambil Data User (Author) ---
-        async function getAuthorData(uid) {
-            if (userCache[uid]) return userCache[uid];
-            try {
-                const snap = await getDoc(doc(db, "users", uid));
-                if (snap.exists()) {
-                    userCache[uid] = snap.data();
-                    return userCache[uid];
-                }
-            } catch (e) { console.error("Gagal get author", e); }
-            return { namaLengkap: "Pengguna Anonim", bisnis: { nama: "Tidak diketahui" } };
-        }
-
-        function timeAgo(date) {
-            if (!date) return "Baru saja";
-            const seconds = Math.floor((new Date() - date) / 1000);
-            if (seconds < 60) return "Baru saja";
-            if (seconds < 3600) return Math.floor(seconds / 60) + " menit yang lalu";
-            if (seconds < 86400) return Math.floor(seconds / 3600) + " jam yang lalu";
-            return Math.floor(seconds / 86400) + " hari yang lalu";
-        }
-
-        // --- 2. RENDER POSTINGAN REAL-TIME ---
-        const feedContainer = document.getElementById('feed-container');
-        const q = query(collection(db, "community_posts"), orderBy("createdAt", "desc"), limit(30));
-
-        onSnapshot(q, async (snapshot) => {
-            if (snapshot.empty) {
-                feedContainer.innerHTML = '<p style="text-align:center; padding: 2rem; color:var(--text-muted);">Belum ada postingan. Jadilah yang pertama berdiskusi!</p>';
-                return;
-            }
-
-            let htmlString = "";
-            for (const documentSnapshot of snapshot.docs) {
-                const post = documentSnapshot.data();
-                const postId = documentSnapshot.id;
-                const author = await getAuthorData(post.uid);
-
-                const namaAuthor = author.namaLengkap || author.namaDepan || "Mitra Sitenexs";
-                const bisnisAuthor = author.bisnis?.nama || "UMKM";
-                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(post.uid)}/profile-photo`;
-                const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaAuthor)}&background=2563eb&color=fff`;
-                
-                const isVerified = author.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon" style="margin-left:4px; width:14px; height:14px; object-fit:contain;">` : '';
-                
-                let badgeHTML = '';
-                if (author.isFounder || author.isDeveloper) {
-                    badgeHTML = `<span class="badge-admin"><i class="fas fa-shield-alt"></i> Pengembang</span>`;
-                } else if (author.paketLangganan && author.paketLangganan.toLowerCase() !== 'basic') {
-                    badgeHTML = `<span class="badge-premium"><i class="fas fa-crown"></i> PRO</span>`;
-                }
-
-                const postTime = post.createdAt ? timeAgo(post.createdAt.toDate()) : "Baru saja";
-                const textContent = (post.text || '').replace(/\n/g, '<br>');
-
-                const myUid = currentUserData ? currentUserData.uid : null;
-                const isLiked = post.likedBy && post.likedBy.includes(myUid);
-                const likeIcon = isLiked ? 'fas fa-heart' : 'far fa-heart';
-                const likeColorClass = isLiked ? 'liked' : '';
-                const likesCount = post.likedBy ? post.likedBy.length : 0;
-                const commentsCount = post.commentsCount || 0;
-
-                htmlString += `
-                    <article class="card post-card" id="post-${postId}">
-                        <div class="post-header">
-                            <div class="post-author" onclick="window.location.href='https://sitenexs.com/community/profile?uid=${post.uid}'">
-                                <img src="${photoUrl}" class="post-author-img" onerror="this.src='${fallback}'">
-                                <div class="post-author-info">
-                                    <span class="author-name">${namaAuthor} ${isVerified} ${badgeHTML}</span>
-                                    <span class="author-meta"><i class="fas fa-store"></i> ${bisnisAuthor} • ${postTime}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="post-content">${textContent}</div>
-
-                        <div class="post-stats">
-                            <span id="like-count-text-${postId}"><i class="fas fa-heart text-muted"></i> ${likesCount} Suka</span>
-                            <span id="comment-count-text-${postId}">${commentsCount} Komentar</span>
-                        </div>
-
-                        <div class="post-actions">
-                            <button class="post-action-btn ${likeColorClass}" id="btn-like-${postId}" onclick="window.toggleLikeDB('${postId}')">
-                                <i class="${likeIcon}"></i> Suka
-                            </button>
-                            <button class="post-action-btn" onclick="window.toggleCommentUI('${postId}')">
-                                <i class="far fa-comment"></i> Komentar
-                            </button>
-                            <button class="post-action-btn" onclick="navigator.share({title:'Sitenexs Community', url: window.location.href})">
-                                <i class="fas fa-share"></i> Bagikan
-                            </button>
-                        </div>
-
-                        <div class="comments-section" id="comment-sec-${postId}">
-                            <div class="comment-input-area">
-                                <img src="${currentUserData ? `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(currentUserData.uid)}/profile-photo` : 'https://ui-avatars.com/api/?name=Guest&background=e2e8f0&color=475569'}" onerror="this.src='https://ui-avatars.com/api/?name=Anda&background=2563eb&color=fff'">
-                                <div class="comment-box">
-                                    <input type="text" placeholder="${currentUserData ? 'Tulis komentar balasan...' : 'Login untuk berkomentar'}" id="input-com-${postId}" ${currentUserData ? '' : 'disabled'}>
-                                    <button class="send-comment-btn" onclick="window.submitCommentDB('${postId}')"><i class="fas fa-paper-plane"></i></button>
-                                </div>
-                            </div>
-                            <div class="comment-thread" id="comment-list-${postId}">
-                                <div style="text-align:center; font-size:0.8rem; color:var(--text-muted);">Memuat komentar...</div>
-                            </div>
-                        </div>
-                    </article>
-                `;
-            }
-            feedContainer.innerHTML = htmlString;
-        });
-
-        // --- 3. BUAT POSTINGAN BARU ---
-        const postInput = document.getElementById('postInput');
-        const btnSubmit = document.getElementById('btnSubmitPost');
-
-        postInput.addEventListener('input', () => {
-            if(postInput.value.trim().length > 0 && currentUserData) {
-                btnSubmit.removeAttribute('disabled');
-            } else {
-                btnSubmit.setAttribute('disabled', 'true');
-            }
-        });
-
-        btnSubmit.addEventListener('click', async () => {
-            if (!currentUserData) return alert("Anda harus login untuk membuat postingan.");
-            const text = postInput.value.trim();
-            if (!text) return;
-
-            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            btnSubmit.disabled = true;
+        async function fetchCommunityMembers() {
+            const grid = document.getElementById('members-grid');
+            if (!grid) return;
 
             try {
-                await addDoc(collection(db, "community_posts"), {
-                    uid: currentUserData.uid,
-                    text: text,
-                    likedBy: [],
-                    commentsCount: 0,
-                    createdAt: serverTimestamp()
-                });
-                postInput.value = '';
-                postInput.style.height = 'auto';
-            } catch (e) {
-                console.error("Gagal posting", e);
-                alert("Terjadi kesalahan. Coba lagi.");
-            } finally {
-                btnSubmit.innerHTML = 'Posting';
-            }
-        });
+                const q = query(collection(db, "users"), limit(100)); 
+                const querySnapshot = await getDocs(q);
 
-        // --- 4. LIKE POSTINGAN ---
-        window.toggleLikeDB = async (postId) => {
-            if (!currentUserData) return alert("Silakan login untuk menyukai postingan.");
-            
-            const postRef = doc(db, "community_posts", postId);
-            const btn = document.getElementById(`btn-like-${postId}`);
-            const isLiked = btn.classList.contains('liked');
-
-            const icon = btn.querySelector('i');
-            const countText = document.getElementById(`like-count-text-${postId}`);
-            let currentCount = parseInt(countText.innerText.replace(/[^0-9]/g, '')) || 0;
-
-            if (isLiked) {
-                btn.classList.remove('liked');
-                icon.className = 'far fa-heart';
-                countText.innerHTML = `<i class="fas fa-heart text-muted"></i> ${currentCount - 1} Suka`;
-                await updateDoc(postRef, { likedBy: arrayRemove(currentUserData.uid) });
-            } else {
-                btn.classList.add('liked');
-                icon.className = 'fas fa-heart';
-                countText.innerHTML = `<i class="fas fa-heart text-muted"></i> ${currentCount + 1} Suka`;
-                await updateDoc(postRef, { likedBy: arrayUnion(currentUserData.uid) });
-            }
-        };
-
-        // --- 5. BUKA & LOAD KOMENTAR ---
-        const loadedComments = {}; 
-        window.toggleCommentUI = (postId) => {
-            const section = document.getElementById(`comment-sec-${postId}`);
-            section.classList.toggle('show');
-            if (section.classList.contains('show')) {
-                document.getElementById(`input-com-${postId}`).focus();
-                if (!loadedComments[postId]) loadComments(postId);
-            }
-        };
-
-        async function loadComments(postId) {
-            const listContainer = document.getElementById(`comment-list-${postId}`);
-            const commentsQuery = query(collection(db, "community_posts", postId, "comments"), orderBy("createdAt", "asc"));
-            
-            onSnapshot(commentsQuery, async (snapshot) => {
-                loadedComments[postId] = true;
-                if (snapshot.empty) {
-                    listContainer.innerHTML = '<div style="text-align:center; font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">Jadilah yang pertama berkomentar.</div>';
+                if (querySnapshot.empty) {
+                    grid.innerHTML = '<p style="text-align:center; grid-column: 1 / -1; width: 100%; color: var(--text-muted);">Belum ada anggota komunitas yang terdaftar.</p>';
                     return;
                 }
 
-                let html = '';
-                for (const cDoc of snapshot.docs) {
-                    const comment = cDoc.data();
-                    const author = await getAuthorData(comment.uid);
-                    const namaAuthor = author.namaLengkap || author.namaDepan || "Pengguna";
-                    const photo = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(comment.uid)}/profile-photo`;
-                    const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaAuthor)}&background=2563eb&color=fff`;
-                    const time = comment.createdAt ? timeAgo(comment.createdAt.toDate()) : "Baru saja";
+                allMitraData = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    allMitraData.push({
+                        uid: data.uid || doc.id,
+                        nama: data.namaLengkap || data.namaDepan + (data.namaBelakang ? ' ' + data.namaBelakang : '') || 'Mitra Sitenexs',
+                        bisnisNama: data.bisnis?.nama || 'Bisnis Sitenexs',
+                        bisnisBidang: data.bisnis?.bidang || 'UMKM',
+                        isVerified: data.isVerified || false,
+                        isDeveloper: data.isDeveloper || false,
+                        isFounder: data.isFounder || false,
+                        createdAt: data.createdAt || new Date(0).toISOString(),
+                        paketLangganan: data.paketLangganan || 'Basic'
+                    });
+                });
 
-                    const isMe = currentUserData && comment.uid === currentUserData.uid;
-                    const badgeMe = isMe ? `<span class="badge-premium" style="background:#dbeafe; color:#1d4ed8; padding:0 0.3rem;">Anda</span>` : '';
+                renderMembers();
 
-                    html += `
-                        <div class="comment-item">
-                            <img src="${photo}" class="comment-avatar" onerror="this.src='${fallback}'">
-                            <div class="comment-content">
-                                <div class="comment-bubble">
-                                    <div class="name">${namaAuthor} ${badgeMe}</div>
-                                    ${comment.text}
-                                </div>
-                                <div class="comment-actions">
-                                    <span>${time}</span>
-                                    <span class="comment-action-btn" style="cursor:pointer;" onclick="document.getElementById('input-com-${postId}').value = '@${namaAuthor} '; document.getElementById('input-com-${postId}').focus();">Balas</span>
-                                </div>
+            } catch (error) {
+                console.error("Gagal memuat komunitas:", error);
+                grid.innerHTML = '<p style="text-align:center; grid-column: 1 / -1; width: 100%; color: var(--text-muted);">Gagal memuat data komunitas. Periksa koneksi Anda.</p>';
+            }
+        }
+
+        function renderMembers() {
+            const grid = document.getElementById('members-grid');
+            const searchValue = document.getElementById('searchMitra').value.toLowerCase();
+            const sortValue = document.getElementById('sortMitra').value;
+
+            let filteredData = allMitraData.filter(user => 
+                user.nama.toLowerCase().includes(searchValue) || user.bisnisNama.toLowerCase().includes(searchValue)
+            );
+
+            filteredData.sort((a, b) => {
+                const dateA = new Date(a.createdAt).getTime();
+                const dateB = new Date(b.createdAt).getTime();
+                return sortValue === 'newest' ? dateB - dateA : dateA - dateB;
+            });
+
+            grid.innerHTML = '';
+            
+            if(filteredData.length === 0) {
+                grid.innerHTML = `<p style="text-align:center; grid-column: 1 / -1; width: 100%; color: var(--text-muted);">Tidak ada anggota yang cocok dengan pencarian "${searchValue}".</p>`;
+                return;
+            }
+
+            filteredData.forEach(user => {
+                let icon = 'fa-store';
+                const fieldLower = user.bisnisBidang.toLowerCase();
+                if (fieldLower.includes('cafe') || fieldLower.includes('resto')) icon = 'fa-coffee';
+                else if (fieldLower.includes('sekolah') || fieldLower.includes('instansi')) icon = 'fa-school';
+                else if (fieldLower.includes('bengkel')) icon = 'fa-wrench';
+                else if (fieldLower.includes('perusahaan')) icon = 'fa-building';
+
+                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo`;
+                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama)}&background=2563eb&color=fff&size=120`;
+                const verifiedIconHTML = user.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` : '';
+
+                let dynamicBadgeHTML = "";
+                const paketStr = (user.paketLangganan || 'Basic').toLowerCase();
+                if (!paketStr.includes('basic') && !paketStr.includes('gratis')) {
+                    let paketBadgeStyle = "background: #fef08a; color: #854d0e;";
+                    let paketIcon = "fa-crown";
+                    if (paketStr.includes('premium') || paketStr.includes('vip') || paketStr.includes('ultimate')) {
+                        paketBadgeStyle = "background: #e9d5ff; color: #6b21a8;";
+                        paketIcon = "fa-gem";
+                    }
+                    dynamicBadgeHTML = `<span style="${paketBadgeStyle} font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: var(--radius-sm); font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fas ${paketIcon}"></i> ${user.paketLangganan.toUpperCase()}</span>`;
+                }
+
+                const cardHTML = `
+                    <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(user.uid)}" class="member-card">
+                        <div class="member-avatar-box">
+                            <img src="${photoUrl}" alt="Avatar ${user.nama}" onerror="this.onerror=null; this.src='${fallbackUrl}';">
+                        </div>
+                        <div class="member-info">
+                            <h4 class="member-name">${user.nama} ${verifiedIconHTML}</h4>
+                            <div class="member-business">${user.bisnisNama}</div>
+                            <div class="member-category-row">
+                                <div class="member-category"><i class="fas ${icon}" style="margin-right: 0.3rem;"></i> ${user.bisnisBidang}</div>
+                                ${dynamicBadgeHTML}
                             </div>
                         </div>
-                    `;
-                }
-                listContainer.innerHTML = html;
+                    </a>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHTML);
             });
         }
 
-        // --- 6. KIRIM KOMENTAR ---
-        window.submitCommentDB = async (postId) => {
-            if (!currentUserData) return alert("Silakan login untuk membalas.");
-            const inputEl = document.getElementById(`input-com-${postId}`);
-            let text = inputEl.value.trim();
-            if (!text) return;
-
-            inputEl.disabled = true;
-            if(text.startsWith('@')) {
-                const parts = text.split(' ');
-                const mentioned = parts.shift();
-                text = `<span style="color: var(--primary); font-weight:600;">${mentioned}</span> ` + parts.join(' ');
-            }
-
-            try {
-                await addDoc(collection(db, "community_posts", postId, "comments"), {
-                    uid: currentUserData.uid,
-                    text: text,
-                    createdAt: serverTimestamp()
-                });
-
-                const postRef = doc(db, "community_posts", postId);
-                const postDoc = await getDoc(postRef);
-                const currentCount = postDoc.data().commentsCount || 0;
-                await updateDoc(postRef, { commentsCount: currentCount + 1 });
-
-                inputEl.value = '';
-            } catch (e) {
-                console.error("Gagal kirim komentar", e);
-                alert("Gagal membalas komentar.");
-            } finally {
-                inputEl.disabled = false;
-                inputEl.focus();
-            }
-        };
+        fetchCommunityMembers();
+        document.getElementById('searchMitra').addEventListener('input', renderMembers);
+        document.getElementById('sortMitra').addEventListener('change', renderMembers);
     </script>
-
 </body>
 </html>
