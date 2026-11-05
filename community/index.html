@@ -229,9 +229,12 @@
     <!-- ==========================================
          FIREBASE & LOGIKA REAL-TIME
          ========================================== -->
+        <!-- ==========================================
+         FIREBASE & LOGIKA REAL-TIME (LOCAL STORAGE)
+         ========================================== -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+        import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
         import { getFirestore, collection, doc, getDoc, addDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, query, orderBy, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
         const firebaseConfig = {
@@ -251,71 +254,76 @@
         const avatarBucket = 'profile-photos';
 
         let currentUserData = null; 
-        const userCache = {}; // Cache author
+        const userCache = {}; 
 
-        // --- 1. CEK AUTH SESUAI DENGAN METODE DI PROFIL.HTML ---
-        onAuthStateChanged(auth, async (user) => {
-            const nameEl = document.getElementById('miniProfileName');
-            const bizEl = document.getElementById('miniProfileBiz');
-            const loginBtn = document.getElementById('miniProfileLoginBtn');
-            const inputEl = document.getElementById('postInput');
-            const btnSubmit = document.getElementById('btnSubmitPost');
-            
-            if (user) {
-                try {
-                    // Logic pemanggilan data persis seperti loadRegistrationData() di profil.html
-                    const snap = await getDoc(doc(db, 'users', user.uid));
-                    const data = snap.exists() ? snap.data() : {};
-                    const business = data.bisnis || {};
-
-                    currentUserData = { uid: user.uid, ...data };
+        // PAKSA FIREBASE MENYIMPAN LOGIN DI LOCAL STORAGE PERANGKAT
+        setPersistence(auth, browserLocalPersistence)
+            .then(() => {
+                // --- 1. CEK AUTH SETELAH LOCAL STORAGE DIAKTIFKAN ---
+                onAuthStateChanged(auth, async (user) => {
+                    const nameEl = document.getElementById('miniProfileName');
+                    const bizEl = document.getElementById('miniProfileBiz');
+                    const loginBtn = document.getElementById('miniProfileLoginBtn');
+                    const inputEl = document.getElementById('postInput');
+                    const btnSubmit = document.getElementById('btnSubmitPost');
                     
-                    const nama = data.namaLengkap || data.namaDepan || user.displayName || 'Mitra Sitenexs';
-                    const bisnis = business.nama || 'UMKM Indonesia';
-                    const isVerified = data.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon" style="margin-left:4px; width:14px; height:14px; object-fit:contain;">` : '';
+                    if (user) {
+                        try {
+                            const snap = await getDoc(doc(db, 'users', user.uid));
+                            const data = snap.exists() ? snap.data() : {};
+                            const business = data.bisnis || {};
 
-                    // Logic render Avatar persis seperti di profil.html
-                    const profilePhotoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo?t=${Date.now()}`;
-                    const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(nama)}&background=2563eb&color=fff`;
+                            currentUserData = { uid: user.uid, ...data };
+                            
+                            const nama = data.namaLengkap || data.namaDepan || user.displayName || 'Mitra Sitenexs';
+                            const bisnis = business.nama || 'UMKM Indonesia';
+                            const isVerified = data.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon" style="margin-left:4px; width:14px; height:14px; object-fit:contain;">` : '';
 
-                    nameEl.innerHTML = `${nama} ${isVerified}`;
-                    bizEl.innerHTML = bisnis;
-                    
-                    const applyImage = (id) => {
-                        const img = document.getElementById(id);
-                        if (img) {
-                            img.onerror = () => { img.src = fallback; };
-                            img.src = profilePhotoUrl;
+                            const profilePhotoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo?t=${Date.now()}`;
+                            const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(nama)}&background=2563eb&color=fff`;
+
+                            nameEl.innerHTML = `${nama} ${isVerified}`;
+                            bizEl.innerHTML = bisnis;
+                            
+                            const applyImage = (id) => {
+                                const img = document.getElementById(id);
+                                if (img) {
+                                    img.onerror = () => { img.src = fallback; };
+                                    img.src = profilePhotoUrl;
+                                }
+                            };
+                            
+                            applyImage('miniProfileImg');
+                            applyImage('postAvatarImg');
+                            applyImage('navAvatarImg');
+
+                            loginBtn.style.display = 'none';
+                            inputEl.placeholder = `Bagikan insight bisnis Anda hari ini, ${nama.split(' ')[0]}...`;
+                            inputEl.disabled = false;
+                            
+                            inputEl.dispatchEvent(new Event('input'));
+                            
+                        } catch (error) {
+                            console.error('Gagal memuat profil Firestore:', error);
+                            nameEl.innerHTML = "Gagal Memuat";
+                            bizEl.innerHTML = "Periksa koneksi Anda";
                         }
-                    };
-                    
-                    applyImage('miniProfileImg');
-                    applyImage('postAvatarImg');
-                    applyImage('navAvatarImg');
-
-                    loginBtn.style.display = 'none';
-                    inputEl.placeholder = `Bagikan insight bisnis Anda hari ini, ${nama.split(' ')[0]}...`;
-                    inputEl.disabled = false;
-                    
-                    // Trigger input event supaya tombol posting aktif jika text area sudah diisi
-                    inputEl.dispatchEvent(new Event('input'));
-                    
-                } catch (error) {
-                    console.error('Gagal memuat profil Firestore:', error);
-                    nameEl.innerHTML = "Gagal Memuat";
-                    bizEl.innerHTML = "Periksa koneksi Anda";
-                }
-            } else {
-                currentUserData = null;
-                nameEl.innerHTML = 'Pengunjung Sitenexs';
-                bizEl.innerHTML = 'Belum Login';
-                loginBtn.style.display = 'block';
-                loginBtn.innerHTML = `<a href="https://account.sitenexs.com/sign-in/" class="btn-post" style="text-decoration:none; display:inline-block; font-size:0.85rem;">Masuk / Daftar</a>`;
-                inputEl.placeholder = 'Silakan login untuk mulai memposting diskusi...';
-                inputEl.disabled = true;
-                btnSubmit.disabled = true;
-            }
-        });
+                    } else {
+                        // Jika tidak ada data login di Local Storage
+                        currentUserData = null;
+                        nameEl.innerHTML = 'Pengunjung Sitenexs';
+                        bizEl.innerHTML = 'Belum Login';
+                        loginBtn.style.display = 'block';
+                        loginBtn.innerHTML = `<a href="https://account.sitenexs.com/sign-in/" class="btn-post" style="text-decoration:none; display:inline-block; font-size:0.85rem;">Masuk / Daftar</a>`;
+                        inputEl.placeholder = 'Silakan login untuk mulai memposting diskusi...';
+                        inputEl.disabled = true;
+                        btnSubmit.disabled = true;
+                    }
+                });
+            })
+            .catch((error) => {
+                console.error("Gagal mengatur Local Storage:", error);
+            });
 
         // --- Helper: Ambil Data User (Author) ---
         async function getAuthorData(uid) {
@@ -580,7 +588,7 @@
                 inputEl.focus();
             }
         };
-
     </script>
+
 </body>
 </html>
