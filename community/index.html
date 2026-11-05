@@ -348,6 +348,7 @@
         const avatarImg = document.getElementById('currentUserAvatar');
         const promptText = document.getElementById('createPostPromptText');
 
+        // Fungsi sinkronisasi profil pengguna (menyamakan struktur data seperti di profil.html)
         async function fetchUserProfile(user) {
             try {
                 const userDocRef = doc(db, "users", user.uid);
@@ -373,6 +374,7 @@
                     fallbackAvatar: fallbackUrl
                 };
 
+                // Menyimpan status sesi ke localStorage agar halaman komunitas mengenali login secara instan
                 localStorage.setItem('sitenexs_logged_in', 'true');
                 localStorage.setItem('sitenexs_uid', user.uid);
 
@@ -386,6 +388,7 @@
 
         const isLoggedLocal = localStorage.getItem('sitenexs_logged_in') === 'true';
 
+        // Pengecekan Sesi Masuk (Auth)
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 await fetchUserProfile(user);
