@@ -3,22 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forum Diskusi Sitenexs — Komunitas UMKM</title>
+    <title>Forum Diskusi Komunitas — Sitenexs</title>
     
     <!-- Meta SEO -->
-    <meta name="description" content="Forum diskusi Sitenexs. Tempat berbagi tips bisnis, tanya jawab teknis operasional, dan update fitur untuk UMKM.">
-    <meta name="keywords" content="Forum Sitenexs, Diskusi UMKM, Tanya Jawab Bisnis, Sitenexs Community">
-    <meta name="author" content="SiteNexs">
-
-    <!-- Favicon -->
+    <meta name="description" content="Forum diskusi resmi Sitenexs. Tempat berdiskusi, bertanya, dan berbagi pengalaman bagi seluruh mitra dan pengguna terdaftar Sitenexs.">
     <link rel="icon" type="image/png" href="https://sitenexs.com/assets/logo/logo.png">
 
-    <!-- Google Fonts: Plus Jakarta Sans -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Font Awesome Icons -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -33,6 +29,7 @@
             --text-muted: #475569;
             --border-subtle: #e2e8f0;
             --border-medium: #cbd5e1;
+            --border-accent: #93c5fd;
             --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
             --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
             --radius-sm: 0.375rem;
@@ -43,11 +40,7 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -59,33 +52,18 @@
 
         a { text-decoration: none; color: inherit; }
         ul { list-style: none; }
-        button, input, textarea { font-family: inherit; outline: none; border: none; }
+        button, input, textarea, select { font-family: inherit; outline: none; border: none; }
 
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
 
-        /* UTILITIES */
         .text-primary { color: var(--primary); }
         .text-muted { color: var(--text-muted); }
-        .font-bold { font-weight: 700; }
-        .font-extrabold { font-weight: 800; }
 
         /* BUTTONS */
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            font-size: 0.9rem;
-            font-weight: 700;
-            border-radius: var(--radius-full);
-            cursor: pointer;
-            transition: var(--transition);
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+            padding: 0.75rem 1.5rem; font-size: 0.9rem; font-weight: 700;
+            border-radius: var(--radius-full); cursor: pointer; transition: var(--transition);
         }
         .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
         .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
@@ -93,158 +71,89 @@
         .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
         .btn-sm { padding: 0.5rem 1rem; font-size: 0.85rem; }
 
-        /* NAVBAR (Kompak) */
+        /* NAVBAR */
         #navbar {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-subtle);
-            box-shadow: var(--shadow-sm);
+            position: sticky; top: 0; z-index: 1000; background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);
         }
         .nav-container { display: flex; align-items: center; justify-content: space-between; height: 70px; }
         .logo { display: flex; align-items: center; gap: 0.75rem; font-weight: 800; font-size: 1.25rem; color: var(--text-main); }
-        .logo img { height: 35px; width: 35px; border-radius: 50%; }
+        .logo img { height: 35px; width: 35px; border-radius: 50%; object-fit: cover; }
 
         /* HEADER FORUM */
-        .forum-header {
-            background: #fff;
-            border-bottom: 1px solid var(--border-subtle);
-            padding: 2.5rem 0;
-            margin-bottom: 2rem;
-        }
-        .forum-header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-        }
+        .forum-header { background: #fff; border-bottom: 1px solid var(--border-subtle); padding: 2.5rem 0; margin-bottom: 2rem; }
+        .forum-header-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; }
         .search-bar {
-            display: flex;
-            align-items: center;
-            background: var(--bg-body);
-            border: 1px solid var(--border-medium);
-            border-radius: var(--radius-full);
-            padding: 0.6rem 1.25rem;
-            width: 100%;
-            max-width: 400px;
+            display: flex; align-items: center; background: var(--bg-body); border: 1px solid var(--border-medium);
+            border-radius: var(--radius-full); padding: 0.6rem 1.25rem; width: 100%; max-width: 400px;
         }
         .search-bar input { background: transparent; width: 100%; font-size: 0.95rem; margin-left: 0.5rem; }
 
         /* LAYOUT FORUM */
         .forum-layout {
-            display: grid;
-            grid-template-columns: 260px 1fr 300px;
-            gap: 1.5rem;
-            align-items: start;
-            padding-bottom: 4rem;
+            display: grid; grid-template-columns: 260px 1fr 300px; gap: 1.5rem; align-items: start; padding-bottom: 4rem;
         }
 
-        /* SIDEBAR KIRI (Kategori) */
+        /* SIDEBAR KIRI */
         .sidebar-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 1.25rem;
-            position: sticky;
-            top: 90px;
+            background: var(--bg-card); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg); padding: 1.25rem; position: sticky; top: 90px;
         }
         .sidebar-title { font-size: 0.95rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
         .category-list li { margin-bottom: 0.25rem; }
         .category-link {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius-md);
-            color: var(--text-main);
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: var(--transition);
-            cursor: pointer;
+            display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem;
+            border-radius: var(--radius-md); color: var(--text-main); font-weight: 600; font-size: 0.95rem; cursor: pointer;
         }
-        .category-link:hover, .category-link.active {
-            background: var(--primary-light);
-            color: var(--primary);
-        }
-        .category-count {
-            background: var(--bg-body);
-            padding: 0.15rem 0.5rem;
-            border-radius: var(--radius-full);
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-        .category-link.active .category-count { background: var(--primary); color: #fff; }
+        .category-link:hover, .category-link.active { background: var(--primary-light); color: var(--primary); }
 
-        /* MAIN FEED (Daftar Postingan) */
+        /* MAIN FEED */
         .post-list { display: flex; flex-direction: column; gap: 1rem; }
         
         .create-post-box {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 1.25rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            cursor: pointer;
-            box-shadow: var(--shadow-sm);
+            background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
+            padding: 1.25rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; cursor: pointer; box-shadow: var(--shadow-sm);
         }
-        .create-post-box img { width: 40px; height: 40px; border-radius: 50%; }
+        .create-post-box img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-subtle); }
         .create-post-input {
-            flex: 1;
-            background: var(--bg-body);
-            padding: 0.8rem 1.25rem;
-            border-radius: var(--radius-full);
-            color: var(--text-muted);
-            font-size: 0.95rem;
+            flex: 1; background: var(--bg-body); padding: 0.9rem 1.25rem; border-radius: var(--radius-full);
+            color: var(--text-muted); font-size: 0.95rem; border: 1px solid transparent; transition: var(--transition);
         }
-        .create-post-box:hover .create-post-input { border: 1px solid var(--border-accent); }
+        .create-post-box:hover .create-post-input { border-color: var(--border-accent); }
 
-        /* KARTU POSTINGAN */
+        /* POST CARD DINAMIS */
         .post-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
+            background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
+            padding: 1.5rem; box-shadow: var(--shadow-sm); transition: var(--transition); animation: fadeIn 0.4s ease;
         }
-        .post-card:hover { border-color: var(--border-accent); box-shadow: var(--shadow-md); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         
+        .post-card:hover { border-color: var(--border-accent); box-shadow: var(--shadow-md); }
         .post-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
         .post-author { display: flex; align-items: center; gap: 0.75rem; }
-        .post-author-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-subtle); }
-        .author-name { font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; gap: 0.3rem; }
+        .post-author-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(37,99,235,0.15); }
+        
+        .author-name-row { display: flex; align-items: center; gap: 0.35rem; }
+        .author-name { font-weight: 800; font-size: 0.95rem; color: var(--text-main); }
+        .member-verification-icon { width: 15px; height: 15px; object-fit: contain; }
         .author-time { font-size: 0.8rem; color: var(--text-muted); }
         
         .post-badge {
             font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: var(--radius-sm);
             background: var(--primary-light); color: var(--primary);
         }
+        .badge-pengumuman { background: #fee2e2; color: #ef4444; }
+        .badge-tips { background: #fef3c7; color: #d97706; }
+        .badge-bug { background: #f3e8ff; color: #7e22ce; }
 
-        .post-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem; line-height: 1.4; cursor: pointer; }
-        .post-title:hover { color: var(--primary); }
-        
-        .post-content { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.6; }
+        .post-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; line-height: 1.4; color: var(--text-main); }
+        .post-content { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
         
         .post-actions {
-            display: flex; align-items: center; gap: 1.5rem;
-            border-top: 1px solid var(--border-subtle); padding-top: 1rem;
+            display: flex; align-items: center; gap: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;
         }
         .action-btn { display: flex; align-items: center; gap: 0.4rem; color: var(--text-muted); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: color 0.2s; }
         .action-btn:hover { color: var(--primary); }
-        .action-btn.active { color: var(--primary); }
-
-        /* SIDEBAR KANAN (Trending/Statistik) */
-        .trending-list { display: flex; flex-direction: column; gap: 1rem; }
-        .trending-item { cursor: pointer; group; }
-        .trending-title { font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.2rem; line-height: 1.4; transition: color 0.2s; }
-        .trending-item:hover .trending-title { color: var(--primary); }
-        .trending-meta { font-size: 0.8rem; color: var(--text-muted); }
 
         /* MODAL BUAT POSTINGAN */
         .modal-overlay {
@@ -266,11 +175,12 @@
         .form-group { margin-bottom: 1rem; }
         .form-control {
             width: 100%; padding: 0.85rem 1rem; border: 1px solid var(--border-medium);
-            border-radius: var(--radius-md); font-size: 0.95rem; background: var(--bg-body);
+            border-radius: var(--radius-md); font-size: 0.95rem; background: var(--bg-body); color: var(--text-main);
         }
         .form-control:focus { background: #fff; border-color: var(--primary); }
+        
+        .loader-container { text-align: center; padding: 3rem; color: var(--text-muted); }
 
-        /* RESPONSIVE */
         @media (max-width: 1024px) {
             .forum-layout { grid-template-columns: 240px 1fr; }
             .sidebar-right { display: none; }
@@ -278,7 +188,7 @@
         @media (max-width: 768px) {
             .forum-header-content { flex-direction: column; align-items: flex-start; }
             .forum-layout { grid-template-columns: 1fr; }
-            .sidebar-left { display: none; } /* Sidebar kategori disembunyikan di mobile, bisa pakai menu dropdown/horizontal scroll */
+            .sidebar-left { display: none; } 
             .search-bar { max-width: 100%; }
         }
     </style>
@@ -292,9 +202,9 @@
                 <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" onerror="this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff'">
                 <span class="logo-text">SiteNexs Forum</span>
             </a>
-            <div style="display: flex; gap: 1rem;">
+            <div style="display: flex; gap: 1rem; align-items: center;">
                 <a href="https://sitenexs.com/community" class="btn btn-secondary btn-sm"><i class="fas fa-users"></i> Direktori Mitra</a>
-                <a href="https://account.sitenexs.com/profile" class="btn btn-primary btn-sm"><i class="fas fa-user-circle"></i> Akun Saya</a>
+                <a href="https://account.sitenexs.com/profile/" id="authNavBtn" class="btn btn-primary btn-sm"><i class="fas fa-user-circle"></i> Akun</a>
             </div>
         </div>
     </header>
@@ -303,12 +213,12 @@
     <div class="forum-header">
         <div class="container forum-header-content">
             <div>
-                <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.3rem;">Ruang Diskusi UMKM</h1>
-                <p class="text-muted">Diskusikan fitur POS, tanya jawab pajak, dan strategi bisnis.</p>
+                <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.3rem;">Ruang Diskusi Komunitas Sitenexs</h1>
+                <p class="text-muted">Ruang interaksi resmi bagi seluruh pemilik usaha dan mitra terdaftar.</p>
             </div>
             <div class="search-bar">
                 <i class="fas fa-search text-muted"></i>
-                <input type="text" placeholder="Cari topik diskusi...">
+                <input type="text" id="searchInput" placeholder="Cari topik diskusi..." onkeyup="filterPosts()">
             </div>
         </div>
     </div>
@@ -316,130 +226,55 @@
     <!-- MAIN LAYOUT -->
     <main class="container forum-layout">
         
-        <!-- KIRI: KATEGORI -->
+        <!-- SIDEBAR KIRI: KATEGORI -->
         <aside class="sidebar-left">
             <div class="sidebar-card">
                 <h3 class="sidebar-title">Kategori Diskusi</h3>
                 <ul class="category-list">
-                    <li><a href="#" class="category-link active"><i class="fas fa-home" style="width:20px;"></i> Semua Topik <span class="category-count">124</span></a></li>
-                    <li><a href="#" class="category-link"><i class="fas fa-bullhorn" style="width:20px;"></i> Pengumuman <span class="category-count">5</span></a></li>
-                    <li><a href="#" class="category-link"><i class="fas fa-cash-register" style="width:20px;"></i> Sitenexs POS <span class="category-count">42</span></a></li>
-                    <li><a href="#" class="category-link"><i class="fas fa-qrcode" style="width:20px;"></i> QR Order <span class="category-count">18</span></a></li>
-                    <li><a href="#" class="category-link"><i class="fas fa-chart-pie" style="width:20px;"></i> Tips Bisnis <span class="category-count">36</span></a></li>
-                    <li><a href="#" class="category-link"><i class="fas fa-bug" style="width:20px;"></i> Lapor Bug <span class="category-count">23</span></a></li>
+                    <li><a class="category-link active"><i class="fas fa-home" style="width:20px;"></i> Semua Topik</a></li>
+                    <li><a class="category-link"><i class="fas fa-bullhorn" style="width:20px;"></i> Pengumuman</a></li>
+                    <li><a class="category-link"><i class="fas fa-cash-register" style="width:20px;"></i> Sitenexs POS</a></li>
+                    <li><a class="category-link"><i class="fas fa-qrcode" style="width:20px;"></i> QR Order</a></li>
+                    <li><a class="category-link"><i class="fas fa-chart-pie" style="width:20px;"></i> Tips Bisnis</a></li>
+                    <li><a class="category-link"><i class="fas fa-bug" style="width:20px;"></i> Lapor Bug</a></li>
                 </ul>
             </div>
         </aside>
 
-        <!-- TENGAH: FEED POSTINGAN -->
+        <!-- TENGAH: FEED POSTINGAN (REALTIME) -->
         <section class="main-feed">
             
-            <!-- Trigger Modal Buat Post -->
-            <div class="create-post-box" onclick="openModal()">
-                <img src="https://ui-avatars.com/api/?name=User&background=cbd5e1&color=fff" alt="User">
-                <div class="create-post-input">Ada pertanyaan teknis atau ide bisnis hari ini?</div>
+            <div class="create-post-box" onclick="checkAuthAndOpenModal()">
+                <img id="currentUserAvatar" src="https://ui-avatars.com/api/?name=User&background=cbd5e1&color=fff" alt="User">
+                <div class="create-post-input" id="createPostPromptText">Bagikan pertanyaan atau pengalaman bisnis Anda...</div>
                 <button class="btn btn-primary btn-sm"><i class="fas fa-pen"></i> Buat</button>
             </div>
 
-            <div class="post-list">
-                <!-- POST 1 (Pengumuman) -->
-                <article class="post-card">
-                    <div class="post-header">
-                        <div class="post-author">
-                            <img src="https://sitenexs.com/assets/founder/founder.png" alt="Syafaat Nuryadi" class="post-author-img" onerror="this.src='https://ui-avatars.com/api/?name=Syafaat+Nuryadi&background=2563eb&color=fff'">
-                            <div>
-                                <div class="author-name">Syafaat Nuryadi <img src="https://sitenexs.com/assets/logo/verified.png" alt="Verified" style="width: 14px;" onerror="this.style.display='none'"></div>
-                                <div class="author-time">Admin • 2 jam yang lalu</div>
-                            </div>
-                        </div>
-                        <span class="post-badge" style="background: #fee2e2; color: #ef4444;">Pengumuman</span>
-                    </div>
-                    <h2 class="post-title">Update v2.1: Laporan Laba Rugi Otomatis Kini Tersedia di POS</h2>
-                    <p class="post-content">
-                        Halo rekan-rekan UMKM! Malam ini kami baru saja merilis pembaruan untuk Sitenexs Kasir. Sekarang fitur rekap bulanan sudah terintegrasi langsung dengan HPP (Harga Pokok Penjualan). Silakan cek di dashboard masing-masing. Jika ada kendala, reply di thread ini ya!
-                    </p>
-                    <div class="post-actions">
-                        <div class="action-btn active"><i class="fas fa-heart"></i> 45 Suka</div>
-                        <div class="action-btn"><i class="fas fa-comment"></i> 12 Balasan</div>
-                        <div class="action-btn"><i class="fas fa-share"></i> Bagikan</div>
-                    </div>
-                </article>
-
-                <!-- POST 2 (Tanya Jawab Pengguna) -->
-                <article class="post-card">
-                    <div class="post-header">
-                        <div class="post-author">
-                            <img src="https://ui-avatars.com/api/?name=Budi+Santoso&background=10b981&color=fff" alt="User" class="post-author-img">
-                            <div>
-                                <div class="author-name">Budi Santoso (Kedai Kopi)</div>
-                                <div class="author-time">5 jam yang lalu</div>
-                            </div>
-                        </div>
-                        <span class="post-badge">Sitenexs POS</span>
-                    </div>
-                    <h2 class="post-title">Cara Setting Printer Bluetooth Thermal di HP Android?</h2>
-                    <p class="post-content">
-                        Mohon pencerahannya, saya baru beli printer thermal bluetooth merk EPPOS 58mm. Pas buka aplikasi POS Sitenexs dari browser Chrome di HP, gimana cara konek buat cetak struk otomatis?
-                    </p>
-                    <div class="post-actions">
-                        <div class="action-btn"><i class="far fa-heart"></i> 8 Suka</div>
-                        <div class="action-btn"><i class="fas fa-comment"></i> 5 Balasan</div>
-                    </div>
-                </article>
-
-                <!-- POST 3 (Diskusi Bisnis) -->
-                <article class="post-card">
-                    <div class="post-header">
-                        <div class="post-author">
-                            <img src="https://ui-avatars.com/api/?name=Rina+Amalia&background=f59e0b&color=fff" alt="User" class="post-author-img">
-                            <div>
-                                <div class="author-name">Rina Amalia</div>
-                                <div class="author-time">Kemarin</div>
-                            </div>
-                        </div>
-                        <span class="post-badge" style="background: #fef3c7; color: #d97706;">Tips Bisnis</span>
-                    </div>
-                    <h2 class="post-title">Tanya Pengalaman: Migrasi dari PT Perorangan ke PT Biasa</h2>
-                    <p class="post-content">
-                        Ada yang sudah pernah melakukan migrasi legalitas usaha dari PT Perorangan ke PT Persekutuan Modal (biasa)? Kira-kira berapa biaya notaris dan apakah NPWP perusahaan berubah? Sedang persiapan cari investor lokal. Terima kasih!
-                    </p>
-                    <div class="post-actions">
-                        <div class="action-btn"><i class="far fa-heart"></i> 14 Suka</div>
-                        <div class="action-btn"><i class="fas fa-comment"></i> 8 Balasan</div>
-                    </div>
-                </article>
-
-                <button class="btn btn-secondary" style="width: 100%; margin-top: 1rem;">Muat Lebih Banyak...</button>
+            <!-- Kontainer Postingan Real-time -->
+            <div class="post-list" id="postContainer">
+                <div class="loader-container">
+                    <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+                    <p style="margin-top: 1rem;">Memuat diskusi dari mitra terdaftar...</p>
+                </div>
             </div>
         </section>
 
-        <!-- KANAN: TRENDING & INFO -->
+        <!-- SIDEBAR KANAN: INFO & CS -->
         <aside class="sidebar-right">
             <div class="sidebar-card" style="margin-bottom: 1.5rem;">
-                <h3 class="sidebar-title">Topik Sedang Hangat</h3>
-                <div class="trending-list">
-                    <div class="trending-item">
-                        <h4 class="trending-title">Integrasi Coretax DJP untuk UMKM</h4>
-                        <div class="trending-meta">32 balasan • Kategori: Tips Bisnis</div>
-                    </div>
-                    <div class="trending-item">
-                        <h4 class="trending-title">Cara custom warna tombol QR Order?</h4>
-                        <div class="trending-meta">15 balasan • Kategori: QR Order</div>
-                    </div>
-                    <div class="trending-item">
-                        <h4 class="trending-title">Request Fitur: Absensi pakai Selfie</h4>
-                        <div class="trending-meta">28 balasan • Kategori: Lapor Bug/Fitur</div>
-                    </div>
+                <h3 class="sidebar-title">Topik Hangat</h3>
+                <div style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.9rem;">
+                    <div><strong>#1. Update Kasir v2.1</strong><br><span class="text-muted" style="font-size: 0.8rem;">Pengumuman Resmi</span></div>
+                    <div><strong>#2. Setting Struk Bluetooth</strong><br><span class="text-muted" style="font-size: 0.8rem;">Sitenexs POS</span></div>
                 </div>
             </div>
 
             <div class="sidebar-card" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; border: none;">
                 <h3 style="font-weight: 800; font-size: 1.1rem; margin-bottom: 0.5rem;">Butuh Bantuan Teknis?</h3>
-                <p style="font-size: 0.85rem; margin-bottom: 1rem; opacity: 0.9;">Tim support kami siap membantu memandu instalasi dan setting sistem Anda via WhatsApp.</p>
-                <a href="https://wa.me/6285177137899" class="btn btn-secondary btn-sm" style="width: 100%; color: var(--primary);"><i class="fab fa-whatsapp"></i> Hubungi CS</a>
+                <p style="font-size: 0.85rem; margin-bottom: 1rem; opacity: 0.9;">Tim support siap memandu Anda via WhatsApp.</p>
+                <a href="https://wa.me/6285177137899" target="_blank" class="btn btn-secondary btn-sm" style="width: 100%; color: var(--primary);"><i class="fab fa-whatsapp"></i> Hubungi CS</a>
             </div>
         </aside>
-
     </main>
 
     <!-- MODAL BUAT POSTINGAN -->
@@ -449,49 +284,241 @@
                 <h3>Buat Diskusi Baru</h3>
                 <button class="close-modal" onclick="closeModal()"><i class="fas fa-times"></i></button>
             </div>
-            <form id="postForm" onsubmit="event.preventDefault(); alert('Fitur demonstrasi: Postingan berhasil dikirim!'); closeModal();">
+            <form id="createPostForm">
                 <div class="form-group">
-                    <select class="form-control" required style="font-weight: 600;">
-                        <option value="">-- Pilih Kategori --</option>
-                        <option value="pos">Sitenexs POS</option>
-                        <option value="qr">QR Order</option>
-                        <option value="tips">Tips Bisnis</option>
-                        <option value="bug">Lapor Bug/Error</option>
+                    <select id="postCategory" class="form-control" required style="font-weight: 600;">
+                        <option value="">-- Pilih Kategori Diskusi --</option>
+                        <option value="Sitenexs POS">Sitenexs POS</option>
+                        <option value="QR Order">QR Order</option>
+                        <option value="Tips Bisnis">Tips Bisnis</option>
+                        <option value="Pengumuman">Pengumuman</option>
+                        <option value="Lapor Bug">Lapor Bug / Kendala</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Judul Diskusi (contoh: Cara setting pajak di kasir?)" required style="font-weight: 700; font-size: 1.1rem;">
+                    <input type="text" id="postTitle" class="form-control" placeholder="Judul Diskusi (contoh: Cara konek printer bluetooth?)" required style="font-weight: 700; font-size: 1.1rem;">
                 </div>
                 <div class="form-group">
-                    <textarea class="form-control" rows="6" placeholder="Tuliskan detail pertanyaan atau diskusi Anda di sini..." required></textarea>
+                    <textarea id="postContent" class="form-control" rows="6" placeholder="Tuliskan isi diskusi atau pertanyaan Anda..." required></textarea>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Posting Diskusi</button>
+                    <button type="submit" class="btn btn-primary" id="submitPostBtn"><i class="fas fa-paper-plane"></i> Kirim Postingan</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- SCRIPT INTERAKSI DASAR -->
-    <script>
-        // Modal Logic
+    <!-- SCRIPT FIREBASE & SUPABASE INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+        import { getDoc, doc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
+            authDomain: 'sitenexs-62919.firebaseapp.com',
+            projectId: 'sitenexs-62919',
+            storageBucket: 'sitenexs-62919.firebasestorage.app',
+            messagingSenderId: '1060348110644',
+            appId: '1:1060348110644:web:e45af14d5f26a9cf8e6761'
+        };
+
+        const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
+        const avatarBucket = 'profile-photos';
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const forumCollection = collection(db, "forum_posts");
+
+        let currentUserData = null;
+        const postContainer = document.getElementById('postContainer');
         const modal = document.getElementById('postModal');
-        
-        function openModal() {
+        const form = document.getElementById('createPostForm');
+        const submitBtn = document.getElementById('submitPostBtn');
+        const avatarImg = document.getElementById('currentUserAvatar');
+        const promptText = document.getElementById('createPostPromptText');
+
+        // Pengecekan Status Login User Sitenexs secara Real-time
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // User sudah login, ambil data profil aslinya dari Firestore (koleksi "users")
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+
+                    let namaLengkap = user.displayName || "Mitra Sitenexs";
+                    let isVerified = false;
+
+                    if (userDocSnap.exists()) {
+                        const d = userDocSnap.data();
+                        namaLengkap = d.namaLengkap || d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '') || namaLengkap;
+                        isVerified = d.isVerified || false;
+                    }
+
+                    const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo`;
+                    const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff`;
+
+                    currentUserData = {
+                        uid: user.uid,
+                        nama: namaLengkap,
+                        isVerified: isVerified,
+                        avatar: photoUrl,
+                        fallbackAvatar: fallbackUrl
+                    };
+
+                    avatarImg.src = photoUrl;
+                    avatarImg.onerror = () => { avatarImg.src = fallbackUrl; };
+                    promptText.innerText = `Halo ${namaLengkap}, bagikan diskusi baru...`;
+
+                } catch (err) {
+                    console.error("Gagal mengambil data user:", err);
+                }
+            } else {
+                currentUserData = null;
+                avatarImg.src = "https://ui-avatars.com/api/?name=Tamu&background=cbd5e1&color=fff";
+                promptText.innerText = "Masuk untuk membuat postingan diskusi...";
+            }
+        });
+
+        window.checkAuthAndOpenModal = function() {
+            if (!currentUserData) {
+                alert("Anda harus masuk (login) ke akun Sitenexs terlebih dahulu untuk membuat postingan.");
+                window.location.href = "https://account.sitenexs.com/sign-in/";
+                return;
+            }
             modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // cegah scroll background
+            document.body.style.overflow = 'hidden';
         }
-        
-        function closeModal() {
+
+        window.closeModal = function() {
             modal.classList.remove('active');
             document.body.style.overflow = '';
         }
 
-        // Tutup modal jika klik di luar area konten
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
+        // Waktu Relatif
+        function timeAgo(date) {
+            if (!date) return 'Baru saja';
+            const seconds = Math.floor((new Date() - date) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " tahun lalu";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " bulan lalu";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " hari lalu";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " jam lalu";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " menit lalu";
+            return "Baru saja";
+        }
+
+        // 1. MENDENGARKAN POSTINGAN REAL-TIME DARI FIREBASE
+        const q = query(forumCollection, orderBy("createdAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+            if (snapshot.empty) {
+                postContainer.innerHTML = '<div class="loader-container"><p>Belum ada diskusi. Jadilah yang pertama memulai!</p></div>';
+                return;
+            }
+
+            let htmlString = "";
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const dateObj = data.createdAt ? data.createdAt.toDate() : new Date();
+                const waktuString = timeAgo(dateObj);
+
+                // Styling badge kategori
+                let badgeClass = '';
+                if(data.kategori === 'Pengumuman') badgeClass = 'badge-pengumuman';
+                else if(data.kategori === 'Tips Bisnis') badgeClass = 'badge-tips';
+                else if(data.kategori === 'Lapor Bug') badgeClass = 'badge-bug';
+
+                // Ambil foto profil asli penulis post
+                const authorPhoto = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(data.authorUid)}/profile-photo`;
+                const authorFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.penulis)}&background=random&color=fff`;
+                
+                // Centang verifikasi asli
+                const verifiedIcon = data.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` : '';
+
+                htmlString += `
+                    <article class="post-card">
+                        <div class="post-header">
+                            <div class="post-author">
+                                <img src="${authorPhoto}" alt="${data.penulis}" class="post-author-img" onerror="this.onerror=null; this.src='${authorFallback}';">
+                                <div>
+                                    <div class="author-name-row">
+                                        <span class="author-name">${data.penulis}</span>
+                                        ${verifiedIcon}
+                                    </div>
+                                    <div class="author-time">${waktuString}</div>
+                                </div>
+                            </div>
+                            <span class="post-badge ${badgeClass}">${data.kategori}</span>
+                        </div>
+                        <h2 class="post-title">${data.judul}</h2>
+                        <p class="post-content">${data.isi}</p>
+                        <div class="post-actions">
+                            <div class="action-btn"><i class="far fa-heart"></i> Suka</div>
+                            <div class="action-btn" onclick="alert('Fitur komentar segera hadir!')"><i class="far fa-comment"></i> Balas</div>
+                        </div>
+                    </article>
+                `;
+            });
+
+            postContainer.innerHTML = htmlString;
+        }, (error) => {
+            console.error("Gagal memuat post:", error);
+            postContainer.innerHTML = '<div class="loader-container"><p style="color:red;">Gagal memuat forum diskusi.</p></div>';
         });
+
+        // 2. MENGIRIM POSTINGAN DENGAN DATA USER ASLI
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUserData) return;
+
+            const category = document.getElementById('postCategory').value;
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
+
+            if (!category || !title || !content) return;
+
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+            submitBtn.disabled = true;
+
+            try {
+                await addDoc(forumCollection, {
+                    authorUid: currentUserData.uid,
+                    penulis: currentUserData.nama,
+                    isVerified: currentUserData.isVerified,
+                    kategori: category,
+                    judul: title,
+                    isi: content,
+                    createdAt: serverTimestamp()
+                });
+
+                form.reset();
+                closeModal();
+            } catch (error) {
+                console.error("Gagal mengirim postingan:", error);
+                alert("Terjadi kesalahan saat mengirim postingan.");
+            } finally {
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Postingan';
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Filter Sederhana
+        window.filterPosts = function() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.post-card');
+            cards.forEach(card => {
+                const title = card.querySelector('.post-title').innerText.toLowerCase();
+                const content = card.querySelector('.post-content').innerText.toLowerCase();
+                card.style.display = (title.includes(input) || content.includes(input)) ? 'block' : 'none';
+            });
+        }
     </script>
 </body>
 </html>
