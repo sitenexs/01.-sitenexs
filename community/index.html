@@ -310,10 +310,11 @@
     </div>
 
     <!-- SCRIPT FIREBASE & SUPABASE INTEGRATION -->
+    <!-- SCRIPT FIREBASE & SUPABASE INTEGRATION -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
-        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, getDoc } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
@@ -340,53 +341,76 @@
         const avatarImg = document.getElementById('currentUserAvatar');
         const promptText = document.getElementById('createPostPromptText');
 
-        // Pengecekan Status Login User Sitenexs secara Real-time
+        // Fungsi Ambil Profil dari Firestore
+        async function fetchUserProfile(user) {
+            try {
+                const userDocRef = doc(db, "users", user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+
+                let namaLengkap = user.displayName || "Mitra Sitenexs";
+                let isVerified = false;
+
+                if (userDocSnap.exists()) {
+                    const d = userDocSnap.data();
+                    namaLengkap = d.namaLengkap || d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '') || namaLengkap;
+                    isVerified = d.isVerified || false;
+                }
+
+                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo?t=${Date.now()}`;
+                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff`;
+
+                currentUserData = {
+                    uid: user.uid,
+                    nama: namaLengkap,
+                    isVerified: isVerified,
+                    avatar: photoUrl,
+                    fallbackAvatar: fallbackUrl
+                };
+
+                // Pastikan localStorage selalu sinkron
+                localStorage.setItem('sitenexs_logged_in', 'true');
+                localStorage.setItem('sitenexs_uid', user.uid);
+
+                avatarImg.src = photoUrl;
+                avatarImg.onerror = () => { avatarImg.src = fallbackUrl; };
+                promptText.innerText = `Halo ${namaLengkap}, bagikan diskusi baru...`;
+            } catch (err) {
+                console.error("Gagal mengambil data user:", err);
+            }
+        }
+
+        // Cek status login (Mendahulukan localStorage agar instan, lalu sinkronisasi auth)
+        const isLoggedLocal = localStorage.getItem('sitenexs_logged_in') === 'true';
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                try {
-                    const userDocRef = doc(db, "users", user.uid);
-                    const userDocSnap = await getDoc(userDocRef);
-
-                    let namaLengkap = user.displayName || "Mitra Sitenexs";
-                    let isVerified = false;
-
-                    if (userDocSnap.exists()) {
-                        const d = userDocSnap.data();
-                        namaLengkap = d.namaLengkap || d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '') || namaLengkap;
-                        isVerified = d.isVerified || false;
-                    }
-
-                    const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo?t=${Date.now()}`;
-                    const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff`;
-
-                    currentUserData = {
-                        uid: user.uid,
-                        nama: namaLengkap,
-                        isVerified: isVerified,
-                        avatar: photoUrl,
-                        fallbackAvatar: fallbackUrl
-                    };
-
-                    avatarImg.src = photoUrl;
-                    avatarImg.onerror = () => { avatarImg.src = fallbackUrl; };
-                    promptText.innerText = `Halo ${namaLengkap}, bagikan diskusi baru...`;
-
-                } catch (err) {
-                    console.error("Gagal mengambil data user:", err);
-                }
+                await fetchUserProfile(user);
             } else {
-                currentUserData = null;
-                avatarImg.src = "https://ui-avatars.com/api/?name=Tamu&background=cbd5e1&color=fff";
-                promptText.innerText = "Masuk untuk membuat postingan diskusi...";
+                if (!isLoggedLocal) {
+                    currentUserData = null;
+                    avatarImg.src = "https://ui-avatars.com/api/?name=Tamu&background=cbd5e1&color=fff";
+                    promptText.innerText = "Masuk untuk membuat postingan diskusi...";
+                } else if (auth.currentUser) {
+                    await fetchUserProfile(auth.currentUser);
+                }
             }
         });
 
-        window.checkAuthAndOpenModal = function() {
-            if (!currentUserData) {
+        // Validasi Klik Tombol Buat Postingan Membaca localStorage
+        window.checkAuthAndOpenModal = async function() {
+            const activeLogged = localStorage.getItem('sitenexs_logged_in') === 'true';
+
+            if (!currentUserData && auth.currentUser) {
+                await fetchUserProfile(auth.currentUser);
+            }
+
+            // Jika localStorage tidak ada dan auth kosong, baru arahkan login
+            if (!activeLogged && !currentUserData && !auth.currentUser) {
                 alert("Anda harus masuk (login) ke akun Sitenexs terlebih dahulu untuk membuat postingan.");
                 window.location.href = "https://account.sitenexs.com/sign-in/";
                 return;
             }
+
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
@@ -396,7 +420,6 @@
             document.body.style.overflow = '';
         }
 
-        // Waktu Relatif
         function timeAgo(date) {
             if (!date) return 'Baru saja';
             const seconds = Math.floor((new Date() - date) / 1000);
@@ -413,7 +436,7 @@
             return "Baru saja";
         }
 
-        // 1. MENDENGARKAN POSTINGAN REAL-TIME DARI FIREBASE
+        // Real-time Feed Postingan
         const q = query(forumCollection, orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
             if (snapshot.empty) {
@@ -427,17 +450,13 @@
                 const dateObj = data.createdAt ? data.createdAt.toDate() : new Date();
                 const waktuString = timeAgo(dateObj);
 
-                // Styling badge kategori
                 let badgeClass = '';
                 if(data.kategori === 'Pengumuman') badgeClass = 'badge-pengumuman';
                 else if(data.kategori === 'Tips Bisnis') badgeClass = 'badge-tips';
                 else if(data.kategori === 'Lapor Bug') badgeClass = 'badge-bug';
 
-                // Ambil foto profil asli penulis post
                 const authorPhoto = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(data.authorUid)}/profile-photo`;
                 const authorFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.penulis)}&background=random&color=fff`;
-                
-                // Centang verifikasi asli
                 const verifiedIcon = data.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` : '';
 
                 htmlString += `
@@ -471,10 +490,11 @@
             postContainer.innerHTML = '<div class="loader-container"><p style="color:red;">Gagal memuat forum diskusi.</p></div>';
         });
 
-        // 2. MENGIRIM POSTINGAN DENGAN DATA USER ASLI
+        // Kirim Postingan Forum
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!currentUserData) return;
+            const activeLogged = localStorage.getItem('sitenexs_logged_in') === 'true';
+            if (!activeLogged && !currentUserData && !auth.currentUser) return;
 
             const category = document.getElementById('postCategory').value;
             const title = document.getElementById('postTitle').value.trim();
@@ -486,10 +506,14 @@
             submitBtn.disabled = true;
 
             try {
+                const uidVal = currentUserData ? currentUserData.uid : (auth.currentUser ? auth.currentUser.uid : localStorage.getItem('sitenexs_uid'));
+                const nameVal = currentUserData ? currentUserData.nama : (auth.currentUser ? auth.currentUser.displayName : 'Mitra Sitenexs');
+                const verifiedVal = currentUserData ? currentUserData.isVerified : false;
+
                 await addDoc(forumCollection, {
-                    authorUid: currentUserData.uid,
-                    penulis: currentUserData.nama,
-                    isVerified: currentUserData.isVerified,
+                    authorUid: uidVal,
+                    penulis: nameVal,
+                    isVerified: verifiedVal,
                     kategori: category,
                     judul: title,
                     isi: content,
@@ -507,7 +531,6 @@
             }
         });
 
-        // Filter Sederhana
         window.filterPosts = function() {
             const input = document.getElementById('searchInput').value.toLowerCase();
             const cards = document.querySelectorAll('.post-card');
@@ -518,5 +541,6 @@
             });
         }
     </script>
+
 </body>
 </html>
