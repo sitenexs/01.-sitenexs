@@ -129,7 +129,7 @@
             align-items: center;
             text-align: center;
             border-bottom: 1px solid var(--border-subtle);
-            position: relative; /* Ditambahkan untuk badge absolute jika perlu */
+            position: relative;
         }
 
         /* GAYA UNTUK AVATAR & LOGO BISNIS SEJAJAR */
@@ -137,7 +137,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 1.5rem; /* Jarak antara foto profil dan logo bisnis */
+            gap: 1.5rem;
             margin-bottom: 1.5rem;
         }
 
@@ -168,7 +168,7 @@
             padding: 4px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
             flex-shrink: 0;
-            display: none; /* Dimunculkan lewat JS jika ada */
+            display: none; 
         }
 
         .business-logo-stacked img {
@@ -184,7 +184,7 @@
             justify-content: center;
             gap: 0.6rem;
             margin-bottom: 0.3rem;
-            flex-wrap: wrap; /* Agar rapi di layar kecil */
+            flex-wrap: wrap; 
         }
 
         .profile-name {
@@ -201,14 +201,14 @@
             width: 18px;
             height: 18px;
             object-fit: contain;
-            display: none; /* Akan dimunculkan lewat JS jika akun diverifikasi */
+            display: none; 
         }
 
         .profile-business {
             font-size: 1.1rem;
             font-weight: 600;
             color: var(--primary-dark);
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.8rem; /* Margin ini akan diubah oleh JS jika ada badge paket */
         }
 
         .badge-category {
@@ -223,20 +223,6 @@
             font-weight: 700;
             color: var(--text-muted);
             box-shadow: var(--shadow-sm);
-        }
-
-        /* GAYA UNTUK BADGE PAKET DINAMIS */
-        #p-paket-badge {
-            display: none; /* Disembunyikan secara default, dimunculkan lewat JS */
-        }
-
-        /* Container untuk kategori bisnis & badge paket agar berdampingan */
-        .business-badges-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
         }
 
         .profile-body {
@@ -326,7 +312,6 @@
             .profile-header { padding: 2.5rem 1.5rem 1.5rem 1.5rem; }
             .profile-body { padding: 1.5rem; }
             .info-grid { grid-template-columns: 1fr; gap: 1rem; }
-            /* Penyesuaian agar keduanya tetap muat berdampingan di layar HP kecil */
             .avatar-group { gap: 1rem; }
             .avatar-box, .business-logo-stacked { width: 100px; height: 100px; }
         }
@@ -365,7 +350,7 @@
         <div id="profile-card" class="profile-card" style="display: none;">
             <div class="profile-header">
                 
-                <!-- Grup Avatar (Berjajar: Foto Profil Utama dan Logo Bisnis) -->
+                <!-- Grup Avatar -->
                 <div class="avatar-group">
                     <div class="avatar-box">
                         <img id="p-avatar" src="" alt="Avatar Utama">
@@ -379,7 +364,6 @@
                 <div class="profile-name-container">
                     <h1 class="profile-name">
                         <span id="p-name">-</span>
-                        <!-- Ikon Verified Sitenexs -->
                         <img id="p-verified" src="https://sitenexs.com/assets/logo/verified.png" alt="Verified" class="verification-icon">
                     </h1>
                 </div>
@@ -387,13 +371,12 @@
                 <!-- Nama Bisnis -->
                 <div id="p-business" class="profile-business">-</div>
 
-                <!-- Kontainer Badge Kategori & Badge Paket Langganan -->
-                <div class="business-badges-wrapper">
-                    <div class="badge-category">
-                        <i id="p-icon" class="fas fa-store"></i> <span id="p-field">UMKM</span>
-                    </div>
-                    <!-- Badge Paket Dinamis (Hanya tampil jika Pro/Premium) -->
-                    <span id="p-paket-badge"></span>
+                <!-- Badge Paket Dinamis (Berada tepat di bawah Nama Bisnis) -->
+                <div id="p-paket-badge" style="display: none; margin-bottom: 1rem;"></div>
+
+                <!-- Badge Kategori UMKM -->
+                <div class="badge-category">
+                    <i id="p-icon" class="fas fa-store"></i> <span id="p-field">UMKM</span>
                 </div>
             </div>
 
@@ -439,7 +422,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
-        // Konfigurasi Database Sesuai Profil
+        // Konfigurasi Database
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
             authDomain: 'sitenexs-62919.firebaseapp.com',
@@ -456,7 +439,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Ambil parameter UID dari URL (misal: profil-komunitas.html?uid=xyz123)
         const urlParams = new URLSearchParams(window.location.search);
         const uid = urlParams.get('uid');
 
@@ -471,7 +453,6 @@
             }
 
             try {
-                // Ambil data langsung dari Firestore spesifik untuk 1 user
                 const docRef = doc(db, "users", uid);
                 const docSnap = await getDoc(docRef);
 
@@ -493,22 +474,18 @@
                 const bEmail = business.email || data.email || 'Belum dicantumkan';
                 const bAddress = data.alamat || 'Belum dicantumkan';
                 
-                // Variabel untuk Logo Bisnis & Status Verifikasi
                 const bLogo = business.logoUrl || null;
                 const isVerified = data.isVerified || false;
                 
-                // Ambil data paket langganan (default: Basic)
                 const paket = (data.paketLangganan || 'Basic').toLowerCase();
                 const namaPaketAsli = data.paketLangganan || 'Basic';
 
-                // Format Tanggal
                 let joinedDate = 'Baru-baru ini';
                 if (data.createdAt) {
                     const d = new Date(data.createdAt);
                     joinedDate = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
                 }
 
-                // Kategori Ikon
                 let icon = 'fa-store';
                 const fieldLower = bField.toLowerCase();
                 if (fieldLower.includes('cafe') || fieldLower.includes('resto')) icon = 'fa-coffee';
@@ -516,7 +493,6 @@
                 else if (fieldLower.includes('bengkel')) icon = 'fa-wrench';
                 else if (fieldLower.includes('perusahaan')) icon = 'fa-building';
 
-                // Set Foto Utama (Supabase -> Fallback ui-avatars)
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2563eb&color=fff&size=200`;
                 
@@ -524,7 +500,6 @@
                 imgEl.src = photoUrl;
                 imgEl.onerror = () => { imgEl.src = fallbackUrl; };
 
-                // Memasukkan Logo Bisnis berjajar (jika ada)
                 if (bLogo) {
                     const bgLogoBox = document.getElementById('p-bg-logo');
                     const bgLogoImg = document.getElementById('p-b-logo-img');
@@ -532,28 +507,33 @@
                     bgLogoBox.style.display = 'block';
                 }
 
-                // Menampilkan Logo Verifikasi (Centang Biru) jika akun di-verifikasi
                 if (isVerified) {
                     document.getElementById('p-verified').style.display = 'inline-block';
                 }
 
                 // -----------------------------------------------------
-                // LOGIKA BADGE PAKET DINAMIS (Tidak Tampil Jika Basic/Gratis)
+                // LOGIKA BADGE PAKET DINAMIS 
                 // -----------------------------------------------------
                 const badgeEl = document.getElementById('p-paket-badge');
                 
-                // Jangan tampilkan badge jika paketnya Basic atau Gratis
                 if (!paket.includes('basic') && !paket.includes('gratis')) {
-                    let paketBadgeStyle = "background: #fef08a; color: #854d0e;"; // Warna Pro/Berbayar
+                    let paketBadgeStyle = "background: #fef08a; color: #854d0e;"; 
                     let paketIcon = "fa-crown";
 
                     if (paket.includes('premium') || paket.includes('vip') || paket.includes('ultimate')) {
-                        paketBadgeStyle = "background: #e9d5ff; color: #6b21a8;"; // Warna Premium
+                        paketBadgeStyle = "background: #e9d5ff; color: #6b21a8;"; 
                         paketIcon = "fa-gem";
                     }
 
-                    badgeEl.innerHTML = `<span style="${paketBadgeStyle} font-size: 0.85rem; padding: 0.4rem 1rem; border-radius: 99px; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: var(--shadow-sm);"><i class="fas ${paketIcon}"></i> ${namaPaketAsli.toUpperCase()}</span>`;
-                    badgeEl.style.display = 'inline-block';
+                    badgeEl.innerHTML = `<span style="${paketBadgeStyle} font-size: 0.8rem; padding: 0.35rem 0.9rem; border-radius: 99px; font-weight: 800; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: var(--shadow-sm);"><i class="fas ${paketIcon}"></i> ${namaPaketAsli.toUpperCase()}</span>`;
+                    badgeEl.style.display = 'block';
+                    
+                    // Mendekatkan nama bisnis ke badge paket
+                    document.getElementById('p-business').style.marginBottom = '0.3rem';
+                } else {
+                    badgeEl.style.display = 'none';
+                    // Menjauhkan nama bisnis jika badge paket tidak ada (jarak ke kategori UMKM)
+                    document.getElementById('p-business').style.marginBottom = '0.8rem';
                 }
                 // -----------------------------------------------------
 
@@ -567,7 +547,6 @@
                 document.getElementById('p-email').textContent = bEmail;
                 document.getElementById('p-date').textContent = joinedDate;
 
-                // Logika Tombol WhatsApp
                 if (bPhone && bPhone.trim() !== '') {
                     let cleanPhone = bPhone.replace(/\D/g, '');
                     if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1);
@@ -576,10 +555,9 @@
                     const waText = encodeURIComponent(`Halo, saya melihat profil bisnis ${bName} di komunitas Sitenexs.`);
                     document.getElementById('btn-whatsapp').href = `https://wa.me/${cleanPhone}?text=${waText}`;
                 } else {
-                    document.getElementById('contact-area').style.display = 'none'; // Sembunyikan jika tidak ada nomor
+                    document.getElementById('contact-area').style.display = 'none'; 
                 }
 
-                // Tampilkan Card
                 loadingState.style.display = 'none';
                 profileCard.style.display = 'flex';
 
@@ -595,7 +573,6 @@
             errorState.style.display = 'block';
         }
 
-        // Inisiasi pemuatan data
         loadProfile();
     </script>
 </body>
