@@ -132,11 +132,14 @@
 
     </div>
 
-    <!-- FIREBASE MODULES (Hanya Firestore & Storage, Tanpa Auth) -->
     <script type="module">
+        // ============================================
+        // IMPORT FIREBASE LENGKAP (TERMASUK AUTH & GETDOC)
+        // ============================================
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc, arrayUnion, arrayRemove, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc, getDoc, arrayUnion, arrayRemove, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
         import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-storage.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
 
         // Konfigurasi Database Sitenexs
         const firebaseConfig = {
@@ -151,52 +154,76 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const storage = getStorage(app);
+        const auth = getAuth(app); 
 
         const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
         const avatarBucket = 'profile-photos';
-
-        // ============================================
-        // 1. CEK LOGIN DARI LOKAL (COOKIE / LOCAL STORAGE)
-        // ============================================
-        // Mengecek status login murni dari cookie seperti di index.html
-        const isLoggedInCookie = document.cookie.includes('isLoggedIn=true');
-        // Atau mengecek dari localStorage jika Anda menyimpannya di sana
-        const isLoggedInStorage = localStorage.getItem('isLoggedIn') === 'true';
         
         let currentUser = null;
 
-        if (isLoggedInCookie || isLoggedInStorage) {
-            // User dianggap login. Kita ambil detail datanya dari localStorage.
-            // Pastikan saat user login, Anda menyimpan data ini di localStorage.
-            currentUser = {
-                uid: localStorage.getItem('user_uid') || 'uid_anonim_' + Math.floor(Math.random() * 10000),
-                actualName: localStorage.getItem('user_name') || 'Mitra Sitenexs',
-                role: localStorage.getItem('user_role') || 'Anggota Komunitas'
-            };
+        // ============================================
+        // 1. CEK STATUS LOGIN LANGSUNG DARI PERANGKAT (FIREBASE AUTH)
+        // ============================================
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Sembunyikan layar blokir
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('myName').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat profil asli...';
 
-            document.getElementById('loginOverlay').style.display = 'none';
+                try {
+                    // Ambil detail data profil asli dari database Firestore
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    
+                    let namaLengkap = user.displayName || "Mitra Sitenexs";
+                    let roleUser = "Anggota Komunitas";
 
-            // Tampilkan Nama & Role ke Kotak Posting
-            document.getElementById('myName').innerHTML = `
-                ${currentUser.actualName} 
-                <span style="font-size:0.65rem; background:var(--primary-light); color:var(--primary); padding:0.15rem 0.5rem; border-radius:10px; margin-left:0.4rem; font-weight:700;">
-                    <i class="fas fa-check-circle"></i> ${currentUser.role}
-                </span>
-            `;
-            
-            // Render Avatar dari Supabase
-            const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(currentUser.uid)}/profile-photo`;
-            const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.actualName)}&background=2563eb&color=fff`;
-            
-            const avatarEl = document.getElementById('myAvatar');
-            avatarEl.src = photoUrl;
-            avatarEl.onerror = () => { avatarEl.src = fallbackUrl; };
+                    if (userDoc.exists()) {
+                        const data = userDoc.data();
+                        namaLengkap = data.namaLengkap || data.namaDepan + (data.namaBelakang ? ' ' + data.namaBelakang : '') || namaLengkap;
+                        
+                        if (data.isFounder) {
+                            roleUser = "Founder Sitenexs";
+                        } else if (data.isDeveloper) {
+                            roleUser = data.jabatanPengembang || "Pengembang Sitenexs";
+                        } else {
+                            roleUser = data.bisnis?.nama || "Mitra UMKM";
+                        }
+                    }
 
-        } else {
-            // Jika belum login di sistem lokal, tampilkan overlay
-            currentUser = null;
-            document.getElementById('loginOverlay').style.display = 'flex';
-        }
+                    // Simpan ke variabel global
+                    currentUser = {
+                        uid: user.uid,
+                        actualName: namaLengkap,
+                        role: roleUser
+                    };
+
+                    // Tampilkan Nama & Role ke Kotak Posting
+                    document.getElementById('myName').innerHTML = `
+                        ${namaLengkap} 
+                        <span style="font-size:0.65rem; background:var(--primary-light); color:var(--primary); padding:0.15rem 0.5rem; border-radius:10px; margin-left:0.4rem; font-weight:700;">
+                            <i class="fas ${userDoc.exists() && userDoc.data().isVerified ? 'fa-check-circle' : 'fa-user'}"></i> ${roleUser}
+                        </span>
+                    `;
+                    
+                    // Render Avatar Asli dari Supabase
+                    const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo`;
+                    const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff`;
+                    
+                    const avatarEl = document.getElementById('myAvatar');
+                    avatarEl.src = photoUrl;
+                    avatarEl.onerror = () => { avatarEl.src = fallbackUrl; };
+
+                } catch (error) {
+                    console.error("Gagal menarik profil:", error);
+                    currentUser = { uid: user.uid, actualName: user.displayName || "Mitra Sitenexs", role: "Anggota Komunitas" };
+                    document.getElementById('myName').innerText = currentUser.actualName;
+                }
+
+            } else {
+                currentUser = null;
+                document.getElementById('loginOverlay').style.display = 'flex';
+            }
+        });
 
         // ============================================
         // 2. PREVIEW FOTO POSTINGAN
@@ -253,14 +280,12 @@
             try {
                 let finalImageUrl = null;
 
-                // Jika ada foto, upload dulu ke Firebase Storage
                 if (currentBase64Image) {
                     const imageRef = ref(storage, `posts_images/${Date.now()}_${currentUser.uid}`);
                     await uploadString(imageRef, currentBase64Image, 'data_url');
                     finalImageUrl = await getDownloadURL(imageRef);
                 }
 
-                // Simpan text & data ke Firestore
                 await addDoc(collection(db, "komunitas_posts"), {
                     uid: currentUser.uid,
                     authorName: currentUser.actualName,
@@ -272,12 +297,11 @@
                     createdAt: serverTimestamp()
                 });
 
-                // Reset Form
                 postText.value = '';
                 removeImageBtn.click();
             } catch (error) {
                 console.error("Gagal memposting: ", error);
-                alert("Gagal mengirim postingan. Pastikan aturan database Firestore mengizinkan penulisan.");
+                alert("Gagal mengirim postingan. Pastikan database mengizinkan akses tulis.");
             } finally {
                 btnPost.innerHTML = 'Posting';
                 checkInput();
@@ -301,18 +325,15 @@
                 const post = docSnap.data();
                 const postId = docSnap.id;
                 
-                // Waktu
                 let timeString = "Baru saja";
                 if (post.createdAt) {
                     const date = post.createdAt.toDate();
                     timeString = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
                 }
 
-                // Avatar Supabase logic
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(post.uid)}/profile-photo`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(post.authorName)}&background=2563eb&color=fff`;
 
-                // Logika Like
                 const likesArray = post.likes || [];
                 const isLikedByMe = currentUser ? likesArray.includes(currentUser.uid) : false;
                 const isLikedClass = isLikedByMe ? 'liked' : '';
@@ -320,7 +341,6 @@
 
                 const imageHTML = post.imageUrl ? `<img src="${post.imageUrl}" class="post-image" loading="lazy" alt="Foto">` : '';
 
-                // Logika Komentar
                 const commentsArray = post.comments || [];
                 let commentsHTML = '';
                 commentsArray.forEach(c => {
