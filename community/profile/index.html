@@ -152,6 +152,7 @@
         .my-post-info { min-width: 0; flex: 1; }
         .my-post-title { font-weight: 700; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .my-post-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+        .my-post-actions { display: flex; gap: 0.5rem; align-items: center; }
 
         .loader-container { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem; }
 
@@ -206,8 +207,8 @@
                     <div class="stat-label">Diskusi Dibuat</div>
                 </div>
                 <div class="stat-item">
-                    <div id="statStatusMitra" class="stat-value text-primary">Mitra Aktif</div>
-                    <div class="stat-label">Status Akun</div>
+                    <div id="statLikeCount" class="stat-value text-primary">0</div>
+                    <div class="stat-label">Total Like Diterima</div>
                 </div>
             </div>
         </div>
@@ -259,7 +260,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
@@ -271,10 +272,9 @@
         };
 
         const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxY2J5YW14aWVrZHh5dG50bG5vIiwicm9sZSI6ImFub24iLCJpZWF0aWN0aW9uOiJzdXAxYmlsaXR5Ij09fQ=='; // Kunci publik publik standar proyek
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxY2J5YW14aWVrZHh5dG50bG5vIiwicm9sZSI6ImFub24iLCJpZWF0aWN0aW9uOiJzdXAxYmlsaXR5Ij09fQ=='; 
         const avatarBucket = 'profile-photos';
 
-        // Inisialisasi Supabase client untuk upload foto
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
         const app = initializeApp(firebaseConfig);
@@ -290,6 +290,7 @@
         const headerEmail = document.getElementById('profileHeaderEmail');
         const verifiedIcon = document.getElementById('profileVerifiedIcon');
         const statPostCount = document.getElementById('statPostCount');
+        const statLikeCount = document.getElementById('statLikeCount');
         
         const inputNamaDepan = document.getElementById('inputNamaDepan');
         const inputNamaBelakang = document.getElementById('inputNamaBelakang');
@@ -328,7 +329,6 @@
                     d.isVerified = data.isVerified || false;
                 }
 
-                // Set value form
                 inputNamaDepan.value = d.namaDepan;
                 inputNamaBelakang.value = d.namaBelakang;
                 inputNamaLengkap.value = d.namaLengkap;
@@ -341,14 +341,12 @@
                     verifiedIcon.style.display = 'inline-block';
                 }
 
-                // Ambil foto dari Supabase
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo?t=${Date.now()}`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(d.namaLengkap)}&background=2563eb&color=fff`;
                 
                 avatarImg.src = photoUrl;
                 avatarImg.onerror = () => { avatarImg.src = fallbackUrl; };
 
-                // Muat postingan forum pengguna ini
                 loadUserPosts(uid);
 
             } catch (err) {
@@ -357,7 +355,6 @@
             }
         }
 
-        // Cek autentikasi saat halaman dimuat
         const urlParams = new URLSearchParams(window.location.search);
         const urlUid = urlParams.get('uid');
 
@@ -376,14 +373,12 @@
                     if (isLogged && savedUid) {
                         loadUserData(savedUid);
                     } else {
-                        // Belum login, arahkan ke sign-in
                         window.location.replace("https://account.sitenexs.com/sign-in/");
                     }
                 }
             });
         }
 
-        // Simpan Perubahan Profil
         window.saveProfileChanges = async function(e) {
             e.preventDefault();
             if (!currentUid) return;
@@ -413,7 +408,6 @@
             }
         }
 
-        // Upload Foto ke Supabase Bucket
         window.uploadProfilePhoto = async function(event) {
             const file = event.target.files[0];
             if (!file || !currentUid) return;
@@ -422,15 +416,12 @@
 
             try {
                 const filePath = `${currentUid}/profile-photo`;
-
-                // Upload menggunakan Supabase Storage SDK (Upsert true untuk menimpa foto lama)
-                const { data, error } = await supabaseClient.storage
+                const { error } = await supabaseClient.storage
                     .from(avatarBucket)
                     .upload(filePath, file, { upsert: true, contentType: file.type });
 
                 if (error) throw error;
 
-                // Refresh foto di tampilan
                 const newPhotoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${filePath}?t=${Date.now()}`;
                 avatarImg.src = newPhotoUrl;
                 showAlert("Foto profil berhasil diperbarui!");
@@ -440,13 +431,21 @@
             }
         }
 
-        // Ambil Riwayat Postingan Pengguna
         async function loadUserPosts(uid) {
             try {
                 const qPosts = query(collection(db, "forum_posts"), where("authorUid", "==", uid));
                 const querySnapshot = await getDocs(qPosts);
 
                 statPostCount.innerText = querySnapshot.size;
+
+                let totalLikes = 0;
+                querySnapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.likes && Array.isArray(data.likes)) {
+                        totalLikes += data.likes.length;
+                    }
+                });
+                statLikeCount.innerText = totalLikes;
 
                 if (querySnapshot.empty) {
                     myPostsContainer.innerHTML = '<div class="loader-container"><p>Anda belum pernah membuat diskusi.</p></div>';
@@ -455,16 +454,20 @@
 
                 let html = "";
                 querySnapshot.forEach((docSnap) => {
+                    const postId = docSnap.id;
                     const post = docSnap.data();
                     const dateStr = post.createdAt ? new Date(post.createdAt.toDate()).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Baru saja';
                     
                     html += `
-                        <div class="my-post-item">
+                        <div class="my-post-item" id="post-row-${postId}">
                             <div class="my-post-info">
                                 <div class="my-post-title">${post.judul}</div>
                                 <div class="my-post-meta">Kategori: <strong>${post.kategori}</strong> • Diposting pada ${dateStr}</div>
                             </div>
-                            <a href="https://sitenexs.com/forum/" target="_blank" class="btn btn-secondary btn-sm"><i class="fas fa-external-link-alt"></i> Lihat</a>
+                            <div class="my-post-actions">
+                                <a href="https://sitenexs.com/forum/" target="_blank" class="btn btn-secondary btn-sm" title="Lihat"><i class="fas fa-external-link-alt"></i></a>
+                                <button onclick="deletePost('${postId}')" class="btn btn-danger btn-sm" title="Hapus Diskusi"><i class="fas fa-trash-alt"></i></button>
+                            </div>
                         </div>
                     `;
                 });
@@ -476,7 +479,23 @@
             }
         }
 
-        // Logout
+        // Fungsi Hapus Postingan
+        window.deletePost = async function(postId) {
+            if (confirm("Apakah Anda yakin ingin menghapus diskusi ini? Tindakan ini tidak dapat dibatalkan.")) {
+                try {
+                    await deleteDoc(doc(db, "forum_posts", postId));
+                    showAlert("Diskusi berhasil dihapus!");
+                    // Refresh data postingan
+                    if (currentUid) {
+                        loadUserPosts(currentUid);
+                    }
+                } catch (err) {
+                    console.error("Gagal menghapus postingan:", err);
+                    showAlert("Gagal menghapus diskusi.", "error");
+                }
+            }
+        }
+
         window.handleLogout = async function() {
             if (confirm("Apakah Anda yakin ingin keluar dari akun Sitenexs?")) {
                 localStorage.removeItem('sitenexs_uid');
