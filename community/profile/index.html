@@ -330,8 +330,15 @@
                 const bisnisBidang = data.bisnis?.bidang || 'UMKM Umum';
                 const telepon = data.telepon || data.whatsapp || '-';
                 
-                const isVerified = data.isVerified || data.isFounder || data.isDeveloper || false;
-                const isDeveloper = data.isDeveloper || false;
+                // --- PERBAIKAN LOGIKA VERIFIKASI ---
+                // Konversi semua variabel ke string dulu lalu periksa apakah 'true', atau gunakan Boolean() 
+                // untuk mengatasi masalah format data dari Firestore (bisa string "true", bisa boolean true)
+                const isVerifiedData = String(data.isVerified) === 'true' || data.isVerified === true;
+                const isFounderData = String(data.isFounder) === 'true' || data.isFounder === true;
+                const isDeveloperData = String(data.isDeveloper) === 'true' || data.isDeveloper === true;
+                
+                const isVerified = isVerifiedData || isFounderData || isDeveloperData;
+                const isDeveloper = isDeveloperData;
                 const jabatan = data.jabatanPengembang || (isDeveloper ? 'Mitra Pengembang' : 'Pemilik Usaha');
                 const paket = data.paketLangganan || 'Basic';
                 
@@ -350,6 +357,7 @@
                 const businessLogoUrl = data.bisnis?.logoUrl || `${supabaseUrl}/storage/v1/object/public/${businessLogoBucket}/${encodeURIComponent(uid)}/logo?t=${Date.now()}`;
                 const businessFallbackLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(bisnisNama)}&background=10b981&color=fff&size=100`;
 
+                // Badge Centang Biru Profil
                 const verifiedBadgeHTML = isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon" alt="Verified">` : '';
 
                 // Badge Paket
