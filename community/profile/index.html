@@ -333,7 +333,7 @@
         /* DETAILS GRID */
         .profile-details-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr); /* Diubah menjadi 3 kolom */
+            grid-template-columns: repeat(3, 1fr);
             gap: 1.25rem;
             margin-bottom: 2rem;
         }
@@ -446,7 +446,7 @@
                 <div class="state-box">
                     <i class="fas fa-spinner fa-spin"></i>
                     <h3>Memuat Profil Lengkap...</h3>
-                    <p>Mengambil data profil, logo bisnis, dan paket layanan dari server.</p>
+                    <p>Mengambil data profil, logo bisnis, dan rekam jejak komunitas...</p>
                 </div>
             </div>
         </div>
@@ -455,7 +455,7 @@
     <!-- SCRIPT FIREBASE & SUPABASE -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
-        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
@@ -473,6 +473,27 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        // Fungsi menghitung total likes dari forum untuk pengguna terkait
+        async function fetchUserReputation(uid) {
+            let totalLikes = 0;
+            try {
+                const forumRef = collection(db, "forum_posts");
+                // Cari semua postingan yang dibuat oleh author ini
+                const q = query(forumRef, where("authorUid", "==", uid));
+                const querySnapshot = await getDocs(q);
+                
+                querySnapshot.forEach((doc) => {
+                    const postData = doc.data();
+                    if (postData.likes && Array.isArray(postData.likes)) {
+                        totalLikes += postData.likes.length;
+                    }
+                });
+            } catch (err) {
+                console.error("Gagal mengambil data like dari forum:", err);
+            }
+            return totalLikes;
+        }
 
         async function loadUserProfile() {
             const container = document.getElementById('profile-card-container');
@@ -512,11 +533,14 @@
                 const bisnisNama = data.bisnis?.nama || 'Usaha UMKM Mandiri';
                 const bisnisBidang = data.bisnis?.bidang || 'UMKM & Perdagangan';
                 const telepon = data.telepon || data.whatsapp || '-';
-                const isVerified = data.isVerified || false;
+                
+                const isVerified = data.isVerified || data.isFounder || data.isDeveloper || false;
                 const isDeveloper = data.isDeveloper || false;
                 const jabatan = data.jabatanPengembang || (isDeveloper ? 'Mitra Pengembang' : 'Pemilik Usaha / UMKM');
                 const paket = data.paketLangganan || 'Basic';
-                const totalLikes = data.totalLikes || 0; // Mengambil jumlah like
+                
+                // Fetch reputasi dari postingan forum (realtime kalkulasi)
+                const totalLikes = await fetchUserReputation(uid);
                 
                 // Format Tanggal Bergabung
                 let tanggalBergabung = 'Belum tercatat';
@@ -526,10 +550,10 @@
                 }
 
                 // URL Gambar
-                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo`;
+                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo?t=${Date.now()}`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff&size=256`;
                 
-                const businessLogoUrl = data.bisnis?.logoUrl || `${supabaseUrl}/storage/v1/object/public/${businessLogoBucket}/${encodeURIComponent(uid)}/logo`;
+                const businessLogoUrl = data.bisnis?.logoUrl || `${supabaseUrl}/storage/v1/object/public/${businessLogoBucket}/${encodeURIComponent(uid)}/logo?t=${Date.now()}`;
                 const businessFallbackLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(bisnisNama)}&background=10b981&color=fff&size=128`;
 
                 const verifiedBadgeHTML = isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon" alt="Verified">` : '';
@@ -541,7 +565,7 @@
                 if (paketLower.includes('pro')) { packageClass = 'pro'; packageIcon = 'fa-crown'; }
                 else if (paketLower.includes('premium') || paketLower.includes('vip') || paketLower.includes('ultimate')) { packageClass = 'premium'; packageIcon = 'fa-gem'; }
 
-                // Render HTML Profil Lengkap (Bio telah dihapus, Like ditambahkan)
+                // Render HTML Profil Lengkap
                 container.innerHTML = `
                     <div class="profile-header-flex">
                         <div class="avatar-container">
@@ -584,8 +608,8 @@
                             <div class="detail-value">${telepon}</div>
                         </div>
                         <div class="detail-item">
-                            <div class="detail-label"><i class="fas fa-heart text-primary"></i> Reputasi (Disukai)</div>
-                            <div class="detail-value">${totalLikes}</div>
+                            <div class="detail-label"><i class="fas fa-heart text-primary"></i> Reputasi Komunitas</div>
+                            <div class="detail-value">${totalLikes} <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Suka (Likes)</span></div>
                         </div>
                     </div>
 
