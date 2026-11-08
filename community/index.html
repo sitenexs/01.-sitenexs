@@ -150,10 +150,13 @@
         .post-author-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(0,0,0,0.08); flex-shrink: 0; }
         
         .author-info { display: flex; flex-direction: column; justify-content: center; }
-        .author-name-row { display: flex; align-items: center; gap: 0.3rem; min-width: 0; }
-        .author-name { font-weight: 800; font-size: 0.95rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .member-verification-icon { width: 14px; height: 14px; object-fit: contain; flex-shrink: 0; }
-        .author-time { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+        
+        /* ALIGNMENT NAMA & CENTANG BIRU (POSTINGAN) */
+        .author-name-row { display: flex; align-items: center; gap: 0.25rem; min-width: 0; }
+        .author-name { font-weight: 800; font-size: 0.95rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1; }
+        .member-verification-icon { width: 14px; height: 14px; object-fit: contain; flex-shrink: 0; transform: translateY(1px); }
+        
+        .author-time { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; margin-top: 0.1rem; }
         
         .post-badge {
             font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: var(--radius-full);
@@ -197,8 +200,11 @@
             border-radius: 0 var(--radius-lg) var(--radius-lg) var(--radius-lg);
             display: inline-block; width: 100%; border: 1px solid var(--border-subtle);
         }
-        .comment-header-row { display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.2rem; }
-        .comment-author { font-weight: 800; font-size: 0.85rem; color: var(--text-main); }
+        
+        /* ALIGNMENT NAMA & CENTANG BIRU (KOMENTAR) */
+        .comment-header-row { display: flex; align-items: center; gap: 0.25rem; margin-bottom: 0.25rem; }
+        .comment-author { font-weight: 800; font-size: 0.85rem; color: var(--text-main); line-height: 1; }
+        
         .comment-text { font-size: 0.85rem; color: var(--text-main); word-break: break-word; line-height: 1.5; }
         .comment-time { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem; margin-left: 0.5rem; font-weight: 500; }
 
@@ -310,7 +316,7 @@
         <!-- TENGAH: FEED POSTINGAN (REALTIME) -->
         <section class="main-feed">
             
-            <!-- KOTAK BUAT POST (Gaya FB) -->
+            <!-- KOTAK BUAT POST -->
             <div class="create-post-box" onclick="checkAuthAndOpenModal()">
                 <img id="currentUserAvatar" src="https://ui-avatars.com/api/?name=User&background=cbd5e1&color=fff" alt="User">
                 <div class="create-post-input" id="createPostPromptText">Apa yang ingin Anda diskusikan hari ini?</div>
@@ -407,6 +413,9 @@
 
         const forumCollection = collection(db, "forum_posts");
 
+        // CACHE GLOBAL STATUS VERIFIKASI AGAR KOMENTAR LAMA TETAP BISA CENTANG BIRU
+        const userVerifCache = {}; 
+
         let currentUserData = null;
         const postContainer = document.getElementById('postContainer');
         const modal = document.getElementById('postModal');
@@ -427,7 +436,8 @@
                 if (userDocSnap.exists()) {
                     const d = userDocSnap.data();
                     namaLengkap = d.namaLengkap || d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '') || namaLengkap;
-                    isVerified = Boolean(d.isVerified);
+                    // Founder dan Developer secara otomatis dianggap terverifikasi
+                    isVerified = Boolean(d.isVerified) || Boolean(d.isFounder) || Boolean(d.isDeveloper); 
                 }
 
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo?t=${Date.now()}`;
@@ -440,6 +450,8 @@
                     avatar: photoUrl,
                     fallbackAvatar: fallbackUrl
                 };
+
+                userVerifCache[uid] = isVerified;
 
                 localStorage.setItem('sitenexs_logged_in', 'true');
                 localStorage.setItem('sitenexs_uid', uid);
@@ -569,7 +581,6 @@
             const activeUser = currentUserData || auth.currentUser;
             const uidVal = activeUser ? activeUser.uid : savedUid;
             const nameVal = activeUser ? activeUser.nama : "Mitra Sitenexs";
-            // Pastikan mengambil nilai boolean isVerified dari currentUserData
             const verifiedVal = currentUserData ? Boolean(currentUserData.isVerified) : false;
 
             const postRef = doc(db, "forum_posts", postId);
@@ -577,7 +588,7 @@
                 const newComment = {
                     authorUid: uidVal,
                     penulis: nameVal,
-                    isVerified: verifiedVal, // Menyimpan status verifikasi komentar
+                    isVerified: verifiedVal,
                     isi: commentText,
                     createdAt: new Date().toISOString()
                 };
@@ -616,7 +627,14 @@
 
                 const authorPhoto = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(data.authorUid)}/profile-photo`;
                 const authorFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.penulis)}&background=2563eb&color=fff`;
-                const verifiedIcon = data.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` : '';
+                
+                // Cek verifikasi author postingan
+                let verifiedIcon = '';
+                if (data.isVerified === true || String(data.isVerified) === 'true') {
+                    verifiedIcon = `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`;
+                } else {
+                    verifiedIcon = `<span class="async-verif-badge" data-uid="${data.authorUid}"></span>`;
+                }
 
                 const likes = data.likes || [];
                 const isLiked = likes.includes(currentActiveUid);
@@ -635,8 +653,14 @@
                     const cAvatar = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(cAuthorUid)}/profile-photo`;
                     const cFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.penulis)}&background=random&color=fff`;
                     
-                    // Logic memunculkan verified icon pada komentar
-                    const cVerified = c.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified" style="margin-left: 2px;">` : '';
+                    // RETROACTIVE CHECK UNTUK KOMENTAR LAMA: 
+                    // Jika di db komentar belum ada data verified, maka akan di cek ulang melalui class async
+                    let cVerified = '';
+                    if (c.isVerified === true || String(c.isVerified) === 'true') {
+                        cVerified = `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`;
+                    } else {
+                        cVerified = `<span class="async-verif-badge" data-uid="${cAuthorUid}"></span>`;
+                    }
 
                     commentsHtml += `
                         <div class="comment-item">
@@ -707,6 +731,35 @@
             });
 
             postContainer.innerHTML = htmlString;
+
+            // MENJALANKAN PENGECEKAN VERIFIKASI ASINKRON UNTUK KOMENTAR LAMA & PENULIS
+            setTimeout(() => {
+                document.querySelectorAll('.async-verif-badge').forEach(async (el) => {
+                    const uid = el.getAttribute('data-uid');
+                    if (!uid || uid === 'unknown' || el.innerHTML !== '') return;
+                    
+                    if (userVerifCache[uid] === undefined) {
+                        try {
+                            const snap = await getDoc(doc(db, "users", uid));
+                            if (snap.exists()) {
+                                const d = snap.data();
+                                // Verifikasi berlaku untuk IsVerified atau jika ia adalah Founder/Developer
+                                userVerifCache[uid] = Boolean(d.isVerified) || Boolean(d.isFounder) || Boolean(d.isDeveloper);
+                            } else {
+                                userVerifCache[uid] = false;
+                            }
+                        } catch(e) {
+                            userVerifCache[uid] = false;
+                        }
+                    }
+                    
+                    if (userVerifCache[uid]) {
+                        el.innerHTML = `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`;
+                    }
+                    el.classList.remove('async-verif-badge'); // Hapus class agar tidak dilooping ulang
+                });
+            }, 100);
+
         }, (error) => {
             console.error("Gagal memuat post:", error);
             postContainer.innerHTML = '<div class="loader-container"><p style="color:red;">Gagal memuat forum diskusi.</p></div>';
