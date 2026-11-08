@@ -36,27 +36,23 @@
             --border-medium: #cbd5e1;
             --border-accent: #93c5fd;
             --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
-            --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
-            --shadow-lg: 0 15px 30px -5px rgba(15, 23, 42, 0.08);
+            --shadow-md: 0 4px 10px -2px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
             --radius-sm: 0.375rem;
             --radius-md: 0.625rem;
             --radius-lg: 1rem;
-            --radius-xl: 1.5rem;
+            --radius-xl: 1.25rem;
             --radius-full: 9999px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: all 0.2s ease;
         }
 
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
-            line-height: 1.6;
+            line-height: 1.5;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -64,82 +60,50 @@
 
         a { text-decoration: none; color: inherit; }
 
+        /* KONTENER LEBIH KECIL (COMPACT) */
         .container {
             width: 100%;
-            max-width: 840px;
+            max-width: 550px; 
             margin: 0 auto;
-            padding: 0 1.5rem;
+            padding: 0 1rem;
         }
 
         /* BACKGROUND PATTERN */
         .bg-grid-pattern {
             background-image: 
-                linear-gradient(to right, rgba(37, 99, 235, 0.05) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(37, 99, 235, 0.05) 1px, transparent 1px);
-            background-size: 32px 32px;
+                linear-gradient(to right, rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(37, 99, 235, 0.04) 1px, transparent 1px);
+            background-size: 28px 28px;
         }
 
         /* NAVBAR */
         .profile-nav {
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.95);
             border-bottom: 1px solid var(--border-subtle);
-            padding: 1rem 0;
+            padding: 0.75rem 0;
             position: sticky;
             top: 0;
             z-index: 100;
             backdrop-filter: blur(10px);
         }
 
-        .nav-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-weight: 800;
-            font-size: 1.2rem;
-            color: var(--text-main);
-        }
-
-        .logo-img {
-            height: 35px;
-            width: 35px;
-            border-radius: var(--radius-full);
-            object-fit: cover;
-            border: 2px solid #fff;
-            box-shadow: var(--shadow-sm);
-        }
-
+        .nav-content { display: flex; align-items: center; justify-content: space-between; }
+        .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.05rem; color: var(--text-main); }
+        .logo-img { height: 28px; width: 28px; border-radius: var(--radius-full); object-fit: cover; border: 2px solid #fff; box-shadow: var(--shadow-sm); }
+        
         .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            transition: var(--transition);
-            background: var(--bg-alt);
-            padding: 0.5rem 1rem;
-            border-radius: var(--radius-full);
-            border: 1px solid var(--border-subtle);
+            display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; font-weight: 700;
+            color: var(--text-muted); transition: var(--transition); background: var(--bg-alt);
+            padding: 0.4rem 0.85rem; border-radius: var(--radius-full); border: 1px solid var(--border-subtle);
         }
-
-        .back-btn:hover {
-            color: var(--primary);
-            border-color: var(--border-accent);
-            background: var(--primary-light);
-        }
+        .back-btn:hover { color: var(--primary); border-color: var(--border-accent); background: var(--primary-light); }
 
         /* MAIN SECTION */
         .profile-section {
-            padding: 3rem 0;
+            padding: 2rem 0;
             flex: 1;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
         }
 
@@ -147,279 +111,112 @@
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-xl);
-            padding: 3rem;
-            box-shadow: var(--shadow-lg);
+            padding: 1.75rem;
+            box-shadow: var(--shadow-md);
             width: 100%;
             position: relative;
             overflow: hidden;
         }
 
         .profile-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 6px;
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
             background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
         }
 
         /* LOADING & ERROR STATES */
-        .state-box {
-            text-align: center;
-            padding: 3rem 1rem;
-        }
+        .state-box { text-align: center; padding: 2.5rem 1rem; }
+        .state-box i { font-size: 2rem; color: var(--primary); margin-bottom: 0.75rem; }
+        .state-box h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.3rem; }
+        .state-box p { color: var(--text-muted); font-size: 0.85rem; }
 
-        .state-box i {
-            font-size: 2.5rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-
-        .state-box h3 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .state-box p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        /* PROFILE HEADER */
+        /* PROFILE HEADER (COMPACT) */
         .profile-header-flex {
             display: flex;
             align-items: center;
-            gap: 2rem;
-            margin-bottom: 2.5rem;
-            padding-bottom: 2rem;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
             border-bottom: 1px solid var(--border-subtle);
         }
 
         .avatar-container {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            min-width: 120px;
-            border-radius: 50%;
-            padding: 4px;
+            position: relative; width: 85px; height: 85px; min-width: 85px;
+            border-radius: 50%; padding: 3px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-sm);
         }
 
-        .profile-avatar {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            background: var(--bg-body);
-            border: 3px solid #fff;
-        }
+        .profile-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--bg-body); border: 2px solid #fff; }
 
         .profile-meta h1 {
-            font-size: 1.7rem;
-            font-weight: 800;
-            color: var(--text-main);
-            margin-bottom: 0.3rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
+            font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.2rem;
+            display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; line-height: 1.2;
         }
 
-        .verified-icon {
-            width: 20px;
-            height: 20px;
-            object-fit: contain;
-        }
+        .verified-icon { width: 16px; height: 16px; object-fit: contain; transform: translateY(1px); }
 
-        .badges-row {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            margin-bottom: 0.75rem;
-        }
-
+        .badges-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+        
         .profile-role-badge, .package-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 0.3rem 0.8rem;
-            border-radius: var(--radius-full);
-            border: 1px solid transparent;
+            display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.65rem; font-weight: 700;
+            padding: 0.2rem 0.5rem; border-radius: var(--radius-full); border: 1px solid transparent;
         }
+        .profile-role-badge { color: var(--primary); background: var(--primary-light); border-color: rgba(37, 99, 235, 0.15); }
+        .package-badge.pro { background: #fef08a; color: #854d0e; border-color: #fde047; }
+        .package-badge.premium { background: #e9d5ff; color: #6b21a8; border-color: #d8b4fe; }
+        .package-badge.basic { background: var(--bg-alt); color: var(--text-muted); border-color: var(--border-subtle); }
 
-        .profile-role-badge {
-            color: var(--primary);
-            background: var(--primary-light);
-            border-color: rgba(37, 99, 235, 0.15);
+        .profile-joined { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; font-weight: 500; }
+
+        /* STATS BAR (BARU & RINGKAS) */
+        .profile-stats {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--bg-body); border-radius: var(--radius-lg); padding: 0.85rem;
+            margin-bottom: 1.5rem; border: 1px solid var(--border-subtle);
         }
+        
+        .stat-item { flex: 1; text-align: center; border-right: 1px solid var(--border-subtle); }
+        .stat-item:last-child { border-right: none; }
+        .stat-value { font-size: 1.05rem; font-weight: 800; color: var(--text-main); line-height: 1.2; }
+        .stat-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.1rem; }
 
-        .package-badge.pro {
-            background: #fef08a;
-            color: #854d0e;
-            border-color: #fde047;
-        }
-
-        .package-badge.premium {
-            background: #e9d5ff;
-            color: #6b21a8;
-            border-color: #d8b4fe;
-        }
-
-        .package-badge.basic {
-            background: var(--bg-alt);
-            color: var(--text-muted);
-            border-color: var(--border-subtle);
-        }
-
-        .profile-joined {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        /* BUSINESS CARD BANNER */
+        /* BUSINESS CARD BANNER (COMPACT) */
         .business-showcase {
             background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
-            border: 1px solid var(--border-accent);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            border: 1px solid var(--border-accent); border-radius: var(--radius-md);
+            padding: 1rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
             box-shadow: var(--shadow-sm);
         }
 
         .business-logo-box {
-            width: 65px;
-            height: 65px;
-            min-width: 65px;
-            background: #ffffff;
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid var(--border-medium);
-            overflow: hidden;
-            box-shadow: var(--shadow-sm);
+            width: 50px; height: 50px; min-width: 50px; background: #ffffff;
+            border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--border-medium); overflow: hidden; box-shadow: var(--shadow-sm);
         }
+        .business-logo { width: 100%; height: 100%; object-fit: cover; }
 
-        .business-logo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .business-info h3 {
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: var(--text-main);
-            margin-bottom: 0.2rem;
-        }
-
-        .business-info p {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        /* DETAILS GRID */
-        .profile-details-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.25rem;
-            margin-bottom: 2rem;
-        }
-
-        .detail-item {
-            background: var(--bg-body);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            padding: 1.25rem;
-        }
-
-        .detail-label {
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.3rem;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .detail-value {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
+        .business-info h3 { font-size: 1rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.1rem; line-height: 1.2; }
+        .business-info p { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; font-weight: 500; }
 
         /* ACTION BUTTONS */
-        .profile-actions {
-            display: flex;
-            gap: 1rem;
-        }
-
+        .profile-actions { display: flex; gap: 0.75rem; }
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.85rem 1.5rem;
-            font-size: 0.95rem;
-            font-weight: 700;
-            border-radius: var(--radius-full);
-            transition: var(--transition);
-            cursor: pointer;
-            border: 1px solid transparent;
-            text-align: center;
-            flex: 1;
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+            padding: 0.75rem 1rem; font-size: 0.85rem; font-weight: 700; border-radius: var(--radius-full);
+            transition: var(--transition); cursor: pointer; border: 1px solid transparent; text-align: center; flex: 1;
         }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
-        }
-
-        .btn-secondary {
-            background-color: #ffffff;
-            color: var(--text-main);
-            border: 1px solid var(--border-medium);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            transform: translateY(-2px);
-        }
+        .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #ffffff; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35); }
+        .btn-secondary { background-color: #ffffff; color: var(--text-main); border: 1px solid var(--border-medium); box-shadow: var(--shadow-sm); }
+        .btn-secondary:hover { border-color: var(--border-medium); background: var(--bg-body); transform: translateY(-2px); }
 
         /* RESPONSIVE */
-        @media (max-width: 640px) {
-            .profile-card { padding: 1.5rem; }
-            .profile-header-flex { flex-direction: column; text-align: center; gap: 1rem; }
-            .profile-meta h1 { justify-content: center; }
-            .badges-row { justify-content: center; }
-            .profile-joined { justify-content: center; }
-            .business-showcase { flex-direction: column; text-align: center; gap: 1rem; }
-            .business-info p { justify-content: center; }
-            .profile-details-grid { grid-template-columns: 1fr; }
+        @media (max-width: 480px) {
+            .profile-header-flex { gap: 1rem; }
+            .avatar-container { width: 75px; height: 75px; min-width: 75px; }
+            .profile-meta h1 { font-size: 1.15rem; }
             .profile-actions { flex-direction: column; }
+            .business-showcase { padding: 0.85rem; gap: 0.75rem; }
         }
     </style>
 </head>
@@ -433,7 +230,7 @@
                 <span>SiteNexs</span>
             </a>
             <a href="https://sitenexs.com/#mitra" class="back-btn">
-                <i class="fas fa-arrow-left"></i> Kembali ke Beranda
+                <i class="fas fa-arrow-left"></i> Kembali
             </a>
         </div>
     </header>
@@ -445,8 +242,8 @@
                 <!-- State Loading Awal -->
                 <div class="state-box">
                     <i class="fas fa-spinner fa-spin"></i>
-                    <h3>Memuat Profil Lengkap...</h3>
-                    <p>Mengambil data profil, logo bisnis, dan rekam jejak komunitas...</p>
+                    <h3>Memuat Profil...</h3>
+                    <p>Mengambil data anggota Sitenexs.</p>
                 </div>
             </div>
         </div>
@@ -474,12 +271,11 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Fungsi menghitung total likes dari forum untuk pengguna terkait
+        // Fungsi menghitung total likes dari forum
         async function fetchUserReputation(uid) {
             let totalLikes = 0;
             try {
                 const forumRef = collection(db, "forum_posts");
-                // Cari semua postingan yang dibuat oleh author ini
                 const q = query(forumRef, where("authorUid", "==", uid));
                 const querySnapshot = await getDocs(q);
                 
@@ -490,7 +286,7 @@
                     }
                 });
             } catch (err) {
-                console.error("Gagal mengambil data like dari forum:", err);
+                console.error("Gagal mengambil data like:", err);
             }
             return totalLikes;
         }
@@ -504,9 +300,9 @@
                 container.innerHTML = `
                     <div class="state-box">
                         <i class="fas fa-user-slash" style="color: #ef4444;"></i>
-                        <h3>UID Pengguna Tidak Ditemukan</h3>
-                        <p>Tautan profil yang Anda akses tidak menyertakan parameter UID yang valid.</p>
-                        <a href="https://sitenexs.com/#mitra" class="btn btn-primary" style="margin-top: 1.5rem; display: inline-flex; width: auto;">Kembali ke Beranda</a>
+                        <h3>UID Tidak Ditemukan</h3>
+                        <p>Tautan profil tidak menyertakan UID yang valid.</p>
+                        <a href="https://sitenexs.com/#mitra" class="btn btn-primary" style="margin-top: 1rem;">Kembali</a>
                     </div>
                 `;
                 return;
@@ -521,8 +317,8 @@
                         <div class="state-box">
                             <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
                             <h3>Profil Tidak Ditemukan</h3>
-                            <p>Pengguna dengan ID tersebut tidak terdaftar di dalam sistem komunitas Sitenexs.</p>
-                            <a href="https://sitenexs.com/#mitra" class="btn btn-primary" style="margin-top: 1.5rem; display: inline-flex; width: auto;">Kembali ke Beranda</a>
+                            <p>Pengguna tidak terdaftar di sistem.</p>
+                            <a href="https://sitenexs.com/#mitra" class="btn btn-primary" style="margin-top: 1rem;">Kembali</a>
                         </div>
                     `;
                     return;
@@ -530,97 +326,97 @@
 
                 const data = docSnap.data();
                 const namaLengkap = data.namaLengkap || `${data.namaDepan || ''} ${data.namaBelakang || ''}`.trim() || 'Anggota Sitenexs';
-                const bisnisNama = data.bisnis?.nama || 'Usaha UMKM Mandiri';
-                const bisnisBidang = data.bisnis?.bidang || 'UMKM & Perdagangan';
+                const bisnisNama = data.bisnis?.nama || 'Usaha Mandiri';
+                const bisnisBidang = data.bisnis?.bidang || 'UMKM Umum';
                 const telepon = data.telepon || data.whatsapp || '-';
                 
                 const isVerified = data.isVerified || data.isFounder || data.isDeveloper || false;
                 const isDeveloper = data.isDeveloper || false;
-                const jabatan = data.jabatanPengembang || (isDeveloper ? 'Mitra Pengembang' : 'Pemilik Usaha / UMKM');
+                const jabatan = data.jabatanPengembang || (isDeveloper ? 'Mitra Pengembang' : 'Pemilik Usaha');
                 const paket = data.paketLangganan || 'Basic';
                 
-                // Fetch reputasi dari postingan forum (realtime kalkulasi)
                 const totalLikes = await fetchUserReputation(uid);
                 
-                // Format Tanggal Bergabung
-                let tanggalBergabung = 'Belum tercatat';
+                let tanggalBergabung = 'Baru saja';
                 if (data.createdAt) {
                     const dateObj = new Date(data.createdAt);
-                    tanggalBergabung = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                    tanggalBergabung = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
                 }
 
                 // URL Gambar
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo?t=${Date.now()}`;
-                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff&size=256`;
+                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff&size=200`;
                 
                 const businessLogoUrl = data.bisnis?.logoUrl || `${supabaseUrl}/storage/v1/object/public/${businessLogoBucket}/${encodeURIComponent(uid)}/logo?t=${Date.now()}`;
-                const businessFallbackLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(bisnisNama)}&background=10b981&color=fff&size=128`;
+                const businessFallbackLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(bisnisNama)}&background=10b981&color=fff&size=100`;
 
                 const verifiedBadgeHTML = isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="verified-icon" alt="Verified">` : '';
 
-                // Badge Paket Kelas
+                // Badge Paket
                 let packageClass = 'basic';
                 let packageIcon = 'fa-box';
                 const paketLower = paket.toLowerCase();
                 if (paketLower.includes('pro')) { packageClass = 'pro'; packageIcon = 'fa-crown'; }
                 else if (paketLower.includes('premium') || paketLower.includes('vip') || paketLower.includes('ultimate')) { packageClass = 'premium'; packageIcon = 'fa-gem'; }
 
-                // Render HTML Profil Lengkap
+                // RENDER HTML COMPACT
                 container.innerHTML = `
                     <div class="profile-header-flex">
                         <div class="avatar-container">
                             <img src="${photoUrl}" alt="Avatar ${namaLengkap}" class="profile-avatar" onerror="this.onerror=null; this.src='${fallbackUrl}';">
                         </div>
                         <div class="profile-meta">
+                            <h1>${namaLengkap} ${verifiedBadgeHTML}</h1>
                             <div class="badges-row">
                                 <span class="profile-role-badge">
                                     <i class="fas ${isDeveloper ? 'fa-code' : 'fa-user-tie'}"></i> ${jabatan}
                                 </span>
                                 <span class="package-badge ${packageClass}">
-                                    <i class="fas ${packageIcon}"></i> Paket ${paket.toUpperCase()}
+                                    <i class="fas ${packageIcon}"></i> ${paket}
                                 </span>
                             </div>
-                            <h1>${namaLengkap} ${verifiedBadgeHTML}</h1>
                             <div class="profile-joined">
-                                <i class="fas fa-calendar-alt text-primary"></i> Bergabung sejak ${tanggalBergabung}
+                                <i class="fas fa-calendar-alt text-muted"></i> Bergabung ${tanggalBergabung}
                             </div>
                         </div>
                     </div>
 
-                    <!-- SHOWCASE BISNIS & LOGO -->
+                    <!-- STATS BAR HORIZONTAL -->
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-value"><i class="fas fa-heart" style="color: #ef4444; font-size:0.9rem;"></i> ${totalLikes}</div>
+                            <div class="stat-label">Reputasi</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" style="color: var(--primary);">${paket.toUpperCase()}</div>
+                            <div class="stat-label">Status Layanan</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value"><i class="fas fa-check-circle" style="color: var(--accent);"></i></div>
+                            <div class="stat-label">Akun Aktif</div>
+                        </div>
+                    </div>
+
+                    <!-- BUSINESS SHOWCASE COMPACT -->
                     <div class="business-showcase">
                         <div class="business-logo-box">
                             <img src="${businessLogoUrl}" alt="Logo ${bisnisNama}" class="business-logo" onerror="this.onerror=null; this.src='${businessFallbackLogo}';">
                         </div>
                         <div class="business-info">
                             <h3>${bisnisNama}</h3>
-                            <p><i class="fas fa-store text-primary"></i> Bidang: <strong>${bisnisBidang}</strong></p>
+                            <p><i class="fas fa-store text-primary"></i> ${bisnisBidang}</p>
                         </div>
                     </div>
 
-                    <div class="profile-details-grid">
-                        <div class="detail-item">
-                            <div class="detail-label"><i class="fas fa-layer-group text-primary"></i> Layanan Aktif</div>
-                            <div class="detail-value" style="text-transform: uppercase; color: var(--primary);">${paket}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label"><i class="fas fa-phone-alt text-primary"></i> Kontak WhatsApp</div>
-                            <div class="detail-value">${telepon}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label"><i class="fas fa-heart text-primary"></i> Reputasi Komunitas</div>
-                            <div class="detail-value">${totalLikes} <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Suka (Likes)</span></div>
-                        </div>
-                    </div>
-
+                    <!-- ACTIONS -->
                     <div class="profile-actions">
                         ${telepon !== '-' ? `
                             <a href="https://wa.me/${telepon.replace(/[^0-9]/g, '')}?text=Halo%20${encodeURIComponent(namaLengkap)},%20saya%20menemukan%20profil%20bisnis%20${encodeURIComponent(bisnisNama)}%20di%20komunitas%20Sitenexs." target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-                                <i class="fab fa-whatsapp"></i> Hubungi Pemilik Bisnis
+                                <i class="fab fa-whatsapp" style="font-size: 1rem;"></i> Hubungi
                             </a>
                         ` : ''}
                         <a href="https://sitenexs.com/#mitra" class="btn btn-secondary">
-                            <i class="fas fa-users"></i> Jelajahi Anggota Lainnya
+                            <i class="fas fa-users"></i> Jelajahi Komunitas
                         </a>
                     </div>
                 `;
@@ -631,8 +427,8 @@
                     <div class="state-box">
                         <i class="fas fa-wifi" style="color: #ef4444;"></i>
                         <h3>Terjadi Kesalahan Jaringan</h3>
-                        <p>Gagal memuat informasi profil dari server. Silakan coba beberapa saat lagi.</p>
-                        <a href="https://sitenexs.com/#mitra" class="btn btn-primary" style="margin-top: 1.5rem; display: inline-flex; width: auto;">Kembali ke Beranda</a>
+                        <p>Gagal memuat profil dari server.</p>
+                        <a href="https://sitenexs.com/#mitra" class="btn btn-primary" style="margin-top: 1rem;">Kembali</a>
                     </div>
                 `;
             }
