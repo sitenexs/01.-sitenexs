@@ -333,7 +333,7 @@
         /* DETAILS GRID */
         .profile-details-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr); /* Diubah menjadi 3 kolom */
             gap: 1.25rem;
             margin-bottom: 2rem;
         }
@@ -361,32 +361,6 @@
             font-size: 1.05rem;
             font-weight: 700;
             color: var(--text-main);
-        }
-
-        /* BIO / DESCRIPTION */
-        .profile-bio-box {
-            background: var(--bg-alt);
-            border-left: 4px solid var(--primary);
-            padding: 1.25rem 1.5rem;
-            border-radius: 0 var(--radius-md) var(--radius-md) 0;
-            margin-bottom: 2rem;
-        }
-
-        .bio-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 0.3rem;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .bio-text {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            line-height: 1.6;
         }
 
         /* ACTION BUTTONS */
@@ -495,7 +469,7 @@
 
         const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
         const avatarBucket = 'profile-photos';
-        const businessLogoBucket = 'business-logos'; // Asumsi bucket Supabase untuk logo bisnis (jika ada)
+        const businessLogoBucket = 'business-logos';
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -538,11 +512,11 @@
                 const bisnisNama = data.bisnis?.nama || 'Usaha UMKM Mandiri';
                 const bisnisBidang = data.bisnis?.bidang || 'UMKM & Perdagangan';
                 const telepon = data.telepon || data.whatsapp || '-';
-                const bio = data.bio || 'Pengusaha mikro yang berdedikasi mengembangkan efisiensi operasional bisnis melalui transformasi digital bersama Sitenexs.';
                 const isVerified = data.isVerified || false;
                 const isDeveloper = data.isDeveloper || false;
                 const jabatan = data.jabatanPengembang || (isDeveloper ? 'Mitra Pengembang' : 'Pemilik Usaha / UMKM');
                 const paket = data.paketLangganan || 'Basic';
+                const totalLikes = data.totalLikes || 0; // Mengambil jumlah like
                 
                 // Format Tanggal Bergabung
                 let tanggalBergabung = 'Belum tercatat';
@@ -567,7 +541,7 @@
                 if (paketLower.includes('pro')) { packageClass = 'pro'; packageIcon = 'fa-crown'; }
                 else if (paketLower.includes('premium') || paketLower.includes('vip') || paketLower.includes('ultimate')) { packageClass = 'premium'; packageIcon = 'fa-gem'; }
 
-                // Render HTML Profil Lengkap
+                // Render HTML Profil Lengkap (Bio telah dihapus, Like ditambahkan)
                 container.innerHTML = `
                     <div class="profile-header-flex">
                         <div class="avatar-container">
@@ -600,11 +574,6 @@
                         </div>
                     </div>
 
-                    <div class="profile-bio-box">
-                        <div class="bio-title"><i class="fas fa-quote-left"></i> Tentang Pemilik & Usaha</div>
-                        <p class="bio-text">${bio}</p>
-                    </div>
-
                     <div class="profile-details-grid">
                         <div class="detail-item">
                             <div class="detail-label"><i class="fas fa-layer-group text-primary"></i> Layanan Aktif</div>
@@ -613,6 +582,10 @@
                         <div class="detail-item">
                             <div class="detail-label"><i class="fas fa-phone-alt text-primary"></i> Kontak WhatsApp</div>
                             <div class="detail-value">${telepon}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-heart text-primary"></i> Reputasi (Disukai)</div>
+                            <div class="detail-value">${totalLikes}</div>
                         </div>
                     </div>
 
