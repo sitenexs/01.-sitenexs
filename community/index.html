@@ -231,11 +231,12 @@
         .modal-content {
             background: #fff; width: 100%; max-width: 480px; border-radius: var(--radius-lg);
             padding: 1.25rem; transform: translateY(15px); transition: all 0.2s ease; box-shadow: var(--shadow-lg);
+            max-height: 90vh; overflow-y: auto;
         }
         .modal-overlay.active .modal-content { transform: translateY(0); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.65rem; border-bottom: 1px solid var(--border-subtle); }
         .modal-header h3 { font-size: 0.95rem; font-weight: 800; color: var(--text-main); }
-        .close-modal { background: var(--bg-body); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; transition: var(--transition); }
+        .close-modal { background: var(--bg-body); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; transition: var(--transition); border: none; }
         .close-modal:hover { background: #fef2f2; color: #ef4444; }
         
         .form-group { margin-bottom: 0.85rem; }
@@ -252,6 +253,24 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* UPLOAD FOTO CSS BARU */
+        .image-upload-wrapper { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
+        .image-upload-label { 
+            display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; 
+            border: 1px dashed var(--border-medium); border-radius: var(--radius-sm); 
+            color: var(--text-muted); cursor: pointer; font-size: 0.75rem; font-weight: 600; 
+            transition: var(--transition); width: fit-content;
+        }
+        .image-upload-label:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+        .image-preview-container { position: relative; display: none; width: 100%; margin-top: 0.5rem; }
+        .image-preview-container img { width: 100%; max-height: 250px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); }
+        .remove-image-btn { 
+            position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(15, 23, 42, 0.7); 
+            color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; 
+            align-items: center; justify-content: center; cursor: pointer; border: none; font-size: 0.7rem; 
+        }
+        .post-image { width: 100%; max-height: 350px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 0.65rem; border: 1px solid var(--border-subtle); }
 
         @media (max-width: 1024px) {
             .forum-layout { grid-template-columns: 180px 1fr; }
@@ -362,7 +381,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Buat Diskusi Baru</h3>
-                <button class="close-modal" onclick="closeModal()"><i class="fas fa-times"></i></button>
+                <button type="button" class="close-modal" onclick="closeModal()"><i class="fas fa-times"></i></button>
             </div>
             <form id="createPostForm">
                 <div class="form-group">
@@ -381,6 +400,17 @@
                 <div class="form-group">
                     <textarea id="postContent" class="form-control" rows="4" placeholder="Jelaskan pertanyaan atau bagikan pemikiran Anda secara detail..." required></textarea>
                 </div>
+                
+                <!-- FITUR UPLOAD FOTO BARU -->
+                <div class="form-group image-upload-wrapper">
+                    <input type="file" id="postImage" accept="image/*" style="display: none;" onchange="previewImage(event)">
+                    <label for="postImage" class="image-upload-label"><i class="fas fa-image"></i> Tambah Foto (Opsional)</label>
+                    <div class="image-preview-container" id="imagePreviewContainer">
+                        <img id="imagePreview" src="" alt="Preview Foto">
+                        <button type="button" class="remove-image-btn" onclick="removeImage()"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button>
                     <button type="submit" class="btn btn-primary" id="submitPostBtn"><i class="fas fa-paper-plane"></i> Posting</button>
@@ -405,7 +435,10 @@
         };
 
         const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
+        // PENAMBAHAN PUBLISHABLE KEY BARU UNTUK UPLOAD FOTO
+        const supabaseKey = 'sb_publishable_XKHXYrEw2EDdfYH17Uyx6w_k_BtGLQa';
         const avatarBucket = 'profile-photos';
+        const forumBucket = 'forum-photos'; // Bucket khusus untuk foto postingan forum
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -425,6 +458,25 @@
         const submitBtn = document.getElementById('submitPostBtn');
         const avatarImg = document.getElementById('currentUserAvatar');
         const promptText = document.getElementById('createPostPromptText');
+
+        // Fungsi Global untuk Preview dan Hapus Gambar
+        window.previewImage = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imagePreviewContainer').style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        window.removeImage = function() {
+            document.getElementById('postImage').value = '';
+            document.getElementById('imagePreviewContainer').style.display = 'none';
+            document.getElementById('imagePreview').src = '';
+        }
 
         // Mengambil profil pengguna yang sedang login
         async function fetchUserProfile(uid, fallbackName = "Mitra Sitenexs") {
@@ -511,6 +563,7 @@
         window.closeModal = function() {
             modal.classList.remove('active');
             document.body.style.overflow = '';
+            removeImage(); // Bersihkan gambar jika modal ditutup
         }
 
         function timeAgo(date) {
@@ -638,6 +691,9 @@
                     verifiedIcon = `<span class="async-verif-badge" data-uid="${data.authorUid}"></span>`;
                 }
 
+                // Render Elemen Gambar jika data.imageUrl ada
+                const postImageHtml = data.imageUrl ? `<img src="${data.imageUrl}" alt="Foto Diskusi" class="post-image">` : '';
+
                 const likes = data.likes || [];
                 const isLiked = likes.includes(currentActiveUid);
                 const likeCount = likes.length;
@@ -708,6 +764,7 @@
                             
                             <h2 class="post-title">${data.judul}</h2>
                             <p class="post-content">${data.isi}</p>
+                            ${postImageHtml}
                         </div>
                         
                         <div class="post-actions">
@@ -771,7 +828,7 @@
             postContainer.innerHTML = '<div class="loader-container"><p style="color:red;">Gagal memuat forum diskusi.</p></div>';
         });
 
-        // Submit Buat Postingan Baru
+        // Submit Buat Postingan Baru Termasuk FOTO
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -797,6 +854,35 @@
             submitBtn.disabled = true;
 
             try {
+                let imageUrl = null;
+                const fileInput = document.getElementById('postImage');
+                const file = fileInput.files[0];
+
+                // LOGIKA UPLOAD GAMBAR KE SUPABASE
+                if (file) {
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah Foto...';
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${Date.now()}_${Math.floor(Math.random()*1000)}.${fileExt}`;
+                    
+                    const uploadRes = await fetch(`${supabaseUrl}/storage/v1/object/${forumBucket}/${fileName}`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${supabaseKey}`,
+                            'apikey': supabaseKey,
+                            'Content-Type': file.type
+                        },
+                        body: file
+                    });
+                    
+                    if (uploadRes.ok) {
+                        imageUrl = `${supabaseUrl}/storage/v1/object/public/${forumBucket}/${fileName}`;
+                    } else {
+                        console.error("Gagal upload gambar, tapi post akan dilanjutkan.", await uploadRes.text());
+                    }
+                }
+
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
                 const activeUser = currentUserData || auth.currentUser;
                 const uidVal = activeUser ? activeUser.uid : savedUid;
                 const nameVal = activeUser ? activeUser.nama : "Mitra Sitenexs";
@@ -809,12 +895,14 @@
                     kategori: category,
                     judul: title,
                     isi: content,
+                    imageUrl: imageUrl, // Menyimpan link gambar jika ada
                     likes: [],
                     comments: [],
                     createdAt: serverTimestamp()
                 });
 
                 form.reset();
+                removeImage(); // Bersihkan preview
                 closeModal();
             } catch (error) {
                 console.error("Gagal mengirim postingan:", error);
