@@ -40,6 +40,45 @@
             --transition: all 0.2s ease;
         }
 
+        /* SISTEM TEMA PAKET LANGGANAN (SAMA SEPERTI PROFIL.HTML) */
+        body[data-package="pro"] {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --primary-light: #f0f9ff;
+            --accent: #f59e0b;
+            --border-accent: #38bdf8;
+        }
+
+        body[data-package="pro"] .btn-primary {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35);
+        }
+
+        body[data-package="vip"],
+        body[data-package="ultimate"],
+        body[data-package="premium"] {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --primary-light: #f5f3ff;
+            --accent: #fbbf24;
+            --border-accent: #c084fc;
+        }
+
+        body[data-package="vip"] #navbar,
+        body[data-package="ultimate"] #navbar,
+        body[data-package="premium"] #navbar {
+            border-bottom: 2px solid transparent;
+            border-image: linear-gradient(90deg, #7c3aed, #fbbf24, #7c3aed) 1;
+        }
+
+        body[data-package="vip"] .btn-primary,
+        body[data-package="ultimate"] .btn-primary,
+        body[data-package="premium"] .btn-primary {
+            background: linear-gradient(135deg, #7c3aed 0%, #d97706 100%);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+            border: 1px solid rgba(254, 240, 138, 0.5);
+        }
+
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -49,6 +88,7 @@
             line-height: 1.4;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
 
         a { text-decoration: none; color: inherit; }
@@ -99,7 +139,6 @@
         .logo { display: flex; align-items: center; gap: 0.4rem; font-weight: 800; font-size: 0.95rem; color: var(--text-main); flex-shrink: 0; }
         .logo img { height: 24px; width: 24px; border-radius: 50%; object-fit: cover; }
         
-        /* LOGO TEKS GRADIEN SITENEXS */
         .logo-text-gradient {
             background: linear-gradient(135deg, #2563eb 0%, #0284c7 100%);
             -webkit-background-clip: text;
@@ -416,7 +455,7 @@
         }
     </style>
 </head>
-<body>
+<body data-package="basic">
 
     <!-- BACKDROP MODE FOKUS -->
     <div class="focus-backdrop" id="focusBackdrop" onclick="exitFocusMode()"></div>
@@ -426,12 +465,10 @@
         <div class="nav-container">
             <a href="https://sitenexs.com/" class="logo">
                 <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" onerror="this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff'">
-                <!-- TEKS SITENEXS DENGAN GRADIEN -->
                 <span class="logo-text-gradient">Sitenexs</span>
             </a>
             <div class="nav-actions">
                 <a href="https://sitenexs.com/" class="btn btn-secondary btn-sm"><i class="fas fa-home"></i> Beranda</a>
-                <!-- TOMBOL PROFIL MENGARAH KE ACCOUNT SITENEXS PROFILE -->
                 <a href="https://account.sitenexs.com/profile" id="authNavBtn" class="nav-profile-btn">
                     <img id="navUserAvatar" src="https://ui-avatars.com/api/?name=User&background=cbd5e1&color=fff" alt="Profil" class="nav-profile-img">
                     <span id="navUserName">Profil</span>
@@ -483,9 +520,8 @@
                 <button type="button" class="close-modal" onclick="closeModal()"><i class="fas fa-times"></i></button>
             </div>
             <form id="createPostForm">
-                <!-- JUDUL MENJADI OPSIONAL & TANPA PILIHAN KATEGORI -->
                 <div class="form-group">
-                    <input type="text" id="postTitle" class="form-control" placeholder="Judul (Opsional)" style="font-weight: 700;">
+                    <input type="text" id="postTitle" class="form-control" placeholder="Judul Diskusi (Opsional)" style="font-weight: 700;">
                 </div>
                 <div class="form-group">
                     <textarea id="postContent" class="form-control" rows="4" placeholder="Jelaskan pertanyaan atau bagikan pemikiran Anda secara detail..." required></textarea>
@@ -674,6 +710,29 @@
             return formatted;
         }
 
+        // TEMA PAKET LANGGANAN OTOMATIS BERDASARKAN DATABASE USER
+        async function applyUserPackageTheme(uid) {
+            try {
+                const userDocRef = doc(db, "users", uid);
+                const userDocSnap = await getDoc(userDocRef);
+                let pkg = 'basic';
+
+                if (userDocSnap.exists()) {
+                    const data = userDocSnap.data();
+                    let rawPkg = data.paketLangganan || data.paket || 'Basic';
+                    rawPkg = rawPkg.replace(/^(paket\s*)+/i, '').trim().toLowerCase();
+                    if (rawPkg.includes('pro') || rawPkg.includes('business')) {
+                        pkg = 'pro';
+                    } else if (rawPkg.includes('vip') || rawPkg.includes('ultimate') || rawPkg.includes('premium')) {
+                        pkg = 'vip';
+                    }
+                }
+                document.body.setAttribute('data-package', pkg);
+            } catch (err) {
+                console.error("Gagal mendeteksi tema paket:", err);
+            }
+        }
+
         // --- FITUR LONG-PRESS FOCUS & BLUR MODE (POSTINGAN & KOMENTAR) ---
         let pressTimer = null;
         let startX = 0;
@@ -827,6 +886,9 @@
                     namaLengkap = d.namaLengkap || d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '') || namaLengkap;
                     isVerified = Boolean(d.isVerified) || Boolean(d.isFounder) || Boolean(d.isDeveloper); 
                 }
+
+                // Terapkan Tema Paket
+                await applyUserPackageTheme(uid);
 
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo?t=${Date.now()}`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff`;
@@ -1027,9 +1089,8 @@
             const dateObj = data.createdAt ? data.createdAt.toDate() : new Date();
             const waktuString = timeAgo(dateObj);
 
-            // RENDER BADGE KATEGORI JIKA ADA DATA LAMA
             let badgeHtml = '';
-            if (data.kategori) {
+            if (data.kategori && data.kategori !== "Diskusi Umum") {
                 let badgeClass = 'badge-tips';
                 if (data.kategori === 'Pengumuman') badgeClass = 'badge-pengumuman';
                 else if (data.kategori === 'Lapor Bug') badgeClass = 'badge-bug';
@@ -1332,7 +1393,6 @@
             const title = document.getElementById('postTitle').value.trim();
             const content = document.getElementById('postContent').value.trim();
 
-            // HANYA ISI POSTINGAN YANG WAJIB
             if (!content) return;
 
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
