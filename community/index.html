@@ -55,7 +55,7 @@
         ul { list-style: none; }
         button, input, textarea, select { font-family: inherit; outline: none; border: none; }
 
-        .container { width: 100%; max-width: 1000px; margin: 0 auto; padding: 0 0.75rem; }
+        .container { width: 100%; max-width: 680px; margin: 0 auto; padding: 0 0.75rem; }
 
         .text-primary { color: var(--primary); }
         .text-muted { color: var(--text-muted); }
@@ -73,19 +73,19 @@
         .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
         .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.7rem; }
 
-        /* NAVBAR MOBILE RESPONSIVE */
+        /* NAVBAR RESPONSIVE */
         #navbar {
             position: sticky; top: 0; z-index: 1000; background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);
         }
-        .nav-container { display: flex; align-items: center; justify-content: space-between; height: 55px; width: 100%; }
+        .nav-container { display: flex; align-items: center; justify-content: space-between; height: 55px; width: 100%; max-width: 680px; margin: 0 auto; padding: 0 0.75rem; }
         .logo { display: flex; align-items: center; gap: 0.4rem; font-weight: 800; font-size: 0.95rem; color: var(--text-main); flex-shrink: 0; }
         .logo img { height: 24px; width: 24px; border-radius: 50%; object-fit: cover; }
         .nav-actions { display: flex; gap: 0.4rem; align-items: center; }
 
         /* HEADER FORUM */
         .forum-header { background: #fff; border-bottom: 1px solid var(--border-subtle); padding: 1rem 0; margin-bottom: 1rem; width: 100%; overflow: hidden; }
-        .forum-header-content { display: flex; flex-direction: column; align-items: flex-start; gap: 0.6rem; width: 100%; }
+        .forum-header-content { display: flex; flex-direction: column; align-items: flex-start; gap: 0.6rem; width: 100%; max-width: 680px; margin: 0 auto; padding: 0 0.75rem; }
         
         .forum-header-text { width: 100%; max-width: 100%; word-break: break-word; }
         .forum-header-text h1 { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.1rem; line-height: 1.2; color: var(--text-main); }
@@ -98,25 +98,10 @@
         .search-bar:focus-within { border-color: var(--border-accent); background: #fff; box-shadow: 0 0 0 2px var(--primary-light); }
         .search-bar input { background: transparent; width: 100%; font-size: 0.8rem; margin-left: 0.4rem; min-width: 0; }
 
-        /* LAYOUT FORUM */
+        /* MAIN LAYOUT (SINGLE COLUMN CENTERED) */
         .forum-layout {
-            display: grid; grid-template-columns: 200px 1fr 240px; gap: 1rem; align-items: start; padding-bottom: 4rem; width: 100%;
+            display: block; width: 100%; max-width: 680px; margin: 0 auto; padding: 0 0.75rem 4rem 0.75rem;
         }
-
-        /* SIDEBAR KIRI */
-        .sidebar-card {
-            background: var(--bg-card); border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md); padding: 0.85rem; position: sticky; top: 70px;
-            box-shadow: var(--shadow-sm);
-        }
-        .sidebar-title { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.65rem; }
-        .category-list li { margin-bottom: 0.1rem; }
-        .category-link {
-            display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.65rem;
-            border-radius: var(--radius-sm); color: var(--text-muted); font-weight: 600; font-size: 0.8rem; cursor: pointer;
-            transition: var(--transition);
-        }
-        .category-link:hover, .category-link.active { background: var(--bg-body); color: var(--primary); }
 
         /* MAIN FEED & KOTAK POSTINGAN */
         .main-feed { width: 100%; min-width: 0; }
@@ -304,8 +289,6 @@
         /* --- MODE FOKUS & BLUR --- */
         body.forum-focus-mode header,
         body.forum-focus-mode .forum-header,
-        body.forum-focus-mode .sidebar-left,
-        body.forum-focus-mode .sidebar-right,
         body.forum-focus-mode .create-post-box,
         body.forum-focus-mode .post-card:not(.focused-card) {
             filter: blur(5px);
@@ -337,17 +320,11 @@
             opacity: 1;
         }
 
-        @media (max-width: 1024px) {
-            .forum-layout { grid-template-columns: 180px 1fr; }
-            .sidebar-right { display: none; }
-        }
         @media (max-width: 768px) {
-            .forum-layout { grid-template-columns: 1fr; gap: 0.75rem; }
-            .sidebar-left { display: none; } 
             .container { padding: 0 0.5rem; }
             .forum-header { padding: 0.85rem 0; margin-bottom: 0.85rem; }
             .create-post-box { margin-bottom: 0.85rem; }
-            .post-card { border-radius: var(--radius-md); border-left: none; border-right: none; }
+            .post-card { border-radius: var(--radius-md); }
         }
     </style>
 </head>
@@ -358,7 +335,7 @@
 
     <!-- NAVBAR -->
     <header id="navbar">
-        <div class="container nav-container">
+        <div class="nav-container">
             <a href="https://sitenexs.com/" class="logo">
                 <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" onerror="this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff'">
                 <span>Forum</span>
@@ -372,7 +349,7 @@
 
     <!-- HEADER FORUM -->
     <div class="forum-header">
-        <div class="container forum-header-content">
+        <div class="forum-header-content">
             <div class="forum-header-text">
                 <h1></h1>
                 <p class="text-muted" style="font-size: 0.8rem;"></p>
@@ -384,24 +361,8 @@
         </div>
     </div>
 
-    <!-- MAIN LAYOUT -->
-    <main class="container forum-layout">
-        
-        <!-- SIDEBAR KIRI: KATEGORI -->
-        <aside class="sidebar-left">
-            <div class="sidebar-card">
-                <h3 class="sidebar-title">Kategori Diskusi</h3>
-                <ul class="category-list">
-                    <li><a class="category-link active"><i class="fas fa-home" style="width:16px;"></i> Semua Topik</a></li>
-                    <li><a class="category-link"><i class="fas fa-bullhorn" style="width:16px;"></i> Pengumuman</a></li>
-                    <li><a class="category-link"><i class="fas fa-cash-register" style="width:16px;"></i> Sitenexs POS</a></li>
-                    <li><a class="category-link"><i class="fas fa-qrcode" style="width:16px;"></i> QR Order</a></li>
-                    <li><a class="category-link"><i class="fas fa-chart-pie" style="width:16px;"></i> Tips Bisnis</a></li>
-                    <li><a class="category-link"><i class="fas fa-bug" style="width:16px;"></i> Lapor Bug</a></li>
-                </ul>
-            </div>
-        </aside>
-
+    <!-- MAIN LAYOUT (SINGLE COLUMN) -->
+    <main class="forum-layout">
         <!-- TENGAH: FEED POSTINGAN (REALTIME) -->
         <section class="main-feed">
             
@@ -419,29 +380,6 @@
                 </div>
             </div>
         </section>
-
-        <!-- SIDEBAR KANAN: INFO & CS -->
-        <aside class="sidebar-right">
-            <div class="sidebar-card" style="margin-bottom: 1rem;">
-                <h3 class="sidebar-title">Topik Populer</h3>
-                <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
-                    <div>
-                        <strong style="color: var(--text-main); font-size: 0.8rem;"># Update Kasir v2.1</strong><br>
-                        <span class="text-muted" style="font-size: 0.65rem;"><i class="fas fa-bullhorn" style="margin-right:0.2rem;"></i>Pengumuman Resmi</span>
-                    </div>
-                    <div>
-                        <strong style="color: var(--text-main); font-size: 0.8rem;"># Setting Struk Bluetooth</strong><br>
-                        <span class="text-muted" style="font-size: 0.65rem;"><i class="fas fa-cash-register" style="margin-right:0.2rem;"></i>Sitenexs POS</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="sidebar-card" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; border: none;">
-                <h3 style="font-weight: 800; font-size: 0.85rem; margin-bottom: 0.3rem;">Butuh Bantuan Teknis?</h3>
-                <p style="font-size: 0.7rem; margin-bottom: 0.75rem; opacity: 0.9; line-height: 1.4;">Tim teknis kami siap memandu kendala operasional Anda secara langsung.</p>
-                <a href="https://wa.me/6285177137899" target="_blank" class="btn btn-secondary btn-sm" style="width: 100%; color: var(--primary); padding: 0.4rem;"><i class="fab fa-whatsapp"></i> Chat WhatsApp</a>
-            </div>
-        </aside>
     </main>
 
     <!-- MODAL BUAT POSTINGAN -->
@@ -934,7 +872,7 @@
             }, 100);
         }
 
-        // --- REALTIME RENDER FORUM POSTS (SMART DOM PATCHING TANPA BLINK / REFRESH) ---
+        // --- REALTIME RENDER FORUM POSTS (SMART DOM PATCHING) ---
         const q = query(forumCollection, orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
             if (snapshot.empty) {
@@ -956,7 +894,6 @@
                 return;
             }
 
-            // Incremental update tanpa menghancurkan elemen DOM yang ada (Mencegah Layar Kedip/Refresh)
             const existingCards = {};
             document.querySelectorAll('.post-card').forEach(card => {
                 existingCards[card.getAttribute('data-post-id')] = card;
@@ -977,7 +914,6 @@
                 const comments = data.comments || [];
 
                 if (existingCard) {
-                    // Update like button state jika belum diklik optimis
                     const likeBtn = existingCard.querySelector('.action-btn');
                     if (likeBtn && document.activeElement !== likeBtn) {
                         if (isLiked) {
@@ -990,13 +926,11 @@
                         likeBtn.querySelector('span').innerText = `${likeCount > 0 ? likeCount : ''} Suka`;
                     }
 
-                    // Update comment count
                     const commentBtn = existingCard.querySelectorAll('.action-btn')[1];
                     if (commentBtn) {
                         commentBtn.querySelector('span').innerText = `${comments.length > 0 ? comments.length : ''} Komentar`;
                     }
 
-                    // Update comment list in-place
                     const commentsListEl = existingCard.querySelector('.comment-list');
                     if (commentsListEl) {
                         let commentsHtml = '';
