@@ -56,6 +56,110 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* =========================================================
+           SISTEM TEMA BERBASIS PAKET LANGGANAN (PRO & VIP / ULTIMATE)
+           ========================================================= */
+
+        /* 1. TEMA PRO (Electric Cyan & Amber Gold) */
+        body[data-package="pro"] {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --primary-light: #f0f9ff;
+            --accent: #f59e0b;
+            --border-accent: #38bdf8;
+            --shadow-card: 0 20px 40px -12px rgba(2, 132, 199, 0.22);
+        }
+
+        body[data-package="pro"] .hero-card::before {
+            background: linear-gradient(90deg, #0284c7 0%, #f59e0b 100%);
+        }
+
+        body[data-package="pro"] .btn-primary {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35);
+        }
+
+        /* 2. TEMA VIP / ULTIMATE / PREMIUM (Royal Purple & Gold Aura) */
+        body[data-package="vip"],
+        body[data-package="ultimate"],
+        body[data-package="premium"] {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --primary-light: #f5f3ff;
+            --accent: #fbbf24;
+            --border-accent: #c084fc;
+            --shadow-card: 0 25px 50px -12px rgba(124, 58, 237, 0.28);
+        }
+
+        body[data-package="vip"] #navbar,
+        body[data-package="ultimate"] #navbar,
+        body[data-package="premium"] #navbar {
+            border-bottom: 2px solid transparent;
+            border-image: linear-gradient(90deg, #7c3aed, #fbbf24, #7c3aed) 1;
+        }
+
+        body[data-package="vip"] .hero-card,
+        body[data-package="ultimate"] .hero-card,
+        body[data-package="premium"] .hero-card {
+            background: linear-gradient(145deg, #ffffff 0%, #faf5ff 100%);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            box-shadow: 0 20px 45px -10px rgba(124, 58, 237, 0.25);
+        }
+
+        body[data-package="vip"] .hero-card::before,
+        body[data-package="ultimate"] .hero-card::before,
+        body[data-package="premium"] .hero-card::before {
+            height: 6px;
+            background: linear-gradient(90deg, #7c3aed 0%, #fbbf24 50%, #d97706 100%);
+        }
+
+        body[data-package="vip"] .btn-primary,
+        body[data-package="ultimate"] .btn-primary,
+        body[data-package="premium"] .btn-primary {
+            background: linear-gradient(135deg, #7c3aed 0%, #d97706 100%);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+            border: 1px solid rgba(254, 240, 138, 0.5);
+        }
+
+        /* BADGE PAKET LANGGANAN USER DI NAVBAR */
+        .user-package-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: var(--radius-full);
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            transition: var(--transition);
+        }
+
+        .user-package-badge.basic {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .user-package-badge.pro {
+            background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+            color: #ffffff;
+            box-shadow: 0 3px 10px rgba(2, 132, 199, 0.35);
+        }
+
+        .user-package-badge.vip {
+            background: linear-gradient(135deg, #7c3aed 0%, #b45309 100%);
+            color: #ffffff;
+            border: 1px solid #fef08a;
+            box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+            animation: goldPulse 2.5s infinite alternate;
+        }
+
+        @keyframes goldPulse {
+            0% { box-shadow: 0 0 6px rgba(251, 191, 36, 0.3); }
+            100% { box-shadow: 0 0 16px rgba(251, 191, 36, 0.8); }
+        }
+
+        /* BASE STYLES */
         *, *::before, *::after {
             margin: 0;
             padding: 0;
@@ -76,6 +180,7 @@
             overflow-x: hidden;
             width: 100%;
             -webkit-font-smoothing: antialiased;
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
 
         a {
@@ -258,6 +363,7 @@
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-subtle);
             box-shadow: var(--shadow-sm);
+            transition: border-color 0.3s ease;
         }
 
         .nav-container {
@@ -277,7 +383,7 @@
         }
 
         .logo-text {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -401,6 +507,7 @@
             z-index: 2;
             overflow: hidden;
             animation: float 6s ease-in-out infinite;
+            transition: var(--transition);
         }
 
         @keyframes float {
@@ -417,6 +524,7 @@
             right: 0;
             height: 5px;
             background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            transition: var(--transition);
         }
 
         .badge {
@@ -652,7 +760,7 @@
             line-height: 1.6;
         }
 
-        /* PAKET HARGA (Di-render dinamis & lebih ringkas) */
+        /* PAKET HARGA */
         .pricing-card {
             background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); 
             padding: 1.5rem; display: flex; flex-direction: column; text-align: center;
@@ -795,29 +903,27 @@
             line-height: 1.6;
         }
 
-        /* -------------------------------------
-           MITRA PENGEMBANG (SWIPEABLE CARD, SMALLER)
-           ------------------------------------- */
+        /* MITRA PENGEMBANG */
         .dev-carousel {
             display: flex;
             gap: 1.25rem;
             overflow-x: auto;
             padding: 1rem 0.5rem 2rem 0.5rem;
             scroll-snap-type: x mandatory;
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none;
         }
         
         .dev-carousel::-webkit-scrollbar {
-            display: none; /* Chrome, Safari */
+            display: none;
         }
         
         .dev-card {
             scroll-snap-align: start;
-            flex: 0 0 200px; /* Ukuran diperkecil dari 280px ke 200px */
+            flex: 0 0 200px;
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
-            padding: 1.5rem 1rem; /* Padding lebih ramping */
+            padding: 1.5rem 1rem;
             text-align: center;
             box-shadow: var(--shadow-sm);
             transition: var(--transition);
@@ -836,7 +942,7 @@
         
         .dev-avatar-wrapper {
             position: relative;
-            width: 70px; /* Diperkecil */
+            width: 70px;
             height: 70px;
             border-radius: 50%;
             padding: 4px;
@@ -855,7 +961,7 @@
         }
         
         .dev-name {
-            font-size: 1.05rem; /* Agak kecil */
+            font-size: 1.05rem;
             font-weight: 800;
             color: var(--text-main);
             margin-bottom: 0.25rem;
@@ -866,7 +972,7 @@
         }
         
         .dev-role {
-            font-size: 0.75rem; /* Diperkecil */
+            font-size: 0.75rem;
             font-weight: 700;
             color: var(--primary);
             background: rgba(37,99,235,0.08);
@@ -879,13 +985,11 @@
         }
         
         .dev-business {
-            font-size: 0.75rem; /* Diperkecil */
+            font-size: 0.75rem;
             color: var(--text-muted);
         }
 
-        /* -------------------------------------
-           KOMUNITAS / MITRA BERGABUNG 
-           ------------------------------------- */
+        /* KOMUNITAS / MITRA BERGABUNG */
         .community-controls {
             display: flex;
             justify-content: space-between;
@@ -1043,7 +1147,7 @@
             width: fit-content;
         }
 
-        /* KONTAK DAN AJAKAN BERTINDAK (CONTACT CARD) */
+        /* KONTAK CARD */
         .contact-card {
             background: #ffffff;
             border-radius: var(--radius-xl);
@@ -1173,9 +1277,7 @@
             box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
         }
 
-        /* -------------------------------------
-           MODAL POP-UP PROFIL FOUNDER 
-           ------------------------------------- */
+        /* MODAL POP-UP PROFIL FOUNDER */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -1235,7 +1337,6 @@
             color: #ef4444;
         }
 
-        /* Card dalam Modal */
         .founder-card {
             background: #ffffff;
             border-radius: var(--radius-xl);
@@ -1305,7 +1406,6 @@
             .info-card { padding: 1.5rem; }
             .info-card-image-box { height: 200px; }
             
-            /* Modal / Founder Card di Mobile */
             .modal-content { margin: 1rem; }
             .founder-card { grid-template-columns: 1fr; text-align: center; padding: 2.5rem 1.5rem 2rem 1.5rem; gap: 1.5rem; }
             .founder-card::before { width: 100%; height: 5px; }
@@ -1651,7 +1751,7 @@
         </div>
     </section>
 
-    <!-- TIM PENGEMBANG (PENGGANTI PROFIL FOUNDER) -->
+    <!-- TIM PENGEMBANG -->
     <section id="pengembang" class="page-section bg-grid-pattern" style="background-color: var(--bg-body);">
         <div class="container">
             <div class="section-header reveal">
@@ -1698,7 +1798,7 @@
                 </p>
             </div>
 
-                        <!-- Tombol Menuju Komunitas -->
+            <!-- Tombol Menuju Komunitas -->
             <div style="text-align: center; margin-top: 2rem;" class="reveal">
                 <a href="https://sitenexs.com/community" class="btn btn-outline-primary">
                     <i class="fas fa-users"></i> Jelajahi Komunitas Sitenexs
@@ -1924,10 +2024,10 @@
         });
     </script>
 
-    <!-- JAVASCRIPT FIREBASE & SUPABASE -->
+    <!-- JAVASCRIPT FIREBASE & TEMA DINAMIS -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
-        import { getFirestore, collection, getDocs, query, limit } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, doc, getDoc, query, limit } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
 
         const firebaseConfig = {
@@ -1946,39 +2046,92 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-      
+
         // ============================================
-        // 0. AUTHENTICATION (Cek Langsung dari Perangkat)
+        // 0. LOGIKA TEMA PAKET & AUTHENTICATION
         // ============================================
-        // Membaca data seketika tanpa nunggu Firebase
-        const isLoggedIn = document.cookie.includes('isLoggedIn=true');
-        
-        const desktopAuthBtn = document.getElementById('desktopAuthBtn');
-        const mobileAuthBtn = document.getElementById('mobileAuthBtn');
-        
-        if (isLoggedIn) {
-            // Jika di perangkat ada data login
+        function applyUserPackageTheme(paketLangganan) {
+            const pkg = (paketLangganan || 'basic').toLowerCase();
+            let themeCategory = 'basic';
+
+            if (pkg.includes('pro') || pkg.includes('business')) {
+                themeCategory = 'pro';
+            } else if (pkg.includes('vip') || pkg.includes('ultimate') || pkg.includes('premium')) {
+                themeCategory = 'vip';
+            }
+
+            // Terapkan atribut data-package ke elemen body
+            document.body.setAttribute('data-package', themeCategory);
+
+            // Perbarui tombol & status badge di Navbar
+            updateNavUserUI(paketLangganan || 'Basic', themeCategory);
+        }
+
+        function updateNavUserUI(namaPaket, themeCategory) {
+            const desktopAuthBtn = document.getElementById('desktopAuthBtn');
+            const mobileAuthBtn = document.getElementById('mobileAuthBtn');
+
+            let badgeIcon = 'fa-user';
+            if (themeCategory === 'pro') badgeIcon = 'fa-star';
+            if (themeCategory === 'vip') badgeIcon = 'fa-crown';
+
+            const userBadgeHTML = `
+                <span class="user-package-badge ${themeCategory}">
+                    <i class="fas ${badgeIcon}"></i> ${namaPaket}
+                </span>
+            `;
+
             if (desktopAuthBtn) {
-                desktopAuthBtn.innerHTML = '<i class="fas fa-user-circle" style="margin-right: 0.3rem;"></i> Profil';
+                desktopAuthBtn.innerHTML = `
+                    <i class="fas fa-user-circle" style="margin-right: 0.2rem;"></i> Profil ${userBadgeHTML}
+                `;
                 desktopAuthBtn.href = 'https://account.sitenexs.com/profile/';
+                desktopAuthBtn.style.display = 'inline-flex';
+                desktopAuthBtn.style.alignItems = 'center';
+                desktopAuthBtn.style.gap = '0.4rem';
             }
+
             if (mobileAuthBtn) {
-                mobileAuthBtn.innerHTML = '<i class="fas fa-user-circle" style="margin-right: 0.3rem;"></i> Profil';
+                mobileAuthBtn.innerHTML = `
+                    <i class="fas fa-user-circle" style="margin-right: 0.3rem;"></i> Profil (${namaPaket.toUpperCase()})
+                `;
                 mobileAuthBtn.href = 'https://account.sitenexs.com/profile/';
-            }
-        } else {
-            // Jika belum login
-            if (desktopAuthBtn) {
-                desktopAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar';
-                desktopAuthBtn.href = 'https://account.sitenexs.com/sign-in/';
-            }
-            if (mobileAuthBtn) {
-                mobileAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar';
-                mobileAuthBtn.href = 'https://account.sitenexs.com/sign-in/';
             }
         }
 
+        // Cek Auth Firebase secara langsung & ambil data paket user dari Firestore
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userSnap = await getDoc(userDocRef);
 
+                    if (userSnap.exists()) {
+                        const userData = userSnap.data();
+                        applyUserPackageTheme(userData.paketLangganan);
+                    } else {
+                        applyUserPackageTheme('Basic');
+                    }
+                } catch (err) {
+                    console.error("Gagal memuat status paket user:", err);
+                    applyUserPackageTheme('Basic');
+                }
+            } else {
+                // Jika belum login, gunakan state default
+                document.body.removeAttribute('data-package');
+                const desktopAuthBtn = document.getElementById('desktopAuthBtn');
+                const mobileAuthBtn = document.getElementById('mobileAuthBtn');
+
+                if (desktopAuthBtn) {
+                    desktopAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar';
+                    desktopAuthBtn.href = 'https://account.sitenexs.com/sign-in/';
+                }
+                if (mobileAuthBtn) {
+                    mobileAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar';
+                    mobileAuthBtn.href = 'https://account.sitenexs.com/sign-in/';
+                }
+            }
+        });
 
         // ============================================
         // 1. RENDER PAKET HARGA DINAMIS DARI FIREBASE
@@ -2002,12 +2155,10 @@
                 let packages = [];
                 querySnapshot.forEach((doc) => { packages.push(doc.data()); });
                 
-                // Urutkan dari yang termurah (Basic dulu baru Pro)
                 packages.sort((a, b) => a.hargaAsli - b.hargaAsli);
                 pricingContainer.innerHTML = '';
 
                 packages.forEach(pkg => {
-                    // Logic Coret Harga
                     let priceHTML = '';
                     if (pkg.hargaDiskon > 0 && pkg.hargaDiskon < pkg.hargaAsli) {
                         priceHTML = `
@@ -2030,7 +2181,6 @@
                         `;
                     }
 
-                    // Parse fitur (+ untuk hijau, - untuk coret/abu-abu)
                     const featureLines = pkg.fitur ? pkg.fitur.split('\n') : [];
                     let featureHTML = '<ul class="pricing-features">';
                     
@@ -2046,14 +2196,12 @@
                     });
                     featureHTML += '</ul>';
 
-                    // Styling untuk badge & border "Paling Diminati"
                     const badgePopuler = pkg.isPopuler ? `<div class="pricing-badge">Paling Diminati</div>` : '';
                     const borderStyle = pkg.isPopuler ? 'border-top: 4px solid var(--primary); transform: scale(1.02);' : 'border-top: 4px solid var(--border-medium);';
                     const titleStyle = pkg.isPopuler ? 'color: var(--primary);' : '';
                     const btnClass = pkg.isPopuler ? 'btn-primary' : 'btn-outline-primary';
                     const linkUrl = pkg.hargaAsli === 0 ? 'https://account.sitenexs.com/sign-in/' : `https://wa.me/6285177137899?text=Halo%20Sitenexs,%20saya%20ingin%20berlangganan%20${encodeURIComponent(pkg.namaPaket)}.`;
                     
-                    // Ikon
                     const iconClass = pkg.icon || 'fa-box';
 
                     const cardHTML = `
@@ -2241,23 +2389,21 @@
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama)}&background=2563eb&color=fff&size=120`;
                 const verifiedIconHTML = user.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` : '';
 
-                // --- LOGIKA BADGE PAKET DINAMIS ---
+                // LOGIKA BADGE PAKET DINAMIS
                 let dynamicBadgeHTML = "";
                 const paketStr = (user.paketLangganan || 'Basic').toLowerCase();
 
-                // Hanya render badge jika bukan Basic atau Gratis
                 if (!paketStr.includes('basic') && !paketStr.includes('gratis')) {
-                    let paketBadgeStyle = "background: #fef08a; color: #854d0e;"; // Warna Pro/Default Berbayar
+                    let paketBadgeStyle = "background: #fef08a; color: #854d0e;";
                     let paketIcon = "fa-crown";
 
                     if (paketStr.includes('premium') || paketStr.includes('vip') || paketStr.includes('ultimate')) {
-                        paketBadgeStyle = "background: #e9d5ff; color: #6b21a8;"; // Warna Premium
+                        paketBadgeStyle = "background: #e9d5ff; color: #6b21a8;";
                         paketIcon = "fa-gem";
                     }
 
                     dynamicBadgeHTML = `<span style="${paketBadgeStyle} font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: var(--radius-sm); font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fas ${paketIcon}"></i> ${user.paketLangganan.toUpperCase()}</span>`;
                 }
-                // ----------------------------------
 
                 const cardHTML = `
                     <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(user.uid)}" class="member-card reveal active">
@@ -2268,7 +2414,6 @@
                             <h4 class="member-name">${user.nama} ${verifiedIconHTML}</h4>
                             <div class="member-business">${user.bisnisNama}</div>
                             
-                            <!-- Kategori Bisnis & Badge Paket berdampingan di bawah nama bisnis -->
                             <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.1rem;">
                                 <div class="member-category"><i class="fas ${icon}" style="margin-right: 0.3rem;"></i> ${user.bisnisBidang}</div>
                                 ${dynamicBadgeHTML}
