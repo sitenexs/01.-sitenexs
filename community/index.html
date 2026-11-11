@@ -43,7 +43,7 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* SISTEM TEMA PAKET LANGGANAN (SAMA SEPERTI PROFIL.HTML) */
+        /* SISTEM TEMA PAKET LANGGANAN */
         body[data-package="pro"] {
             --primary: #0284c7;
             --primary-dark: #0369a1;
@@ -210,7 +210,6 @@
         
         .author-info { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
         
-        /* ALIGNMENT NAMA & CENTANG BIRU (POSTINGAN) */
         .author-name-row { display: flex; align-items: center; gap: 0.25rem; min-width: 0; }
         .author-name-link { text-decoration: none; color: inherit; display: inline-flex; align-items: center; min-width: 0; }
         .author-name-link:hover .author-name { text-decoration: underline; color: var(--primary); }
@@ -297,7 +296,6 @@
             display: inline-block; width: 100%; border: 1px solid var(--border-subtle);
         }
         
-        /* ALIGNMENT NAMA & CENTANG BIRU (KOMENTAR) */
         .comment-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.15rem; }
         .comment-author-left { display: flex; align-items: center; gap: 0.25rem; min-width: 0; }
         .comment-author-link { text-decoration: none; color: inherit; display: inline-flex; align-items: center; min-width: 0; }
@@ -315,7 +313,6 @@
         .comment-text .mention-link { color: var(--primary); font-weight: 700; text-decoration: none; }
         .comment-text .mention-link:hover { text-decoration: underline; }
 
-        /* BAGIAN BAWAH KOMENTAR (WAKTU, TOMBOL BALAS & HAPUS) */
         .comment-footer-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.2rem; margin-left: 0.3rem; }
         .comment-time { font-size: 0.6rem; color: var(--text-muted); font-weight: 500; }
         .reply-trigger-btn { background: none; border: none; color: var(--primary); font-size: 0.65rem; font-weight: 700; cursor: pointer; padding: 0; transition: var(--transition); }
@@ -323,7 +320,7 @@
         .delete-comment-btn { background: none; border: none; color: #ef4444; font-size: 0.65rem; font-weight: 700; cursor: pointer; padding: 0; transition: var(--transition); }
         .delete-comment-btn:hover { text-decoration: underline; }
 
-        /* --- FOKUS KOMENTAR & BLUR (TANPA BORDER) --- */
+        /* FOKUS KOMENTAR & BLUR */
         .comments-section.comment-focus-mode .comment-item:not(.focused-comment) {
             filter: blur(4px);
             opacity: 0.35;
@@ -394,13 +391,11 @@
         
         .loader-container { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem; }
 
-        /* SCROLLBAR CUSTOM */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* UPLOAD FOTO CSS BARU */
         .image-upload-wrapper { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
         .image-upload-label { 
             display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; 
@@ -418,7 +413,7 @@
         }
         .post-image { width: 100%; max-height: 350px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 0.65rem; border: 1px solid var(--border-subtle); }
 
-        /* --- MODE FOKUS & BLUR --- */
+        /* MODE FOKUS & BLUR */
         body.forum-focus-mode header,
         body.forum-focus-mode .forum-header,
         body.forum-focus-mode .create-post-box,
@@ -498,16 +493,12 @@
 
     <!-- MAIN LAYOUT (SINGLE COLUMN) -->
     <main class="forum-layout">
-        <!-- TENGAH: FEED POSTINGAN (REALTIME) -->
         <section class="main-feed">
-            
-            <!-- KOTAK BUAT POST -->
             <div class="create-post-box" onclick="checkAuthAndOpenModal()">
                 <img id="currentUserAvatar" src="https://ui-avatars.com/api/?name=User&background=cbd5e1&color=fff" alt="User">
                 <div class="create-post-input" id="createPostPromptText">Apa yang ingin Anda diskusikan hari ini?</div>
             </div>
 
-            <!-- Kontainer Postingan Real-time -->
             <div class="post-list" id="postContainer">
                 <div class="loader-container">
                     <i class="fas fa-circle-notch fa-spin fa-2x"></i>
@@ -532,7 +523,6 @@
                     <textarea id="postContent" class="form-control" rows="4" placeholder="Jelaskan pertanyaan atau bagikan pemikiran Anda secara detail..." required></textarea>
                 </div>
                 
-                <!-- FITUR UPLOAD FOTO BARU -->
                 <div class="form-group image-upload-wrapper">
                     <input type="file" id="postImage" accept="image/*" style="display: none;" onchange="previewImage(event)">
                     <label for="postImage" class="image-upload-label"><i class="fas fa-image"></i> Tambah Foto (Opsional)</label>
@@ -589,7 +579,6 @@
         const avatarImg = document.getElementById('currentUserAvatar');
         const promptText = document.getElementById('createPostPromptText');
 
-        // Elemen Tombol Navbar Profil
         const navUserAvatar = document.getElementById('navUserAvatar');
         const navUserName = document.getElementById('navUserName');
         const authNavBtn = document.getElementById('authNavBtn');
@@ -715,7 +704,6 @@
             return formatted;
         }
 
-        // TEMA PAKET LANGGANAN OTOMATIS BERDASARKAN DATABASE USER
         async function applyUserPackageTheme(uid) {
             try {
                 const userDocRef = doc(db, "users", uid);
@@ -738,7 +726,6 @@
             }
         }
 
-        // --- FITUR LONG-PRESS FOCUS & BLUR MODE (POSTINGAN & KOMENTAR) ---
         let pressTimer = null;
         let startX = 0;
         let startY = 0;
@@ -828,7 +815,6 @@
             if (navigator.vibrate) navigator.vibrate(50);
         }
 
-        // --- HAPUS KOMENTAR ---
         window.deleteComment = async function(postId, commentCreatedAt, commentAuthorUid) {
             const savedUid = localStorage.getItem('sitenexs_uid');
             const activeUid = currentUserData ? currentUserData.uid : (auth.currentUser ? auth.currentUser.uid : savedUid);
@@ -892,7 +878,6 @@
                     isVerified = Boolean(d.isVerified) || Boolean(d.isFounder) || Boolean(d.isDeveloper); 
                 }
 
-                // Terapkan Tema Paket
                 await applyUserPackageTheme(uid);
 
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo?t=${Date.now()}`;
@@ -911,12 +896,10 @@
                 localStorage.setItem('sitenexs_logged_in', 'true');
                 localStorage.setItem('sitenexs_uid', uid);
 
-                // Update Avatar Form Postingan
                 avatarImg.src = photoUrl;
                 avatarImg.onerror = () => { avatarImg.src = fallbackUrl; };
                 promptText.innerText = `Halo ${namaLengkap}, apa yang ingin didiskusikan?`;
 
-                // UPDATE TOMBOL PROFIL DI NAVBAR KANAN ATAS
                 if (navUserAvatar && navUserName) {
                     navUserAvatar.src = photoUrl;
                     navUserAvatar.onerror = () => { navUserAvatar.src = fallbackUrl; };
@@ -948,8 +931,6 @@
 
                     if (isLogged && savedUid) {
                         await fetchUserProfile(savedUid);
-                    } else {
-                        window.location.replace("https://account.sitenexs.com/sign-in/community/sign-in/");
                     }
                 }
             });
@@ -1091,6 +1072,17 @@
         function renderPostCardHtml(docSnap, currentActiveUid) {
             const postId = docSnap.id;
             const data = docSnap.data();
+
+            // PENGATURAN PRIVASI: Jika postingan privat, jangan render sama sekali di komunitas.html
+            const isPrivate = data.isPrivate === true;
+            if (isPrivate) {
+                return '';
+            }
+
+            const authorUid = data.authorUid;
+            const commentsDisabled = data.commentsDisabled === true;
+            const hideStats = data.hideStats === true;
+
             const dateObj = data.createdAt ? data.createdAt.toDate() : new Date();
             const waktuString = timeAgo(dateObj);
 
@@ -1102,14 +1094,14 @@
                 badgeHtml = `<span class="post-badge ${badgeClass}">${data.kategori}</span>`;
             }
 
-            const authorPhoto = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(data.authorUid)}/profile-photo`;
+            const authorPhoto = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(authorUid)}/profile-photo`;
             const authorFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.penulis)}&background=2563eb&color=fff`;
             
             let verifiedIcon = '';
             if (data.isVerified === true || String(data.isVerified) === 'true') {
                 verifiedIcon = `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`;
             } else {
-                verifiedIcon = `<span class="async-verif-badge" data-uid="${data.authorUid}"></span>`;
+                verifiedIcon = `<span class="async-verif-badge" data-uid="${authorUid}"></span>`;
             }
 
             const postTitleHtml = data.judul ? `<h2 class="post-title">${data.judul}</h2>` : '';
@@ -1119,57 +1111,65 @@
             const isLiked = likes.includes(currentActiveUid);
             const likeCount = likes.length;
 
+            const likeDisplay = hideStats ? 'Suka' : `${likeCount > 0 ? likeCount : ''} Suka`;
+
             const activeAvatarUrl = currentUserData ? currentUserData.avatar : 'https://ui-avatars.com/api/?name=User&background=cbd5e1&color=fff';
             const activeFallback = currentUserData ? currentUserData.fallbackAvatar : activeAvatarUrl;
 
             const comments = data.comments || [];
+            const commentCount = comments.length;
+            const commentDisplay = hideStats ? 'Komentar' : `${commentCount > 0 ? commentCount : ''} Komentar`;
+
             let commentsHtml = '';
-            comments.forEach(c => {
-                const cDate = c.createdAt ? timeAgo(new Date(c.createdAt)) : 'Baru saja';
-                const cAuthorUid = c.authorUid || 'unknown';
-                const cAvatar = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(cAuthorUid)}/profile-photo`;
-                const cFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.penulis)}&background=random&color=fff`;
-                
-                let cVerified = '';
-                if (c.isVerified === true || String(c.isVerified) === 'true') {
-                    cVerified = `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`;
-                } else {
-                    cVerified = `<span class="async-verif-badge" data-uid="${cAuthorUid}"></span>`;
-                }
+            if (!commentsDisabled) {
+                comments.forEach(c => {
+                    const cDate = c.createdAt ? timeAgo(new Date(c.createdAt)) : 'Baru saja';
+                    const cAuthorUid = c.authorUid || 'unknown';
+                    const cAvatar = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(cAuthorUid)}/profile-photo`;
+                    const cFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.penulis)}&background=random&color=fff`;
+                    
+                    let cVerified = '';
+                    if (c.isVerified === true || String(c.isVerified) === 'true') {
+                        cVerified = `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`;
+                    } else {
+                        cVerified = `<span class="async-verif-badge" data-uid="${cAuthorUid}"></span>`;
+                    }
 
-                const formattedText = formatCommentText(c.isi);
-                const isMyComment = (cAuthorUid === currentActiveUid);
-                const deleteBtnHtml = isMyComment ? `<button type="button" class="delete-comment-btn" onclick="deleteComment('${postId}', '${c.createdAt}', '${cAuthorUid}')">Hapus</button>` : '';
+                    const formattedText = formatCommentText(c.isi);
+                    const isMyComment = (cAuthorUid === currentActiveUid);
+                    const deleteBtnHtml = isMyComment ? `<button type="button" class="delete-comment-btn" onclick="deleteComment('${postId}', '${c.createdAt}', '${cAuthorUid}')">Hapus</button>` : '';
 
-                commentsHtml += `
-                    <div class="comment-item">
-                        <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" style="flex-shrink: 0;">
-                            <img src="${cAvatar}" alt="${c.penulis}" class="comment-avatar" onerror="this.onerror=null; this.src='${cFallback}';">
-                        </a>
-                        <div class="comment-content-wrapper">
-                            <div class="comment-bubble">
-                                <div class="comment-header-row">
-                                    <div class="comment-author-left">
-                                        <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" class="comment-author-link">
-                                            <span class="comment-author">${c.penulis}</span>
-                                        </a>
-                                        ${cVerified}
+                    commentsHtml += `
+                        <div class="comment-item">
+                            <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" style="flex-shrink: 0;">
+                                <img src="${cAvatar}" alt="${c.penulis}" class="comment-avatar" onerror="this.onerror=null; this.src='${cFallback}';">
+                            </a>
+                            <div class="comment-content-wrapper">
+                                <div class="comment-bubble">
+                                    <div class="comment-header-row">
+                                        <div class="comment-author-left">
+                                            <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" class="comment-author-link">
+                                                <span class="comment-author">${c.penulis}</span>
+                                            </a>
+                                            ${cVerified}
+                                        </div>
                                     </div>
+                                    <div class="comment-text">${formattedText}</div>
                                 </div>
-                                <div class="comment-text">${formattedText}</div>
-                            </div>
-                            <div class="comment-footer-row">
-                                <div class="comment-time">${cDate}</div>
-                                <button type="button" class="reply-trigger-btn" onclick="replyComment('${postId}', '${c.penulis.replace(/'/g, "\\'")}')">Balas</button>
-                                ${deleteBtnHtml}
+                                <div class="comment-footer-row">
+                                    <div class="comment-time">${cDate}</div>
+                                    <button type="button" class="reply-trigger-btn" onclick="replyComment('${postId}', '${c.penulis.replace(/'/g, "\\'")}')">Balas</button>
+                                    ${deleteBtnHtml}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
-            });
-
-            if (comments.length === 0) {
-                commentsHtml = '<div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 0.5rem 0;">Belum ada komentar. Jadilah yang pertama membalas!</div>';
+                    `;
+                });
+                if (comments.length === 0) {
+                    commentsHtml = '<div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 0.5rem 0;">Belum ada komentar. Jadilah yang pertama membalas!</div>';
+                }
+            } else {
+                commentsHtml = '<div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 0.5rem 0;">Komentar dinonaktifkan untuk postingan ini.</div>';
             }
 
             return `
@@ -1180,12 +1180,14 @@
                                 <img src="${authorPhoto}" alt="${data.penulis}" class="post-author-img" onerror="this.onerror=null; this.src='${authorFallback}';">
                                 <div class="author-info">
                                     <div class="author-name-row">
-                                        <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(data.authorUid)}" class="author-name-link">
+                                        <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(authorUid)}" class="author-name-link">
                                             <span class="author-name">${data.penulis}</span>
                                         </a>
                                         ${verifiedIcon}
                                     </div>
-                                    <div class="author-time">${waktuString}</div>
+                                    <div class="author-time">
+                                        <span>${waktuString}</span>
+                                    </div>
                                 </div>
                             </div>
                             ${badgeHtml}
@@ -1198,13 +1200,15 @@
                     
                     <div class="post-actions">
                         <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${postId}')">
-                            <i class="${isLiked ? 'fas' : 'far'} fa-thumbs-up"></i> <span>${likeCount > 0 ? likeCount : ''} Suka</span>
+                            <i class="${isLiked ? 'fas' : 'far'} fa-thumbs-up"></i> <span>${likeDisplay}</span>
                         </button>
+                        ${!commentsDisabled ? `
                         <button class="action-btn" onclick="toggleComments('${postId}')">
-                            <i class="far fa-comment-alt"></i> <span>${comments.length > 0 ? comments.length : ''} Komentar</span>
-                        </button>
+                            <i class="far fa-comment-alt"></i> <span>${commentDisplay}</span>
+                        </button>` : ''}
                     </div>
 
+                    ${!commentsDisabled ? `
                     <div class="comments-section" id="comments-${postId}">
                         <div class="comment-list">
                             ${commentsHtml}
@@ -1217,7 +1221,7 @@
                                 <button type="submit" class="comment-submit-btn"><i class="fas fa-paper-plane" style="font-size: 0.7rem;"></i></button>
                             </div>
                         </form>
-                    </div>
+                    </div>` : ''}
                 </article>
             `;
         }
@@ -1250,129 +1254,34 @@
             }, 100);
         }
 
-        // --- REALTIME RENDER FORUM POSTS (SMART DOM PATCHING) ---
         const q = query(forumCollection, orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
-            if (snapshot.empty) {
-                postContainer.innerHTML = '<div class="loader-container"><p>Belum ada diskusi. Jadilah yang pertama memulai!</p></div>';
-                isInitialLoad = false;
-                return;
-            }
-
             const currentActiveUid = currentUserData ? currentUserData.uid : localStorage.getItem('sitenexs_uid');
 
-            if (isInitialLoad) {
-                let htmlString = "";
-                snapshot.forEach((docSnap) => {
-                    htmlString += renderPostCardHtml(docSnap, currentActiveUid);
-                });
-                postContainer.innerHTML = htmlString;
+            let visiblePostsCount = 0;
+            let htmlString = "";
+
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const isPrivate = data.isPrivate === true;
+
+                // PASTIKAN POSTINGAN PRIVAT DISEMBUNYIKAN DI KOMUNITAS
+                if (isPrivate) {
+                    return;
+                }
+
+                visiblePostsCount++;
+                htmlString += renderPostCardHtml(docSnap, currentActiveUid);
+            });
+
+            if (visiblePostsCount === 0) {
+                postContainer.innerHTML = '<div class="loader-container"><p>Belum ada diskusi publik. Jadilah yang pertama memulai!</p></div>';
                 isInitialLoad = false;
-                runAsyncVerifBadges();
                 return;
             }
 
-            const existingCards = {};
-            document.querySelectorAll('.post-card').forEach(card => {
-                existingCards[card.getAttribute('data-post-id')] = card;
-            });
-
-            const currentSnapshotIds = new Set();
-            const tempDiv = document.createElement('div');
-
-            snapshot.forEach((docSnap) => {
-                const postId = docSnap.id;
-                currentSnapshotIds.add(postId);
-                const data = docSnap.data();
-                const existingCard = existingCards[postId];
-
-                const likes = data.likes || [];
-                const isLiked = likes.includes(currentActiveUid);
-                const likeCount = likes.length;
-                const comments = data.comments || [];
-
-                if (existingCard) {
-                    const likeBtn = existingCard.querySelector('.action-btn');
-                    if (likeBtn && document.activeElement !== likeBtn) {
-                        if (isLiked) {
-                            likeBtn.classList.add('liked');
-                            likeBtn.querySelector('i').className = 'fas fa-thumbs-up';
-                        } else {
-                            likeBtn.classList.remove('liked');
-                            likeBtn.querySelector('i').className = 'far fa-thumbs-up';
-                        }
-                        likeBtn.querySelector('span').innerText = `${likeCount > 0 ? likeCount : ''} Suka`;
-                    }
-
-                    const commentBtn = existingCard.querySelectorAll('.action-btn')[1];
-                    if (commentBtn) {
-                        commentBtn.querySelector('span').innerText = `${comments.length > 0 ? comments.length : ''} Komentar`;
-                    }
-
-                    const commentsListEl = existingCard.querySelector('.comment-list');
-                    if (commentsListEl) {
-                        let commentsHtml = '';
-                        comments.forEach(c => {
-                            const cDate = c.createdAt ? timeAgo(new Date(c.createdAt)) : 'Baru saja';
-                            const cAuthorUid = c.authorUid || 'unknown';
-                            const cAvatar = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(cAuthorUid)}/profile-photo`;
-                            const cFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.penulis)}&background=random&color=fff`;
-                            
-                            let cVerified = '';
-                            if (c.isVerified === true || String(c.isVerified) === 'true') {
-                                cVerified = `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`;
-                            } else {
-                                cVerified = `<span class="async-verif-badge" data-uid="${cAuthorUid}"></span>`;
-                            }
-
-                            const formattedText = formatCommentText(c.isi);
-                            const isMyComment = (cAuthorUid === currentActiveUid);
-                            const deleteBtnHtml = isMyComment ? `<button type="button" class="delete-comment-btn" onclick="deleteComment('${postId}', '${c.createdAt}', '${cAuthorUid}')">Hapus</button>` : '';
-
-                            commentsHtml += `
-                                <div class="comment-item">
-                                    <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" style="flex-shrink: 0;">
-                                        <img src="${cAvatar}" alt="${c.penulis}" class="comment-avatar" onerror="this.onerror=null; this.src='${cFallback}';">
-                                    </a>
-                                    <div class="comment-content-wrapper">
-                                        <div class="comment-bubble">
-                                            <div class="comment-header-row">
-                                                <div class="comment-author-left">
-                                                    <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" class="comment-author-link">
-                                                        <span class="comment-author">${c.penulis}</span>
-                                                    </a>
-                                                    ${cVerified}
-                                                </div>
-                                            </div>
-                                            <div class="comment-text">${formattedText}</div>
-                                        </div>
-                                        <div class="comment-footer-row">
-                                            <div class="comment-time">${cDate}</div>
-                                            <button type="button" class="reply-trigger-btn" onclick="replyComment('${postId}', '${c.penulis.replace(/'/g, "\\'")}')">Balas</button>
-                                            ${deleteBtnHtml}
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        if (comments.length === 0) {
-                            commentsHtml = '<div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 0.5rem 0;">Belum ada komentar. Jadilah yang pertama membalas!</div>';
-                        }
-                        commentsListEl.innerHTML = commentsHtml;
-                    }
-                } else {
-                    tempDiv.innerHTML = renderPostCardHtml(docSnap, currentActiveUid);
-                    const newCard = tempDiv.firstElementChild;
-                    postContainer.insertBefore(newCard, postContainer.firstChild);
-                }
-            });
-
-            Object.keys(existingCards).forEach(postId => {
-                if (!currentSnapshotIds.has(postId)) {
-                    existingCards[postId].remove();
-                }
-            });
-
+            postContainer.innerHTML = htmlString;
+            isInitialLoad = false;
             runAsyncVerifBadges();
 
         }, (error) => {
@@ -1425,8 +1334,6 @@
                     
                     if (uploadRes.ok) {
                         imageUrl = `${supabaseUrl}/storage/v1/object/public/${forumBucket}/${fileName}`;
-                    } else {
-                        console.error("Gagal upload gambar, tapi post akan dilanjutkan.", await uploadRes.text());
                     }
                 }
 
@@ -1446,6 +1353,9 @@
                     imageUrl: imageUrl,
                     likes: [],
                     comments: [],
+                    isPrivate: false,
+                    commentsDisabled: false,
+                    hideStats: false,
                     createdAt: serverTimestamp()
                 });
 
@@ -1465,9 +1375,6 @@
         window.filterPosts = function() {
             const input = document.getElementById('searchInput').value.toLowerCase();
             const cards = document.querySelectorAll('.post-card');
-            cards.forEach(file => {
-                // filter logic
-            });
             cards.forEach(card => {
                 const titleEl = card.querySelector('.post-title');
                 const title = titleEl ? titleEl.innerText.toLowerCase() : '';
