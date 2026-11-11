@@ -218,17 +218,41 @@
         }
         
         /* ALIGNMENT NAMA & CENTANG BIRU (KOMENTAR) */
-        .comment-header-row { display: flex; align-items: center; gap: 0.2rem; margin-bottom: 0.15rem; }
+        .comment-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.15rem; }
+        .comment-author-left { display: flex; align-items: center; gap: 0.2rem; min-width: 0; }
         .comment-author-link { text-decoration: none; color: inherit; cursor: pointer; }
         .comment-author-link:hover .comment-author { text-decoration: underline; color: var(--primary); }
         .comment-author { font-weight: 800; font-size: 0.75rem; color: var(--text-main); line-height: 1; transition: color 0.2s; }
         
         .comment-text { font-size: 0.75rem; color: var(--text-main); word-break: break-word; line-height: 1.35; }
-        .comment-time { font-size: 0.6rem; color: var(--text-muted); margin-top: 0.15rem; margin-left: 0.3rem; font-weight: 500; }
+        .comment-text .mentioned-tag { color: var(--primary); font-weight: 700; background: var(--primary-light); padding: 0.05rem 0.25rem; border-radius: 3px; display: inline-block; margin-right: 0.2rem; text-decoration: none; }
+        .comment-text .mentioned-tag:hover { text-decoration: underline; }
 
-        .comment-form { display: flex; gap: 0.5rem; align-items: center; }
+        /* BAGIAN BAWAH KOMENTAR (WAKTU & TOMBOL BALAS) */
+        .comment-footer-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.2rem; margin-left: 0.3rem; }
+        .comment-time { font-size: 0.6rem; color: var(--text-muted); font-weight: 500; }
+        .reply-trigger-btn { background: none; border: none; color: var(--primary); font-size: 0.65rem; font-weight: 700; cursor: pointer; padding: 0; transition: var(--transition); }
+        .reply-trigger-btn:hover { text-decoration: underline; }
+
+        /* MENTION AUTOCOMPLETE DROPDOWN */
+        .mention-dropdown {
+            position: absolute; bottom: 100%; left: 0; background: #fff;
+            border: 1px solid var(--border-medium); border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md); width: 220px; max-height: 150px; overflow-y: auto;
+            z-index: 100; display: none; margin-bottom: 4px;
+        }
+        .mention-dropdown.active { display: block; }
+        .mention-item {
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.6rem;
+            font-size: 0.75rem; cursor: pointer; border-bottom: 1px solid var(--border-subtle);
+            transition: var(--transition); color: var(--text-main);
+        }
+        .mention-item:hover, .mention-item.selected { background: var(--primary-light); color: var(--primary); }
+        .mention-item img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
+
+        .comment-form { display: flex; gap: 0.5rem; align-items: center; position: relative; }
         .comment-form-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-subtle); flex-shrink: 0; }
-        .comment-input-wrapper { flex: 1; display: flex; align-items: center; background: #fff; border: 1px solid var(--border-medium); border-radius: var(--radius-full); padding: 0.15rem 0.15rem 0.15rem 0.65rem; transition: var(--transition); }
+        .comment-input-wrapper { flex: 1; display: flex; align-items: center; background: #fff; border: 1px solid var(--border-medium); border-radius: var(--radius-full); padding: 0.15rem 0.15rem 0.15rem 0.65rem; transition: var(--transition); position: relative; }
         .comment-input-wrapper:focus-within { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
         .comment-input { flex: 1; background: transparent; font-size: 0.75rem; color: var(--text-main); height: 28px; }
         .comment-submit-btn { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition); flex-shrink: 0; }
@@ -341,8 +365,8 @@
                 <span>Forum</span>
             </a>
             <div class="nav-actions">
-                <a href="https://sitenexs.com/community" class="btn btn-secondary btn-sm"><i class="fas fa-users"></i>Komunitas</a>
-                <a href="https://account.sitenexs.com/profile" id="authNavBtn" class="btn btn-primary btn-sm"><i class="fas fa-user-circle"></i> Akun</a>
+                <a href="https://sitenexs.com/" class="btn btn-secondary btn-sm"><i class="fas fa-home"></i> Beranda</a>
+                <a href="https://account.sitenexs.com/profile" id="authNavBtn" class="btn btn-primary btn-sm"><i class="fas fa-user-circle"></i> Profil</a>
             </div>
         </div>
     </header>
@@ -429,7 +453,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, collection, addDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getFirestore, doc, getDoc, collection, addDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp, query, orderBy, onSnapshot, getDocs } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
@@ -453,6 +477,7 @@
 
         const forumCollection = collection(db, "forum_posts");
         const userVerifCache = {}; 
+        let allRegisteredUsers = []; // Cache daftar pengguna untuk fitur mention @
 
         let currentUserData = null;
         let isInitialLoad = true;
@@ -463,13 +488,138 @@
         const avatarImg = document.getElementById('currentUserAvatar');
         const promptText = document.getElementById('createPostPromptText');
 
+        // --- AMBIL SEMUA DATA PENGGUNA UNTUK PENCARIAN @ MENTION ---
+        async function fetchAllUsersForMention() {
+            try {
+                const usersSnap = await getDocs(collection(db, "users"));
+                allRegisteredUsers = [];
+                usersSnap.forEach(dSnap => {
+                    const d = dSnap.data();
+                    const name = d.namaLengkap || (d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '')) || "Mitra";
+                    allRegisteredUsers.push({
+                        uid: dSnap.id,
+                        nama: name,
+                        avatar: `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(dSnap.id)}/profile-photo`
+                    });
+                });
+            } catch (err) {
+                console.error("Gagal mengambil daftar pengguna untuk mention:", err);
+            }
+        }
+        fetchAllUsersForMention();
+
+        // --- AUDIO GENERATOR UNTUK EFEK SUARA LIKE ---
+        function playLikeSound(isLiked) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                osc.type = 'sine';
+                if (isLiked) {
+                    osc.frequency.setValueAtTime(450, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.12);
+                } else {
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(350, audioCtx.currentTime + 0.12);
+                }
+
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+            } catch (e) {
+                console.log("Audio Web API tidak didukung:", e);
+            }
+        }
+
+        // --- FITUR REPLY / TAG (@) PADA KOMENTAR ---
+        window.replyComment = function(postId, authorName) {
+            const inputEl = document.getElementById(`comment-input-${postId}`);
+            if (inputEl) {
+                inputEl.value = `@${authorName} ` + inputEl.value;
+                inputEl.focus();
+                inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length);
+            }
+        }
+
+        // --- AUTOCOMPLETE MENTION LOGIC (@) ---
+        window.handleCommentInput = function(event, postId) {
+            const input = event.target;
+            const val = input.value;
+            const cursorPos = input.selectionStart;
+            const dropdown = document.getElementById(`mention-dropdown-${postId}`);
+
+            // Cek apakah ada karakter '@' sebelum kursor
+            const textBeforeCursor = val.substring(0, cursorPos);
+            const match = textBeforeCursor.match(/@([a-zA-Z0-9_\s]*)$/);
+
+            if (match) {
+                const queryStr = match[1].toLowerCase();
+                const filtered = allRegisteredUsers.filter(u => u.nama.toLowerCase().includes(queryStr));
+
+                if (filtered.length > 0) {
+                    let html = '';
+                    filtered.forEach(u => {
+                        const fallbackAv = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.nama)}&background=2563eb&color=fff`;
+                        html += `
+                            <div class="mention-item" onclick="selectMention('${postId}', '${u.nama.replace(/'/g, "\\'")}')">
+                                <img src="${u.avatar}" onerror="this.src='${fallbackAv}'">
+                                <span>${u.nama}</span>
+                            </div>
+                        `;
+                    });
+                    dropdown.innerHTML = html;
+                    dropdown.classList.add('active');
+                } else {
+                    dropdown.classList.remove('active');
+                }
+            } else {
+                dropdown.classList.remove('active');
+            }
+        }
+
+        window.selectMention = function(postId, name) {
+            const input = document.getElementById(`comment-input-${postId}`);
+            const dropdown = document.getElementById(`mention-dropdown-${postId}`);
+            const cursorPos = input.selectionStart;
+            const val = input.value;
+
+            const textBefore = val.substring(0, cursorPos);
+            const textAfter = val.substring(cursorPos);
+            const newTextBefore = textBefore.replace(/@([a-zA-Z0-9_\s]*)$/, `@${name} `);
+
+            input.value = newTextBefore + textAfter;
+            dropdown.classList.remove('active');
+            input.focus();
+            input.setSelectionRange(newTextBefore.length, newTextBefore.length);
+        }
+
+        // --- FORMAT TEKS & MENTION LINK PROFILE ---
+        function formatCommentText(text) {
+            if (!text) return '';
+            // Mengubah @Nama menjadi link profil asalkan nama tersebut terdaftar
+            return text.replace(/@([a-zA-Z0-9_\s]+)(?=\s|$)/g, (match, name) => {
+                const trimmedName = name.trim();
+                const foundUser = allRegisteredUsers.find(u => u.nama.toLowerCase() === trimmedName.toLowerCase());
+                if (foundUser) {
+                    return `<a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(foundUser.uid)}" class="mentioned-tag">@${trimmedName}</a>`;
+                }
+                return `<span class="mentioned-tag">@${trimmedName}</span>`;
+            });
+        }
+
         // --- FITUR LONG-PRESS FOCUS & BLUR MODE ---
         let pressTimer = null;
         let startX = 0;
         let startY = 0;
 
         document.addEventListener('pointerdown', (e) => {
-            if (e.target.closest('button, input, textarea, a, .post-actions, .comments-section')) return;
+            if (e.target.closest('button, input, textarea, a, .post-actions, .comments-section, .mention-dropdown')) return;
             const card = e.target.closest('.post-card');
             if (!card) return;
 
@@ -634,7 +784,7 @@
             return "Baru saja";
         }
 
-        // --- FUNGSI LIKE / SUKA DENGAN UPDATE OPTIMIS INSTANT ---
+        // --- FUNGSI LIKE / SUKA DENGAN EFEK SUARA & UPDATE OPTIMIS ---
         window.toggleLike = async function(postId) {
             const savedUid = localStorage.getItem('sitenexs_uid');
             if (!currentUserData && !auth.currentUser && !savedUid) {
@@ -650,7 +800,10 @@
             let currentText = spanCount.innerText.trim();
             let currentNum = parseInt(currentText) || 0;
 
-            if (btn.classList.contains('liked')) {
+            const isNowLiked = btn.classList.contains('liked');
+            playLikeSound(isNowLiked);
+
+            if (isNowLiked) {
                 icon.className = 'fas fa-thumbs-up';
                 spanCount.innerText = `${currentNum + 1 > 0 ? currentNum + 1 : ''} Suka`;
             } else {
@@ -721,6 +874,7 @@
                 });
 
                 inputEl.value = '';
+                document.getElementById(`mention-dropdown-${postId}`).classList.remove('active');
             } catch (err) {
                 console.error("Gagal mengirim komentar:", err);
                 alert("Terjadi kesalahan saat mengirim komentar.");
@@ -772,6 +926,8 @@
                     cVerified = `<span class="async-verif-badge" data-uid="${cAuthorUid}"></span>`;
                 }
 
+                const formattedText = formatCommentText(c.isi);
+
                 commentsHtml += `
                     <div class="comment-item">
                         <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" style="flex-shrink: 0;">
@@ -780,14 +936,19 @@
                         <div class="comment-content-wrapper">
                             <div class="comment-bubble">
                                 <div class="comment-header-row">
-                                    <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" class="comment-author-link">
-                                        <span class="comment-author">${c.penulis}</span>
-                                    </a>
-                                    ${cVerified}
+                                    <div class="comment-author-left">
+                                        <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" class="comment-author-link">
+                                            <span class="comment-author">${c.penulis}</span>
+                                        </a>
+                                        ${cVerified}
+                                    </div>
                                 </div>
-                                <div class="comment-text">${c.isi}</div>
+                                <div class="comment-text">${formattedText}</div>
                             </div>
-                            <div class="comment-time">${cDate}</div>
+                            <div class="comment-footer-row">
+                                <div class="comment-time">${cDate}</div>
+                                <button type="button" class="reply-trigger-btn" onclick="replyComment('${postId}', '${c.penulis.replace(/'/g, "\\'")}')">Balas</button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -835,7 +996,8 @@
                         <form class="comment-form" onsubmit="submitComment(event, '${postId}')">
                             <img src="${activeAvatarUrl}" class="comment-form-avatar" onerror="this.onerror=null; this.src='${activeFallback}';">
                             <div class="comment-input-wrapper">
-                                <input type="text" id="comment-input-${postId}" class="comment-input" placeholder="Tulis komentar..." required>
+                                <input type="text" id="comment-input-${postId}" class="comment-input" placeholder="Tulis komentar atau ketik @..." oninput="handleCommentInput(event, '${postId}')" required>
+                                <div class="mention-dropdown" id="mention-dropdown-${postId}"></div>
                                 <button type="submit" class="comment-submit-btn"><i class="fas fa-paper-plane" style="font-size: 0.7rem;"></i></button>
                             </div>
                         </form>
@@ -947,6 +1109,8 @@
                                 cVerified = `<span class="async-verif-badge" data-uid="${cAuthorUid}"></span>`;
                             }
 
+                            const formattedText = formatCommentText(c.isi);
+
                             commentsHtml += `
                                 <div class="comment-item">
                                     <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" style="flex-shrink: 0;">
@@ -955,14 +1119,19 @@
                                     <div class="comment-content-wrapper">
                                         <div class="comment-bubble">
                                             <div class="comment-header-row">
-                                                <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" class="comment-author-link">
-                                                    <span class="comment-author">${c.penulis}</span>
-                                                </a>
-                                                ${cVerified}
+                                                <div class="comment-author-left">
+                                                    <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" class="comment-author-link">
+                                                        <span class="comment-author">${c.penulis}</span>
+                                                    </a>
+                                                    ${cVerified}
+                                                </div>
                                             </div>
-                                            <div class="comment-text">${c.isi}</div>
+                                            <div class="comment-text">${formattedText}</div>
                                         </div>
-                                        <div class="comment-time">${cDate}</div>
+                                        <div class="comment-footer-row">
+                                            <div class="comment-time">${cDate}</div>
+                                            <button type="button" class="reply-trigger-btn" onclick="replyComment('${postId}', '${c.penulis.replace(/'/g, "\\'")}')">Balas</button>
+                                        </div>
                                     </div>
                                 </div>
                             `;
@@ -1066,6 +1235,7 @@
                 form.reset();
                 removeImage();
                 closeModal();
+                fetchAllUsersForMention(); // Refresh daftar user mention
             } catch (error) {
                 console.error("Gagal mengirim postingan:", error);
                 alert("Terjadi kesalahan saat memposting.");
