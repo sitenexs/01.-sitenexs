@@ -208,7 +208,10 @@
 
         .comment-list { display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 0.85rem; max-height: 250px; overflow-y: auto; padding-right: 0.4rem; }
         
-        .comment-item { display: flex; gap: 0.5rem; align-items: flex-start; }
+        .comment-item { 
+            display: flex; gap: 0.5rem; align-items: flex-start; 
+            transition: all 0.3s ease; border-radius: var(--radius-md); padding: 0.15rem;
+        }
         .comment-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-subtle); flex-shrink: 0; }
         
         .comment-content-wrapper { flex: 1; min-width: 0; }
@@ -229,11 +232,32 @@
         .comment-text .mention-link { color: var(--primary); font-weight: 700; text-decoration: none; }
         .comment-text .mention-link:hover { text-decoration: underline; }
 
-        /* BAGIAN BAWAH KOMENTAR (WAKTU & TOMBOL BALAS) */
+        /* BAGIAN BAWAH KOMENTAR (WAKTU, TOMBOL BALAS & HAPUS) */
         .comment-footer-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.2rem; margin-left: 0.3rem; }
         .comment-time { font-size: 0.6rem; color: var(--text-muted); font-weight: 500; }
         .reply-trigger-btn { background: none; border: none; color: var(--primary); font-size: 0.65rem; font-weight: 700; cursor: pointer; padding: 0; transition: var(--transition); }
         .reply-trigger-btn:hover { text-decoration: underline; }
+        .delete-comment-btn { background: none; border: none; color: #ef4444; font-size: 0.65rem; font-weight: 700; cursor: pointer; padding: 0; transition: var(--transition); }
+        .delete-comment-btn:hover { text-decoration: underline; }
+
+        /* --- FOKUS KOMENTAR & BLUR (TANPA BORDER) --- */
+        .comments-section.comment-focus-mode .comment-item:not(.focused-comment) {
+            filter: blur(4px);
+            opacity: 0.35;
+            pointer-events: none;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+        .comment-item.focused-comment {
+            position: relative;
+            z-index: 50;
+            transform: scale(1.02);
+            background: #fff;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+            border: none; /* Tanpa border biru atau hitam */
+            padding: 0.3rem;
+            transition: all 0.3s ease;
+        }
 
         /* MENTION AUTOCOMPLETE DROPDOWN */
         .mention-dropdown {
@@ -595,10 +619,8 @@
             input.setSelectionRange(newTextBefore.length, newTextBefore.length);
         }
 
-        // --- FORMAT TEKS MENTION (HANYA NAMANYA YANG JADI LINK KLIK) ---
         function formatCommentText(text) {
             if (!text) return '';
-            // Urutkan user berdasarkan panjang nama desc agar nama terpanjang cocok duluan
             const sortedUsers = [...allRegisteredUsers].sort((a, b) => b.nama.length - a.nama.length);
             
             let formatted = text;
@@ -612,19 +634,47 @@
             return formatted;
         }
 
-        // --- FITUR LONG-PRESS FOCUS & BLUR MODE ---
+        // --- FITUR LONG-PRESS FOCUS & BLUR MODE (POSTINGAN & KOMENTAR) ---
         let pressTimer = null;
         let startX = 0;
         let startY = 0;
 
         document.addEventListener('pointerdown', (e) => {
-            if (e.target.closest('button, input, textarea, a, .post-actions, .comments-section, .mention-dropdown')) return;
+            // Jika menekan di dalam area komentar terfokus, biarkan
+            if (e.target.closest('.comment-item.focused-comment')) return;
+
+            if (e.target.closest('button, input, textarea, a, .post-actions, .mention-dropdown')) {
+                if ((document.body.classList.contains('forum-focus-mode') && !e.target.closest('.post-card.focused-card')) ||
+                    (document.querySelector('.comment-item.focused-comment') && !e.target.closest('.comment-item.focused-comment'))) {
+                    exitFocusMode();
+                }
+                return;
+            }
+
+            // Jika mengetuk area kosong di luar komentar/card yang terfokus, keluar dari mode fokus
+            if (document.querySelector('.comment-item.focused-comment') && !e.target.closest('.comment-item.focused-comment')) {
+                exitFocusMode();
+                return;
+            }
+
+            const commentItem = e.target.closest('.comment-item');
+            if (commentItem) {
+                startX = e.clientX;
+                startY = e.clientY;
+                pressTimer = setTimeout(() => {
+                    activateCommentFocusMode(commentItem);
+                }, 600);
+                return;
+            }
+
             const card = e.target.closest('.post-card');
-            if (!card) return;
+            if (!card) {
+                exitFocusMode();
+                return;
+            }
 
             startX = e.clientX;
             startY = e.clientY;
-
             pressTimer = setTimeout(() => {
                 activateFocusMode(card);
             }, 600);
@@ -662,6 +712,50 @@
         window.exitFocusMode = function() {
             document.body.classList.remove('forum-focus-mode');
             document.querySelectorAll('.post-card').forEach(c => c.classList.remove('focused-card'));
+            document.querySelectorAll('.comments-section').forEach(sec => sec.classList.remove('comment-focus-mode'));
+            document.querySelectorAll('.comment-item').forEach(item => item.classList.remove('focused-comment'));
+        }
+
+        window.activateCommentFocusMode = function(commentItem) {
+            const section = commentItem.closest('.comments-section');
+            if (!section) return;
+
+            section.querySelectorAll('.comment-item').forEach(item => item.classList.remove('focused-comment'));
+            commentItem.classList.add('focused-comment');
+            section.classList.add('comment-focus-mode');
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
+
+        // --- HAPUS KOMENTAR ---
+        window.deleteComment = async function(postId, commentCreatedAt, commentAuthorUid) {
+            const savedUid = localStorage.getItem('sitenexs_uid');
+            const activeUid = currentUserData ? currentUserData.uid : (auth.currentUser ? auth.currentUser.uid : savedUid);
+
+            if (!activeUid || activeUid !== commentAuthorUid) {
+                alert("Anda tidak memiliki izin menghapus komentar ini.");
+                return;
+            }
+
+            if (!confirm("Hapus komentar ini?")) return;
+
+            const postRef = doc(db, "forum_posts", postId);
+            try {
+                const postSnap = await getDoc(postRef);
+                if (postSnap.exists()) {
+                    const data = postSnap.data();
+                    const comments = data.comments || [];
+                    const targetComment = comments.find(c => c.createdAt === commentCreatedAt);
+
+                    if (targetComment) {
+                        await updateDoc(postRef, {
+                            comments: arrayRemove(targetComment)
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Gagal menghapus komentar:", err);
+                alert("Terjadi kesalahan saat menghapus komentar.");
+            }
         }
 
         window.previewImage = function(event) {
@@ -922,6 +1016,8 @@
                 }
 
                 const formattedText = formatCommentText(c.isi);
+                const isMyComment = (cAuthorUid === currentActiveUid);
+                const deleteBtnHtml = isMyComment ? `<button type="button" class="delete-comment-btn" onclick="deleteComment('${postId}', '${c.createdAt}', '${cAuthorUid}')">Hapus</button>` : '';
 
                 commentsHtml += `
                     <div class="comment-item">
@@ -943,6 +1039,7 @@
                             <div class="comment-footer-row">
                                 <div class="comment-time">${cDate}</div>
                                 <button type="button" class="reply-trigger-btn" onclick="replyComment('${postId}', '${c.penulis.replace(/'/g, "\\'")}')">Balas</button>
+                                ${deleteBtnHtml}
                             </div>
                         </div>
                     </div>
@@ -1107,6 +1204,8 @@
                             }
 
                             const formattedText = formatCommentText(c.isi);
+                            const isMyComment = (cAuthorUid === currentActiveUid);
+                            const deleteBtnHtml = isMyComment ? `<button type="button" class="delete-comment-btn" onclick="deleteComment('${postId}', '${c.createdAt}', '${cAuthorUid}')">Hapus</button>` : '';
 
                             commentsHtml += `
                                 <div class="comment-item">
@@ -1128,6 +1227,7 @@
                                         <div class="comment-footer-row">
                                             <div class="comment-time">${cDate}</div>
                                             <button type="button" class="reply-trigger-btn" onclick="replyComment('${postId}', '${c.penulis.replace(/'/g, "\\'")}')">Balas</button>
+                                            ${deleteBtnHtml}
                                         </div>
                                     </div>
                                 </div>
