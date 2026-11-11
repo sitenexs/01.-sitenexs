@@ -73,6 +73,23 @@
         .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
         .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.7rem; }
 
+        /* NAV PROFILE BUTTON CUSTOM */
+        .nav-profile-btn {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.25rem 0.65rem 0.25rem 0.35rem; background: #fff;
+            border: 1px solid var(--border-medium); border-radius: var(--radius-full);
+            color: var(--text-main); font-size: 0.75rem; font-weight: 700;
+            transition: var(--transition); text-decoration: none; cursor: pointer;
+        }
+        .nav-profile-btn:hover {
+            border-color: var(--primary); color: var(--primary);
+            box-shadow: var(--shadow-sm); background: var(--primary-light);
+        }
+        .nav-profile-img {
+            width: 26px; height: 26px; border-radius: 50%;
+            object-fit: cover; border: 1px solid var(--border-subtle); flex-shrink: 0;
+        }
+
         /* NAVBAR RESPONSIVE */
         #navbar {
             position: sticky; top: 0; z-index: 1000; background: rgba(255, 255, 255, 0.98);
@@ -81,6 +98,17 @@
         .nav-container { display: flex; align-items: center; justify-content: space-between; height: 55px; width: 100%; max-width: 680px; margin: 0 auto; padding: 0 0.75rem; }
         .logo { display: flex; align-items: center; gap: 0.4rem; font-weight: 800; font-size: 0.95rem; color: var(--text-main); flex-shrink: 0; }
         .logo img { height: 24px; width: 24px; border-radius: 50%; object-fit: cover; }
+        
+        /* LOGO TEKS GRADIEN SITENEXS */
+        .logo-text-gradient {
+            background: linear-gradient(135deg, #2563eb 0%, #0284c7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            letter-spacing: -0.2px;
+        }
+
         .nav-actions { display: flex; gap: 0.4rem; align-items: center; }
 
         /* HEADER FORUM */
@@ -196,14 +224,8 @@
             animation: commentSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes commentSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-8px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .comment-list { display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 0.85rem; max-height: 250px; overflow-y: auto; padding-right: 0.4rem; }
@@ -254,7 +276,7 @@
             transform: scale(1.02);
             background: #fff;
             box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
-            border: none; /* Tanpa border biru atau hitam */
+            border: none;
             padding: 0.3rem;
             transition: all 0.3s ease;
         }
@@ -387,11 +409,16 @@
         <div class="nav-container">
             <a href="https://sitenexs.com/" class="logo">
                 <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" onerror="this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff'">
-                <span>Forum</span>
+                <!-- TEKS SITENEXS DENGAN GRADIEN -->
+                <span class="logo-text-gradient">Sitenexs</span>
             </a>
             <div class="nav-actions">
                 <a href="https://sitenexs.com/" class="btn btn-secondary btn-sm"><i class="fas fa-home"></i> Beranda</a>
-                <a href="https://account.sitenexs.com/profile" id="authNavBtn" class="btn btn-primary btn-sm"><i class="fas fa-user-circle"></i> Profil</a>
+                <!-- TOMBOL PROFIL DENGAN FOTO REAL-TIME -->
+                <a href="https://account.sitenexs.com/profile" id="authNavBtn" class="nav-profile-btn">
+                    <img id="navUserAvatar" src="https://ui-avatars.com/api/?name=User&background=cbd5e1&color=fff" alt="Profil" class="nav-profile-img">
+                    <span id="navUserName">Profil</span>
+                </a>
             </div>
         </div>
     </header>
@@ -439,18 +466,9 @@
                 <button type="button" class="close-modal" onclick="closeModal()"><i class="fas fa-times"></i></button>
             </div>
             <form id="createPostForm">
+                <!-- JUDUL MENJADI OPSIONAL & TANPA PILIHAN KATEGORI -->
                 <div class="form-group">
-                    <select id="postCategory" class="form-control" required style="font-weight: 600;">
-                        <option value="">-- Pilih Kategori Diskusi --</option>
-                        <option value="Sitenexs POS">Sitenexs POS</option>
-                        <option value="QR Order">QR Order</option>
-                        <option value="Tips Bisnis">Tips Bisnis</option>
-                        <option value="Pengumuman">Pengumuman</option>
-                        <option value="Lapor Bug">Lapor Bug / Kendala</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <input type="text" id="postTitle" class="form-control" placeholder="Judul Diskusi (cth: Cara setting pajak pada struk?)" required style="font-weight: 700;">
+                    <input type="text" id="postTitle" class="form-control" placeholder="Judul (Opsional)" style="font-weight: 700;">
                 </div>
                 <div class="form-group">
                     <textarea id="postContent" class="form-control" rows="4" placeholder="Jelaskan pertanyaan atau bagikan pemikiran Anda secara detail..." required></textarea>
@@ -512,6 +530,11 @@
         const submitBtn = document.getElementById('submitPostBtn');
         const avatarImg = document.getElementById('currentUserAvatar');
         const promptText = document.getElementById('createPostPromptText');
+
+        // Elemen Tombol Navbar Profil
+        const navUserAvatar = document.getElementById('navUserAvatar');
+        const navUserName = document.getElementById('navUserName');
+        const authNavBtn = document.getElementById('authNavBtn');
 
         async function fetchAllUsersForMention() {
             try {
@@ -640,7 +663,6 @@
         let startY = 0;
 
         document.addEventListener('pointerdown', (e) => {
-            // Jika menekan di dalam area komentar terfokus, biarkan
             if (e.target.closest('.comment-item.focused-comment')) return;
 
             if (e.target.closest('button, input, textarea, a, .post-actions, .mention-dropdown')) {
@@ -651,7 +673,6 @@
                 return;
             }
 
-            // Jika mengetuk area kosong di luar komentar/card yang terfokus, keluar dari mode fokus
             if (document.querySelector('.comment-item.focused-comment') && !e.target.closest('.comment-item.focused-comment')) {
                 exitFocusMode();
                 return;
@@ -806,9 +827,21 @@
                 localStorage.setItem('sitenexs_logged_in', 'true');
                 localStorage.setItem('sitenexs_uid', uid);
 
+                // Update Avatar Form Postingan
                 avatarImg.src = photoUrl;
                 avatarImg.onerror = () => { avatarImg.src = fallbackUrl; };
                 promptText.innerText = `Halo ${namaLengkap}, apa yang ingin didiskusikan?`;
+
+                // UPDATE TOMBOL PROFIL DI NAVBAR KANAN ATAS
+                if (navUserAvatar && navUserName) {
+                    navUserAvatar.src = photoUrl;
+                    navUserAvatar.onerror = () => { navUserAvatar.src = fallbackUrl; };
+                    const firstName = namaLengkap.trim().split(' ')[0] || "Profil";
+                    navUserName.innerText = firstName;
+                }
+                if (authNavBtn) {
+                    authNavBtn.href = `https://sitenexs.com/community/profile?uid=${encodeURIComponent(uid)}`;
+                }
             } catch (err) {
                 console.error("Gagal mengambil data user:", err);
             }
@@ -977,9 +1010,14 @@
             const dateObj = data.createdAt ? data.createdAt.toDate() : new Date();
             const waktuString = timeAgo(dateObj);
 
-            let badgeClass = 'badge-tips';
-            if(data.kategori === 'Pengumuman') badgeClass = 'badge-pengumuman';
-            else if(data.kategori === 'Lapor Bug') badgeClass = 'badge-bug';
+            // RENDER BADGE KATEGORI JIKA ADA DATA LAMA
+            let badgeHtml = '';
+            if (data.kategori) {
+                let badgeClass = 'badge-tips';
+                if (data.kategori === 'Pengumuman') badgeClass = 'badge-pengumuman';
+                else if (data.kategori === 'Lapor Bug') badgeClass = 'badge-bug';
+                badgeHtml = `<span class="post-badge ${badgeClass}">${data.kategori}</span>`;
+            }
 
             const authorPhoto = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(data.authorUid)}/profile-photo`;
             const authorFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.penulis)}&background=2563eb&color=fff`;
@@ -991,6 +1029,7 @@
                 verifiedIcon = `<span class="async-verif-badge" data-uid="${data.authorUid}"></span>`;
             }
 
+            const postTitleHtml = data.judul ? `<h2 class="post-title">${data.judul}</h2>` : '';
             const postImageHtml = data.imageUrl ? `<img src="${data.imageUrl}" alt="Foto Diskusi" class="post-image">` : '';
 
             const likes = data.likes || [];
@@ -1066,10 +1105,10 @@
                                     <div class="author-time">${waktuString}</div>
                                 </div>
                             </div>
-                            <span class="post-badge ${badgeClass}">${data.kategori}</span>
+                            ${badgeHtml}
                         </div>
                         
-                        <h2 class="post-title">${data.judul}</h2>
+                        ${postTitleHtml}
                         <p class="post-content">${data.isi}</p>
                         ${postImageHtml}
                     </div>
@@ -1273,11 +1312,11 @@
                 return;
             }
 
-            const category = document.getElementById('postCategory').value;
             const title = document.getElementById('postTitle').value.trim();
             const content = document.getElementById('postContent').value.trim();
 
-            if (!category || !title || !content) return;
+            // HANYA ISI POSTINGAN YANG WAJIB
+            if (!content) return;
 
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
             submitBtn.disabled = true;
@@ -1320,7 +1359,6 @@
                     authorUid: uidVal,
                     penulis: nameVal,
                     isVerified: verifiedVal,
-                    kategori: category,
                     judul: title,
                     isi: content,
                     imageUrl: imageUrl,
@@ -1346,7 +1384,8 @@
             const input = document.getElementById('searchInput').value.toLowerCase();
             const cards = document.querySelectorAll('.post-card');
             cards.forEach(card => {
-                const title = card.querySelector('.post-title').innerText.toLowerCase();
+                const titleEl = card.querySelector('.post-title');
+                const title = titleEl ? titleEl.innerText.toLowerCase() : '';
                 const content = card.querySelector('.post-content').innerText.toLowerCase();
                 card.style.display = (title.includes(input) || content.includes(input)) ? 'block' : 'none';
             });
