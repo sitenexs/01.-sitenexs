@@ -414,7 +414,7 @@
             </a>
             <div class="nav-actions">
                 <a href="https://sitenexs.com/" class="btn btn-secondary btn-sm"><i class="fas fa-home"></i> Beranda</a>
-                <!-- TOMBOL PROFIL DENGAN FOTO REAL-TIME -->
+                <!-- TOMBOL PROFIL MENGAARAH KE ACCOUNT SITENEXS PROFILE -->
                 <a href="https://account.sitenexs.com/profile" id="authNavBtn" class="nav-profile-btn">
                     <img id="navUserAvatar" src="https://ui-avatars.com/api/?name=User&background=cbd5e1&color=fff" alt="Profil" class="nav-profile-img">
                     <span id="navUserName">Profil</span>
@@ -840,7 +840,7 @@
                     navUserName.innerText = firstName;
                 }
                 if (authNavBtn) {
-                    authNavBtn.href = `https://sitenexs.com/community/profile?uid=${encodeURIComponent(uid)}`;
+                    authNavBtn.href = "https://account.sitenexs.com/profile";
                 }
             } catch (err) {
                 console.error("Gagal mengambil data user:", err);
