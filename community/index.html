@@ -975,6 +975,7 @@
             return "Baru saja";
         }
 
+        // --- TOMBOL LIKE INSTAN BEBAS GLITCH ---
         window.toggleLike = async function(postId) {
             const savedUid = localStorage.getItem('sitenexs_uid');
             if (!currentUserData && !auth.currentUser && !savedUid) {
@@ -984,16 +985,18 @@
             const uid = currentUserData ? currentUserData.uid : (auth.currentUser ? auth.currentUser.uid : savedUid);
 
             const btn = event.currentTarget;
-            btn.classList.toggle('liked');
             const icon = btn.querySelector('i');
             const spanCount = btn.querySelector('span');
+            
+            // Perubahan UI Instan
+            const isCurrentlyLiked = btn.classList.contains('liked');
+            btn.classList.toggle('liked', !isCurrentlyLiked);
+            playLikeSound(!isCurrentlyLiked);
+
             let currentText = spanCount.innerText.trim();
             let currentNum = parseInt(currentText) || 0;
 
-            const isNowLiked = btn.classList.contains('liked');
-            playLikeSound(isNowLiked);
-
-            if (isNowLiked) {
+            if (!isCurrentlyLiked) {
                 icon.className = 'fas fa-thumbs-up';
                 spanCount.innerText = `${currentNum + 1 > 0 ? currentNum + 1 : ''} Suka`;
             } else {
@@ -1073,11 +1076,8 @@
             const postId = docSnap.id;
             const data = docSnap.data();
 
-            // PENGATURAN PRIVASI: Jika postingan privat, jangan render sama sekali di komunitas.html
             const isPrivate = data.isPrivate === true;
-            if (isPrivate) {
-                return '';
-            }
+            if (isPrivate) return '';
 
             const authorUid = data.authorUid;
             const commentsDisabled = data.commentsDisabled === true;
@@ -1254,39 +1254,159 @@
             }, 100);
         }
 
+        // --- SMART DOM PATCHING (REALTIME TANPA KEDIP / RE-RENDER KESELURUHAN) ---
         const q = query(forumCollection, orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
             const currentActiveUid = currentUserData ? currentUserData.uid : localStorage.getItem('sitenexs_uid');
 
-            let visiblePostsCount = 0;
-            let htmlString = "";
+            if (isInitialLoad) {
+                let htmlString = "";
+                let visibleCount = 0;
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    if (!data.isPrivate) {
+                        visibleCount++;
+                        htmlString += renderPostCardHtml(docSnap, currentActiveUid);
+                    }
+                });
 
-            snapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                const isPrivate = data.isPrivate === true;
-
-                // PASTIKAN POSTINGAN PRIVAT DISEMBUNYIKAN DI KOMUNITAS
-                if (isPrivate) {
-                    return;
+                if (visibleCount === 0) {
+                    postContainer.innerHTML = '<div class="loader-container"><p>Belum ada diskusi publik. Jadilah yang pertama memulai!</p></div>';
+                } else {
+                    postContainer.innerHTML = htmlString;
                 }
-
-                visiblePostsCount++;
-                htmlString += renderPostCardHtml(docSnap, currentActiveUid);
-            });
-
-            if (visiblePostsCount === 0) {
-                postContainer.innerHTML = '<div class="loader-container"><p>Belum ada diskusi publik. Jadilah yang pertama memulai!</p></div>';
                 isInitialLoad = false;
+                runAsyncVerifBadges();
                 return;
             }
 
-            postContainer.innerHTML = htmlString;
-            isInitialLoad = false;
+            const existingCards = {};
+            document.querySelectorAll('.post-card').forEach(card => {
+                existingCards[card.getAttribute('data-post-id')] = card;
+            });
+
+            const currentSnapshotIds = new Set();
+            const tempDiv = document.createElement('div');
+
+            snapshot.forEach((docSnap) => {
+                const postId = docSnap.id;
+                const data = docSnap.data();
+
+                if (data.isPrivate) {
+                    // Jika diubah jadi privat saat real-time, hapus elemen jika ada di DOM
+                    if (existingCards[postId]) {
+                        existingCards[postId].remove();
+                    }
+                    return;
+                }
+
+                currentSnapshotIds.add(postId);
+                const existingCard = existingCards[postId];
+
+                const likes = data.likes || [];
+                const isLiked = likes.includes(currentActiveUid);
+                const likeCount = likes.length;
+                const hideStats = data.hideStats === true;
+                const likeDisplay = hideStats ? 'Suka' : `${likeCount > 0 ? likeCount : ''} Suka`;
+                const comments = data.comments || [];
+                const commentDisplay = hideStats ? 'Komentar' : `${comments.length > 0 ? comments.length : ''} Komentar`;
+
+                if (existingCard) {
+                    // Update tombol like secara parsial tanpa merender ulang seluruh kartu (mencegah kedip)
+                    const likeBtn = existingCard.querySelector('.action-btn');
+                    if (likeBtn && document.activeElement !== likeBtn) {
+                        if (isLiked) {
+                            likeBtn.classList.add('liked');
+                            likeBtn.querySelector('i').className = 'fas fa-thumbs-up';
+                        } else {
+                            likeBtn.classList.remove('liked');
+                            likeBtn.querySelector('i').className = 'far fa-thumbs-up';
+                        }
+                        likeBtn.querySelector('span').innerText = likeDisplay;
+                    }
+
+                    // Update tombol komentar
+                    const commentBtn = existingCard.querySelectorAll('.action-btn')[1];
+                    if (commentBtn) {
+                        commentBtn.querySelector('span').innerText = commentDisplay;
+                    }
+
+                    // Update daftar komentar secara parsial di dalam kartu
+                    const commentsListEl = existingCard.querySelector('.comment-list');
+                    if (commentsListEl && document.activeElement.id !== `comment-input-${postId}`) {
+                        let commentsHtml = '';
+                        comments.forEach(c => {
+                            const cDate = c.createdAt ? timeAgo(new Date(c.createdAt)) : 'Baru saja';
+                            const cAuthorUid = c.authorUid || 'unknown';
+                            const cAvatar = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(cAuthorUid)}/profile-photo`;
+                            const cFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.penulis)}&background=random&color=fff`;
+                            
+                            let cVerified = '';
+                            if (c.isVerified === true || String(c.isVerified) === 'true') {
+                                cVerified = `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`;
+                            } else {
+                                cVerified = `<span class="async-verif-badge" data-uid="${cAuthorUid}"></span>`;
+                            }
+
+                            const formattedText = formatCommentText(c.isi);
+                            const isMyComment = (cAuthorUid === currentActiveUid);
+                            const deleteBtnHtml = isMyComment ? `<button type="button" class="delete-comment-btn" onclick="deleteComment('${postId}', '${c.createdAt}', '${cAuthorUid}')">Hapus</button>` : '';
+
+                            commentsHtml += `
+                                <div class="comment-item">
+                                    <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" style="flex-shrink: 0;">
+                                        <img src="${cAvatar}" alt="${c.penulis}" class="comment-avatar" onerror="this.onerror=null; this.src='${cFallback}';">
+                                    </a>
+                                    <div class="comment-content-wrapper">
+                                        <div class="comment-bubble">
+                                            <div class="comment-header-row">
+                                                <div class="comment-author-left">
+                                                    <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" class="comment-author-link">
+                                                        <span class="comment-author">${c.penulis}</span>
+                                                    </a>
+                                                    ${cVerified}
+                                                </div>
+                                            </div>
+                                            <div class="comment-text">${formattedText}</div>
+                                        </div>
+                                        <div class="comment-footer-row">
+                                            <div class="comment-time">${cDate}</div>
+                                            <button type="button" class="reply-trigger-btn" onclick="replyComment('${postId}', '${c.penulis.replace(/'/g, "\\'")}')">Balas</button>
+                                            ${deleteBtnHtml}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        if (comments.length === 0) {
+                            commentsHtml = '<div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 0.5rem 0;">Belum ada komentar. Jadilah yang pertama membalas!</div>';
+                        }
+                        commentsListEl.innerHTML = commentsHtml;
+                    }
+                } else {
+                    tempDiv.innerHTML = renderPostCardHtml(docSnap, currentActiveUid);
+                    const newCard = tempDiv.firstElementChild;
+                    if (newCard) {
+                        postContainer.insertBefore(newCard, postContainer.firstChild);
+                    }
+                }
+            });
+
+            // Hapus kartu dari DOM jika sudah dihapus dari database
+            Object.keys(existingCards).forEach(postId => {
+                if (!currentSnapshotIds.has(postId)) {
+                    existingCards[postId].remove();
+                }
+            });
+
+            if (postContainer.children.length === 0) {
+                postContainer.innerHTML = '<div class="loader-container"><p>Belum ada diskusi publik. Jadilah yang pertama memulai!</p></div>';
+            }
+
             runAsyncVerifBadges();
 
         }, (error) => {
             console.error("Gagal memuat post:", error);
-            postContainer.innerHTML = '<div class="loader-container"><p style="color:red;">Gagal memuat forum diskusi.</p></div>';
         });
 
         form.addEventListener('submit', async (e) => {
