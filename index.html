@@ -995,8 +995,19 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // --- TANGKAP PERINTAH LOGOUT DARI SUBDOMAIN AKUN ---
+        // --- DEFINISI VARIABEL SUPABASE (Mencegah ReferenceError) ---
+        const supabaseUrl = 'https://your-supabase-project.supabase.co'; // Ganti dengan URL Supabase Anda jika menggunakan storage Supabase
+        const avatarBucket = 'avatars'; // Ganti dengan nama bucket Supabase Anda
+
+        // --- TANGKAP UID DARI URL JIKA DIALIHKAN DARI SUBDOMAIN AKUN ---
         const urlParams = new URLSearchParams(window.location.search);
+        const urlUid = urlParams.get('uid');
+        if (urlUid) {
+            localStorage.setItem('sitenexs_logged_in', 'true');
+            localStorage.setItem('sitenexs_uid', urlUid);
+        }
+
+        // --- TANGKAP PERINTAH LOGOUT DARI SUBDOMAIN AKUN ---
         if (urlParams.get('logout') === 'true') {
             localStorage.removeItem('sitenexs_logged_in');
             localStorage.removeItem('sitenexs_uid');
@@ -1004,12 +1015,9 @@
             sessionStorage.clear();
             
             signOut(auth).catch(() => {});
-
-            // Bersihkan URL dan arahkan ke halaman sign-in
             window.location.replace("https://account.sitenexs.com/sign-in/");
         }
           
-        // Mendengarkan event postMessage dari halaman lain untuk sinkronisasi sesi secara real-time
         window.addEventListener('message', (event) => {
             if (event.data && event.data.type === 'sitenexs-auth-state') {
                 if (event.data.signedIn) {
