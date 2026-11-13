@@ -20,48 +20,221 @@
             --bg-body: #f8fafc;
             --bg-card: #ffffff;
             --text-main: #0f172a;
-            --text-muted: #475569;
+            --text-muted: #64748b;
             --border-subtle: #e2e8f0;
             --border-medium: #cbd5e1;
             --radius-md: 0.5rem;
             --radius-lg: 0.75rem;
             --radius-xl: 1rem;
             --radius-full: 9999px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-body); color: var(--text-main); line-height: 1.5; min-height: 100vh; display: flex; flex-direction: column; font-size: 14px; }
-        .container { width: 100%; max-width: 550px; margin: 0 auto; padding: 0 1rem; }
         
-        header { background: #ffffff; border-bottom: 1px solid var(--border-subtle); padding: 0.75rem 0; box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.95); }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            line-height: 1.5; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            font-size: 14px; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container { width: 100%; max-width: 480px; margin: 0 auto; padding: 0 1rem; }
+        
+        header { 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-subtle); 
+            padding: 0.85rem 0; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+        }
+
         .nav-container { display: flex; align-items: center; justify-content: space-between; }
+        
         .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.1rem; color: var(--text-main); text-decoration: none; }
-        .logo-img { height: 30px; width: 30px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: var(--shadow-sm); }
+        .logo-img { height: 32px; width: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-subtle); box-shadow: var(--shadow-sm); }
         .logo-text { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .main-content { padding: 1.75rem 0; flex-grow: 1; }
-        .qris-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 1.75rem; box-shadow: var(--shadow-md); text-align: center; margin-bottom: 1.5rem; }
-        .qris-card h2 { font-size: 1.3rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.2rem; }
-        .qris-card p.subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; }
+        .main-content { padding: 1.75rem 0 2.5rem; flex-grow: 1; }
+        
+        .qris-card { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border-subtle); 
+            border-radius: var(--radius-xl); 
+            padding: 1.5rem; 
+            box-shadow: var(--shadow-lg); 
+            text-align: center; 
+        }
 
-        .payment-details-box { background: var(--primary-light); border: 1px solid rgba(37,99,235,0.2); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1.25rem; text-align: left; }
-        .payment-details-box div { display: flex; justify-content: space-between; margin-bottom: 0.35rem; font-size: 0.88rem; }
-        .payment-details-box div:last-child { margin-bottom: 0; }
-        .payment-details-box span.label { color: var(--text-muted); font-weight: 600; }
-        .payment-details-box span.value { color: var(--text-main); font-weight: 700; }
-        .payment-details-box span.amount { color: var(--primary-dark); font-size: 1.1rem; font-weight: 800; }
+        .qris-header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 0.3rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
 
-        .qris-image-container { background: #ffffff; border: 2px solid var(--primary); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.25rem; display: inline-block; box-shadow: 0 4px 20px rgba(37, 99, 235, 0.1); width: 100%; }
-        .qris-image-container img { width: 200px; height: 200px; object-fit: contain; margin: 0 auto 0.5rem auto; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display: block; }
-        .qris-image-container h5 { font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.15rem; }
-        .qris-image-container p { font-size: 0.78rem; color: var(--text-muted); }
+        .qris-card h2 { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem; letter-spacing: -0.01em; }
+        .qris-card p.subtitle { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 1.25rem; }
 
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.75rem 1.25rem; font-size: 0.9rem; font-weight: 700; border-radius: var(--radius-full); transition: var(--transition); cursor: pointer; border: none; text-align: center; width: 100%; text-decoration: none; }
-        .btn-primary { background: linear-gradient(135deg, #25d366 0%, #128c7e 100%); color: #ffffff; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 211, 102, 0.4); }
-        .btn-secondary { background-color: #ffffff; color: var(--text-main); border: 1px solid var(--border-medium); margin-top: 0.5rem; font-size: 0.85rem; padding: 0.5rem 1rem; }
-        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+        /* Rincian Pembayaran Box */
+        .payment-details-box { 
+            background: #f8fafc; 
+            border: 1px solid var(--border-subtle); 
+            border-radius: var(--radius-lg); 
+            padding: 1rem; 
+            margin-bottom: 1.25rem; 
+            text-align: left; 
+        }
+        
+        .payment-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem; font-size: 0.85rem; }
+        .payment-row:last-child { margin-bottom: 0; }
+        .payment-row span.label { color: var(--text-muted); font-weight: 500; }
+        .payment-row span.value { color: var(--text-main); font-weight: 700; text-align: right; }
+        
+        .payment-total-row {
+            margin-top: 0.65rem; 
+            border-top: 1px dashed var(--border-medium); 
+            padding-top: 0.65rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .payment-total-row span.label { font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
+        
+        .amount-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .payment-details-box span.amount { color: var(--primary-dark); font-size: 1.15rem; font-weight: 800; }
+        
+        .btn-copy {
+            background: var(--primary-light);
+            border: 1px solid rgba(37,99,235,0.2);
+            color: var(--primary);
+            width: 26px;
+            height: 26px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.75rem;
+        }
+        .btn-copy:hover { background: var(--primary); color: #fff; }
+
+        /* QR Code Container */
+        .qris-image-container { 
+            background: #ffffff; 
+            border: 2px solid var(--border-subtle); 
+            border-radius: var(--radius-lg); 
+            padding: 1.25rem 1rem; 
+            margin-bottom: 1.25rem; 
+            box-shadow: var(--shadow-sm);
+            position: relative;
+        }
+        
+        .qris-image-wrapper {
+            position: relative;
+            display: inline-block;
+            padding: 0.5rem;
+            background: #fff;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            margin-bottom: 0.75rem;
+        }
+
+        .qris-image-container img.qris-qr { width: 190px; height: 190px; object-fit: contain; display: block; }
+        
+        .qris-image-container h5 { font-size: 0.9rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.15rem; display: flex; align-items: center; justify-content: center; gap: 0.3rem; }
+        .qris-image-container p { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+
+        .payment-channels {
+            display: flex;
+            justify-content: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .channel-tag {
+            background: #f1f5f9;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.25rem; font-size: 0.9rem; font-weight: 700; border-radius: var(--radius-full); transition: var(--transition); cursor: pointer; border: none; text-align: center; width: 100%; text-decoration: none; }
+        
+        .btn-primary { 
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); 
+            color: #ffffff; 
+            box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3); 
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4); }
+        
+        .btn-secondary { 
+            background-color: transparent; 
+            color: var(--text-muted); 
+            border: 1px solid var(--border-medium); 
+            margin-top: 0.5rem; 
+            font-size: 0.82rem; 
+            padding: 0.6rem 1rem; 
+            border-radius: var(--radius-md); 
+        }
+        .btn-secondary:hover { border-color: var(--text-main); color: var(--text-main); background-color: #f1f5f9; }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        /* Toast Notification untuk Salin Harga */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text-main);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
@@ -72,52 +245,81 @@
                 <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff&size=64&rounded=true';">
                 <span class="logo-text">SiteNexs</span>
             </a>
-            <a href="index.html" class="btn btn-secondary" style="width: auto; border-radius: var(--radius-full);">
-                <i class="fas fa-arrow-left"></i> Beranda
+            <a href="index.html" class="btn btn-secondary" style="width: auto; margin-top: 0; padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                <i class="fas fa-home"></i> Beranda
             </a>
         </div>
     </header>
 
-    <div class="main-content">
+    <main class="main-content">
         <div class="container">
             <div class="qris-card">
-                <h2>Selesaikan Pembayaran QRIS</h2>
-                <p class="subtitle">Scan kode QR di bawah menggunakan aplikasi mobile banking atau e-wallet Anda.</p>
+                <div class="qris-header-badge">
+                    <i class="fas fa-qrcode"></i> Pembayaran Instant QRIS
+                </div>
+                <h2>Selesaikan Pembayaran</h2>
+                <p class="subtitle">Scan kode QR di bawah menggunakan m-banking atau e-wallet pilihan Anda.</p>
 
                 <div class="payment-details-box">
-                    <div>
-                        <span class="label">Paket Dipilih:</span>
+                    <div class="payment-row">
+                        <span class="label">Paket Dipilih</span>
                         <span class="value" id="displayPaket">-</span>
                     </div>
-                    <div>
-                        <span class="label">Nama Pemilik:</span>
+                    <div class="payment-row">
+                        <span class="label">Nama Pemilik</span>
                         <span class="value" id="displayName">-</span>
                     </div>
-                    <div>
-                        <span class="label">Nama Usaha:</span>
+                    <div class="payment-row">
+                        <span class="label">Nama Usaha</span>
                         <span class="value" id="displayBusiness">-</span>
                     </div>
-                    <div style="margin-top: 0.5rem; border-top: 1px dashed rgba(37,99,235,0.3); padding-top: 0.5rem;">
-                        <span class="label" style="font-size: 1rem; font-weight: 700; color: var(--text-main);">Total Pembayaran:</span>
-                        <span class="amount" id="displayHarga">Rp 0</span>
+                    
+                    <div class="payment-total-row">
+                        <span class="label">Total Pembayaran</span>
+                        <div class="amount-wrapper">
+                            <span class="amount" id="displayHarga">Rp 0</span>
+                            <button class="btn-copy" id="copyBtn" title="Salin Nominal">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <div class="qris-image-container">
-                    <img src="https://sitenexs.com/assets/logo/qris-dummy.png" alt="QRIS Sitenexs" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=SITENEXS-QRIS-PAYMENT';">
-                    <h5>QRIS All Payment</h5>
-                    <p>BCA, Mandiri, BRI, BNI, GoPay, OVO, DANA, ShopeePay</p>
+                    <div class="qris-image-wrapper">
+                        <img src="https://sitenexs.com/assets/logo/qris-dummy.png" class="qris-qr" alt="QRIS Sitenexs" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=SITENEXS-QRIS-PAYMENT';">
+                    </div>
+                    <h5><i class="fas fa-shield-check text-emerald-500"></i> QRIS National Standard</h5>
+                    <p>Didukung oleh seluruh aplikasi pembayaran:</p>
+                    <div class="payment-channels">
+                        <span class="channel-tag">BCA</span>
+                        <span class="channel-tag">Mandiri</span>
+                        <span class="channel-tag">BRI</span>
+                        <span class="channel-tag">BNI</span>
+                        <span class="channel-tag">GoPay</span>
+                        <span class="channel-tag">OVO</span>
+                        <span class="channel-tag">DANA</span>
+                        <span class="channel-tag">ShopeePay</span>
+                    </div>
                 </div>
 
                 <button id="confirmWhatsAppBtn" class="btn btn-primary">
-                    <i class="fab fa-whatsapp"></i> Saya Sudah Bayar / Konfirmasi via WhatsApp
+                    <i class="fab fa-whatsapp text-lg"></i> Saya Sudah Bayar / Konfirmasi
                 </button>
-                <a href="javascript:history.back()" class="btn btn-secondary" style="width:100%; border-radius: var(--radius-md); margin-top: 0.5rem; text-align: center;">
+                
+                <a href="javascript:history.back()" class="btn btn-secondary" style="width:100%;">
                     <i class="fas fa-arrow-left"></i> Kembali ke Ringkasan
                 </a>
+
+                <div class="secure-badge">
+                    <i class="fas fa-lock text-emerald-500"></i> Otomatis terverifikasi setelah konfirmasi WhatsApp.
+                </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <!-- Toast Notifikasi -->
+    <div id="toast" class="toast">Nominal berhasil disalin!</div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
@@ -132,13 +334,26 @@
             return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
+        const numericHarga = parseInt(harga) || 0;
         document.getElementById('displayPaket').innerText = paket;
         document.getElementById('displayName').innerText = name;
         document.getElementById('displayBusiness').innerText = business;
-        document.getElementById('displayHarga').innerText = formatRupiah(parseInt(harga) || 0);
+        document.getElementById('displayHarga').innerText = formatRupiah(numericHarga);
 
+        // Fitur Salin Nominal Harga
+        document.getElementById('copyBtn').addEventListener('click', function() {
+            navigator.clipboard.writeText(numericHarga.toString()).then(() => {
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2000);
+            });
+        });
+
+        // Konfirmasi ke WhatsApp
         document.getElementById('confirmWhatsAppBtn').addEventListener('click', function() {
-            const message = `Halo Sitenexs, saya telah menyelesaikan pembayaran via QRIS.\n\n*Detail Pesanan:*\n- Paket: ${paket}\n- Nominal: ${formatRupiah(parseInt(harga) || 0)}\n\n*Detail Akun:*\n- Nama: ${name}\n- Usaha: ${business}\n- Email: ${email}\n\nMohon verifikasi dan aktivasi akun saya. Terima kasih!`;
+            const message = `Halo Sitenexs, saya telah menyelesaikan pembayaran via QRIS.\n\n*Detail Pesanan:*\n- Paket: ${paket}\n- Nominal: ${formatRupiah(numericHarga)}\n\n*Detail Akun:*\n- Nama: ${name}\n- Usaha: ${business}\n- Email: ${email}\n\nMohon verifikasi dan aktivasi akun saya. Terima kasih!`;
 
             window.open(`https://wa.me/6285177137899?text=${encodeURIComponent(message)}`, '_blank');
         });
