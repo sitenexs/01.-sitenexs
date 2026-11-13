@@ -159,9 +159,6 @@
         .forum-header { background: #fff; border-bottom: 1px solid var(--border-subtle); padding: 1rem 0; margin-bottom: 1rem; width: 100%; overflow: hidden; }
         .forum-header-content { display: flex; flex-direction: column; align-items: flex-start; gap: 0.6rem; width: 100%; max-width: 680px; margin: 0 auto; padding: 0 0.75rem; }
         
-        .forum-header-text { width: 100%; max-width: 100%; word-break: break-word; }
-        .forum-header-text h1 { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.1rem; line-height: 1.2; color: var(--text-main); }
-        
         .search-bar {
             display: flex; align-items: center; background: var(--bg-body); border: 1px solid transparent;
             border-radius: var(--radius-full); padding: 0.4rem 0.8rem; width: 100%; max-width: 100%;
@@ -877,7 +874,9 @@
                 if (userDocSnap.exists()) {
                     const d = userDocSnap.data();
                     namaLengkap = d.namaLengkap || d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '') || namaLengkap;
-                    isVerified = Boolean(d.isVerified) || Boolean(d.isFounder) || Boolean(d.isDeveloper); 
+                    
+                    // DIPERBARUI: Hanya bernilai true jika field isVerified benar-benar bernilai true di database
+                    isVerified = Boolean(d.isVerified); 
                 }
 
                 await applyUserPackageTheme(uid);
@@ -1243,7 +1242,7 @@
             `;
         }
 
-        // DIPERBARUI: Mendukung Lencana Pro / Kuning (https://sitenexs.com/assets/logo/lencana.png)
+        // DIPERBARUI: Hanya menampilkan centang biru jika isVerified bernilai true secara mutlak
         function runAsyncVerifBadges() {
             setTimeout(() => {
                 document.querySelectorAll('.async-verif-badge').forEach(async (el) => {
@@ -1254,7 +1253,9 @@
                         const snap = await getDoc(doc(db, "users", uid));
                         if (snap.exists()) {
                             const d = snap.data();
-                            const isVerified = Boolean(d.isVerified) || Boolean(d.isFounder) || Boolean(d.isDeveloper);
+                            
+                            // PERBAIKAN: Hanya cek field isVerified langsung
+                            const isVerified = Boolean(d.isVerified);
                             const isPro = Boolean(d.isPro) || Boolean(d.lencanaKuning) || Boolean(d.isLencanaKuning);
                             
                             let badgesHtml = '';
