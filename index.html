@@ -158,7 +158,7 @@
         }
         .bg-gradient-soft { background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%); }
 
-        .page-section { position: relative; width: 100%; padding: 5.5rem 0; display: flex; align-items: center; justify-content: center; scroll-margin-top: 80px; }
+        .page-section { position: relative; width: 100%; padding: 5.5rem 0; display: flex; align-items: center; justify-content: center; scroll-margin-top: 90px; }
 
         .text-primary { color: var(--primary); }
         .text-accent { color: var(--accent); }
@@ -178,7 +178,7 @@
         /* TOAST NOTIFIKASI */
         .sitenexs-toast {
             position: fixed;
-            top: 90px;
+            top: 100px;
             right: 20px;
             background: #ffffff;
             color: var(--text-main);
@@ -238,7 +238,6 @@
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-subtle);
             box-shadow: var(--shadow-sm);
-            transition: border-color 0.3s ease;
         }
         .nav-container {
             display: flex;
@@ -273,8 +272,8 @@
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 1.35rem;
-            font-size: 0.92rem;
+            gap: 1.2rem;
+            font-size: 0.9rem;
             font-weight: 600;
             margin: 0 1rem;
         }
@@ -347,7 +346,7 @@
         }
 
         /* HERO SECTION */
-        .hero { text-align: center; padding-top: 160px; padding-bottom: 5rem; }
+        .hero { text-align: center; padding-top: 150px; padding-bottom: 4rem; }
         .hero-wrapper { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.75rem; }
         .hero-card { background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 3.5rem 2.5rem; box-shadow: var(--shadow-card); position: relative; z-index: 2; overflow: hidden; animation: float 6s ease-in-out infinite; transition: var(--transition); }
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
@@ -364,6 +363,153 @@
         .highlight-icon { width: 46px; height: 46px; min-width: 46px; border-radius: var(--radius-sm); background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
         .highlight-text h5 { font-size: 0.98rem; font-weight: 700; color: var(--text-main); line-height: 1.25; }
         .highlight-text p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        /* FEATURED ADS CARD SLIDER SECTION (CARD TERPISAH, FOTO FULL & TERANG DENGAN GRADASI HALUS) */
+        .featured-ads-section {
+            width: 100%;
+            padding: 2rem 0;
+        }
+        .ads-slider-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 860px;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: var(--radius-xl);
+        }
+        .ads-track {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+        }
+        .ads-slide-item {
+            min-width: 100%;
+            box-sizing: border-box;
+            padding: 0 0.25rem;
+        }
+        .ads-card {
+            background: #ffffff;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            height: 240px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            transition: var(--transition);
+            text-decoration: none;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        .ads-card:hover {
+            border-color: var(--border-accent);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        .ads-card-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        .ads-card:hover .ads-card-img {
+            transform: scale(1.04);
+        }
+        /* Gradasi halus dari transparan ke hitam semi-transparan (tidak terlalu gelap agar foto tetap cerah) */
+        .ads-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(15,23,42,0) 20%, rgba(15,23,42,0.65) 100%);
+        }
+        .ads-card-content {
+            position: relative;
+            z-index: 2;
+            padding: 1.25rem 1.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+            text-align: left;
+        }
+        .ads-card-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: rgba(37, 99, 235, 0.85);
+            color: #ffffff;
+            font-size: 0.62rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 0.15rem 0.6rem;
+            border-radius: var(--radius-full);
+            backdrop-filter: blur(4px);
+        }
+        .ads-card-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.25;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .ads-card-desc {
+            font-size: 0.8rem;
+            color: #f1f5f9;
+            line-height: 1.4;
+            max-width: 620px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .ads-card-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: #ffffff;
+            color: var(--text-main);
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 0.25rem 0.8rem;
+            border-radius: var(--radius-full);
+            margin-top: 0.2rem;
+            transition: var(--transition);
+        }
+        .ads-card:hover .ads-card-action {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .ads-dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.4rem;
+            margin-top: 1.25rem;
+        }
+        .ads-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border-medium);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .ads-dot.active {
+            background: var(--primary);
+            width: 24px;
+            border-radius: var(--radius-full);
+        }
+
+        @media (max-width: 768px) {
+            .ads-card {
+                height: 220px;
+            }
+            .ads-card-content {
+                padding: 1rem 1.25rem;
+            }
+        }
 
         /* DEMO SECTION */
         .demo-section-container { display: flex; align-items: center; justify-content: center; width: 100%; padding: 1rem 0 3rem 0; overflow: visible; }
@@ -428,7 +574,7 @@
         .info-card-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-main); }
         .info-card-desc { color: var(--text-muted); font-size: 0.96rem; line-height: 1.65; }
 
-        /* COMPACT & NEAT TIM PENGEMBANG CAROUSEL */
+        /* TIM PENGEMBANG CAROUSEL */
         .dev-carousel { display: flex; gap: 1.15rem; overflow-x: auto; padding: 0.75rem 0.25rem 2rem 0.25rem; scroll-snap-type: x mandatory; scrollbar-width: none; }
         .dev-carousel::-webkit-scrollbar { display: none; }
         .dev-card { scroll-snap-align: start; flex: 0 0 180px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.15rem 0.85rem; text-align: center; box-shadow: var(--shadow-sm); transition: var(--transition); display: flex; flex-direction: column; align-items: center; text-decoration: none; color: inherit; }
@@ -509,20 +655,20 @@
 
         @media (max-width: 1023px) {
             .page-section { padding: 4.5rem 0; }
-            .hero { padding-top: 140px; padding-bottom: 4rem; }
+            .hero { padding-top: 125px; padding-bottom: 4rem; }
             .hero-highlights { grid-template-columns: 1fr; gap: 0.85rem; }
             .solutions-grid { grid-template-columns: repeat(2, 1fr); }
             .about-info-grid { grid-template-columns: repeat(2, 1fr); }
             .utility-grid { grid-template-columns: 1fr; }
             .phone-mockup { transform: rotateY(-18deg) rotateX(5deg) rotateZ(2deg) scale(0.9); }
-            .phone-mockup-wrapper:hover .phone-mockup { transform: rotateY(-5deg) rotateX(2deg) rotateZ(0deg) scale(0.95); }
+            .phone-mockup-wrapper:hover .phone-mockup { transform: rotateY(-5deg) rotateX(2deg) rotateZ(0deg) scale(1.05); }
         }
 
         @media (max-width: 768px) {
             .nav-links { display: none; }
             .nav-auth-desktop { display: none !important; }
             .mobile-toggle { display: block; }
-            .hero { padding-top: 120px; padding-bottom: 3rem; }
+            .hero { padding-top: 110px; padding-bottom: 3rem; }
             .hero-card { padding: 2.25rem 1.5rem; border-radius: var(--radius-lg); }
             .solutions-grid { grid-template-columns: 1fr; }
             .about-info-grid { grid-template-columns: 1fr; gap: 1.25rem; }
@@ -673,6 +819,62 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- FEATURED ADS CARD SLIDER SECTION (FOTO FULL TERANG DENGAN GRADASI HALUS) -->
+                <div class="featured-ads-section">
+                    <div class="ads-slider-wrapper" id="adsSliderWrapper">
+                        <div class="ads-track" id="adsTrack">
+                            
+                            <!-- Slide 1: Card Iklan 1 (Klik mengarah ke #kontak) -->
+                            <div class="ads-slide-item">
+                                <a href="#kontak" class="ads-card">
+                                    <img src="https://sitenexs.com/assets/produk/laporankeuangan.png" alt="Webinar UMKM Sitenexs" class="ads-card-img" onerror="this.src='https://ui-avatars.com/api/?name=Event+Sitenexs&background=2563eb&color=fff&size=600';">
+                                    <div class="ads-card-content">
+                                        <span class="ads-card-tag"><i class="fas fa-star" style="color: #fbbf24;"></i> Event</span>
+                                        <h4 class="ads-card-title">Webinar & Pelatihan Digitalisasi UMKM 2026</h4>
+                                        <p class="ads-card-desc">Pelatihan optimasi omzet lewat sistem kasir digital dan pembukuan transparan.</p>
+                                        <span class="ads-card-action">Daftar Gratis <i class="fas fa-arrow-right" style="font-size: 0.65rem;"></i></span>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <!-- Slide 2: Card Iklan 2 (Klik mengarah ke #harga) -->
+                            <div class="ads-slide-item">
+                                <a href="#harga" class="ads-card">
+                                    <img src="https://sitenexs.com/assets/logo/logo.png" alt="Promo Sitenexs" class="ads-card-img" onerror="this.src='https://ui-avatars.com/api/?name=Promo+Sitenexs&background=10b981&color=fff&size=600';">
+                                    <div class="ads-card-content">
+                                        <span class="ads-card-tag"><i class="fas fa-tag" style="color: #fbbf24;"></i> Promo</span>
+                                        <h4 class="ads-card-title">Diskon Khusus Paket Sistem Kasir Sitenexs</h4>
+                                        <p class="ads-card-desc">Penawaran harga khusus langganan paket Pro dan Bisnis UMKM bulan ini.</p>
+                                        <span class="ads-card-action">Klaim Promo <i class="fas fa-arrow-right" style="font-size: 0.65rem;"></i></span>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <!-- Slide 3: Card Iklan 3 (Klik mengarah ke #demo-produk) -->
+                            <div class="ads-slide-item">
+                                <a href="#demo-produk" class="ads-card">
+                                    <img src="https://sitenexs.com/assets/foto/ngoding.png" alt="Fitur Sitenexs" class="ads-card-img" onerror="this.src='https://ui-avatars.com/api/?name=QR+Order&background=7c3aed&color=fff&size=600';">
+                                    <div class="ads-card-content">
+                                        <span class="ads-card-tag"><i class="fas fa-qrcode" style="color: #fbbf24;"></i> Fitur</span>
+                                        <h4 class="ads-card-title">QR Order Menu Langsung dari Meja</h4>
+                                        <p class="ads-card-desc">Pesan tanpa antre dengan teknologi QR Code interaktif terintegrasi kasir.</p>
+                                        <span class="ads-card-action">Coba Demo <i class="fas fa-arrow-right" style="font-size: 0.65rem;"></i></span>
+                                    </div>
+                                </a>
+                            </div>
+
+                        </div>
+
+                        <!-- Dots Navigasi -->
+                        <div class="ads-dots" id="adsDots">
+                            <span class="ads-dot active" data-index="0"></span>
+                            <span class="ads-dot" data-index="1"></span>
+                            <span class="ads-dot" data-index="2"></span>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </section>
@@ -1055,6 +1257,74 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Ads Card Slider Animation Script (Card Bergeser Horizontal)
+            let currentAdIndex = 0;
+            const track = document.getElementById('adsTrack');
+            const slides = document.querySelectorAll('.ads-slide-item');
+            const dots = document.querySelectorAll('.ads-dot');
+            let adsInterval;
+
+            function updateAdsSlider() {
+                if (!track || !slides.length) return;
+                track.style.transform = `translateX(-${currentAdIndex * 100}%)`;
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === currentAdIndex);
+                });
+            }
+
+            function nextAdSlide() {
+                currentAdIndex = (currentAdIndex + 1) % slides.length;
+                updateAdsSlider();
+            }
+
+            function startAdsAutoplay() {
+                adsInterval = setInterval(nextAdSlide, 4500);
+            }
+
+            function stopAdsAutoplay() {
+                clearInterval(adsInterval);
+            }
+
+            if (slides.length > 0) {
+                dots.forEach(dot => {
+                    dot.addEventListener('click', (e) => {
+                        currentAdIndex = Number(e.target.getAttribute('data-index'));
+                        updateAdsSlider();
+                        stopAdsAutoplay();
+                        startAdsAutoplay();
+                    });
+                });
+
+                const sliderWrapper = document.getElementById('adsSliderWrapper');
+                if (sliderWrapper) {
+                    sliderWrapper.addEventListener('mouseenter', stopAdsAutoplay);
+                    sliderWrapper.addEventListener('mouseleave', startAdsAutoplay);
+
+                    // Touch support untuk swipe
+                    let touchStartX = 0;
+                    let touchEndX = 0;
+
+                    sliderWrapper.addEventListener('touchstart', e => {
+                        touchStartX = e.changedTouches[0].screenX;
+                        stopAdsAutoplay();
+                    }, {passive: true});
+
+                    sliderWrapper.addEventListener('touchend', e => {
+                        touchEndX = e.changedTouches[0].screenX;
+                        if (touchStartX - touchEndX > 40) {
+                            currentAdIndex = (currentAdIndex + 1) % slides.length;
+                            updateAdsSlider();
+                        } else if (touchEndX - touchStartX > 40) {
+                            currentAdIndex = (currentAdIndex - 1 + slides.length) % slides.length;
+                            updateAdsSlider();
+                        }
+                        startAdsAutoplay();
+                    }, {passive: true});
+                }
+
+                startAdsAutoplay();
+            }
+
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
             const mobileNavItems = document.querySelectorAll('#mobile-menu a.nav-item');
