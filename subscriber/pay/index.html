@@ -63,13 +63,13 @@
         .logo-img { height: 22px; width: 22px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border-subtle); }
         .logo-text { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .main-content { padding: 0.5rem 0; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
+        .main-content { padding: 0.4rem 0; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
         
         .qris-card { 
             background: var(--bg-card); 
             border: 1px solid var(--border-subtle); 
             border-radius: var(--radius-xl); 
-            padding: 0.85rem 1rem; 
+            padding: 0.75rem 0.9rem; 
             box-shadow: var(--shadow-md); 
             text-align: center; 
             width: 100%;
@@ -85,37 +85,37 @@
             border-radius: var(--radius-full);
             font-size: 0.65rem;
             font-weight: 700;
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.2rem;
         }
 
-        .qris-card h2 { font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.05rem; }
-        .qris-card p.subtitle { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.45rem; }
+        .qris-card h2 { font-size: 1rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.05rem; }
+        .qris-card p.subtitle { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.35rem; }
 
         /* Rincian Pembayaran Box */
         .payment-details-box { 
             background: #f8fafc; 
             border: 1px solid var(--border-subtle); 
             border-radius: var(--radius-lg); 
-            padding: 0.45rem 0.65rem; 
-            margin-bottom: 0.45rem; 
+            padding: 0.4rem 0.6rem; 
+            margin-bottom: 0.4rem; 
             text-align: left; 
         }
         
-        .payment-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem; font-size: 0.75rem; }
+        .payment-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.18rem; font-size: 0.73rem; }
         .payment-row:last-child { margin-bottom: 0; }
         .payment-row span.label { color: var(--text-muted); font-weight: 500; }
         .payment-row span.value { color: var(--text-main); font-weight: 700; text-align: right; }
         
         .payment-total-row {
-            margin-top: 0.3rem; 
+            margin-top: 0.25rem; 
             border-top: 1px dashed var(--border-medium); 
-            padding-top: 0.3rem;
+            padding-top: 0.25rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .payment-total-row span.label { font-size: 0.78rem; font-weight: 700; color: var(--text-main); }
+        .payment-total-row span.label { font-size: 0.75rem; font-weight: 700; color: var(--text-main); }
         
         .amount-wrapper {
             display: flex;
@@ -123,31 +123,31 @@
             gap: 0.3rem;
         }
 
-        .payment-details-box span.amount { color: var(--primary-dark); font-size: 0.95rem; font-weight: 800; }
+        .payment-details-box span.amount { color: var(--primary-dark); font-size: 0.9rem; font-weight: 800; }
         
         .btn-copy {
             background: var(--primary-light);
             border: 1px solid rgba(37,99,235,0.2);
             color: var(--primary);
-            width: 20px;
-            height: 20px;
+            width: 19px;
+            height: 19px;
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: var(--transition);
-            font-size: 0.65rem;
+            font-size: 0.6rem;
         }
         .btn-copy:hover { background: var(--primary); color: #fff; }
 
-        /* QR Code Container (Kompak) */
+        /* QR Code Container (QR Diperbesar) */
         .qris-image-container { 
             background: #ffffff; 
             border: 1px solid var(--border-subtle); 
             border-radius: var(--radius-lg); 
-            padding: 0.4rem; 
-            margin-bottom: 0.45rem; 
+            padding: 0.35rem; 
+            margin-bottom: 0.4rem; 
         }
         
         .qris-image-wrapper {
@@ -157,33 +157,30 @@
             background: #fff;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-subtle);
-            margin-bottom: 0.15rem;
+            margin-bottom: 0.1rem;
         }
 
         .qris-image-container img.qris-qr { 
-            width: 95px; 
-            height: 95px; 
+            width: 120px; /* Diperbesar dari 105px */
+            height: 120px; /* Diperbesar dari 105px */
             object-fit: contain; 
             display: block; 
         }
         
-        .qris-image-container h5 { font-size: 0.7rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.1rem; }
-        
-        /* Tombol Unduh QR Baru yang Lebih Bagus */
         .btn-download {
             background: var(--primary-light);
             border: 1px solid rgba(37,99,235,0.3);
             color: var(--primary-dark);
-            padding: 0.25rem 0.6rem;
+            padding: 0.2rem 0.5rem;
             border-radius: var(--radius-md);
-            font-size: 0.68rem;
+            font-size: 0.65rem;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
             cursor: pointer;
             transition: var(--transition);
-            margin-top: 0.15rem;
+            margin-top: 0.1rem;
             text-decoration: none;
         }
         .btn-download:hover { background: var(--primary); color: #fff; }
@@ -193,8 +190,8 @@
             background: #f8fafc;
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            padding: 0.35rem 0.6rem;
-            margin-bottom: 0.45rem;
+            padding: 0.3rem 0.55rem;
+            margin-bottom: 0.4rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -206,15 +203,15 @@
             background: var(--primary-light);
         }
 
-        /* Modal Pop-up Syarat & Ketentuan (Diperbesar) */
+        /* Modal Pop-up Syarat & Ketentuan (Jauh Lebih Besar & Luas) */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(4px);
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(5px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -222,7 +219,7 @@
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
-            padding: 1rem;
+            padding: 0.75rem;
         }
         .modal-overlay.active {
             opacity: 1;
@@ -231,10 +228,10 @@
         .modal-card {
             background: var(--bg-card);
             width: 100%;
-            max-width: 480px;
+            max-width: 520px; /* Diperbesar agar jauh lebih lebar */
             border-radius: var(--radius-xl);
-            padding: 1.25rem;
-            box-shadow: 0 25px 30px -5px rgb(0 0 0 / 0.15);
+            padding: 1.5rem; /* Padding diperbesar */
+            box-shadow: 0 25px 35px -5px rgb(0 0 0 / 0.2);
             transform: translateY(15px);
             transition: transform 0.3s ease;
             text-align: left;
@@ -243,52 +240,52 @@
             transform: translateY(0);
         }
         .modal-title {
-            font-size: 1.05rem;
+            font-size: 1.15rem; /* Font judul diperbesar */
             font-weight: 800;
             color: var(--text-main);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.65rem;
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.5rem;
         }
         .modal-body {
-            max-height: 260px;
+            max-height: 320px; /* Area baca dipertinggi */
             overflow-y: auto;
-            font-size: 0.78rem;
+            font-size: 0.82rem; /* Font isi diperbesar agar sangat nyaman dibaca */
             color: var(--text-muted);
-            line-height: 1.5;
+            line-height: 1.55;
             border: 1px solid var(--border-subtle);
-            padding: 0.75rem;
-            border-radius: var(--radius-md);
+            padding: 0.85rem;
+            border-radius: var(--radius-lg);
             background: #f8fafc;
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
         }
-        .modal-body p { margin-bottom: 0.6rem; }
+        .modal-body p { margin-bottom: 0.7rem; }
         .modal-body p:last-child { margin-bottom: 0; }
 
         .terms-container {
             display: flex;
             align-items: flex-start;
-            gap: 0.4rem;
+            gap: 0.5rem;
             text-align: left;
-            margin-bottom: 0.75rem;
-            font-size: 0.75rem;
+            margin-bottom: 0.85rem;
+            font-size: 0.78rem;
             color: var(--text-main);
             cursor: pointer;
-            line-height: 1.35;
+            line-height: 1.4;
             font-weight: 600;
         }
         .terms-container input[type="checkbox"] {
-            margin-top: 0.05rem;
+            margin-top: 0.1rem;
             cursor: pointer;
             accent-color: var(--primary);
-            width: 15px;
-            height: 15px;
+            width: 16px;
+            height: 16px;
             flex-shrink: 0;
         }
 
         /* Buttons */
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem 0.8rem; font-size: 0.78rem; font-weight: 700; border-radius: var(--radius-full); transition: var(--transition); cursor: pointer; border: none; text-align: center; width: 100%; text-decoration: none; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.45rem 0.8rem; font-size: 0.75rem; font-weight: 700; border-radius: var(--radius-full); transition: var(--transition); cursor: pointer; border: none; text-align: center; width: 100%; text-decoration: none; }
         
         .btn-primary { 
             background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); 
@@ -308,9 +305,9 @@
             background-color: transparent; 
             color: var(--text-muted); 
             border: 1px solid var(--border-medium); 
-            margin-top: 0.3rem; 
-            font-size: 0.72rem; 
-            padding: 0.35rem 0.6rem; 
+            margin-top: 0.25rem; 
+            font-size: 0.7rem; 
+            padding: 0.3rem 0.6rem; 
             border-radius: var(--radius-md); 
         }
         .btn-secondary:hover { border-color: var(--text-main); color: var(--text-main); background-color: #f1f5f9; }
@@ -320,9 +317,9 @@
             align-items: center;
             justify-content: center;
             gap: 0.25rem;
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             color: var(--text-muted);
-            margin-top: 0.35rem;
+            margin-top: 0.3rem;
         }
 
         /* Toast Notification */
@@ -352,7 +349,7 @@
                 <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff&size=64&rounded=true';">
                 <span class="logo-text">SiteNexs</span>
             </a>
-            <a href="index.html" class="btn btn-secondary" style="width: auto; margin-top: 0; padding: 0.25rem 0.5rem; font-size: 0.7rem;">
+            <a href="index.html" class="btn btn-secondary" style="width: auto; margin-top: 0; padding: 0.2rem 0.45rem; font-size: 0.68rem;">
                 <i class="fas fa-home"></i> Beranda
             </a>
         </div>
@@ -379,8 +376,7 @@
                         <span class="label">Nama Usaha</span>
                         <span class="value" id="displayBusiness">-</span>
                     </div>
-                    <!-- Waktu Hitung Mundur Dipindah ke Sini -->
-                    <div class="payment-row" style="margin-top: 0.2rem; border-top: 1px solid var(--border-subtle); padding-top: 0.2rem;">
+                    <div class="payment-row" style="margin-top: 0.15rem; border-top: 1px solid var(--border-subtle); padding-top: 0.15rem;">
                         <span class="label"><i class="fas fa-clock" style="color: #d97706;"></i> Batas Waktu Bayar</span>
                         <span class="value" id="countdown" style="color: #d97706; font-weight: 800;">15:00</span>
                     </div>
@@ -399,7 +395,7 @@
                 <div class="qris-image-container">
                     <div class="qris-image-wrapper">
                         <!-- UBAH URL DI BAWAH INI DENGAN LINK GAMBAR QRIS ANDA -->
-                        <img src="https://sitenexs.com/assets/logo/qris-dummy.png" class="qris-qr" alt="QRIS Sitenexs" id="qrisImg" crossorigin="anonymous" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=105x105&data=SITENEXS-QRIS-PAYMENT';">
+                        <img src="https://sitenexs.com/assets/logo/qris-dummy.png" class="qris-qr" alt="QRIS Sitenexs" id="qrisImg" crossorigin="anonymous" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=SITENEXS-QRIS-PAYMENT';">
                     </div>
                     <div>
                         <button class="btn-download" id="downloadQrBtn">
@@ -410,14 +406,14 @@
 
                 <!-- Tombol Pemicu Modal Syarat & Ketentuan -->
                 <div class="terms-status-box" id="openModalBtn">
-                    <div style="display: flex; align-items: center; gap: 0.4rem; text-align: left;">
-                        <i class="fas fa-file-contract" style="color: var(--primary); font-size: 0.9rem;"></i>
+                    <div style="display: flex; align-items: center; gap: 0.35rem; text-align: left;">
+                        <i class="fas fa-file-contract" style="color: var(--primary); font-size: 0.85rem;"></i>
                         <div>
-                            <div style="font-weight: 700; font-size: 0.72rem; color: var(--text-main);">Syarat & Ketentuan Layanan</div>
-                            <div style="font-size: 0.65rem; color: var(--text-muted);" id="termsStatusText">Belum disetujui (Klik untuk baca)</div>
+                            <div style="font-weight: 700; font-size: 0.7rem; color: var(--text-main);">Syarat & Ketentuan Layanan</div>
+                            <div style="font-size: 0.62rem; color: var(--text-muted);" id="termsStatusText">Belum disetujui (Klik untuk baca)</div>
                         </div>
                     </div>
-                    <i class="fas fa-chevron-right" style="font-size: 0.65rem; color: var(--text-muted);"></i>
+                    <i class="fas fa-chevron-right" style="font-size: 0.6rem; color: var(--text-muted);"></i>
                 </div>
 
                 <button id="confirmWhatsAppBtn" class="btn btn-primary" disabled>
@@ -435,28 +431,28 @@
         </div>
     </main>
 
-    <!-- Modal Pop-up Syarat & Ketentuan (Diperbesar & Tampil Otomatis) -->
+    <!-- Modal Pop-up Syarat & Ketentuan (Diperbesar Jauh Lebih Luas) -->
     <div class="modal-overlay active" id="termsModal">
         <div class="modal-card">
             <div class="modal-title">
                 <i class="fas fa-shield-alt" style="color: var(--primary);"></i> Syarat & Ketentuan Sitenexs
             </div>
             <div class="modal-body">
-                <p><strong>1. Ketentuan Umum:</strong> Dengan mengakses dan melakukan pembayaran pada platform Sitenexs, Anda menyatakan setuju untuk mematuhi seluruh aturan dan kebijakan layanan yang berlaku.</p>
-                <p><strong>2. Masa Berlaku Langganan:</strong> Setiap paket langganan sistem Sitenexs memiliki durasi aktif selama 1 (satu) bulan (30 hari) terhitung sejak akun dikonfirmasi dan diaktifkan oleh tim admin.</p>
-                <p><strong>3. Validasi Pembayaran QRIS:</strong> Pengguna wajib melakukan transfer sesuai dengan nominal persis yang tertera pada tagihan. Pembayaran yang tidak sesuai dapat memperlambat proses verifikasi otomatis.</p>
-                <p><strong>4. Kebijakan Pengembalian Dana:</strong> Seluruh biaya langganan yang telah dibayarkan bersifat final dan tidak dapat dikembalikan (non-refundable) dengan alasan apapun setelah sistem diaktifkan.</p>
-                <p><strong>5. Keamanan & Kerahasiaan Akun:</strong> Pengguna bertanggung jawab penuh atas keamanan kredensial akun, data toko/UMKM, serta seluruh aktivitas transaksi yang terjadi di dalam sistem masing-masing.</p>
-                <p><strong>6. Pembatasan Tanggung Jawab:</strong> Sitenexs tidak bertanggung jawab atas kerugian akibat kelalaian pengguna dalam menjaga kerahasiaan akses akun atau gangguan jaringan telekomunikasi pihak ketiga.</p>
-                <p><strong>7. Pemeliharaan & Pembaruan:</strong> Sitenexs berhak sewaktu-waktu melakukan pemeliharaan (maintenance) atau pembaruan sistem guna meningkatkan performa dan keamanan layanan.</p>
-                <p><strong>8. Bantuan & Dukungan Pelanggan:</strong> Segala kendala teknis maupun konfirmasi pembayaran setelah transfer dapat diajukan melalui layanan pelanggan resmi Sitenexs via WhatsApp.</p>
+                <p><strong>1. Ketentuan Umum:</strong> Dengan mengakses, mendaftar, dan melakukan pembayaran pada platform Sitenexs, Anda menyatakan telah membaca, memahami, serta setuju untuk mematuhi seluruh aturan dan kebijakan layanan yang berlaku.</p>
+                <p><strong>2. Masa Berlaku Langganan:</strong> Setiap paket langganan sistem Sitenexs memiliki durasi aktif selama 1 (satu) bulan (30 hari) terhitung sejak akun dikonfirmasi dan diaktifkan secara resmi oleh tim administrator Sitenexs.</p>
+                <p><strong>3. Validasi Pembayaran QRIS:</strong> Pengguna wajib melakukan transfer pembayaran sesuai dengan nominal persis hingga digit terakhir yang tertera pada tagihan. Pembayaran yang tidak sesuai dapat memperlambat proses verifikasi otomatis.</p>
+                <p><strong>4. Kebijakan Pengembalian Dana:</strong> Seluruh biaya langganan paket sistem yang telah dibayarkan bersifat final dan tidak dapat dikembalikan (non-refundable) dengan alasan apapun setelah sistem berhasil diaktifkan.</p>
+                <p><strong>5. Keamanan & Kerahasiaan Akun:</strong> Pengguna bertanggung jawab penuh atas keamanan kredensial login akun, kerahasiaan data toko/UMKM, serta seluruh aktivitas transaksi yang terjadi di dalam sistem masing-masing.</p>
+                <p><strong>6. Pembatasan Tanggung Jawab:</strong> Sitenexs tidak bertanggung jawab atas segala bentuk kerugian yang timbul akibat kelalaian pengguna dalam menjaga kerahasiaan akses akun atau gangguan pada jaringan telekomunikasi pihak ketiga.</p>
+                <p><strong>7. Pemeliharaan & Pembaruan Sistem:</strong> Sitenexs berhak sewaktu-waktu melakukan pemeliharaan (maintenance), perbaikan, atau pembaruan sistem guna meningkatkan performa, fitur, dan keamanan layanan.</p>
+                <p><strong>8. Bantuan & Dukungan Pelanggan:</strong> Segala kendala teknis, pertanyaan, maupun konfirmasi pembayaran setelah transfer dapat diajukan melalui layanan pelanggan resmi Sitenexs via WhatsApp.</p>
             </div>
             <div class="modal-footer">
                 <label class="terms-container">
                     <input type="checkbox" id="modalTermsCheck">
-                    <span>Saya telah membaca dan menyetujui seluruh syarat dan ketentuan yang berlaku di Sitenexs.</span>
+                    <span>Saya telah membaca, memahami, dan menyetujui seluruh syarat dan ketentuan yang berlaku di Sitenexs.</span>
                 </label>
-                <button type="button" id="closeModalBtn" class="btn btn-primary" disabled style="padding: 0.55rem; font-size: 0.8rem;">
+                <button type="button" id="closeModalBtn" class="btn btn-primary" disabled style="padding: 0.6rem; font-size: 0.82rem;">
                     Setuju & Lanjutkan
                 </button>
             </div>
