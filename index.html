@@ -1466,6 +1466,7 @@
                         bisnisNama: data.bisnis?.nama || 'Bisnis Sitenexs',
                         bisnisBidang: data.bisnis?.bidang || 'UMKM',
                         isVerified: data.isVerified || false,
+                        isPro: Boolean(data.isPro) || Boolean(data.lencanaKuning) || Boolean(data.isLencanaKuning),
                         isDeveloper: data.isDeveloper || false,
                         isFounder: data.isFounder || false, 
                         jabatanPengembang: data.jabatanPengembang || 'Pengembang',
@@ -1491,7 +1492,14 @@
             founders.forEach((founder, index) => {
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(founder.uid)}/profile-photo`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(founder.nama)}&background=2563eb&color=fff&size=256`;
-                const verifiedCheck = founder.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` : '';
+                
+                let badgesHtml = '';
+                if (founder.isVerified) {
+                    badgesHtml += `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`;
+                }
+                if (founder.isPro) {
+                    badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="member-verification-icon" alt="Pro" style="margin-left: 2px;">`;
+                }
 
                 if(index === 0) {
                     const modalImg = document.getElementById('modalFounderImg');
@@ -1509,7 +1517,7 @@
                         <div class="dev-avatar-wrapper" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);">
                             <img src="${photoUrl}" alt="${founder.nama}" class="dev-avatar" onerror="this.onerror=null; this.src='${fallbackUrl}';">
                         </div>
-                        <h3 class="dev-name">${founder.nama} ${verifiedCheck}</h3>
+                        <h3 class="dev-name">${founder.nama} ${badgesHtml}</h3>
                         <div class="dev-role" style="background: var(--primary); color: #ffffff;"><i class="fas fa-crown"></i> ${founder.jabatanPengembang || 'Founder'}</div>
                         <div class="dev-business"><i class="fas fa-building text-muted"></i> ${founder.bisnisNama}</div>
                     </a>
@@ -1524,12 +1532,19 @@
             developers.forEach(dev => {
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(dev.uid)}/profile-photo`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(dev.nama)}&background=2563eb&color=fff&size=150`;
-                const verifiedCheck = dev.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` : '';
+                
+                let badgesHtml = '';
+                if (dev.isVerified) {
+                    badgesHtml += `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`;
+                }
+                if (dev.isPro) {
+                    badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="member-verification-icon" alt="Pro" style="margin-left: 2px;">`;
+                }
 
                 const devCardHTML = `
                     <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(dev.uid)}" class="dev-card">
                         <div class="dev-avatar-wrapper"><img src="${photoUrl}" alt="Foto ${dev.nama}" class="dev-avatar" onerror="this.onerror=null; this.src='${fallbackUrl}';"></div>
-                        <h3 class="dev-name">${dev.nama} ${verifiedCheck}</h3>
+                        <h3 class="dev-name">${dev.nama} ${badgesHtml}</h3>
                         <div class="dev-role"><i class="fas fa-code"></i> ${dev.jabatanPengembang}</div>
                         <div class="dev-business"><i class="fas fa-store text-muted"></i> ${dev.bisnisNama}</div>
                     </a>
@@ -1565,7 +1580,14 @@
 
                 const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama)}&background=2563eb&color=fff&size=120`;
-                const verifiedIconHTML = user.isVerified ? `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">` : '';
+                
+                let badgesHtml = '';
+                if (user.isVerified) {
+                    badgesHtml += `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`;
+                }
+                if (user.isPro) {
+                    badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="member-verification-icon" alt="Pro" style="margin-left: 2px;">`;
+                }
 
                 let dynamicBadgeHTML = "";
                 const paketStr = (user.paketLangganan || 'Basic').toLowerCase();
@@ -1583,7 +1605,7 @@
                     <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(user.uid)}" class="member-card reveal active">
                         <div class="member-avatar-box"><img src="${photoUrl}" alt="Avatar ${user.nama}" onerror="this.onerror=null; this.src='${fallbackUrl}';"></div>
                         <div class="member-info">
-                            <h4 class="member-name">${user.nama} ${verifiedIconHTML}</h4>
+                            <h4 class="member-name">${user.nama} ${badgesHtml}</h4>
                             <div class="member-business">${user.bisnisNama}</div>
                             <div style="display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.1rem;">
                                 <div class="member-category"><i class="fas ${icon}" style="margin-right: 0.25rem;"></i> ${user.bisnisBidang}</div>
