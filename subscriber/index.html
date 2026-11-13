@@ -4,13 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Konfirmasi Pembayaran Paket — Sitenexs</title>
+    
     <!-- Meta SEO -->
     <meta name="description" content="Halaman pembayaran dan konfirmasi langganan Sitenexs, solusi digital UMKM Indonesia.">
     <link rel="icon" type="image/png" href="https://sitenexs.com/assets/logo/logo.png">
+    
+    <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
             --primary: #2563eb;
@@ -31,10 +37,12 @@
             --radius-full: 9999px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-body); color: var(--text-main); line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
         .container { width: 100%; max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
-        header { background: #ffffff; border-bottom: 1px solid var(--border-subtle); padding: 1.25rem 0; box-shadow: var(--shadow-sm); }
+        
+        header { background: #ffffff; border-bottom: 1px solid var(--border-subtle); padding: 1.25rem 0; box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.95); }
         .nav-container { display: flex; align-items: center; justify-content: space-between; }
         .logo { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 1.25rem; color: var(--text-main); text-decoration: none; }
         .logo-img { height: 38px; width: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: var(--shadow-sm); }
@@ -50,28 +58,30 @@
         .package-info p { font-size: 0.88rem; color: var(--text-muted); }
         .package-price { font-size: 1.5rem; font-weight: 800; color: var(--text-main); }
         
-        .form-group { margin-bottom: 1.25rem; }
+        .form-group { margin-bottom: 1.35rem; }
         .form-group label { display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main); }
-        .form-control { width: 100%; padding: 0.85rem 1.15rem; border-radius: var(--radius-md); border: 1px solid var(--border-medium); background-color: var(--bg-body); font-size: 0.95rem; color: var(--text-main); font-family: inherit; transition: var(--transition); }
-        .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); background-color: #ffffff; }
+        .form-control { width: 100%; padding: 0.9rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-medium); background-color: var(--bg-body); font-size: 0.98rem; color: var(--text-main); font-family: inherit; transition: var(--transition); }
+        .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37,99,235,0.15); background-color: #ffffff; }
         
         .payment-methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.75rem; }
-        .payment-option { border: 2px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; text-align: center; cursor: pointer; transition: var(--transition); background: #ffffff; }
+        .payment-option { border: 2px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.1rem 1rem; text-align: center; cursor: pointer; transition: var(--transition); background: #ffffff; }
         .payment-option input[type="radio"] { display: none; }
         .payment-option:hover { border-color: var(--primary); background: var(--primary-light); }
         .payment-option.selected { border-color: var(--primary); background: var(--primary-light); box-shadow: var(--shadow-sm); }
         .payment-option i { font-size: 1.5rem; color: var(--primary); margin-bottom: 0.5rem; display: block; }
         .payment-option span { font-weight: 700; font-size: 0.88rem; color: var(--text-main); }
         
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.85rem 1.5rem; font-size: 0.95rem; font-weight: 700; border-radius: var(--radius-full); transition: var(--transition); cursor: pointer; border: none; text-align: center; width: 100%; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.9rem 1.5rem; font-size: 0.95rem; font-weight: 700; border-radius: var(--radius-full); transition: var(--transition); cursor: pointer; border: none; text-align: center; width: 100%; text-decoration: none; }
         .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #ffffff; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37,99,235,0.35); }
-        .btn-secondary { background-color: #ffffff; color: var(--text-main); border: 1px solid var(--border-medium); margin-top: 0.75rem; text-decoration: none; }
+        .btn-secondary { background-color: #ffffff; color: var(--text-main); border: 1px solid var(--border-medium); margin-top: 0.75rem; }
         .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
 
         .bank-details { background: #f1f5f9; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem; font-size: 0.9rem; border-left: 4px solid var(--primary); }
         .bank-details p { margin-bottom: 0.3rem; color: var(--text-muted); }
         .bank-details strong { color: var(--text-main); }
+
+        .auth-notice { background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: var(--radius-md); padding: 0.85rem 1.15rem; margin-bottom: 1.5rem; font-size: 0.88rem; color: var(--primary-dark); display: flex; align-items: center; gap: 0.6rem; }
 
         @media (max-width: 768px) {
             .payment-methods { grid-template-columns: 1fr; }
@@ -84,7 +94,7 @@
     <header>
         <div class="container nav-container">
             <a href="index.html" class="logo">
-                <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img">
+                <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff&size=64&rounded=true';">
                 <span class="logo-text">SiteNexs</span>
             </a>
             <a href="index.html" class="btn btn-secondary" style="width: auto; padding: 0.4rem 1rem; font-size: 0.85rem; border-radius: var(--radius-full);">
@@ -99,6 +109,11 @@
                 <h1 class="checkout-title"><i class="fas fa-receipt text-primary"></i> Konfirmasi Langganan</h1>
                 <p class="checkout-desc">Lengkapi informasi usaha Anda dan pilih metode pembayaran untuk mengaktifkan paket langganan Sitenexs.</p>
 
+                <div id="authNoticeBox" class="auth-notice" style="display: none;">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Data nama, usaha, dan nomor WhatsApp telah diisi otomatis dari akun Anda.</span>
+                </div>
+
                 <div class="package-summary">
                     <div class="package-info">
                         <h4 id="packageNameDisplay">Memuat Paket...</h4>
@@ -110,7 +125,7 @@
                 <form id="checkoutForm">
                     <div class="form-group">
                         <label>Nama Pemilik / Pengelola Usaha</label>
-                        <input type="text" id="buyerName" class="form-control" required placeholder="Contoh: Budi Santoso">
+                        <input type="text" id="buyerName" class="form-control" required placeholder="Memuat nama...">
                     </div>
 
                     <div class="form-group">
@@ -159,7 +174,27 @@
         </div>
     </div>
 
-    <script>
+    <!-- Firebase Auto-Fill Script -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
+            authDomain: 'sitenexs-62919.firebaseapp.com',
+            projectId: 'sitenexs-62919',
+            storageBucket: 'sitenexs-62919.firebasestorage.app',
+            messagingSenderId: '1060348110644',
+            appId: '1:1060348110644:web:e45af14d5f26a9cf8e6761',
+            measurementId: 'G-C7YL0Q7YRQ'
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Ambil parameter paket & harga dari URL
         const urlParams = new URLSearchParams(window.location.search);
         const paket = urlParams.get('paket') || 'Paket Sitenexs';
         const harga = urlParams.get('harga') || '0';
@@ -172,7 +207,54 @@
             return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
-        function selectPayment(e, method) {
+        // Auto-fill dari Firebase Auth & Firestore
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userSnap = await getDoc(userDocRef);
+                    
+                    if (userSnap.exists()) {
+                        const data = userSnap.data();
+                        
+                        // Nama Lengkap
+                        const nama = data.namaLengkap || data.namaDepan || user.displayName || '';
+                        if(nama) document.getElementById('buyerName').value = nama;
+
+                        // Nama Usaha
+                        const usaha = data.bisnis?.nama || '';
+                        if(usaha) document.getElementById('buyerBusiness').value = usaha;
+
+                        // Nomor WhatsApp / Telepon
+                        const phone = data.noWa || data.phone || user.phoneNumber || '';
+                        if(phone) document.getElementById('buyerPhone').value = phone;
+
+                        // Tampilkan notice info
+                        document.getElementById('authNoticeBox').style.display = 'flex';
+                    }
+                } catch (err) {
+                    console.error("Gagal memuat profil pengguna:", err);
+                }
+            } else {
+                // Cek cadangan dari localStorage jika ada sesi tersimpan
+                const savedUid = localStorage.getItem('sitenexs_uid');
+                if (savedUid) {
+                    try {
+                        const userDocRef = doc(db, "users", savedUid);
+                        const userSnap = await getDoc(userDocRef);
+                        if (userSnap.exists()) {
+                            const data = userSnap.data();
+                            if(data.namaLengkap) document.getElementById('buyerName').value = data.namaLengkap;
+                            if(data.bisnis?.nama) document.getElementById('buyerBusiness').value = data.bisnis.nama;
+                            if(data.noWa) document.getElementById('buyerPhone').value = data.noWa;
+                            document.getElementById('authNoticeBox').style.display = 'flex';
+                        }
+                    } catch(e) {}
+                }
+            }
+        });
+
+        window.selectPayment = function(e, method) {
             document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
             const currentOption = e.currentTarget;
             currentOption.classList.add('selected');
@@ -184,7 +266,7 @@
             } else {
                 bankInfo.style.display = 'none';
             }
-        }
+        };
 
         document.getElementById('checkoutForm').addEventListener('submit', function(e) {
             e.preventDefault();
