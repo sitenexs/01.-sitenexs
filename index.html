@@ -120,10 +120,10 @@
         .user-package-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
-            padding: 0.2rem 0.6rem;
+            gap: 0.3rem;
+            padding: 0.2rem 0.55rem;
             border-radius: var(--radius-full);
-            font-size: 0.68rem;
+            font-size: 0.65rem;
             font-weight: 800;
             letter-spacing: 0.03em;
             text-transform: uppercase;
@@ -145,7 +145,7 @@
         a { text-decoration: none; color: inherit; }
         [hidden] { display: none !important; }
         button, input, select, textarea { font-family: inherit; outline: none; }
-        .container { width: 100%; max-width: 1160px; margin: 0 auto; padding: 0 1.5rem; position: relative; z-index: 2; }
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; position: relative; z-index: 2; }
 
         .bg-grid-pattern {
             background-image: linear-gradient(to right, rgba(37, 99, 235, 0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(37, 99, 235, 0.06) 1px, transparent 1px);
@@ -166,7 +166,7 @@
         .reveal.active { opacity: 1; transform: translateY(0); }
 
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.5rem; font-size: 0.9rem; font-weight: 700; border-radius: var(--radius-full); transition: var(--transition); cursor: pointer; border: 1px solid transparent; text-align: center; line-height: 1.2; }
-        .btn-sm { padding: 0.5rem 1.25rem; font-size: 0.85rem; }
+        .btn-sm { padding: 0.45rem 1.1rem; font-size: 0.85rem; }
         .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #ffffff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
         .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35); }
         .btn-secondary { background-color: #ffffff; color: var(--text-main); border: 1px solid var(--border-medium); box-shadow: var(--shadow-sm); }
@@ -226,7 +226,7 @@
         .section-title { font-size: clamp(1.6rem, 2.8vw, 2.3rem); font-weight: 800; letter-spacing: -0.02em; color: var(--text-main); line-height: 1.25; margin-bottom: 0.5rem; }
         .section-desc { font-size: 1rem; color: var(--text-muted); line-height: 1.6; }
 
-        /* NAVBAR STYLING PERFECTION */
+        /* NAVBAR STYLING (DIKECILKAN GAP DAN PADDING SUPAYA LAPTOP TIDAK PADAT) */
         #navbar {
             position: fixed;
             top: 0;
@@ -244,15 +244,16 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 80px;
+            height: 76px;
         }
         .logo {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.6rem;
             font-weight: 800;
-            font-size: 1.35rem;
+            font-size: 1.25rem;
             color: var(--text-main);
+            flex-shrink: 0;
         }
         .logo-text {
             background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
@@ -262,8 +263,8 @@
             letter-spacing: -0.02em;
         }
         .logo-img {
-            height: 42px;
-            width: 42px;
+            height: 38px;
+            width: 38px;
             border-radius: var(--radius-full);
             object-fit: cover;
             border: 2px solid #fff;
@@ -272,46 +273,48 @@
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 1.75rem;
-            font-size: 0.98rem;
+            gap: 1.35rem; /* Gap diperkecil agar pas di layar laptop */
+            font-size: 0.92rem; /* Ukuran font disesuaikan */
             font-weight: 600;
+            margin: 0 1rem;
         }
         .nav-links a {
             color: var(--text-muted);
             transition: var(--transition);
             cursor: pointer;
-            padding: 0.4rem 0;
-            position: relative;
+            white-space: nowrap;
         }
         .nav-links a:hover {
             color: var(--primary);
         }
         .nav-divider {
             width: 1px;
-            height: 22px;
+            height: 18px;
             background-color: var(--border-medium);
+            flex-shrink: 0;
         }
         .nav-layanan-link {
             color: var(--primary) !important;
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.35rem;
+            white-space: nowrap;
         }
         .nav-auth-desktop {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            flex-shrink: 0;
         }
         .mobile-toggle {
             display: none;
             background: none;
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             cursor: pointer;
             color: var(--text-main);
-            padding: 0.45rem 0.85rem;
+            padding: 0.4rem 0.75rem;
             transition: var(--transition);
         }
         .mobile-toggle:hover { background: var(--bg-alt); }
@@ -344,7 +347,7 @@
         }
 
         /* HERO SECTION */
-        .hero { text-align: center; padding-top: 170px; padding-bottom: 5rem; }
+        .hero { text-align: center; padding-top: 160px; padding-bottom: 5rem; }
         .hero-wrapper { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.75rem; }
         .hero-card { background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 3.5rem 2.5rem; box-shadow: var(--shadow-card); position: relative; z-index: 2; overflow: hidden; animation: float 6s ease-in-out infinite; transition: var(--transition); }
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
@@ -493,6 +496,11 @@
         .founder-quote { background: var(--bg-body); border-left: 4px solid var(--primary); padding: 1.25rem 1.5rem; border-radius: 0 var(--radius-md) var(--radius-md) 0; margin-bottom: 1.75rem; font-size: 0.95rem; color: var(--text-main); font-style: italic; line-height: 1.6; }
 
         /* RESPONSIVE MEDIA QUERIES */
+        @media (max-width: 1120px) {
+            .nav-links { gap: 1rem; font-size: 0.88rem; }
+            .container { max-width: 100%; padding: 0 1.25rem; }
+        }
+
         @media (max-width: 1023px) {
             .page-section { padding: 4.5rem 0; }
             .hero { padding-top: 140px; padding-bottom: 4rem; }
@@ -566,7 +574,7 @@
 
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <div class="nav-auth-desktop">
-                    <a href="https://account.sitenexs.com/sign-in/" id="desktopAuthBtn" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 1.1rem; border-radius: var(--radius-full);">
+                    <a href="https://account.sitenexs.com/sign-in/" id="desktopAuthBtn" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.9rem 0.35rem 0.35rem; border-radius: var(--radius-full);">
                         <i class="fas fa-sign-in-alt"></i> Masuk / Daftar
                     </a>
                 </div>
@@ -1167,8 +1175,8 @@
             const userBadgeHTML = `<span class="user-package-badge ${themeCategory}"><i class="fas ${badgeIcon}"></i> ${paket}</span>`;
             
             const profileButtonContent = `
-                <img src="${avatarUrl}" alt="${nama}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); flex-shrink: 0;" onerror="this.src='${fallbackAvatar}';">
-                <span style="font-weight: 700; max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${nama.split(' ')[0]}</span>
+                <img src="${avatarUrl}" alt="${nama}" style="width: 26px; height: 26px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); flex-shrink: 0;" onerror="this.src='${fallbackAvatar}';">
+                <span style="font-weight: 700; max-width: 95px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${nama.split(' ')[0]}</span>
                 ${userBadgeHTML}
             `;
 
@@ -1177,8 +1185,8 @@
                 desktopAuthBtn.href = 'https://account.sitenexs.com/profile/';
                 desktopAuthBtn.style.display = 'inline-flex';
                 desktopAuthBtn.style.alignItems = 'center';
-                desktopAuthBtn.style.gap = '0.5rem';
-                desktopAuthBtn.style.padding = '0.35rem 0.85rem 0.35rem 0.4rem';
+                desktopAuthBtn.style.gap = '0.35rem';
+                desktopAuthBtn.style.padding = '0.3rem 0.75rem 0.3rem 0.35rem';
                 desktopAuthBtn.style.borderRadius = 'var(--radius-full)';
                 desktopAuthBtn.style.background = '#ffffff';
                 desktopAuthBtn.style.border = '1px solid var(--border-medium)';
@@ -1188,10 +1196,10 @@
                 mobileAuthBtn.href = 'https://account.sitenexs.com/profile/';
                 mobileAuthBtn.style.display = 'inline-flex';
                 mobileAuthBtn.style.alignItems = 'center';
-                mobileAuthBtn.style.gap = '0.5rem';
+                mobileAuthBtn.style.gap = '0.4rem';
                 mobileAuthBtn.style.background = '#ffffff';
                 mobileAuthBtn.style.border = '1px solid var(--border-medium)';
-                mobileAuthBtn.style.padding = '0.4rem 0.8rem 0.4rem 0.4rem';
+                mobileAuthBtn.style.padding = '0.35rem 0.8rem 0.35rem 0.35rem';
                 mobileAuthBtn.style.borderRadius = 'var(--radius-full)';
             }
         }
