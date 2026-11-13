@@ -226,7 +226,7 @@
         .section-title { font-size: clamp(1.6rem, 2.8vw, 2.3rem); font-weight: 800; letter-spacing: -0.02em; color: var(--text-main); line-height: 1.25; margin-bottom: 0.5rem; }
         .section-desc { font-size: 1rem; color: var(--text-muted); line-height: 1.6; }
 
-        /* NAVBAR STYLING (DIKECILKAN GAP DAN PADDING SUPAYA LAPTOP TIDAK PADAT) */
+        /* NAVBAR STYLING */
         #navbar {
             position: fixed;
             top: 0;
@@ -273,8 +273,8 @@
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 1.35rem; /* Gap diperkecil agar pas di layar laptop */
-            font-size: 0.92rem; /* Ukuran font disesuaikan */
+            gap: 1.35rem;
+            font-size: 0.92rem;
             font-weight: 600;
             margin: 0 1rem;
         }
@@ -495,7 +495,6 @@
         .founder-bio { color: var(--text-muted); font-size: 1rem; line-height: 1.7; margin-bottom: 1.5rem; }
         .founder-quote { background: var(--bg-body); border-left: 4px solid var(--primary); padding: 1.25rem 1.5rem; border-radius: 0 var(--radius-md) var(--radius-md) 0; margin-bottom: 1.75rem; font-size: 0.95rem; color: var(--text-main); font-style: italic; line-height: 1.6; }
 
-        /* RESPONSIVE MEDIA QUERIES */
         @media (max-width: 1120px) {
             .nav-links { gap: 1rem; font-size: 0.88rem; }
             .container { max-width: 100%; padding: 0 1.25rem; }
@@ -1116,7 +1115,6 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // --- TANGKAP UID DARI URL JIKA DIALIHKAN DARI SUBDOMAIN AKUN ---
         const urlParams = new URLSearchParams(window.location.search);
         const urlUid = urlParams.get('uid');
         if (urlUid) {
@@ -1124,7 +1122,6 @@
             localStorage.setItem('sitenexs_uid', urlUid);
         }
 
-        // --- TANGKAP PERINTAH LOGOUT DARI SUBDOMAIN AKUN ---
         if (urlParams.get('logout') === 'true') {
             localStorage.removeItem('sitenexs_logged_in');
             localStorage.removeItem('sitenexs_uid');
