@@ -38,7 +38,7 @@
             --accent: #10b981;
             --bg-body: #f8fafc;
             --bg-card: #ffffff;
-            --bg-alt: #f1f5f9;
+            --bg-alt: #f8fafc;
             --text-main: #0f172a;
             --text-muted: #475569;
             --border-subtle: #e2e8f0;
@@ -46,7 +46,7 @@
             --border-accent: #93c5fd;
             --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
             --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
-            --shadow-lg: 0 15px 30px -5px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 20px 35px -10px rgba(15, 23, 42, 0.1);
             --shadow-card: 0 20px 40px -12px rgba(37, 99, 235, 0.15);
             --radius-sm: 0.375rem;
             --radius-md: 0.625rem;
@@ -387,25 +387,29 @@
         .solution-title { font-size: 1.2rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.6rem; }
         .solution-desc { font-size: 0.96rem; color: var(--text-muted); line-height: 1.65; }
 
-        /* PRICING */
-        .utility-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.75rem; width: 100%; }
-        .pricing-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 2rem; display: flex; flex-direction: column; text-align: center; box-shadow: var(--shadow-sm); transition: var(--transition); position: relative; }
-        .pricing-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--border-medium); }
-        .pricing-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; padding: 0.3rem 1.1rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700; box-shadow: var(--shadow-sm); white-space: nowrap; }
-        .pricing-icon { width: 48px; height: 48px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin: 0 auto 0.85rem auto; }
-        .pricing-title { font-size: 1.35rem; font-weight: 800; margin-bottom: 0.25rem; }
-        .pricing-desc { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5; }
-        .pricing-price-box { margin-bottom: 1.35rem; background: var(--bg-alt); padding: 0.9rem; border-radius: var(--radius-md); }
-        .pricing-strike { font-size: 0.88rem; color: #ef4444; text-decoration: line-through; display: block; font-weight: 600; margin-bottom: 0.15rem; }
-        .pricing-final { font-size: 1.9rem; font-weight: 800; color: var(--text-main); line-height: 1; }
-        .pricing-final span { font-size: 0.82rem; color: var(--text-muted); font-weight: 500; }
-        .pkg-countdown-badge { background: #fee2e2; color: #991b1b; font-size: 0.72rem; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); margin-top: 0.5rem; display: inline-flex; align-items: center; gap: 0.3rem; }
+        /* REFINED & LUXURY PRICING CARDS */
+        .utility-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; width: 100%; align-items: stretch; }
+        .pricing-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 2.5rem 2rem; display: flex; flex-direction: column; text-align: center; box-shadow: var(--shadow-sm); transition: var(--transition); position: relative; }
+        .pricing-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--border-accent); }
+        .pricing-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; padding: 0.35rem 1.25rem; border-radius: var(--radius-full); font-size: 0.72rem; font-weight: 800; box-shadow: var(--shadow-md); white-space: nowrap; letter-spacing: 0.08em; text-transform: uppercase; z-index: 3; }
+        .pricing-icon { width: 58px; height: 58px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; margin: 0 auto 1.2rem auto; box-shadow: var(--shadow-sm); border: 1px solid rgba(37,99,235,0.1); }
+        .pricing-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.35rem; color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 0.45rem; }
+        .pkg-name-badge { width: 22px; height: 22px; object-fit: contain; vertical-align: middle; }
+        .pricing-desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.6; min-height: 42px; }
         
-        .pricing-features { text-align: left; list-style: none; margin-bottom: 1.75rem; color: var(--text-muted); font-size: 0.9rem; flex-grow: 1; }
-        .pricing-features li { margin-bottom: 0.7rem; display: flex; align-items: flex-start; gap: 0.6rem; }
-        .pricing-features li i { margin-top: 0.2rem; }
-        .pricing-features li img { width: 18px; height: 18px; object-fit: contain; vertical-align: middle; display: inline-block; margin-left: 3px; }
-        .pricing-features li.disabled img { opacity: 0.4; filter: grayscale(100%); }
+        /* SLEEK PRICE BOX REDESIGN */
+        .pricing-price-box { margin-bottom: 1.75rem; background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%); padding: 1.25rem 1rem; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle); box-shadow: inset 0 1px 3px rgba(15,23,42,0.02); }
+        .pricing-strike { font-size: 0.88rem; color: #ef4444; text-decoration: line-through; display: block; font-weight: 700; margin-bottom: 0.15rem; }
+        .pricing-final { font-size: 2rem; font-weight: 800; color: var(--text-main); line-height: 1.15; letter-spacing: -0.02em; }
+        .pricing-final span { font-size: 0.82rem; color: var(--text-muted); font-weight: 600; margin-left: 0.2rem; }
+        .pkg-countdown-badge { background: #fee2e2; color: #991b1b; font-size: 0.72rem; font-weight: 700; padding: 0.3rem 0.65rem; border-radius: var(--radius-sm); margin-top: 0.6rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+        
+        .pricing-features { text-align: left; list-style: none; margin-bottom: 2rem; color: var(--text-muted); font-size: 0.92rem; flex-grow: 1; display: flex; flex-direction: column; gap: 0.8rem; }
+        .pricing-features li { display: flex; align-items: flex-start; gap: 0.75rem; line-height: 1.5; }
+        .pricing-features li i { margin-top: 0.25rem; flex-shrink: 0; }
+        .pricing-features li img { width: 18px; height: 18px; object-fit: contain; vertical-align: middle; display: inline-block; margin-left: 4px; }
+        .pricing-features li.disabled { opacity: 0.45; }
+        .pricing-features li.disabled img { filter: grayscale(100%); opacity: 0.3; }
         
         .utility-card { background-color: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 2rem; display: flex; gap: 1.35rem; align-items: flex-start; transition: var(--transition); box-shadow: var(--shadow-sm); }
         .utility-card:hover { border-color: var(--border-accent); transform: translateY(-4px); box-shadow: var(--shadow-md); }
@@ -1372,10 +1376,8 @@
                     const hasDiscount = pkg.hargaDiskon > 0 && pkg.hargaDiskon < pkg.hargaAsli;
                     if (hasDiscount) {
                         priceHTML = `
-                            <div class="pricing-price-box">
-                                <span class="pricing-strike">${formatRupiah(pkg.hargaAsli)}</span>
-                                <div class="pricing-final">${formatRupiah(pkg.hargaDiskon)}<span>/bulan</span></div>
-                            </div>
+                            <span class="pricing-strike">${formatRupiah(pkg.hargaAsli)}</span>
+                            <div class="pricing-final">${formatRupiah(pkg.hargaDiskon)}<span>/bulan</span></div>
                         `;
                         const hours = pkg.countdownJam || 24;
                         const loop = pkg.perulanganWaktu !== false;
@@ -1383,17 +1385,15 @@
                         countdownHTML = `<div class="pkg-countdown-badge countdown-timer" data-hours="${hours}" data-loop="${loop}" data-start="${startTime}"><i class="fas fa-spinner fa-spin"></i> Memuat waktu...</div>`;
                     } else if (pkg.hargaAsli > 0) {
                         priceHTML = `
-                            <div class="pricing-price-box">
-                                <div class="pricing-final">${formatRupiah(pkg.hargaAsli)}<span>/bulan</span></div>
-                            </div>
+                            <div class="pricing-final">${formatRupiah(pkg.hargaAsli)}<span>/bulan</span></div>
                         `;
                     } else {
                         priceHTML = `
-                            <div class="pricing-price-box">
-                                <div class="pricing-final">Gratis</div>
-                            </div>
+                            <div class="pricing-final">Gratis</div>
                         `;
                     }
+
+                    const nameBadgeHTML = pkg.namaBadgeUrl ? `<img src="${pkg.namaBadgeUrl}" class="pkg-name-badge" alt="Badge" title="Lencana Paket">` : '';
 
                     const featureLines = pkg.fitur ? pkg.fitur.split('\n') : [];
                     let featureHTML = '<ul class="pricing-features">';
@@ -1406,7 +1406,7 @@
                         } else if (trimmed.startsWith('-')) {
                             const rawContent = trimmed.substring(1).trim();
                             const parsedContent = parseFeatureText(rawContent);
-                            featureHTML += `<li class="disabled" style="opacity:0.6;"><i class="fas fa-times text-muted" style="margin-top: 0.2rem; flex-shrink: 0;"></i> <del>${parsedContent}</del></li>`;
+                            featureHTML += `<li class="disabled"><i class="fas fa-times text-muted" style="margin-top: 0.2rem; flex-shrink: 0;"></i> <del>${parsedContent}</del></li>`;
                         } else if(trimmed !== '') {
                             featureHTML += `<li><span>${parseFeatureText(trimmed)}</span></li>`;
                         }
@@ -1414,7 +1414,7 @@
                     featureHTML += '</ul>';
 
                     const badgePopuler = pkg.isPopuler ? `<div class="pricing-badge">Paling Diminati</div>` : '';
-                    const borderStyle = pkg.isPopuler ? 'border-top: 4px solid var(--primary); transform: scale(1.02);' : 'border-top: 4px solid var(--border-medium);';
+                    const borderStyle = pkg.isPopuler ? 'border: 2px solid var(--primary); transform: translateY(-4px); box-shadow: 0 15px 30px rgba(37,99,235,0.12);' : '';
                     const titleStyle = pkg.isPopuler ? 'color: var(--primary);' : '';
                     const btnClass = pkg.isPopuler ? 'btn-primary' : 'btn-outline-primary';
                     
@@ -1425,7 +1425,7 @@
                         <div class="pricing-card reveal active" style="${borderStyle}">
                             ${badgePopuler}
                             <div class="pricing-icon"><i class="fas ${iconClass}"></i></div>
-                            <h3 class="pricing-title" style="${titleStyle}">${pkg.namaPaket}</h3>
+                            <h3 class="pricing-title" style="${titleStyle}">${pkg.namaPaket} ${nameBadgeHTML}</h3>
                             <p class="pricing-desc">${pkg.deskripsi}</p>
                             <div class="pricing-price-box">
                                 ${priceHTML}
