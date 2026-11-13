@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran QRIS — Sitenexs</title>
+    
+    <link rel="icon" type="image/png" href="https://sitenexs.com/assets/logo/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --accent: #10b981;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-subtle: #e2e8f0;
+            --border-medium: #cbd5e1;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-full: 9999px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-body); color: var(--text-main); line-height: 1.5; min-height: 100vh; display: flex; flex-direction: column; font-size: 14px; }
+        .container { width: 100%; max-width: 550px; margin: 0 auto; padding: 0 1rem; }
+        
+        header { background: #ffffff; border-bottom: 1px solid var(--border-subtle); padding: 0.75rem 0; box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.95); }
+        .nav-container { display: flex; align-items: center; justify-content: space-between; }
+        .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.1rem; color: var(--text-main); text-decoration: none; }
+        .logo-img { height: 30px; width: 30px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: var(--shadow-sm); }
+        .logo-text { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .main-content { padding: 1.75rem 0; flex-grow: 1; }
+        .qris-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 1.75rem; box-shadow: var(--shadow-md); text-align: center; margin-bottom: 1.5rem; }
+        .qris-card h2 { font-size: 1.3rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.2rem; }
+        .qris-card p.subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; }
+
+        .payment-details-box { background: var(--primary-light); border: 1px solid rgba(37,99,235,0.2); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1.25rem; text-align: left; }
+        .payment-details-box div { display: flex; justify-content: space-between; margin-bottom: 0.35rem; font-size: 0.88rem; }
+        .payment-details-box div:last-child { margin-bottom: 0; }
+        .payment-details-box span.label { color: var(--text-muted); font-weight: 600; }
+        .payment-details-box span.value { color: var(--text-main); font-weight: 700; }
+        .payment-details-box span.amount { color: var(--primary-dark); font-size: 1.1rem; font-weight: 800; }
+
+        .qris-image-container { background: #ffffff; border: 2px solid var(--primary); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.25rem; display: inline-block; box-shadow: 0 4px 20px rgba(37, 99, 235, 0.1); width: 100%; }
+        .qris-image-container img { width: 200px; height: 200px; object-fit: contain; margin: 0 auto 0.5rem auto; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display: block; }
+        .qris-image-container h5 { font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.15rem; }
+        .qris-image-container p { font-size: 0.78rem; color: var(--text-muted); }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.75rem 1.25rem; font-size: 0.9rem; font-weight: 700; border-radius: var(--radius-full); transition: var(--transition); cursor: pointer; border: none; text-align: center; width: 100%; text-decoration: none; }
+        .btn-primary { background: linear-gradient(135deg, #25d366 0%, #128c7e 100%); color: #ffffff; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 211, 102, 0.4); }
+        .btn-secondary { background-color: #ffffff; color: var(--text-main); border: 1px solid var(--border-medium); margin-top: 0.5rem; font-size: 0.85rem; padding: 0.5rem 1rem; }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff&size=64&rounded=true';">
+                <span class="logo-text">SiteNexs</span>
+            </a>
+            <a href="index.html" class="btn btn-secondary" style="width: auto; border-radius: var(--radius-full);">
+                <i class="fas fa-arrow-left"></i> Beranda
+            </a>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="qris-card">
+                <h2>Selesaikan Pembayaran QRIS</h2>
+                <p class="subtitle">Scan kode QR di bawah menggunakan aplikasi mobile banking atau e-wallet Anda.</p>
+
+                <div class="payment-details-box">
+                    <div>
+                        <span class="label">Paket Dipilih:</span>
+                        <span class="value" id="displayPaket">-</span>
+                    </div>
+                    <div>
+                        <span class="label">Nama Pemilik:</span>
+                        <span class="value" id="displayName">-</span>
+                    </div>
+                    <div>
+                        <span class="label">Nama Usaha:</span>
+                        <span class="value" id="displayBusiness">-</span>
+                    </div>
+                    <div style="margin-top: 0.5rem; border-top: 1px dashed rgba(37,99,235,0.3); padding-top: 0.5rem;">
+                        <span class="label" style="font-size: 1rem; font-weight: 700; color: var(--text-main);">Total Pembayaran:</span>
+                        <span class="amount" id="displayHarga">Rp 0</span>
+                    </div>
+                </div>
+
+                <div class="qris-image-container">
+                    <img src="https://sitenexs.com/assets/logo/qris-dummy.png" alt="QRIS Sitenexs" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=SITENEXS-QRIS-PAYMENT';">
+                    <h5>QRIS All Payment</h5>
+                    <p>BCA, Mandiri, BRI, BNI, GoPay, OVO, DANA, ShopeePay</p>
+                </div>
+
+                <button id="confirmWhatsAppBtn" class="btn btn-primary">
+                    <i class="fab fa-whatsapp"></i> Saya Sudah Bayar / Konfirmasi via WhatsApp
+                </button>
+                <a href="javascript:history.back()" class="btn btn-secondary" style="width:100%; border-radius: var(--radius-md); margin-top: 0.5rem; text-align: center;">
+                    <i class="fas fa-arrow-left"></i> Kembali ke Ringkasan
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const paket = urlParams.get('paket') || 'Paket Sitenexs';
+        const harga = urlParams.get('harga') || '0';
+        const name = urlParams.get('name') || '-';
+        const business = urlParams.get('business') || '-';
+        const email = urlParams.get('email') || '-';
+
+        function formatRupiah(angka) {
+            if(angka === 0) return 'Gratis';
+            return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        document.getElementById('displayPaket').innerText = paket;
+        document.getElementById('displayName').innerText = name;
+        document.getElementById('displayBusiness').innerText = business;
+        document.getElementById('displayHarga').innerText = formatRupiah(parseInt(harga) || 0);
+
+        document.getElementById('confirmWhatsAppBtn').addEventListener('click', function() {
+            const message = `Halo Sitenexs, saya telah menyelesaikan pembayaran via QRIS.\n\n*Detail Pesanan:*\n- Paket: ${paket}\n- Nominal: ${formatRupiah(parseInt(harga) || 0)}\n\n*Detail Akun:*\n- Nama: ${name}\n- Usaha: ${business}\n- Email: ${email}\n\nMohon verifikasi dan aktivasi akun saya. Terima kasih!`;
+
+            window.open(`https://wa.me/6285177137899?text=${encodeURIComponent(message)}`, '_blank');
+        });
+    </script>
+</body>
+</html>
