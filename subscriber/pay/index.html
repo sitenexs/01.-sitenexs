@@ -75,14 +75,6 @@
             width: 100%;
         }
 
-        .top-badges {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.3rem;
-            margin-bottom: 0.3rem;
-        }
-
         .qris-header-badge {
             display: inline-flex;
             align-items: center;
@@ -93,23 +85,11 @@
             border-radius: var(--radius-full);
             font-size: 0.65rem;
             font-weight: 700;
-        }
-
-        .timer-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            background: #fffbeb;
-            color: #d97706;
-            border: 1px solid #fde68a;
-            padding: 0.15rem 0.5rem;
-            border-radius: var(--radius-full);
-            font-size: 0.65rem;
-            font-weight: 700;
+            margin-bottom: 0.3rem;
         }
 
         .qris-card h2 { font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.05rem; }
-        .qris-card p.subtitle { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .qris-card p.subtitle { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.45rem; }
 
         /* Rincian Pembayaran Box */
         .payment-details-box { 
@@ -117,7 +97,7 @@
             border: 1px solid var(--border-subtle); 
             border-radius: var(--radius-lg); 
             padding: 0.45rem 0.65rem; 
-            margin-bottom: 0.5rem; 
+            margin-bottom: 0.45rem; 
             text-align: left; 
         }
         
@@ -166,8 +146,8 @@
             background: #ffffff; 
             border: 1px solid var(--border-subtle); 
             border-radius: var(--radius-lg); 
-            padding: 0.5rem; 
-            margin-bottom: 0.5rem; 
+            padding: 0.4rem; 
+            margin-bottom: 0.45rem; 
         }
         
         .qris-image-wrapper {
@@ -177,60 +157,44 @@
             background: #fff;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-subtle);
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.15rem;
         }
 
         .qris-image-container img.qris-qr { 
-            width: 105px; 
-            height: 105px; 
+            width: 95px; 
+            height: 95px; 
             object-fit: contain; 
             display: block; 
         }
         
-        .qris-image-container h5 { font-size: 0.72rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.1rem; }
+        .qris-image-container h5 { font-size: 0.7rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.1rem; }
         
+        /* Tombol Unduh QR Baru yang Lebih Bagus */
         .btn-download {
-            background: #f1f5f9;
-            border: 1px solid var(--border-medium);
-            color: var(--text-main);
-            padding: 0.2rem 0.5rem;
+            background: var(--primary-light);
+            border: 1px solid rgba(37,99,235,0.3);
+            color: var(--primary-dark);
+            padding: 0.25rem 0.6rem;
             border-radius: var(--radius-md);
-            font-size: 0.65rem;
-            font-weight: 600;
+            font-size: 0.68rem;
+            font-weight: 700;
             display: inline-flex;
             align-items: center;
-            gap: 0.2rem;
+            gap: 0.3rem;
             cursor: pointer;
             transition: var(--transition);
-            margin-top: 0.2rem;
+            margin-top: 0.15rem;
             text-decoration: none;
         }
-        .btn-download:hover { background: #e2e8f0; color: var(--primary); }
-
-        .payment-channels {
-            display: flex;
-            justify-content: center;
-            gap: 0.25rem;
-            flex-wrap: wrap;
-            margin-top: 0.2rem;
-            font-size: 0.6rem;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .channel-tag {
-            background: #f1f5f9;
-            padding: 0.08rem 0.3rem;
-            border-radius: 3px;
-        }
+        .btn-download:hover { background: var(--primary); color: #fff; }
 
         /* Terms Status Trigger Box */
         .terms-status-box {
             background: #f8fafc;
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            padding: 0.4rem 0.6rem;
-            margin-bottom: 0.5rem;
+            padding: 0.35rem 0.6rem;
+            margin-bottom: 0.45rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -242,7 +206,7 @@
             background: var(--primary-light);
         }
 
-        /* Modal Pop-up Syarat & Ketentuan */
+        /* Modal Pop-up Syarat & Ketentuan (Diperbesar) */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -258,7 +222,7 @@
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
-            padding: 0.75rem;
+            padding: 1rem;
         }
         .modal-overlay.active {
             opacity: 1;
@@ -267,10 +231,10 @@
         .modal-card {
             background: var(--bg-card);
             width: 100%;
-            max-width: 380px;
+            max-width: 480px;
             border-radius: var(--radius-xl);
-            padding: 1rem;
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            padding: 1.25rem;
+            box-shadow: 0 25px 30px -5px rgb(0 0 0 / 0.15);
             transform: translateY(15px);
             transition: transform 0.3s ease;
             text-align: left;
@@ -279,47 +243,47 @@
             transform: translateY(0);
         }
         .modal-title {
-            font-size: 0.88rem;
+            font-size: 1.05rem;
             font-weight: 800;
             color: var(--text-main);
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
-            gap: 0.3rem;
+            gap: 0.4rem;
         }
         .modal-body {
-            max-height: 150px;
+            max-height: 260px;
             overflow-y: auto;
-            font-size: 0.7rem;
+            font-size: 0.78rem;
             color: var(--text-muted);
-            line-height: 1.35;
+            line-height: 1.5;
             border: 1px solid var(--border-subtle);
-            padding: 0.5rem;
+            padding: 0.75rem;
             border-radius: var(--radius-md);
             background: #f8fafc;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
         }
-        .modal-body p { margin-bottom: 0.35rem; }
+        .modal-body p { margin-bottom: 0.6rem; }
         .modal-body p:last-child { margin-bottom: 0; }
 
         .terms-container {
             display: flex;
             align-items: flex-start;
-            gap: 0.35rem;
+            gap: 0.4rem;
             text-align: left;
-            margin-bottom: 0.5rem;
-            font-size: 0.7rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.75rem;
             color: var(--text-main);
             cursor: pointer;
-            line-height: 1.3;
+            line-height: 1.35;
             font-weight: 600;
         }
         .terms-container input[type="checkbox"] {
             margin-top: 0.05rem;
             cursor: pointer;
             accent-color: var(--primary);
-            width: 13px;
-            height: 13px;
+            width: 15px;
+            height: 15px;
             flex-shrink: 0;
         }
 
@@ -358,7 +322,7 @@
             gap: 0.25rem;
             font-size: 0.65rem;
             color: var(--text-muted);
-            margin-top: 0.4rem;
+            margin-top: 0.35rem;
         }
 
         /* Toast Notification */
@@ -397,10 +361,7 @@
     <main class="main-content">
         <div class="container">
             <div class="qris-card">
-                <div class="top-badges">
-                    <span class="qris-header-badge"><i class="fas fa-qrcode"></i> QRIS Instant</span>
-                    <span class="timer-badge" id="timerBadge"><i class="fas fa-clock"></i> <span id="countdown">15:00</span></span>
-                </div>
+                <span class="qris-header-badge"><i class="fas fa-qrcode"></i> QRIS Instant</span>
 
                 <h2>Selesaikan Pembayaran</h2>
                 <p class="subtitle">Scan QR di bawah dengan m-banking / e-wallet.</p>
@@ -417,6 +378,11 @@
                     <div class="payment-row">
                         <span class="label">Nama Usaha</span>
                         <span class="value" id="displayBusiness">-</span>
+                    </div>
+                    <!-- Waktu Hitung Mundur Dipindah ke Sini -->
+                    <div class="payment-row" style="margin-top: 0.2rem; border-top: 1px solid var(--border-subtle); padding-top: 0.2rem;">
+                        <span class="label"><i class="fas fa-clock" style="color: #d97706;"></i> Batas Waktu Bayar</span>
+                        <span class="value" id="countdown" style="color: #d97706; font-weight: 800;">15:00</span>
                     </div>
                     
                     <div class="payment-total-row">
@@ -435,19 +401,10 @@
                         <!-- UBAH URL DI BAWAH INI DENGAN LINK GAMBAR QRIS ANDA -->
                         <img src="https://sitenexs.com/assets/logo/qris-dummy.png" class="qris-qr" alt="QRIS Sitenexs" id="qrisImg" crossorigin="anonymous" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=105x105&data=SITENEXS-QRIS-PAYMENT';">
                     </div>
-                    <h5>QRIS National Standard</h5>
-                    <button class="btn-download" id="downloadQrBtn">
-                        <i class="fas fa-download"></i> Unduh QR Code
-                    </button>
-                    <div class="payment-channels">
-                        <span class="channel-tag">BCA</span>
-                        <span class="channel-tag">Mandiri</span>
-                        <span class="channel-tag">BRI</span>
-                        <span class="channel-tag">BNI</span>
-                        <span class="channel-tag">GoPay</span>
-                        <span class="channel-tag">OVO</span>
-                        <span class="channel-tag">DANA</span>
-                        <span class="channel-tag">ShopeePay</span>
+                    <div>
+                        <button class="btn-download" id="downloadQrBtn">
+                            <i class="fas fa-download"></i> Unduh QR Code
+                        </button>
                     </div>
                 </div>
 
@@ -478,7 +435,7 @@
         </div>
     </main>
 
-    <!-- Modal Pop-up Syarat & Ketentuan (Tampil otomatis saat halaman dibuka) -->
+    <!-- Modal Pop-up Syarat & Ketentuan (Diperbesar & Tampil Otomatis) -->
     <div class="modal-overlay active" id="termsModal">
         <div class="modal-card">
             <div class="modal-title">
@@ -499,7 +456,7 @@
                     <input type="checkbox" id="modalTermsCheck">
                     <span>Saya telah membaca dan menyetujui seluruh syarat dan ketentuan yang berlaku di Sitenexs.</span>
                 </label>
-                <button type="button" id="closeModalBtn" class="btn btn-primary" disabled style="padding: 0.45rem; font-size: 0.75rem;">
+                <button type="button" id="closeModalBtn" class="btn btn-primary" disabled style="padding: 0.55rem; font-size: 0.8rem;">
                     Setuju & Lanjutkan
                 </button>
             </div>
@@ -531,7 +488,6 @@
         // 1. Fitur Hitung Mundur Waktu (Countdown Timer - 15 Menit)
         let timeLeft = 15 * 60; 
         const countdownEl = document.getElementById('countdown');
-        const timerBadge = document.getElementById('timerBadge');
         const confirmBtn = document.getElementById('confirmWhatsAppBtn');
 
         const timerInterval = setInterval(() => {
@@ -541,10 +497,8 @@
             
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
-                timerBadge.style.background = '#fee2e2';
-                timerBadge.style.color = '#dc2626';
-                timerBadge.style.borderColor = '#fca5a5';
-                timerBadge.innerHTML = `<i class="fas fa-exclamation-circle"></i> Waktu Habis`;
+                countdownEl.innerText = "Waktu Habis";
+                countdownEl.style.color = "#dc2626";
                 confirmBtn.disabled = true;
                 confirmBtn.style.opacity = '0.5';
                 confirmBtn.style.pointerEvents = 'none';
