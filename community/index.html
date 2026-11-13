@@ -977,7 +977,6 @@
             return "Baru saja";
         }
 
-        // --- TOMBOL LIKE INSTAN DENGAN KALKULASI AUTO-INCREMENT LIKE ---
         window.toggleLike = async function(postId) {
             const savedUid = localStorage.getItem('sitenexs_uid');
             if (!currentUserData && !auth.currentUser && !savedUid) {
@@ -1012,7 +1011,6 @@
                         await updateDoc(postRef, { likes: arrayUnion(uid) });
                     }
 
-                    // Hitung auto-increment like berdasarkan waktu
                     let autoLikes = 0;
                     if (data.autoLikeActive && data.autoLikeStartTime) {
                         const startMillis = data.autoLikeStartTime.toMillis ? data.autoLikeStartTime.toMillis() : new Date(data.autoLikeStartTime).getTime();
@@ -1120,13 +1118,12 @@
             const likes = data.likes || [];
             const boostLikes = data.boostLikes || 0;
             
-            // Perhitungan otomatis like bertambah seiring waktu
             let autoLikes = 0;
             if (data.autoLikeActive && data.autoLikeStartTime) {
                 const startMillis = data.autoLikeStartTime.toMillis ? data.autoLikeStartTime.toMillis() : new Date(data.autoLikeStartTime).getTime();
                 const nowMillis = Date.now();
-                const intervalMillis = (data.autoLikeInterval || 60) * 60 * 1000; // Default setiap 60 menit
-                const rate = data.autoLikeRate || 1; // Tambah berapa like setiap interval
+                const intervalMillis = (data.autoLikeInterval || 60) * 60 * 1000;
+                const rate = data.autoLikeRate || 1;
                 if (nowMillis > startMillis) {
                     const intervalsPassed = Math.floor((nowMillis - startMillis) / intervalMillis);
                     autoLikes = intervalsPassed * rate;
@@ -1246,6 +1243,7 @@
             `;
         }
 
+        // DIPERBARUI: Mendukung Lencana Pro / Kuning (https://sitenexs.com/assets/logo/lencana.png)
         function runAsyncVerifBadges() {
             setTimeout(() => {
                 document.querySelectorAll('.async-verif-badge').forEach(async (el) => {
@@ -1257,18 +1255,21 @@
                         if (snap.exists()) {
                             const d = snap.data();
                             const isVerified = Boolean(d.isVerified) || Boolean(d.isFounder) || Boolean(d.isDeveloper);
-                            userVerifCache[uid] = isVerified;
+                            const isPro = Boolean(d.isPro) || Boolean(d.lencanaKuning) || Boolean(d.isLencanaKuning);
                             
+                            let badgesHtml = '';
                             if (isVerified) {
-                                el.innerHTML = `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`;
-                            } else {
-                                el.innerHTML = '';
+                                badgesHtml += `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified" title="Verified">`;
                             }
+                            if (isPro) {
+                                badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="member-verification-icon" alt="Pro Badge" title="Lencana Pro" style="margin-left: 2px;">`;
+                            }
+                            el.innerHTML = badgesHtml;
                         } else {
                             el.innerHTML = '';
                         }
                     } catch(e) {
-                        console.error("Gagal memeriksa status verifikasi:", e);
+                        console.error("Gagal memeriksa status lencana:", e);
                         el.innerHTML = '';
                     }
                 });
