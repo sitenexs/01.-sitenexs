@@ -313,7 +313,7 @@
             const business = document.getElementById('buyerBusiness').value;
             const email = document.getElementById('buyerEmail').value;
 
-            const targetUrl = `qris.html?paket=${encodeURIComponent(paketQuery)}&harga=${hargaQuery}&name=${encodeURIComponent(name)}&business=${encodeURIComponent(business)}&email=${encodeURIComponent(email)}`;
+            const targetUrl = `pay/?paket=${encodeURIComponent(paketQuery)}&harga=${hargaQuery}&name=${encodeURIComponent(name)}&business=${encodeURIComponent(business)}&email=${encodeURIComponent(email)}`;
             window.location.href = targetUrl;
         });
     </script>
