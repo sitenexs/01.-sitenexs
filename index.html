@@ -973,34 +973,7 @@
             });
             if(closeModalBtn) { closeModalBtn.addEventListener('click', () => { founderModal.classList.remove('active'); }); }
             founderModal.addEventListener('click', (e) => { if (e.target === founderModal) { founderModal.classList.remove('active'); } });
-
-            // --- CEK PARAMETER WELCOME UNTUK NOTIFIKASI TOAST ---
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('welcome') === 'true' || localStorage.getItem('sitenexs_show_welcome') === 'true') {
-                localStorage.removeItem('sitenexs_show_welcome');
-                showWelcomeToast();
-                // Bersihkan URL dari parameter welcome
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
         });
-
-        function showWelcomeToast() {
-            const toast = document.createElement('div');
-            toast.className = 'sitenexs-toast';
-            toast.innerHTML = `
-                <div class="sitenexs-toast-icon"><i class="fas fa-check"></i></div>
-                <div class="sitenexs-toast-text">
-                    <h4>Selamat Datang!</h4>
-                    <p>Anda berhasil masuk ke akun Sitenexs.</p>
-                </div>
-            `;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 100);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 400);
-            }, 4000);
-        }
     </script>
 
     <script type="module">
@@ -1025,11 +998,6 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Instant UI check dari localStorage agar tombol langsung berubah jadi Profil tanpa menunggu loading auth
-        if (localStorage.getItem('sitenexs_logged_in') === 'true') {
-            updateNavUserUI('Basic', 'basic');
-        }
-
         window.addEventListener('message', (event) => {
             if (event.data && event.data.type === 'sitenexs-auth-state') {
                 if (event.data.signedIn) {
@@ -1048,29 +1016,47 @@
             else if (pkg.includes('vip') || pkg.includes('ultimate') || pkg.includes('premium')) { themeCategory = 'vip'; }
 
             document.body.setAttribute('data-package', themeCategory);
-            updateNavUserUI(paketLangganan || 'Basic', themeCategory);
         }
 
-        function updateNavUserUI(namaPaket, themeCategory) {
+        async function updateNavUserUI(user, userData) {
             const desktopAuthBtn = document.getElementById('desktopAuthBtn');
             const mobileAuthBtn = document.getElementById('mobileAuthBtn');
 
+            const nama = userData?.namaLengkap || user?.displayName || 'Mitra Sitenexs';
+            const paket = userData?.paketLangganan || 'Basic';
+            const pkgLower = paket.toLowerCase();
+            
+            let themeCategory = 'basic';
             let badgeIcon = 'fa-user';
-            if (themeCategory === 'pro') badgeIcon = 'fa-star';
-            if (themeCategory === 'vip') badgeIcon = 'fa-crown';
+            if (pkgLower.includes('pro') || pkgLower.includes('business')) { themeCategory = 'pro'; badgeIcon = 'fa-star'; }
+            else if (pkgLower.includes('vip') || pkgLower.includes('ultimate') || pkgLower.includes('premium')) { themeCategory = 'vip'; badgeIcon = 'fa-crown'; }
 
-            const userBadgeHTML = `<span class="user-package-badge ${themeCategory}"><i class="fas ${badgeIcon}"></i> ${namaPaket}</span>`;
+            const avatarUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo?t=${Date.now()}`;
+            const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(nama)}&background=2563eb&color=fff&size=32`;
+
+            const userBadgeHTML = `<span class="user-package-badge ${themeCategory}"><i class="fas ${badgeIcon}"></i> ${paket}</span>`;
+            
+            const profileButtonContent = `
+                <img src="${avatarUrl}" alt="${nama}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium);" onerror="this.src='${fallbackAvatar}';">
+                <span style="font-weight: 700; max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${nama.split(' ')[0]}</span>
+                ${userBadgeHTML}
+            `;
 
             if (desktopAuthBtn) {
-                desktopAuthBtn.innerHTML = `<i class="fas fa-user-circle" style="margin-right: 0.2rem;"></i> Profil ${userBadgeHTML}`;
+                desktopAuthBtn.innerHTML = profileButtonContent;
                 desktopAuthBtn.href = 'https://account.sitenexs.com/profile/';
                 desktopAuthBtn.style.display = 'inline-flex';
                 desktopAuthBtn.style.alignItems = 'center';
                 desktopAuthBtn.style.gap = '0.4rem';
+                desktopAuthBtn.style.padding = '0.35rem 0.8rem 0.35rem 0.4rem';
+                desktopAuthBtn.style.borderRadius = 'var(--radius-full)';
             }
             if (mobileAuthBtn) {
-                mobileAuthBtn.innerHTML = `<i class="fas fa-user-circle" style="margin-right: 0.3rem;"></i> Profil (${namaPaket.toUpperCase()})`;
+                mobileAuthBtn.innerHTML = profileButtonContent;
                 mobileAuthBtn.href = 'https://account.sitenexs.com/profile/';
+                mobileAuthBtn.style.display = 'inline-flex';
+                mobileAuthBtn.style.alignItems = 'center';
+                mobileAuthBtn.style.gap = '0.4rem';
             }
         }
 
@@ -1082,21 +1068,73 @@
                 try {
                     const userDocRef = doc(db, "users", user.uid);
                     const userSnap = await getDoc(userDocRef);
+                    let userData = null;
                     if (userSnap.exists()) {
-                        applyUserPackageTheme(userSnap.data().paketLangganan);
-                    } else { applyUserPackageTheme('Basic'); }
-                } catch (err) { applyUserPackageTheme('Basic'); }
+                        userData = userSnap.data();
+                        applyUserPackageTheme(userData.paketLangganan);
+                    } else { 
+                        applyUserPackageTheme('Basic'); 
+                    }
+                    updateNavUserUI(user, userData);
+                    checkAndShowWelcomeToast(userData?.namaLengkap || user.displayName || 'Mitra');
+                } catch (err) { 
+                    applyUserPackageTheme('Basic');
+                    updateNavUserUI(user, null);
+                    checkAndShowWelcomeToast(user.displayName || 'Mitra');
+                }
             } else {
                 const localLoggedIn = localStorage.getItem('sitenexs_logged_in');
-                if (!localLoggedIn) {
-                    document.body.removeAttribute('data-package');
-                    const desktopAuthBtn = document.getElementById('desktopAuthBtn');
-                    const mobileAuthBtn = document.getElementById('mobileAuthBtn');
-                    if (desktopAuthBtn) { desktopAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar'; desktopAuthBtn.href = 'https://account.sitenexs.com/sign-in/'; }
-                    if (mobileAuthBtn) { mobileAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar'; mobileAuthBtn.href = 'https://account.sitenexs.com/sign-in/'; }
+                const savedUid = localStorage.getItem('sitenexs_uid');
+                if (localLoggedIn && savedUid) {
+                    try {
+                        const userDocRef = doc(db, "users", savedUid);
+                        const userSnap = await getDoc(userDocRef);
+                        let userData = userSnap.exists() ? userSnap.data() : null;
+                        updateNavUserUI({ uid: savedUid }, userData);
+                        checkAndShowWelcomeToast(userData?.namaLengkap || 'Mitra');
+                    } catch(e) {
+                        resetAuthUI();
+                    }
+                } else {
+                    resetAuthUI();
                 }
             }
         });
+
+        function resetAuthUI() {
+            document.body.removeAttribute('data-package');
+            const desktopAuthBtn = document.getElementById('desktopAuthBtn');
+            const mobileAuthBtn = document.getElementById('mobileAuthBtn');
+            if (desktopAuthBtn) { desktopAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar'; desktopAuthBtn.href = 'https://account.sitenexs.com/sign-in/'; desktopAuthBtn.style.padding = ''; }
+            if (mobileAuthBtn) { mobileAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar'; mobileAuthBtn.href = 'https://account.sitenexs.com/sign-in/'; }
+        }
+
+        function checkAndShowWelcomeToast(userName) {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('welcome') === 'true' || localStorage.getItem('sitenexs_show_welcome') === 'true') {
+                localStorage.removeItem('sitenexs_show_welcome');
+                showWelcomeToast(userName);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        function showWelcomeToast(userName) {
+            const toast = document.createElement('div');
+            toast.className = 'sitenexs-toast';
+            toast.innerHTML = `
+                <div class="sitenexs-toast-icon"><i class="fas fa-check"></i></div>
+                <div class="sitenexs-toast-text">
+                    <h4>Selamat Datang, ${userName}!</h4>
+                    <p>Anda berhasil masuk ke akun Sitenexs.</p>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 4500);
+        }
 
         function formatRupiah(angka) {
             if(angka === 0) return 'Gratis';
