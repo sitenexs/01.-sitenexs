@@ -199,6 +199,10 @@
             padding: 0; box-shadow: var(--shadow-sm); transition: var(--transition); animation: fadeIn 0.3s ease; width: 100%; overflow: hidden;
             user-select: none; -webkit-touch-callout: none;
         }
+        .post-card.prioritized-card {
+            border: 2px solid var(--primary);
+            background: linear-gradient(to bottom, #ffffff, var(--primary-light));
+        }
         .post-card-inner { padding: 0.85rem; }
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
@@ -228,6 +232,7 @@
         
         .author-time { font-size: 0.65rem; color: var(--text-muted); font-weight: 500; margin-top: 0.05rem; }
         
+        .post-badges-group { display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap; }
         .post-badge {
             font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: var(--radius-full);
             background: var(--bg-body); color: var(--text-muted); flex-shrink: 0; border: 1px solid var(--border-subtle);
@@ -235,6 +240,7 @@
         .badge-pengumuman { background: #fef2f2; color: #ef4444; border-color: #fca5a5; }
         .badge-tips { background: #fffbeb; color: #d97706; border-color: #fcd34d; }
         .badge-bug { background: #faf5ff; color: #7e22ce; border-color: #d8b4fe; }
+        .badge-priority { background: #eff6ff; color: var(--primary); border-color: var(--border-accent); display: inline-flex; align-items: center; gap: 0.2rem; }
 
         .post-title { font-size: 0.95rem; font-weight: 800; margin-bottom: 0.3rem; line-height: 1.3; color: var(--text-main); word-break: break-word; }
         .post-content { font-size: 0.8rem; color: var(--text-main); margin-bottom: 0.65rem; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
@@ -480,10 +486,6 @@
     <!-- HEADER FORUM -->
     <div class="forum-header">
         <div class="forum-header-content">
-            <div class="forum-header-text">
-                <h1></h1>
-                <p class="text-muted" style="font-size: 0.8rem;"></p>
-            </div>
             <div class="search-bar">
                 <i class="fas fa-search text-muted" style="font-size: 0.85rem;"></i>
                 <input type="text" id="searchInput" placeholder="Cari topik diskusi..." onkeyup="filterPosts()">
@@ -975,7 +977,7 @@
             return "Baru saja";
         }
 
-        // --- TOMBOL LIKE INSTAN BEBAS GLITCH ---
+        // --- TOMBOL LIKE INSTAN DENGAN KALKULASI AUTO-INCREMENT LIKE ---
         window.toggleLike = async function(postId) {
             const savedUid = localStorage.getItem('sitenexs_uid');
             if (!currentUserData && !auth.currentUser && !savedUid) {
@@ -992,29 +994,39 @@
             btn.classList.toggle('liked', !isCurrentlyLiked);
             playLikeSound(!isCurrentlyLiked);
 
-            let currentText = spanCount.innerText.trim();
-            let currentNum = parseInt(currentText) || 0;
-
-            if (!isCurrentlyLiked) {
-                icon.className = 'fas fa-thumbs-up';
-                spanCount.innerText = `${currentNum + 1 > 0 ? currentNum + 1 : ''} Suka`;
-            } else {
-                icon.className = 'far fa-thumbs-up';
-                let newCount = currentNum - 1;
-                spanCount.innerText = `${newCount > 0 ? newCount : ''} Suka`;
-            }
-
             const postRef = doc(db, "forum_posts", postId);
             try {
                 const postSnap = await getDoc(postRef);
                 if (postSnap.exists()) {
                     const data = postSnap.data();
                     const likes = data.likes || [];
-                    if (likes.includes(uid)) {
+                    const boostLikes = data.boostLikes || 0;
+                    const hideStats = data.hideStats === true;
+
+                    let newLikesArr = [...likes];
+                    if (isCurrentlyLiked) {
+                        newLikesArr = newLikesArr.filter(id => id !== uid);
                         await updateDoc(postRef, { likes: arrayRemove(uid) });
                     } else {
+                        newLikesArr.push(uid);
                         await updateDoc(postRef, { likes: arrayUnion(uid) });
                     }
+
+                    // Hitung auto-increment like berdasarkan waktu
+                    let autoLikes = 0;
+                    if (data.autoLikeActive && data.autoLikeStartTime) {
+                        const startMillis = data.autoLikeStartTime.toMillis ? data.autoLikeStartTime.toMillis() : new Date(data.autoLikeStartTime).getTime();
+                        const nowMillis = Date.now();
+                        const intervalMillis = (data.autoLikeInterval || 60) * 60 * 1000;
+                        const rate = data.autoLikeRate || 1;
+                        if (nowMillis > startMillis) {
+                            const intervalsPassed = Math.floor((nowMillis - startMillis) / intervalMillis);
+                            autoLikes = intervalsPassed * rate;
+                        }
+                    }
+
+                    const totalLikes = newLikesArr.length + boostLikes + autoLikes;
+                    spanCount.innerText = hideStats ? 'Suka' : `${totalLikes > 0 ? totalLikes : ''} Suka`;
                 }
             } catch (err) {
                 console.error("Gagal melakukan like:", err);
@@ -1081,32 +1093,50 @@
             const authorUid = data.authorUid;
             const commentsDisabled = data.commentsDisabled === true;
             const hideStats = data.hideStats === true;
+            const isPrioritized = data.isPrioritized === true;
 
             const dateObj = data.createdAt ? data.createdAt.toDate() : new Date();
             const waktuString = timeAgo(dateObj);
 
-            let badgeHtml = '';
+            let badgesHtml = '';
+            if (isPrioritized) {
+                badgesHtml += `<span class="post-badge badge-priority"><i class="fas fa-thumbtack"></i> Unggulan</span>`;
+            }
             if (data.kategori && data.kategori !== "Diskusi Umum") {
                 let badgeClass = 'badge-tips';
                 if (data.kategori === 'Pengumuman') badgeClass = 'badge-pengumuman';
                 else if (data.kategori === 'Lapor Bug') badgeClass = 'badge-bug';
-                badgeHtml = `<span class="post-badge ${badgeClass}">${data.kategori}</span>`;
+                badgesHtml += `<span class="post-badge ${badgeClass}">${data.kategori}</span>`;
             }
 
             const authorPhoto = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(authorUid)}/profile-photo`;
             const authorFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.penulis)}&background=2563eb&color=fff`;
             
-            // Selalu gunakan kontainer dinamis `.async-verif-badge` untuk mengecek status verifikasi terbaru secara real-time
             const verifiedIcon = `<span class="async-verif-badge" data-uid="${authorUid}"></span>`;
 
             const postTitleHtml = data.judul ? `<h2 class="post-title">${data.judul}</h2>` : '';
             const postImageHtml = data.imageUrl ? `<img src="${data.imageUrl}" alt="Foto Diskusi" class="post-image">` : '';
 
             const likes = data.likes || [];
-            const isLiked = likes.includes(currentActiveUid);
-            const likeCount = likes.length;
+            const boostLikes = data.boostLikes || 0;
+            
+            // Perhitungan otomatis like bertambah seiring waktu
+            let autoLikes = 0;
+            if (data.autoLikeActive && data.autoLikeStartTime) {
+                const startMillis = data.autoLikeStartTime.toMillis ? data.autoLikeStartTime.toMillis() : new Date(data.autoLikeStartTime).getTime();
+                const nowMillis = Date.now();
+                const intervalMillis = (data.autoLikeInterval || 60) * 60 * 1000; // Default setiap 60 menit
+                const rate = data.autoLikeRate || 1; // Tambah berapa like setiap interval
+                if (nowMillis > startMillis) {
+                    const intervalsPassed = Math.floor((nowMillis - startMillis) / intervalMillis);
+                    autoLikes = intervalsPassed * rate;
+                }
+            }
 
-            const likeDisplay = hideStats ? 'Suka' : `${likeCount > 0 ? likeCount : ''} Suka`;
+            const isLiked = likes.includes(currentActiveUid);
+            const totalLikes = likes.length + boostLikes + autoLikes;
+
+            const likeDisplay = hideStats ? 'Suka' : `${totalLikes > 0 ? totalLikes : ''} Suka`;
 
             const activeAvatarUrl = currentUserData ? currentUserData.avatar : 'https://ui-avatars.com/api/?name=User&background=cbd5e1&color=fff';
             const activeFallback = currentUserData ? currentUserData.fallbackAvatar : activeAvatarUrl;
@@ -1163,7 +1193,7 @@
             }
 
             return `
-                <article class="post-card" data-post-id="${postId}">
+                <article class="post-card ${isPrioritized ? 'prioritized-card' : ''}" data-post-id="${postId}">
                     <div class="post-card-inner">
                         <div class="post-header">
                             <div class="post-author">
@@ -1180,7 +1210,7 @@
                                     </div>
                                 </div>
                             </div>
-                            ${badgeHtml}
+                            <div class="post-badges-group">${badgesHtml}</div>
                         </div>
                         
                         ${postTitleHtml}
@@ -1216,7 +1246,6 @@
             `;
         }
 
-        // --- PEMERIKSAAN DINAMIS STATUS VERIFIKASI (CENTANG BIRU IKUT HILANG REALTIME) ---
         function runAsyncVerifBadges() {
             setTimeout(() => {
                 document.querySelectorAll('.async-verif-badge').forEach(async (el) => {
@@ -1233,7 +1262,7 @@
                             if (isVerified) {
                                 el.innerHTML = `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified">`;
                             } else {
-                                el.innerHTML = ''; // Centang biru otomatis dikosongkan/dihilangkan jika status verifikasi dicabut
+                                el.innerHTML = '';
                             }
                         } else {
                             el.innerHTML = '';
@@ -1250,10 +1279,27 @@
         onSnapshot(q, (snapshot) => {
             const currentActiveUid = currentUserData ? currentUserData.uid : localStorage.getItem('sitenexs_uid');
 
+            let docsArr = [];
+            snapshot.forEach(docSnap => {
+                docsArr.push(docSnap);
+            });
+
+            docsArr.sort((a, b) => {
+                const dataA = a.data();
+                const dataB = b.data();
+                const pA = dataA.isPrioritized ? 1 : 0;
+                const pB = dataB.isPrioritized ? 1 : 0;
+                if (pA !== pB) return pB - pA;
+
+                const timeA = dataA.createdAt ? dataA.createdAt.toMillis() : 0;
+                const timeB = dataB.createdAt ? dataB.createdAt.toMillis() : 0;
+                return timeB - timeA;
+            });
+
             if (isInitialLoad) {
                 let htmlString = "";
                 let visibleCount = 0;
-                snapshot.forEach((docSnap) => {
+                docsArr.forEach((docSnap) => {
                     const data = docSnap.data();
                     if (!data.isPrivate) {
                         visibleCount++;
@@ -1271,117 +1317,20 @@
                 return;
             }
 
-            const existingCards = {};
-            document.querySelectorAll('.post-card').forEach(card => {
-                existingCards[card.getAttribute('data-post-id')] = card;
-            });
-
-            const currentSnapshotIds = new Set();
-            const tempDiv = document.createElement('div');
-
-            snapshot.forEach((docSnap) => {
-                const postId = docSnap.id;
+            let htmlString = "";
+            let visibleCount = 0;
+            docsArr.forEach((docSnap) => {
                 const data = docSnap.data();
-
-                if (data.isPrivate) {
-                    if (existingCards[postId]) {
-                        existingCards[postId].remove();
-                    }
-                    return;
-                }
-
-                currentSnapshotIds.add(postId);
-                const existingCard = existingCards[postId];
-
-                const likes = data.likes || [];
-                const isLiked = likes.includes(currentActiveUid);
-                const likeCount = likes.length;
-                const hideStats = data.hideStats === true;
-                const likeDisplay = hideStats ? 'Suka' : `${likeCount > 0 ? likeCount : ''} Suka`;
-                const comments = data.comments || [];
-                const commentDisplay = hideStats ? 'Komentar' : `${comments.length > 0 ? comments.length : ''} Komentar`;
-
-                if (existingCard) {
-                    const likeBtn = existingCard.querySelector('.action-btn');
-                    if (likeBtn && document.activeElement !== likeBtn) {
-                        if (isLiked) {
-                            likeBtn.classList.add('liked');
-                            likeBtn.querySelector('i').className = 'fas fa-thumbs-up';
-                        } else {
-                            likeBtn.classList.remove('liked');
-                            likeBtn.querySelector('i').className = 'far fa-thumbs-up';
-                        }
-                        likeBtn.querySelector('span').innerText = likeDisplay;
-                    }
-
-                    const commentBtn = existingCard.querySelectorAll('.action-btn')[1];
-                    if (commentBtn) {
-                        commentBtn.querySelector('span').innerText = commentDisplay;
-                    }
-
-                    const commentsListEl = existingCard.querySelector('.comment-list');
-                    if (commentsListEl && document.activeElement.id !== `comment-input-${postId}`) {
-                        let commentsHtml = '';
-                        comments.forEach(c => {
-                            const cDate = c.createdAt ? timeAgo(new Date(c.createdAt)) : 'Baru saja';
-                            const cAuthorUid = c.authorUid || 'unknown';
-                            const cAvatar = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(cAuthorUid)}/profile-photo`;
-                            const cFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.penulis)}&background=random&color=fff`;
-                            
-                            const cVerified = `<span class="async-verif-badge" data-uid="${cAuthorUid}"></span>`;
-
-                            const formattedText = formatCommentText(c.isi);
-                            const isMyComment = (cAuthorUid === currentActiveUid);
-                            const deleteBtnHtml = isMyComment ? `<button type="button" class="delete-comment-btn" onclick="deleteComment('${postId}', '${c.createdAt}', '${cAuthorUid}')">Hapus</button>` : '';
-
-                            commentsHtml += `
-                                <div class="comment-item">
-                                    <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" style="flex-shrink: 0;">
-                                        <img src="${cAvatar}" alt="${c.penulis}" class="comment-avatar" onerror="this.onerror=null; this.src='${cFallback}';">
-                                    </a>
-                                    <div class="comment-content-wrapper">
-                                        <div class="comment-bubble">
-                                            <div class="comment-header-row">
-                                                <div class="comment-author-left">
-                                                    <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" class="comment-author-link">
-                                                        <span class="comment-author">${c.penulis}</span>
-                                                    </a>
-                                                    ${cVerified}
-                                                </div>
-                                            </div>
-                                            <div class="comment-text">${formattedText}</div>
-                                        </div>
-                                        <div class="comment-footer-row">
-                                            <div class="comment-time">${cDate}</div>
-                                            <button type="button" class="reply-trigger-btn" onclick="replyComment('${postId}', '${c.penulis.replace(/'/g, "\\'")}')">Balas</button>
-                                            ${deleteBtnHtml}
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        if (comments.length === 0) {
-                            commentsHtml = '<div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 0.5rem 0;">Belum ada komentar. Jadilah yang pertama membalas!</div>';
-                        }
-                        commentsListEl.innerHTML = commentsHtml;
-                    }
-                } else {
-                    tempDiv.innerHTML = renderPostCardHtml(docSnap, currentActiveUid);
-                    const newCard = tempDiv.firstElementChild;
-                    if (newCard) {
-                        postContainer.insertBefore(newCard, postContainer.firstChild);
-                    }
+                if (!data.isPrivate) {
+                    visibleCount++;
+                    htmlString += renderPostCardHtml(docSnap, currentActiveUid);
                 }
             });
 
-            Object.keys(existingCards).forEach(postId => {
-                if (!currentSnapshotIds.has(postId)) {
-                    existingCards[postId].remove();
-                }
-            });
-
-            if (postContainer.children.length === 0) {
+            if (visibleCount === 0) {
                 postContainer.innerHTML = '<div class="loader-container"><p>Belum ada diskusi publik. Jadilah yang pertama memulai!</p></div>';
+            } else {
+                postContainer.innerHTML = htmlString;
             }
 
             runAsyncVerifBadges();
@@ -1453,8 +1402,14 @@
                     isi: content,
                     imageUrl: imageUrl,
                     likes: [],
+                    boostLikes: 0,
+                    autoLikeActive: false,
+                    autoLikeRate: 1,
+                    autoLikeInterval: 60,
+                    autoLikeStartTime: null,
                     comments: [],
                     isPrivate: false,
+                    isPrioritized: false,
                     commentsDisabled: false,
                     hideStats: false,
                     createdAt: serverTimestamp()
