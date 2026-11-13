@@ -991,13 +991,12 @@
             measurementId: 'G-C7YL0Q7YRQ'
         };
 
+        const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
+        const avatarBucket = 'profile-photos';
+
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-
-        // --- DEFINISI VARIABEL SUPABASE (Mencegah ReferenceError) ---
-        const supabaseUrl = 'https://your-supabase-project.supabase.co'; // Ganti dengan URL Supabase Anda jika menggunakan storage Supabase
-        const avatarBucket = 'avatars'; // Ganti dengan nama bucket Supabase Anda
 
         // --- TANGKAP UID DARI URL JIKA DIALIHKAN DARI SUBDOMAIN AKUN ---
         const urlParams = new URLSearchParams(window.location.search);
@@ -1043,7 +1042,7 @@
             const desktopAuthBtn = document.getElementById('desktopAuthBtn');
             const mobileAuthBtn = document.getElementById('mobileAuthBtn');
 
-            const nama = userData?.namaLengkap || user?.displayName || 'Mitra Sitenexs';
+            const nama = userData?.namaLengkap || userData?.namaDepan || user?.displayName || 'Mitra Sitenexs';
             const paket = userData?.paketLangganan || 'Basic';
             const pkgLower = paket.toLowerCase();
             
@@ -1058,7 +1057,7 @@
             const userBadgeHTML = `<span class="user-package-badge ${themeCategory}"><i class="fas ${badgeIcon}"></i> ${paket}</span>`;
             
             const profileButtonContent = `
-                <img src="${avatarUrl}" alt="${nama}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium);" onerror="this.src='${fallbackAvatar}';">
+                <img src="${avatarUrl}" alt="${nama}" style="width: 26px; height: 26px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium);" onerror="this.src='${fallbackAvatar}';">
                 <span style="font-weight: 700; max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${nama.split(' ')[0]}</span>
                 ${userBadgeHTML}
             `;
