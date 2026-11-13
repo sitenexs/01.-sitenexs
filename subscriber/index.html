@@ -58,18 +58,17 @@
         .package-info p { font-size: 0.82rem; color: var(--text-muted); }
         .package-price { font-size: 1.35rem; font-weight: 800; color: var(--text-main); }
 
-        /* Fitur Paket Box */
+        /* Rincian Fitur Paket */
         .package-features-box { background: var(--bg-body); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem; }
-        .package-features-box h5 { font-size: 0.88rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
-        .package-features-list { list-style: none; font-size: 0.85rem; color: var(--text-muted); display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 1rem; }
-        .package-features-list li { display: flex; align-items: flex-start; gap: 0.4rem; }
-        .package-features-list li i { color: var(--accent); margin-top: 0.2rem; font-size: 0.75rem; }
+        .package-features-box h5 { font-size: 0.88rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.4rem; }
+        .package-features-list { list-style: none; font-size: 0.85rem; color: var(--text-muted); display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; }
+        .package-features-list li { display: flex; align-items: flex-start; gap: 0.5rem; }
         
         .form-group { margin-bottom: 1rem; }
         .form-group label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.35rem; color: var(--text-main); }
         .form-control { width: 100%; padding: 0.7rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-medium); background-color: #f1f5f9; font-size: 0.9rem; color: var(--text-muted); font-family: inherit; cursor: not-allowed; }
         
-        /* QRIS Payment Box */
+        /* QRIS Box */
         .qris-box { background: #ffffff; border: 2px solid var(--primary); border-radius: var(--radius-lg); padding: 1.25rem; text-align: center; margin-bottom: 1.25rem; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.08); }
         .qris-box img { width: 150px; height: 150px; object-fit: contain; margin: 0.5rem auto; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); }
         .qris-box h5 { font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.2rem; }
@@ -84,7 +83,7 @@
         .auth-notice { background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: var(--radius-md); padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: var(--primary-dark); display: flex; align-items: center; gap: 0.5rem; }
 
         @media (max-width: 600px) {
-            .package-features-list { grid-template-columns: 1px; }
+            .package-features-list { grid-template-columns: 1fr; }
             .checkout-card { padding: 1.25rem; }
         }
     </style>
@@ -107,7 +106,7 @@
         <div class="container">
             <div class="checkout-card">
                 <h1 class="checkout-title"><i class="fas fa-receipt text-primary"></i> Konfirmasi Langganan</h1>
-                <p class="checkout-desc">Data akun Anda terkunci otomatis. Silakan lakukan pembayaran via QRIS untuk mengaktifkan paket.</p>
+                <p class="checkout-desc">Data akun terkunci otomatis. Periksa fasilitas paket Anda dan lakukan pembayaran via QRIS.</p>
 
                 <div id="authNoticeBox" class="auth-notice" style="display: none;">
                     <i class="fas fa-lock"></i>
@@ -122,11 +121,11 @@
                     <div class="package-price" id="packagePriceDisplay">Rp 0</div>
                 </div>
 
-                <!-- Detail Fitur Paket -->
+                <!-- Kotak Fasilitas & Fitur (Didapat & Tidak Didapat) -->
                 <div class="package-features-box">
-                    <h5><i class="fas fa-box-open text-primary"></i> Fasilitas & Fitur yang Didapatkan:</h5>
+                    <h5><i class="fas fa-list-check text-primary"></i> Rincian Fasilitas Paket:</h5>
                     <ul class="package-features-list" id="packageFeaturesList">
-                        <li><i class="fas fa-spinner fa-spin"></i> Memuat fasilitas paket...</li>
+                        <li><i class="fas fa-spinner fa-spin"></i> Memuat fasilitas...</li>
                     </ul>
                 </div>
 
@@ -146,14 +145,13 @@
                         <input type="tel" id="buyerPhone" class="form-control" readonly value="Memuat...">
                     </div>
 
-                    <!-- Metode Pembayaran Hanya QRIS -->
+                    <!-- Pembayaran Khusus QRIS -->
                     <div class="form-group">
                         <label>Metode Pembayaran (QRIS All Payment)</label>
                         <div class="qris-box">
-                            <!-- Ganti src dengan link QRIS asli Anda -->
-                            <img src="https://sitenexs.com/assets/logo/qris-dummy.png" alt="QRIS Sitenexs" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=SITENEXS-PAYMENT-QRIS';">
+                            <img src="https://sitenexs.com/assets/logo/qris-dummy.png" alt="QRIS Sitenexs" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=SITENEXS-QRIS-PAYMENT';">
                             <h5>Scan QRIS untuk Membayar</h5>
-                            <p>Dapat dipindai melalui BCA, Mandiri, BRI, GoPay, OVO, DANA, ShopeePay, dll.</p>
+                            <p>Mendukung BCA, Mandiri, BRI, GoPay, OVO, DANA, ShopeePay, dll.</p>
                         </div>
                     </div>
 
@@ -198,12 +196,12 @@
             return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
-        // Ambil data fasilitas paket dari Firestore
+        // Render Fitur Paket (Centang untuk yang didapat, Silang & Dicoret untuk yang tidak didapat)
         async function loadPackageFeatures() {
             const listEl = document.getElementById('packageFeaturesList');
             try {
                 const querySnapshot = await getDocs(collection(db, "packages"));
-                let matchedFitur = "Akses Sistem Standar\nDukungan Teknis\nPembaruan Berkala";
+                let matchedFitur = "+ Laporan Keuangan\n- Laporan Penjualan\n- Sistem Kasir (POS)\n- Order Via QR";
                 
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
@@ -215,18 +213,26 @@
                 const lines = matchedFitur.split('\n');
                 listEl.innerHTML = '';
                 lines.forEach(line => {
-                    const text = line.replace(/^[+\-*]\s*/, '').trim();
-                    if(text !== '') {
-                        listEl.insertAdjacentHTML('beforeend', `<li><i class="fas fa-check-circle"></i> <span>${text}</span></li>`);
+                    const trimmed = line.trim();
+                    if(trimmed === '') return;
+                    const type = trimmed.charAt(0);
+                    const text = trimmed.substring(1).trim();
+
+                    if(type === '+') {
+                        listEl.insertAdjacentHTML('beforeend', `<li><i class="fas fa-check" style="color: var(--accent); margin-top: 0.2rem; font-size: 0.75rem;"></i> <span>${text}</span></li>`);
+                    } else if(type === '-') {
+                        listEl.insertAdjacentHTML('beforeend', `<li style="opacity: 0.55;"><i class="fas fa-times" style="color: #ef4444; margin-top: 0.2rem; font-size: 0.75rem;"></i> <del>${text}</del></li>`);
+                    } else {
+                        listEl.insertAdjacentHTML('beforeend', `<li><span>${trimmed}</span></li>`);
                     }
                 });
             } catch (err) {
-                listEl.innerHTML = `<li><i class="fas fa-check-circle"></i> <span>Akses penuh sistem operasional Sitenexs</span></li>`;
+                listEl.innerHTML = `<li><i class="fas fa-check" style="color: var(--accent);"></i> <span>Akses sistem Sitenexs</span></li>`;
             }
         }
         loadPackageFeatures();
 
-        // Auto-fill profil user dari Firestore (Readonly/Terkunci)
+        // Ambil data user secara otomatis (Readonly)
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 fetchUserData(user.uid);
@@ -235,7 +241,7 @@
                 if (savedUid) {
                     fetchUserData(savedUid);
                 } else {
-                    document.getElementById('buyerName').value = "Tamu (Silakan login terlebih dahulu)";
+                    document.getElementById('buyerName').value = "Tamu (Belum masuk akun)";
                     document.getElementById('buyerBusiness').value = "-";
                     document.getElementById('buyerPhone').value = "-";
                 }
@@ -259,7 +265,7 @@
             }
         }
 
-        // Kirim konfirmasi via WhatsApp
+        // Konfirmasi pesanan via WhatsApp
         document.getElementById('checkoutForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const name = document.getElementById('buyerName').value;
