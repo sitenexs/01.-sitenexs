@@ -952,6 +952,19 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // --- SINKRONISASI SESI LOGIN (Mendengar pesan dari sign-in/register atau local state) ---
+        window.addEventListener('message', (event) => {
+            // Validasi asal domain postMessage jika diperlukan
+            if (event.data && event.data.type === 'sitenexs-auth-state') {
+                if (event.data.signedIn) {
+                    localStorage.setItem('sitenexs_logged_in', 'true');
+                } else {
+                    localStorage.removeItem('sitenexs_logged_in');
+                    localStorage.removeItem('sitenexs_uid');
+                }
+            }
+        });
+
         function applyUserPackageTheme(paketLangganan) {
             const pkg = (paketLangganan || 'basic').toLowerCase();
             let themeCategory = 'basic';
@@ -987,6 +1000,10 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                // Simpan cadangan sesi di localStorage
+                localStorage.setItem('sitenexs_logged_in', 'true');
+                localStorage.setItem('sitenexs_uid', user.uid);
+
                 try {
                     const userDocRef = doc(db, "users", user.uid);
                     const userSnap = await getDoc(userDocRef);
@@ -995,11 +1012,15 @@
                     } else { applyUserPackageTheme('Basic'); }
                 } catch (err) { applyUserPackageTheme('Basic'); }
             } else {
-                document.body.removeAttribute('data-package');
-                const desktopAuthBtn = document.getElementById('desktopAuthBtn');
-                const mobileAuthBtn = document.getElementById('mobileAuthBtn');
-                if (desktopAuthBtn) { desktopAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar'; desktopAuthBtn.href = 'https://account.sitenexs.com/sign-in/'; }
-                if (mobileAuthBtn) { mobileAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar'; mobileAuthBtn.href = 'https://account.sitenexs.com/sign-in/'; }
+                // Cek cadangan localStorage jika Firebase Auth butuh waktu sinkronisasi cookie
+                const localLoggedIn = localStorage.getItem('sitenexs_logged_in');
+                if (!localLoggedIn) {
+                    document.body.removeAttribute('data-package');
+                    const desktopAuthBtn = document.getElementById('desktopAuthBtn');
+                    const mobileAuthBtn = document.getElementById('mobileAuthBtn');
+                    if (desktopAuthBtn) { desktopAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar'; desktopAuthBtn.href = 'https://account.sitenexs.com/sign-in/'; }
+                    if (mobileAuthBtn) { mobileAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar'; mobileAuthBtn.href = 'https://account.sitenexs.com/sign-in/'; }
+                }
             }
         });
 
@@ -1064,7 +1085,6 @@
                     const titleStyle = pkg.isPopuler ? 'color: var(--primary);' : '';
                     const btnClass = pkg.isPopuler ? 'btn-primary' : 'btn-outline-primary';
                     
-                    // Mengarahkan ke pembayaran.html dengan parameter
                     const linkUrl = pkg.hargaAsli === 0 ? 'https://account.sitenexs.com/sign-in/' : `pembayaran.html?paket=${encodeURIComponent(pkg.namaPaket)}&harga=${finalPrice}`;
                     const iconClass = pkg.icon || 'fa-box';
 
@@ -1088,7 +1108,6 @@
         fetchPricing();
 
         let allMitraData = [];
-        let autoScrollDev;
 
         async function fetchAndRenderMitra() {
             const grid = document.getElementById('members-grid');
@@ -1245,5 +1264,6 @@
         document.getElementById('searchMitra').addEventListener('input', filterAndRender);
         document.getElementById('sortMitra').addEventListener('change', filterAndRender);
     </script>
+
 </body>
 </html>
