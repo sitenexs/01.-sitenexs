@@ -23,13 +23,13 @@
             --text-muted: #64748b;
             --border-subtle: #e2e8f0;
             --border-medium: #cbd5e1;
-            --radius-md: 0.4rem;
-            --radius-lg: 0.6rem;
-            --radius-xl: 0.875rem;
+            --radius-md: 0.35rem;
+            --radius-lg: 0.5rem;
+            --radius-xl: 0.75rem;
             --radius-full: 9999px;
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
-            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07);
+            --transition: all 0.25s ease;
         }
 
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -38,168 +38,171 @@
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background-color: var(--bg-body); 
             color: var(--text-main); 
-            line-height: 1.4; 
-            min-height: 100vh; 
+            line-height: 1.3; 
+            height: 100vh; 
+            overflow: hidden; 
             display: flex; 
             flex-direction: column; 
-            font-size: 13px; 
+            font-size: 12px; 
             -webkit-font-smoothing: antialiased;
         }
 
-        .container { width: 100%; max-width: 420px; margin: 0 auto; padding: 0 0.75rem; }
+        .container { width: 100%; max-width: 400px; margin: 0 auto; padding: 0 0.5rem; }
         
         header { 
-            background: rgba(255, 255, 255, 0.9); 
+            background: rgba(255, 255, 255, 0.95); 
             backdrop-filter: blur(10px); 
             border-bottom: 1px solid var(--border-subtle); 
-            padding: 0.6rem 0; 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
+            padding: 0.4rem 0; 
+            flex-shrink: 0;
         }
 
         .nav-container { display: flex; align-items: center; justify-content: space-between; }
         
-        .logo { display: flex; align-items: center; gap: 0.4rem; font-weight: 800; font-size: 1rem; color: var(--text-main); text-decoration: none; }
-        .logo-img { height: 26px; width: 26px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-subtle); }
+        .logo { display: flex; align-items: center; gap: 0.3rem; font-weight: 800; font-size: 0.95rem; color: var(--text-main); text-decoration: none; }
+        .logo-img { height: 22px; width: 22px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border-subtle); }
         .logo-text { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .main-content { padding: 1.25rem 0 1.5rem; flex-grow: 1; }
+        .main-content { padding: 0.5rem 0; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
         
         .qris-card { 
             background: var(--bg-card); 
             border: 1px solid var(--border-subtle); 
             border-radius: var(--radius-xl); 
-            padding: 1.25rem; 
+            padding: 0.85rem 1rem; 
             box-shadow: var(--shadow-md); 
             text-align: center; 
+            width: 100%;
+        }
+
+        .top-badges {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.3rem;
+            margin-bottom: 0.3rem;
         }
 
         .qris-header-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.3rem;
+            gap: 0.25rem;
             background: var(--primary-light);
             color: var(--primary-dark);
-            padding: 0.2rem 0.6rem;
+            padding: 0.15rem 0.5rem;
             border-radius: var(--radius-full);
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 700;
-            margin-bottom: 0.4rem;
         }
 
-        /* Timer Badge */
         .timer-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.3rem;
+            gap: 0.25rem;
             background: #fffbeb;
             color: #d97706;
             border: 1px solid #fde68a;
-            padding: 0.2rem 0.6rem;
+            padding: 0.15rem 0.5rem;
             border-radius: var(--radius-full);
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
-            margin-left: 0.2rem;
         }
 
-        .qris-card h2 { font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.15rem; }
-        .qris-card p.subtitle { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.85rem; }
+        .qris-card h2 { font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.05rem; }
+        .qris-card p.subtitle { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.5rem; }
 
         /* Rincian Pembayaran Box */
         .payment-details-box { 
             background: #f8fafc; 
             border: 1px solid var(--border-subtle); 
             border-radius: var(--radius-lg); 
-            padding: 0.75rem 0.85rem; 
-            margin-bottom: 0.85rem; 
+            padding: 0.45rem 0.65rem; 
+            margin-bottom: 0.5rem; 
             text-align: left; 
         }
         
-        .payment-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; font-size: 0.8rem; }
+        .payment-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem; font-size: 0.75rem; }
         .payment-row:last-child { margin-bottom: 0; }
         .payment-row span.label { color: var(--text-muted); font-weight: 500; }
         .payment-row span.value { color: var(--text-main); font-weight: 700; text-align: right; }
         
         .payment-total-row {
-            margin-top: 0.5rem; 
+            margin-top: 0.3rem; 
             border-top: 1px dashed var(--border-medium); 
-            padding-top: 0.5rem;
+            padding-top: 0.3rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .payment-total-row span.label { font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
+        .payment-total-row span.label { font-size: 0.78rem; font-weight: 700; color: var(--text-main); }
         
         .amount-wrapper {
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.3rem;
         }
 
-        .payment-details-box span.amount { color: var(--primary-dark); font-size: 1.05rem; font-weight: 800; }
+        .payment-details-box span.amount { color: var(--primary-dark); font-size: 0.95rem; font-weight: 800; }
         
         .btn-copy {
             background: var(--primary-light);
             border: 1px solid rgba(37,99,235,0.2);
             color: var(--primary);
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: var(--transition);
-            font-size: 0.7rem;
+            font-size: 0.65rem;
         }
         .btn-copy:hover { background: var(--primary); color: #fff; }
 
-        /* QR Code Container */
+        /* QR Code Container (Kompak) */
         .qris-image-container { 
             background: #ffffff; 
-            border: 1.5px solid var(--border-subtle); 
+            border: 1px solid var(--border-subtle); 
             border-radius: var(--radius-lg); 
-            padding: 0.85rem; 
-            margin-bottom: 0.85rem; 
+            padding: 0.5rem; 
+            margin-bottom: 0.5rem; 
         }
         
         .qris-image-wrapper {
             position: relative;
             display: inline-block;
-            padding: 0.35rem;
+            padding: 0.2rem;
             background: #fff;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-subtle);
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.2rem;
         }
 
         .qris-image-container img.qris-qr { 
-            width: 140px; 
-            height: 140px; 
+            width: 105px; 
+            height: 105px; 
             object-fit: contain; 
             display: block; 
         }
         
-        .qris-image-container h5 { font-size: 0.82rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.1rem; }
+        .qris-image-container h5 { font-size: 0.72rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.1rem; }
         
-        /* Tombol Unduh QR */
         .btn-download {
             background: #f1f5f9;
             border: 1px solid var(--border-medium);
             color: var(--text-main);
-            padding: 0.3rem 0.6rem;
+            padding: 0.2rem 0.5rem;
             border-radius: var(--radius-md);
-            font-size: 0.72rem;
+            font-size: 0.65rem;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
-            gap: 0.3rem;
+            gap: 0.2rem;
             cursor: pointer;
             transition: var(--transition);
-            margin-top: 0.4rem;
+            margin-top: 0.2rem;
             text-decoration: none;
         }
         .btn-download:hover { background: #e2e8f0; color: var(--primary); }
@@ -207,17 +210,17 @@
         .payment-channels {
             display: flex;
             justify-content: center;
-            gap: 0.3rem;
+            gap: 0.25rem;
             flex-wrap: wrap;
-            margin-top: 0.35rem;
-            font-size: 0.65rem;
+            margin-top: 0.2rem;
+            font-size: 0.6rem;
             color: var(--text-muted);
             font-weight: 600;
         }
 
         .channel-tag {
             background: #f1f5f9;
-            padding: 0.1rem 0.35rem;
+            padding: 0.08rem 0.3rem;
             border-radius: 3px;
         }
 
@@ -226,8 +229,8 @@
             background: #f8fafc;
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            padding: 0.6rem 0.75rem;
-            margin-bottom: 0.75rem;
+            padding: 0.4rem 0.6rem;
+            margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -255,7 +258,7 @@
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
-            padding: 1rem;
+            padding: 0.75rem;
         }
         .modal-overlay.active {
             opacity: 1;
@@ -264,11 +267,11 @@
         .modal-card {
             background: var(--bg-card);
             width: 100%;
-            max-width: 400px;
+            max-width: 380px;
             border-radius: var(--radius-xl);
-            padding: 1.25rem;
+            padding: 1rem;
             box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-            transform: translateY(20px);
+            transform: translateY(15px);
             transition: transform 0.3s ease;
             text-align: left;
         }
@@ -276,59 +279,59 @@
             transform: translateY(0);
         }
         .modal-title {
-            font-size: 0.95rem;
+            font-size: 0.88rem;
             font-weight: 800;
             color: var(--text-main);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.35rem;
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.3rem;
         }
         .modal-body {
-            max-height: 200px;
+            max-height: 150px;
             overflow-y: auto;
-            font-size: 0.73rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
-            line-height: 1.45;
+            line-height: 1.35;
             border: 1px solid var(--border-subtle);
-            padding: 0.65rem;
+            padding: 0.5rem;
             border-radius: var(--radius-md);
             background: #f8fafc;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
-        .modal-body p { margin-bottom: 0.5rem; }
+        .modal-body p { margin-bottom: 0.35rem; }
         .modal-body p:last-child { margin-bottom: 0; }
 
         .terms-container {
             display: flex;
             align-items: flex-start;
-            gap: 0.4rem;
+            gap: 0.35rem;
             text-align: left;
-            margin-bottom: 0.75rem;
-            font-size: 0.74rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.7rem;
             color: var(--text-main);
             cursor: pointer;
-            line-height: 1.35;
+            line-height: 1.3;
             font-weight: 600;
         }
         .terms-container input[type="checkbox"] {
-            margin-top: 0.1rem;
+            margin-top: 0.05rem;
             cursor: pointer;
             accent-color: var(--primary);
-            width: 14px;
-            height: 14px;
+            width: 13px;
+            height: 13px;
             flex-shrink: 0;
         }
 
         /* Buttons */
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.6rem 1rem; font-size: 0.85rem; font-weight: 700; border-radius: var(--radius-full); transition: var(--transition); cursor: pointer; border: none; text-align: center; width: 100%; text-decoration: none; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem 0.8rem; font-size: 0.78rem; font-weight: 700; border-radius: var(--radius-full); transition: var(--transition); cursor: pointer; border: none; text-align: center; width: 100%; text-decoration: none; }
         
         .btn-primary { 
             background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); 
             color: #ffffff; 
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25); 
+            box-shadow: 0 3px 10px rgba(34, 197, 94, 0.25); 
         }
-        .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 5px 15px rgba(34, 197, 94, 0.35); }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.35); }
         .btn-primary:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -341,9 +344,9 @@
             background-color: transparent; 
             color: var(--text-muted); 
             border: 1px solid var(--border-medium); 
-            margin-top: 0.4rem; 
-            font-size: 0.78rem; 
-            padding: 0.45rem 0.8rem; 
+            margin-top: 0.3rem; 
+            font-size: 0.72rem; 
+            padding: 0.35rem 0.6rem; 
             border-radius: var(--radius-md); 
         }
         .btn-secondary:hover { border-color: var(--text-main); color: var(--text-main); background-color: #f1f5f9; }
@@ -352,23 +355,23 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.3rem;
-            font-size: 0.7rem;
+            gap: 0.25rem;
+            font-size: 0.65rem;
             color: var(--text-muted);
-            margin-top: 0.75rem;
+            margin-top: 0.4rem;
         }
 
         /* Toast Notification */
         .toast {
             position: fixed;
-            bottom: 15px;
+            bottom: 10px;
             left: 50%;
-            transform: translateX(-50%) translateY(80px);
+            transform: translateX(-50%) translateY(60px);
             background: var(--text-main);
             color: #fff;
-            padding: 0.4rem 0.8rem;
+            padding: 0.3rem 0.6rem;
             border-radius: var(--radius-full);
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             box-shadow: var(--shadow-md);
             transition: transform 0.3s ease;
@@ -385,7 +388,7 @@
                 <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff&size=64&rounded=true';">
                 <span class="logo-text">SiteNexs</span>
             </a>
-            <a href="index.html" class="btn btn-secondary" style="width: auto; margin-top: 0; padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+            <a href="index.html" class="btn btn-secondary" style="width: auto; margin-top: 0; padding: 0.25rem 0.5rem; font-size: 0.7rem;">
                 <i class="fas fa-home"></i> Beranda
             </a>
         </div>
@@ -394,7 +397,7 @@
     <main class="main-content">
         <div class="container">
             <div class="qris-card">
-                <div>
+                <div class="top-badges">
                     <span class="qris-header-badge"><i class="fas fa-qrcode"></i> QRIS Instant</span>
                     <span class="timer-badge" id="timerBadge"><i class="fas fa-clock"></i> <span id="countdown">15:00</span></span>
                 </div>
@@ -430,7 +433,7 @@
                 <div class="qris-image-container">
                     <div class="qris-image-wrapper">
                         <!-- UBAH URL DI BAWAH INI DENGAN LINK GAMBAR QRIS ANDA -->
-                        <img src="https://sitenexs.com/assets/logo/qris-dummy.png" class="qris-qr" alt="QRIS Sitenexs" id="qrisImg" crossorigin="anonymous" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=SITENEXS-QRIS-PAYMENT';">
+                        <img src="https://sitenexs.com/assets/logo/qris-dummy.png" class="qris-qr" alt="QRIS Sitenexs" id="qrisImg" crossorigin="anonymous" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=105x105&data=SITENEXS-QRIS-PAYMENT';">
                     </div>
                     <h5>QRIS National Standard</h5>
                     <button class="btn-download" id="downloadQrBtn">
@@ -450,14 +453,14 @@
 
                 <!-- Tombol Pemicu Modal Syarat & Ketentuan -->
                 <div class="terms-status-box" id="openModalBtn">
-                    <div style="display: flex; align-items: center; gap: 0.5rem; text-align: left;">
-                        <i class="fas fa-file-contract" style="color: var(--primary); font-size: 1rem;"></i>
+                    <div style="display: flex; align-items: center; gap: 0.4rem; text-align: left;">
+                        <i class="fas fa-file-contract" style="color: var(--primary); font-size: 0.9rem;"></i>
                         <div>
-                            <div style="font-weight: 700; font-size: 0.78rem; color: var(--text-main);">Syarat & Ketentuan Layanan</div>
-                            <div style="font-size: 0.7rem; color: var(--text-muted);" id="termsStatusText">Belum disetujui (Klik untuk baca)</div>
+                            <div style="font-weight: 700; font-size: 0.72rem; color: var(--text-main);">Syarat & Ketentuan Layanan</div>
+                            <div style="font-size: 0.65rem; color: var(--text-muted);" id="termsStatusText">Belum disetujui (Klik untuk baca)</div>
                         </div>
                     </div>
-                    <i class="fas fa-chevron-right" style="font-size: 0.75rem; color: var(--text-muted);"></i>
+                    <i class="fas fa-chevron-right" style="font-size: 0.65rem; color: var(--text-muted);"></i>
                 </div>
 
                 <button id="confirmWhatsAppBtn" class="btn btn-primary" disabled>
@@ -496,7 +499,7 @@
                     <input type="checkbox" id="modalTermsCheck">
                     <span>Saya telah membaca dan menyetujui seluruh syarat dan ketentuan yang berlaku di Sitenexs.</span>
                 </label>
-                <button type="button" id="closeModalBtn" class="btn btn-primary" disabled style="padding: 0.5rem; font-size: 0.8rem;">
+                <button type="button" id="closeModalBtn" class="btn btn-primary" disabled style="padding: 0.45rem; font-size: 0.75rem;">
                     Setuju & Lanjutkan
                 </button>
             </div>
