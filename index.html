@@ -175,6 +175,52 @@
         .btn-outline-primary:hover { background-color: var(--primary-light); transform: translateY(-3px); }
         .btn-block { width: 100%; border-radius: var(--radius-md); }
 
+        /* TOAST NOTIFIKASI SELAMAT DATANG */
+        .sitenexs-toast {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            background: #ffffff;
+            color: var(--text-main);
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+            border: 1px solid var(--border-subtle);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .sitenexs-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .sitenexs-toast-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .sitenexs-toast-text h4 {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.1rem;
+        }
+        .sitenexs-toast-text p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
         .section-header { text-align: center; max-width: 680px; margin: 0 auto 3rem auto; }
         .section-subtitle { display: inline-block; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.1em; color: var(--primary); text-transform: uppercase; margin-bottom: 0.75rem; padding: 0.3rem 1rem; background: rgba(37, 99, 235, 0.08); border-radius: var(--radius-full); border: 1px solid rgba(37, 99, 235, 0.18); }
         .section-title { font-size: clamp(1.5rem, 2.5vw, 2.2rem); font-weight: 800; letter-spacing: -0.02em; color: var(--text-main); line-height: 1.25; margin-bottom: 0.5rem; }
@@ -927,7 +973,34 @@
             });
             if(closeModalBtn) { closeModalBtn.addEventListener('click', () => { founderModal.classList.remove('active'); }); }
             founderModal.addEventListener('click', (e) => { if (e.target === founderModal) { founderModal.classList.remove('active'); } });
+
+            // --- CEK PARAMETER WELCOME UNTUK NOTIFIKASI TOAST ---
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('welcome') === 'true' || localStorage.getItem('sitenexs_show_welcome') === 'true') {
+                localStorage.removeItem('sitenexs_show_welcome');
+                showWelcomeToast();
+                // Bersihkan URL dari parameter welcome
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
         });
+
+        function showWelcomeToast() {
+            const toast = document.createElement('div');
+            toast.className = 'sitenexs-toast';
+            toast.innerHTML = `
+                <div class="sitenexs-toast-icon"><i class="fas fa-check"></i></div>
+                <div class="sitenexs-toast-text">
+                    <h4>Selamat Datang!</h4>
+                    <p>Anda berhasil masuk ke akun Sitenexs.</p>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
+        }
     </script>
 
     <script type="module">
@@ -952,9 +1025,12 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // --- SINKRONISASI SESI LOGIN (Mendengar pesan dari sign-in/register atau local state) ---
+        // Instant UI check dari localStorage agar tombol langsung berubah jadi Profil tanpa menunggu loading auth
+        if (localStorage.getItem('sitenexs_logged_in') === 'true') {
+            updateNavUserUI('Basic', 'basic');
+        }
+
         window.addEventListener('message', (event) => {
-            // Validasi asal domain postMessage jika diperlukan
             if (event.data && event.data.type === 'sitenexs-auth-state') {
                 if (event.data.signedIn) {
                     localStorage.setItem('sitenexs_logged_in', 'true');
@@ -1000,7 +1076,6 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Simpan cadangan sesi di localStorage
                 localStorage.setItem('sitenexs_logged_in', 'true');
                 localStorage.setItem('sitenexs_uid', user.uid);
 
@@ -1012,7 +1087,6 @@
                     } else { applyUserPackageTheme('Basic'); }
                 } catch (err) { applyUserPackageTheme('Basic'); }
             } else {
-                // Cek cadangan localStorage jika Firebase Auth butuh waktu sinkronisasi cookie
                 const localLoggedIn = localStorage.getItem('sitenexs_logged_in');
                 if (!localLoggedIn) {
                     document.body.removeAttribute('data-package');
