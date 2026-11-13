@@ -399,9 +399,13 @@
         .pricing-strike { font-size: 0.88rem; color: #ef4444; text-decoration: line-through; display: block; font-weight: 600; margin-bottom: 0.15rem; }
         .pricing-final { font-size: 1.9rem; font-weight: 800; color: var(--text-main); line-height: 1; }
         .pricing-final span { font-size: 0.82rem; color: var(--text-muted); font-weight: 500; }
+        .pkg-countdown-badge { background: #fee2e2; color: #991b1b; font-size: 0.72rem; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); margin-top: 0.5rem; display: inline-flex; align-items: center; gap: 0.3rem; }
+        
         .pricing-features { text-align: left; list-style: none; margin-bottom: 1.75rem; color: var(--text-muted); font-size: 0.9rem; flex-grow: 1; }
         .pricing-features li { margin-bottom: 0.7rem; display: flex; align-items: flex-start; gap: 0.6rem; }
         .pricing-features li i { margin-top: 0.2rem; }
+        .pricing-features li img { width: 18px; height: 18px; object-fit: contain; vertical-align: middle; display: inline-block; margin-left: 3px; }
+        .pricing-features li.disabled img { opacity: 0.4; filter: grayscale(100%); }
         
         .utility-card { background-color: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 2rem; display: flex; gap: 1.35rem; align-items: flex-start; transition: var(--transition); box-shadow: var(--shadow-sm); }
         .utility-card:hover { border-color: var(--border-accent); transform: translateY(-4px); box-shadow: var(--shadow-md); }
@@ -1300,6 +1304,50 @@
             return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
+        function parseFeatureText(rawText) {
+            const urlRegex = /(https?:\/\/[^\s)]+)/g;
+            let formatted = rawText.replace(urlRegex, (url) => {
+                return `<img src="${url}" alt="Badge">`;
+            });
+            formatted = formatted.replace(/\(\s*(<img[^>]+>)\s*\)/g, '$1');
+            return formatted;
+        }
+
+        window.updateCountdowns = function() {
+            document.querySelectorAll('.countdown-timer').forEach(el => {
+                const hoursDuration = Number(el.getAttribute('data-hours')) || 24;
+                const isLooping = el.getAttribute('data-loop') === 'true';
+                const durationMs = hoursDuration * 60 * 60 * 1000;
+                
+                const now = new Date().getTime();
+                let distance = 0;
+
+                if (isLooping) {
+                    distance = durationMs - (now % durationMs);
+                } else {
+                    const startTime = Number(el.getAttribute('data-start')) || now;
+                    const endTime = startTime + durationMs;
+                    distance = endTime - now;
+                }
+
+                if (distance < 0 && !isLooping) {
+                    el.innerHTML = "Diskon telah berakhir";
+                } else {
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    let timeStr = `${hours}j ${minutes}m ${seconds}d`;
+                    if(days > 0) {
+                        timeStr = `${days}hari ${hours}j ${minutes}m`;
+                    }
+                    el.innerHTML = `<i class="fas fa-clock"></i> Berakhir: ${timeStr}`;
+                }
+            });
+        }
+        setInterval(window.updateCountdowns, 1000);
+
         async function fetchPricing() {
             const pricingContainer = document.getElementById('pricing-container');
             if(!pricingContainer) return;
@@ -1313,20 +1361,26 @@
 
                 let packages = [];
                 querySnapshot.forEach((doc) => { packages.push(doc.data()); });
-                packages.sort((a, b) => a.hargaAsli - b.hargaAsli);
+                packages.sort((a, b) => (Number(a.hargaAsli) || 0) - (Number(b.hargaAsli) || 0));
                 pricingContainer.innerHTML = '';
 
                 packages.forEach(pkg => {
                     let priceHTML = '';
+                    let countdownHTML = '';
                     const finalPrice = (pkg.hargaDiskon > 0 && pkg.hargaDiskon < pkg.hargaAsli) ? pkg.hargaDiskon : pkg.hargaAsli;
 
-                    if (pkg.hargaDiskon > 0 && pkg.hargaDiskon < pkg.hargaAsli) {
+                    const hasDiscount = pkg.hargaDiskon > 0 && pkg.hargaDiskon < pkg.hargaAsli;
+                    if (hasDiscount) {
                         priceHTML = `
                             <div class="pricing-price-box">
                                 <span class="pricing-strike">${formatRupiah(pkg.hargaAsli)}</span>
                                 <div class="pricing-final">${formatRupiah(pkg.hargaDiskon)}<span>/bulan</span></div>
                             </div>
                         `;
+                        const hours = pkg.countdownJam || 24;
+                        const loop = pkg.perulanganWaktu !== false;
+                        const startTime = pkg.countdownStart || Date.now();
+                        countdownHTML = `<div class="pkg-countdown-badge countdown-timer" data-hours="${hours}" data-loop="${loop}" data-start="${startTime}"><i class="fas fa-spinner fa-spin"></i> Memuat waktu...</div>`;
                     } else if (pkg.hargaAsli > 0) {
                         priceHTML = `
                             <div class="pricing-price-box">
@@ -1344,10 +1398,18 @@
                     const featureLines = pkg.fitur ? pkg.fitur.split('\n') : [];
                     let featureHTML = '<ul class="pricing-features">';
                     featureLines.forEach(line => {
-                        const text = line.substring(1).trim();
-                        if(line.startsWith('+')) { featureHTML += `<li><i class="fas fa-check text-accent"></i> <span>${text}</span></li>`; }
-                        else if(line.startsWith('-')) { featureHTML += `<li style="opacity:0.6;"><i class="fas fa-times text-muted"></i> <del>${text}</del></li>`; }
-                        else if(text !== '') { featureHTML += `<li><span>${line.trim()}</span></li>`; }
+                        const trimmed = line.trim();
+                        if (trimmed.startsWith('+')) {
+                            const rawContent = trimmed.substring(1).trim();
+                            const parsedContent = parseFeatureText(rawContent);
+                            featureHTML += `<li><i class="fas fa-check text-accent" style="margin-top: 0.2rem; flex-shrink: 0;"></i> <span>${parsedContent}</span></li>`;
+                        } else if (trimmed.startsWith('-')) {
+                            const rawContent = trimmed.substring(1).trim();
+                            const parsedContent = parseFeatureText(rawContent);
+                            featureHTML += `<li class="disabled" style="opacity:0.6;"><i class="fas fa-times text-muted" style="margin-top: 0.2rem; flex-shrink: 0;"></i> <del>${parsedContent}</del></li>`;
+                        } else if(trimmed !== '') {
+                            featureHTML += `<li><span>${parseFeatureText(trimmed)}</span></li>`;
+                        }
                     });
                     featureHTML += '</ul>';
 
@@ -1365,13 +1427,17 @@
                             <div class="pricing-icon"><i class="fas ${iconClass}"></i></div>
                             <h3 class="pricing-title" style="${titleStyle}">${pkg.namaPaket}</h3>
                             <p class="pricing-desc">${pkg.deskripsi}</p>
-                            ${priceHTML}
+                            <div class="pricing-price-box">
+                                ${priceHTML}
+                                ${countdownHTML}
+                            </div>
                             ${featureHTML}
                             <a href="${linkUrl}" class="btn ${btnClass} btn-block" style="margin-top: auto;">${pkg.hargaAsli === 0 ? 'Mulai Gratis' : 'Pilih Paket & Bayar'}</a>
                         </div>
                     `;
                     pricingContainer.insertAdjacentHTML('beforeend', cardHTML);
                 });
+                window.updateCountdowns();
             } catch (error) {
                 pricingContainer.innerHTML = '<p style="color:red; text-align:center; width:100%;">Gagal memuat harga.</p>';
             }
