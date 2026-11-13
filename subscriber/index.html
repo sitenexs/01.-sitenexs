@@ -3,18 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Konfirmasi Pembayaran Paket — Sitenexs</title>
+    <title>Konfirmasi Paket — Sitenexs</title>
     
-    <!-- Meta SEO -->
-    <meta name="description" content="Halaman pembayaran dan konfirmasi langganan Sitenexs, solusi digital UMKM Indonesia.">
     <link rel="icon" type="image/png" href="https://sitenexs.com/assets/logo/logo.png">
-    
-    <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -29,8 +23,6 @@
             --text-muted: #475569;
             --border-subtle: #e2e8f0;
             --border-medium: #cbd5e1;
-            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
-            --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
             --radius-md: 0.5rem;
             --radius-lg: 0.75rem;
             --radius-xl: 1rem;
@@ -58,7 +50,6 @@
         .package-info p { font-size: 0.8rem; color: var(--text-muted); }
         .package-price { font-size: 1.25rem; font-weight: 800; color: var(--text-main); }
 
-        /* Rincian Fitur Paket */
         .package-features-box { background: var(--bg-body); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 1.15rem; }
         .package-features-box h5 { font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
         .package-features-list { list-style: none; font-size: 0.82rem; color: var(--text-muted); display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 0.75rem; }
@@ -67,12 +58,6 @@
         .form-group { margin-bottom: 0.85rem; }
         .form-group label { display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.3rem; color: var(--text-main); }
         .form-control { width: 100%; padding: 0.65rem 0.95rem; border-radius: var(--radius-md); border: 1px solid var(--border-medium); background-color: #f1f5f9; font-size: 0.88rem; color: var(--text-muted); font-family: inherit; pointer-events: none; user-select: none; }
-        
-        /* QRIS Box */
-        .qris-box { background: #ffffff; border: 2px solid var(--primary); border-radius: var(--radius-lg); padding: 1rem; text-align: center; margin-bottom: 1.15rem; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.08); }
-        .qris-box img { width: 135px; height: 135px; object-fit: contain; margin: 0.4rem auto; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); }
-        .qris-box h5 { font-size: 0.9rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.15rem; }
-        .qris-box p { font-size: 0.78rem; color: var(--text-muted); }
 
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem 1.2rem; font-size: 0.88rem; font-weight: 700; border-radius: var(--radius-full); transition: var(--transition); cursor: pointer; border: none; text-align: center; width: 100%; text-decoration: none; }
         .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #ffffff; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
@@ -103,8 +88,8 @@
     <div class="main-content">
         <div class="container">
             <div class="checkout-card">
-                <h1 class="checkout-title"><i class="fas fa-receipt text-primary"></i> Konfirmasi Pembayaran</h1>
-                <p class="checkout-desc">Periksa ringkasan paket Anda dan selesaikan pembayaran melalui QRIS di bawah ini.</p>
+                <h1 class="checkout-title"><i class="fas fa-receipt text-primary"></i> Konfirmasi Pesanan</h1>
+                <p class="checkout-desc">Periksa ringkasan paket dan informasi akun Anda sebelum melanjutkan ke pembayaran.</p>
 
                 <div class="package-summary">
                     <div class="package-info">
@@ -114,7 +99,6 @@
                     <div class="package-price" id="packagePriceDisplay">Rp 0</div>
                 </div>
 
-                <!-- Kotak Rincian Fitur Paket -->
                 <div class="package-features-box">
                     <h5><i class="fas fa-list-check text-primary"></i> Rincian Fasilitas Paket:</h5>
                     <ul class="package-features-list" id="packageFeaturesList">
@@ -138,18 +122,8 @@
                         <input type="email" id="buyerEmail" class="form-control" readonly value="Memuat...">
                     </div>
 
-                    <!-- Pembayaran Khusus QRIS -->
-                    <div class="form-group">
-                        <label>Metode Pembayaran (QRIS All Payment)</label>
-                        <div class="qris-box">
-                            <img src="https://sitenexs.com/assets/logo/qris-dummy.png" alt="QRIS Sitenexs" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=135x135&data=SITENEXS-QRIS-PAYMENT';">
-                            <h5>Scan QRIS untuk Membayar</h5>
-                            <p>Mendukung BCA, Mandiri, BRI, GoPay, OVO, DANA, ShopeePay, dll.</p>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fab fa-whatsapp"></i> Konfirmasi Pembayaran via WhatsApp
+                    <button type="submit" id="submitBtn" class="btn btn-primary" style="margin-top: 0.5rem;">
+                        <i class="fas fa-arrow-right"></i> Lanjut ke Pembayaran
                     </button>
                     <a href="index.html" class="btn btn-secondary" style="width:100%; border-radius: var(--radius-md); margin-top: 0.4rem; text-align: center;">Batalkan & Kembali</a>
                 </form>
@@ -157,7 +131,6 @@
         </div>
     </div>
 
-    <!-- Script Logika & Firebase -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getFirestore, doc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
@@ -189,7 +162,6 @@
             return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
-        // Render Fitur Paket (Centang untuk didapat, Silang & Dicoret untuk tidak didapat)
         async function loadPackageFeatures() {
             const listEl = document.getElementById('packageFeaturesList');
             try {
@@ -225,7 +197,6 @@
         }
         loadPackageFeatures();
 
-        // Ambil data user secara otomatis dan masukkan ke input readonly
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 fetchUserData(user.uid, user.email);
@@ -257,16 +228,15 @@
             }
         }
 
-        // Konfirmasi pesanan via WhatsApp (menggunakan Email sebagai identitas)
+        // Saat tombol "Lanjut ke Pembayaran" ditekan, pindah ke qris.html dengan membawa data paket & harga
         document.getElementById('checkoutForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const name = document.getElementById('buyerName').value;
             const business = document.getElementById('buyerBusiness').value;
             const email = document.getElementById('buyerEmail').value;
 
-            const message = `Halo Sitenexs, saya telah melakukan pembayaran via QRIS.\n\n*Detail Pesanan:*\n- Paket: ${paketQuery}\n- Nominal: ${formatRupiah(parseInt(hargaQuery) || 0)}\n\n*Detail Akun Terverifikasi:*\n- Nama: ${name}\n- Usaha: ${business}\n- Email: ${email}\n- Metode: QRIS All Payment\n\nMohon verifikasi dan aktivasi akun saya. Terima kasih!`;
-
-            window.open(`https://wa.me/6285177137899?text=${encodeURIComponent(message)}`, '_blank');
+            const targetUrl = `qris.html?paket=${encodeURIComponent(paketQuery)}&harga=${hargaQuery}&name=${encodeURIComponent(name)}&business=${encodeURIComponent(business)}&email=${encodeURIComponent(email)}`;
+            window.location.href = targetUrl;
         });
     </script>
 </body>
