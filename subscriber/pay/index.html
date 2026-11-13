@@ -221,7 +221,7 @@
             border-radius: 3px;
         }
 
-        /* Terms Trigger Box */
+        /* Terms Status Trigger Box */
         .terms-status-box {
             background: #f8fafc;
             border: 1px solid var(--border-subtle);
@@ -246,7 +246,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(15, 23, 42, 0.6);
+            background: rgba(15, 23, 42, 0.65);
             backdrop-filter: blur(4px);
             display: flex;
             align-items: center;
@@ -264,7 +264,7 @@
         .modal-card {
             background: var(--bg-card);
             width: 100%;
-            max-width: 380px;
+            max-width: 400px;
             border-radius: var(--radius-xl);
             padding: 1.25rem;
             box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
@@ -285,11 +285,11 @@
             gap: 0.4rem;
         }
         .modal-body {
-            max-height: 160px;
+            max-height: 200px;
             overflow-y: auto;
-            font-size: 0.74rem;
+            font-size: 0.73rem;
             color: var(--text-muted);
-            line-height: 1.4;
+            line-height: 1.45;
             border: 1px solid var(--border-subtle);
             padding: 0.65rem;
             border-radius: var(--radius-md);
@@ -475,25 +475,29 @@
         </div>
     </main>
 
-    <!-- Modal Pop-up Syarat & Ketentuan -->
-    <div class="modal-overlay" id="termsModal">
+    <!-- Modal Pop-up Syarat & Ketentuan (Tampil otomatis saat halaman dibuka) -->
+    <div class="modal-overlay active" id="termsModal">
         <div class="modal-card">
             <div class="modal-title">
                 <i class="fas fa-shield-alt" style="color: var(--primary);"></i> Syarat & Ketentuan Sitenexs
             </div>
             <div class="modal-body">
-                <p><strong>1. Ketentuan Layanan:</strong> Layanan Sitenexs diberikan sesuai paket langganan yang dipilih (1 bulan terhitung sejak aktivasi sistem).</p>
-                <p><strong>2. Pembayaran QRIS:</strong> Pastikan nominal transfer sesuai dengan total tagihan. Pembayaran diproses secara instan melalui sistem QRIS resmi.</p>
-                <p><strong>3. Kebijakan Pengembalian:</strong> Biaya langganan yang sudah dibayarkan tidak dapat dikembalikan (non-refundable) dalam kondisi apapun.</p>
-                <p><strong>4. Keamanan Akun:</strong> Pengguna wajib menjaga kerahasiaan data akun dan bertanggung jawab penuh atas operasional usaha masing-masing.</p>
+                <p><strong>1. Ketentuan Umum:</strong> Dengan mengakses dan melakukan pembayaran pada platform Sitenexs, Anda menyatakan setuju untuk mematuhi seluruh aturan dan kebijakan layanan yang berlaku.</p>
+                <p><strong>2. Masa Berlaku Langganan:</strong> Setiap paket langganan sistem Sitenexs memiliki durasi aktif selama 1 (satu) bulan (30 hari) terhitung sejak akun dikonfirmasi dan diaktifkan oleh tim admin.</p>
+                <p><strong>3. Validasi Pembayaran QRIS:</strong> Pengguna wajib melakukan transfer sesuai dengan nominal persis yang tertera pada tagihan. Pembayaran yang tidak sesuai dapat memperlambat proses verifikasi otomatis.</p>
+                <p><strong>4. Kebijakan Pengembalian Dana:</strong> Seluruh biaya langganan yang telah dibayarkan bersifat final dan tidak dapat dikembalikan (non-refundable) dengan alasan apapun setelah sistem diaktifkan.</p>
+                <p><strong>5. Keamanan & Kerahasiaan Akun:</strong> Pengguna bertanggung jawab penuh atas keamanan kredensial akun, data toko/UMKM, serta seluruh aktivitas transaksi yang terjadi di dalam sistem masing-masing.</p>
+                <p><strong>6. Pembatasan Tanggung Jawab:</strong> Sitenexs tidak bertanggung jawab atas kerugian akibat kelalaian pengguna dalam menjaga kerahasiaan akses akun atau gangguan jaringan telekomunikasi pihak ketiga.</p>
+                <p><strong>7. Pemeliharaan & Pembaruan:</strong> Sitenexs berhak sewaktu-waktu melakukan pemeliharaan (maintenance) atau pembaruan sistem guna meningkatkan performa dan keamanan layanan.</p>
+                <p><strong>8. Bantuan & Dukungan Pelanggan:</strong> Segala kendala teknis maupun konfirmasi pembayaran setelah transfer dapat diajukan melalui layanan pelanggan resmi Sitenexs via WhatsApp.</p>
             </div>
             <div class="modal-footer">
                 <label class="terms-container">
                     <input type="checkbox" id="modalTermsCheck">
-                    <span>Saya telah menyetujui syarat dan ketentuan yang berlaku.</span>
+                    <span>Saya telah membaca dan menyetujui seluruh syarat dan ketentuan yang berlaku di Sitenexs.</span>
                 </label>
                 <button type="button" id="closeModalBtn" class="btn btn-primary" disabled style="padding: 0.5rem; font-size: 0.8rem;">
-                    Setuju & Tutup
+                    Setuju & Lanjutkan
                 </button>
             </div>
         </div>
@@ -545,7 +549,7 @@
             timeLeft--;
         }, 1000);
 
-        // 2. Modal Pop-up Syarat & Ketentuan Logic
+        // 2. Modal Pop-up Syarat & Ketentuan Logic (Otomatis muncul saat load)
         const termsModal = document.getElementById('termsModal');
         const openModalBtn = document.getElementById('openModalBtn');
         const closeModalBtn = document.getElementById('closeModalBtn');
