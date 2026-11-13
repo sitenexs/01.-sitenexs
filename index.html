@@ -1356,7 +1356,7 @@
                     const titleStyle = pkg.isPopuler ? 'color: var(--primary);' : '';
                     const btnClass = pkg.isPopuler ? 'btn-primary' : 'btn-outline-primary';
                     
-                    const linkUrl = pkg.hargaAsli === 0 ? 'https://account.sitenexs.com/sign-in/' : `pembayaran.html?paket=${encodeURIComponent(pkg.namaPaket)}&harga=${finalPrice}`;
+                    const linkUrl = pkg.hargaAsli === 0 ? 'https://account.sitenexs.com/sign-in/' : `subscriber/?paket=${encodeURIComponent(pkg.namaPaket)}&harga=${finalPrice}`;
                     const iconClass = pkg.icon || 'fa-box';
 
                     const cardHTML = `
