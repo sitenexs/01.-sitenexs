@@ -998,6 +998,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // Mendengarkan event postMessage dari halaman lain untuk sinkronisasi sesi secara real-time
         window.addEventListener('message', (event) => {
             if (event.data && event.data.type === 'sitenexs-auth-state') {
                 if (event.data.signedIn) {
@@ -1005,6 +1006,7 @@
                 } else {
                     localStorage.removeItem('sitenexs_logged_in');
                     localStorage.removeItem('sitenexs_uid');
+                    resetAuthUI();
                 }
             }
         });
@@ -1103,10 +1105,22 @@
 
         function resetAuthUI() {
             document.body.removeAttribute('data-package');
+            localStorage.removeItem('sitenexs_uid');
+            localStorage.removeItem('sitenexs_logged_in');
+            
             const desktopAuthBtn = document.getElementById('desktopAuthBtn');
             const mobileAuthBtn = document.getElementById('mobileAuthBtn');
-            if (desktopAuthBtn) { desktopAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar'; desktopAuthBtn.href = 'https://account.sitenexs.com/sign-in/'; desktopAuthBtn.style.padding = ''; }
-            if (mobileAuthBtn) { mobileAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar'; mobileAuthBtn.href = 'https://account.sitenexs.com/sign-in/'; }
+            
+            if (desktopAuthBtn) { 
+                desktopAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar'; 
+                desktopAuthBtn.href = 'https://account.sitenexs.com/sign-in/'; 
+                desktopAuthBtn.style.padding = ''; 
+                desktopAuthBtn.style.borderRadius = '';
+            }
+            if (mobileAuthBtn) { 
+                mobileAuthBtn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 0.3rem;"></i> Masuk / Daftar'; 
+                mobileAuthBtn.href = 'https://account.sitenexs.com/sign-in/'; 
+            }
         }
 
         function checkAndShowWelcomeToast(userName) {
