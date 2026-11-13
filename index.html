@@ -364,7 +364,7 @@
         .highlight-text h5 { font-size: 0.98rem; font-weight: 700; color: var(--text-main); line-height: 1.25; }
         .highlight-text p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
 
-        /* FEATURED ADS CARD SLIDER SECTION (CARD TERPISAH, FOTO FULL & TERANG DENGAN GRADASI HALUS) */
+        /* FEATURED ADS CARD SLIDER SECTION */
         .featured-ads-section {
             width: 100%;
             padding: 2rem 0;
@@ -420,7 +420,6 @@
         .ads-card:hover .ads-card-img {
             transform: scale(1.04);
         }
-        /* Gradasi halus dari transparan ke hitam semi-transparan (tidak terlalu gelap agar foto tetap cerah) */
         .ads-card::after {
             content: '';
             position: absolute;
@@ -820,58 +819,17 @@
                     </div>
                 </div>
 
-                <!-- FEATURED ADS CARD SLIDER SECTION (FOTO FULL TERANG DENGAN GRADASI HALUS) -->
+                <!-- FEATURED ADS CARD SLIDER SECTION (DINAMIS DARI FIRESTORE) -->
                 <div class="featured-ads-section">
                     <div class="ads-slider-wrapper" id="adsSliderWrapper">
                         <div class="ads-track" id="adsTrack">
-                            
-                            <!-- Slide 1: Card Iklan 1 (Klik mengarah ke #kontak) -->
-                            <div class="ads-slide-item">
-                                <a href="#kontak" class="ads-card">
-                                    <img src="https://sitenexs.com/assets/produk/laporankeuangan.png" alt="Webinar UMKM Sitenexs" class="ads-card-img" onerror="this.src='https://ui-avatars.com/api/?name=Event+Sitenexs&background=2563eb&color=fff&size=600';">
-                                    <div class="ads-card-content">
-                                        <span class="ads-card-tag"><i class="fas fa-star" style="color: #fbbf24;"></i> Event</span>
-                                        <h4 class="ads-card-title">Webinar & Pelatihan Digitalisasi UMKM 2026</h4>
-                                        <p class="ads-card-desc">Pelatihan optimasi omzet lewat sistem kasir digital dan pembukuan transparan.</p>
-                                        <span class="ads-card-action">Daftar Gratis <i class="fas fa-arrow-right" style="font-size: 0.65rem;"></i></span>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <!-- Slide 2: Card Iklan 2 (Klik mengarah ke #harga) -->
-                            <div class="ads-slide-item">
-                                <a href="#harga" class="ads-card">
-                                    <img src="https://sitenexs.com/assets/logo/logo.png" alt="Promo Sitenexs" class="ads-card-img" onerror="this.src='https://ui-avatars.com/api/?name=Promo+Sitenexs&background=10b981&color=fff&size=600';">
-                                    <div class="ads-card-content">
-                                        <span class="ads-card-tag"><i class="fas fa-tag" style="color: #fbbf24;"></i> Promo</span>
-                                        <h4 class="ads-card-title">Diskon Khusus Paket Sistem Kasir Sitenexs</h4>
-                                        <p class="ads-card-desc">Penawaran harga khusus langganan paket Pro dan Bisnis UMKM bulan ini.</p>
-                                        <span class="ads-card-action">Klaim Promo <i class="fas fa-arrow-right" style="font-size: 0.65rem;"></i></span>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <!-- Slide 3: Card Iklan 3 (Klik mengarah ke #demo-produk) -->
-                            <div class="ads-slide-item">
-                                <a href="#demo-produk" class="ads-card">
-                                    <img src="https://sitenexs.com/assets/foto/ngoding.png" alt="Fitur Sitenexs" class="ads-card-img" onerror="this.src='https://ui-avatars.com/api/?name=QR+Order&background=7c3aed&color=fff&size=600';">
-                                    <div class="ads-card-content">
-                                        <span class="ads-card-tag"><i class="fas fa-qrcode" style="color: #fbbf24;"></i> Fitur</span>
-                                        <h4 class="ads-card-title">QR Order Menu Langsung dari Meja</h4>
-                                        <p class="ads-card-desc">Pesan tanpa antre dengan teknologi QR Code interaktif terintegrasi kasir.</p>
-                                        <span class="ads-card-action">Coba Demo <i class="fas fa-arrow-right" style="font-size: 0.65rem;"></i></span>
-                                    </div>
-                                </a>
-                            </div>
-
+                            <p style="text-align: center; width: 100%; color: var(--text-muted); padding: 2rem;">
+                                <i class="fas fa-spinner fa-spin"></i> Memuat iklan...
+                            </p>
                         </div>
 
                         <!-- Dots Navigasi -->
-                        <div class="ads-dots" id="adsDots">
-                            <span class="ads-dot active" data-index="0"></span>
-                            <span class="ads-dot" data-index="1"></span>
-                            <span class="ads-dot" data-index="2"></span>
-                        </div>
+                        <div class="ads-dots" id="adsDots"></div>
                     </div>
                 </div>
 
@@ -1257,74 +1215,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Ads Card Slider Animation Script (Card Bergeser Horizontal)
-            let currentAdIndex = 0;
-            const track = document.getElementById('adsTrack');
-            const slides = document.querySelectorAll('.ads-slide-item');
-            const dots = document.querySelectorAll('.ads-dot');
-            let adsInterval;
-
-            function updateAdsSlider() {
-                if (!track || !slides.length) return;
-                track.style.transform = `translateX(-${currentAdIndex * 100}%)`;
-                dots.forEach((dot, i) => {
-                    dot.classList.toggle('active', i === currentAdIndex);
-                });
-            }
-
-            function nextAdSlide() {
-                currentAdIndex = (currentAdIndex + 1) % slides.length;
-                updateAdsSlider();
-            }
-
-            function startAdsAutoplay() {
-                adsInterval = setInterval(nextAdSlide, 4500);
-            }
-
-            function stopAdsAutoplay() {
-                clearInterval(adsInterval);
-            }
-
-            if (slides.length > 0) {
-                dots.forEach(dot => {
-                    dot.addEventListener('click', (e) => {
-                        currentAdIndex = Number(e.target.getAttribute('data-index'));
-                        updateAdsSlider();
-                        stopAdsAutoplay();
-                        startAdsAutoplay();
-                    });
-                });
-
-                const sliderWrapper = document.getElementById('adsSliderWrapper');
-                if (sliderWrapper) {
-                    sliderWrapper.addEventListener('mouseenter', stopAdsAutoplay);
-                    sliderWrapper.addEventListener('mouseleave', startAdsAutoplay);
-
-                    // Touch support untuk swipe
-                    let touchStartX = 0;
-                    let touchEndX = 0;
-
-                    sliderWrapper.addEventListener('touchstart', e => {
-                        touchStartX = e.changedTouches[0].screenX;
-                        stopAdsAutoplay();
-                    }, {passive: true});
-
-                    sliderWrapper.addEventListener('touchend', e => {
-                        touchEndX = e.changedTouches[0].screenX;
-                        if (touchStartX - touchEndX > 40) {
-                            currentAdIndex = (currentAdIndex + 1) % slides.length;
-                            updateAdsSlider();
-                        } else if (touchEndX - touchStartX > 40) {
-                            currentAdIndex = (currentAdIndex - 1 + slides.length) % slides.length;
-                            updateAdsSlider();
-                        }
-                        startAdsAutoplay();
-                    }, {passive: true});
-                }
-
-                startAdsAutoplay();
-            }
-
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
             const mobileNavItems = document.querySelectorAll('#mobile-menu a.nav-item');
@@ -1391,6 +1281,128 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+
+        // Fetch & Render Ads Dinamis dari Firestore 'iklan'
+        async function fetchAndRenderAds() {
+            const track = document.getElementById('adsTrack');
+            const dotsContainer = document.getElementById('adsDots');
+            if (!track || !dotsContainer) return;
+
+            try {
+                const querySnapshot = await getDocs(collection(db, "iklan"));
+                if (querySnapshot.empty) {
+                    track.innerHTML = '<p style="text-align: center; width: 100%; color: var(--text-muted); padding: 2rem;">Belum ada iklan aktif.</p>';
+                    dotsContainer.innerHTML = '';
+                    return;
+                }
+
+                let slidesHTML = '';
+                let dotsHTML = '';
+                let index = 0;
+
+                querySnapshot.forEach((docSnap) => {
+                    const ad = docSnap.data();
+                    const activeClass = index === 0 ? 'active' : '';
+                    
+                    slidesHTML += `
+                        <div class="ads-slide-item">
+                            <a href="${ad.linkUrl || '#kontak'}" class="ads-card">
+                                <img src="${ad.imageUrl}" alt="${ad.judul || 'Iklan Sitenexs'}" class="ads-card-img" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(ad.judul || 'Iklan')}&background=2563eb&color=fff&size=600';">
+                                <div class="ads-card-content">
+                                    <span class="ads-card-tag"><i class="fas fa-star" style="color: #fbbf24;"></i> ${ad.tag || 'Promo'}</span>
+                                    <h4 class="ads-card-title">${ad.judul}</h4>
+                                    <p class="ads-card-desc">${ad.deskripsi}</p>
+                                    <span class="ads-card-action">${ad.actionText || 'Lihat Detail'} <i class="fas fa-arrow-right" style="font-size: 0.65rem;"></i></span>
+                                </div>
+                            </a>
+                        </div>
+                    `;
+
+                    dotsHTML += `<span class="ads-dot ${activeClass}" data-index="${index}"></span>`;
+                    index++;
+                });
+
+                track.innerHTML = slidesHTML;
+                dotsContainer.innerHTML = dotsHTML;
+
+                // Inisialisasi Slider Otomatis & Interaksi
+                initAdsSliderScript();
+
+            } catch (error) {
+                console.error("Gagal memuat iklan:", error);
+                track.innerHTML = '<p style="text-align: center; width: 100%; color: red; padding: 2rem;">Gagal memuat iklan.</p>';
+            }
+        }
+
+        function initAdsSliderScript() {
+            let currentAdIndex = 0;
+            const track = document.getElementById('adsTrack');
+            const slides = document.querySelectorAll('.ads-slide-item');
+            const dots = document.querySelectorAll('.ads-dot');
+            let adsInterval;
+
+            function updateAdsSlider() {
+                if (!track || !slides.length) return;
+                track.style.transform = `translateX(-${currentAdIndex * 100}%)`;
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === currentAdIndex);
+                });
+            }
+
+            function nextAdSlide() {
+                currentAdIndex = (currentAdIndex + 1) % slides.length;
+                updateAdsSlider();
+            }
+
+            function startAdsAutoplay() {
+                adsInterval = setInterval(nextAdSlide, 4500);
+            }
+
+            function stopAdsAutoplay() {
+                clearInterval(adsInterval);
+            }
+
+            if (slides.length > 0) {
+                dots.forEach(dot => {
+                    dot.addEventListener('click', (e) => {
+                        currentAdIndex = Number(e.target.getAttribute('data-index'));
+                        updateAdsSlider();
+                        stopAdsAutoplay();
+                        startAdsAutoplay();
+                    });
+                });
+
+                const sliderWrapper = document.getElementById('adsSliderWrapper');
+                if (sliderWrapper) {
+                    sliderWrapper.addEventListener('mouseenter', stopAdsAutoplay);
+                    sliderWrapper.addEventListener('mouseleave', startAdsAutoplay);
+
+                    let touchStartX = 0;
+                    let touchEndX = 0;
+
+                    sliderWrapper.addEventListener('touchstart', e => {
+                        touchStartX = e.changedTouches[0].screenX;
+                        stopAdsAutoplay();
+                    }, {passive: true});
+
+                    sliderWrapper.addEventListener('touchend', e => {
+                        touchEndX = e.changedTouches[0].screenX;
+                        if (touchStartX - touchEndX > 40) {
+                            currentAdIndex = (currentAdIndex + 1) % slides.length;
+                            updateAdsSlider();
+                        } else if (touchEndX - touchStartX > 40) {
+                            currentAdIndex = (currentAdIndex - 1 + slides.length) % slides.length;
+                            updateAdsSlider();
+                        }
+                        startAdsAutoplay();
+                    }, {passive: true});
+                }
+
+                startAdsAutoplay();
+            }
+        }
+
+        fetchAndRenderAds();
 
         const urlParams = new URLSearchParams(window.location.search);
         const urlUid = urlParams.get('uid');
