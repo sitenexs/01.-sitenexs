@@ -976,10 +976,10 @@
         });
     </script>
 
-    <script type="module">
+        <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getFirestore, collection, getDocs, doc, getDoc, query, limit } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
 
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
@@ -991,13 +991,24 @@
             measurementId: 'G-C7YL0Q7YRQ'
         };
 
-        const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
-        const avatarBucket = 'profile-photos';
-        
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // --- TANGKAP PERINTAH LOGOUT DARI SUBDOMAIN AKUN ---
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('logout') === 'true') {
+            localStorage.removeItem('sitenexs_logged_in');
+            localStorage.removeItem('sitenexs_uid');
+            localStorage.removeItem('sitenexs_show_welcome');
+            sessionStorage.clear();
+            
+            signOut(auth).catch(() => {});
+
+            // Bersihkan URL dan arahkan ke halaman sign-in
+            window.location.replace("https://account.sitenexs.com/sign-in/");
+        }
+          
         // Mendengarkan event postMessage dari halaman lain untuk sinkronisasi sesi secara real-time
         window.addEventListener('message', (event) => {
             if (event.data && event.data.type === 'sitenexs-auth-state') {
