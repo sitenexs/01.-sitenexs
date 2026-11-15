@@ -626,14 +626,14 @@
         messageInput.addEventListener('input', () => {
             if (!activeChatId || !currentUid) return;
 
-            // Kirim status mengetik true
+            // Menggunakan setDoc dengan merge true untuk memastikan dokumen chat terinisialisasi
             setDoc(doc(db, "chats", activeChatId), {
+                participants: [currentUid, activeChatUserId],
                 [`typing_${currentUid}`]: true
             }, { merge: true }).catch(() => {});
 
             if (typingTimeout) clearTimeout(typingTimeout);
 
-            // Jika berhenti mengetik selama 1.5 detik, set false
             typingTimeout = setTimeout(() => {
                 setDoc(doc(db, "chats", activeChatId), {
                     [`typing_${currentUid}`]: false
