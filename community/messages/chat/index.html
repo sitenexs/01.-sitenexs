@@ -146,24 +146,18 @@
         .chat-messages::-webkit-scrollbar { width: 5px; }
         .chat-messages::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 10px; }
 
-        /* ANIMASI MASUK PESAN (MESSAGE POP-IN & SLIDE UP) */
+        /* ANIMASI MASUK PESAN */
         @keyframes messageSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(14px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(14px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .message-bubble {
             max-width: 70%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
             line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-            flex-shrink: 0; cursor: pointer;
-            user-select: text; -webkit-user-select: text;
+            flex-shrink: 0; cursor: pointer; user-select: text; -webkit-user-select: text;
             animation: messageSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: transform 0.2s ease;
         }
 
         .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); align-self: flex-start; border-bottom-left-radius: 4px; transform-origin: bottom left; }
@@ -171,12 +165,29 @@
         .message-time { font-size: 0.65rem; opacity: 0.75; margin-top: 0.3rem; text-align: right; font-weight: 500; }
         .edited-tag { font-size: 0.6rem; opacity: 0.7; font-style: italic; margin-left: 4px; }
 
-        /* BANNER MODE EDIT */
-        #editModeBanner {
+        /* KUTIPAN REPLY DI DALAM BUBBLE */
+        .quoted-reply {
+            background: rgba(0, 0, 0, 0.06);
+            border-left: 3px solid var(--primary);
+            padding: 0.35rem 0.6rem;
+            margin-bottom: 0.4rem;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            opacity: 0.9;
+        }
+        .message-bubble.outgoing .quoted-reply {
+            background: rgba(255, 255, 255, 0.15);
+            border-left-color: #fff;
+        }
+        .quoted-reply-sender { font-weight: 700; margin-bottom: 0.1rem; }
+
+        /* BANNER MODE EDIT & REPLY */
+        #editModeBanner, #replyBanner {
             display: none; padding: 0.5rem 1.25rem; background: #fef3c7; border-bottom: 1px solid #fde68a;
             font-size: 0.8rem; font-weight: 600; color: #92400e; align-items: center; justify-content: space-between; flex-shrink: 0;
         }
-        #editModeBanner button { background: none; color: #92400e; cursor: pointer; font-size: 0.9rem; }
+        #replyBanner { background: var(--primary-light); border-bottom-color: var(--border-subtle); color: var(--primary-dark); }
+        #editModeBanner button, #replyBanner button { background: none; color: inherit; cursor: pointer; font-size: 0.9rem; }
 
         /* INPUT PESAN DI BAWAH */
         .chat-input-box {
@@ -267,6 +278,9 @@
             <div style="width: 40px; height: 4px; background: var(--border-medium); border-radius: 2px; margin: 0 auto 0.75rem auto;"></div>
             <div style="font-weight: 800; font-size: 1rem; color: var(--text-main); margin-bottom: 0.25rem; text-align: center;">Opsi Pesan</div>
             
+            <button class="action-btn" onclick="handleReplyMessage()">
+                <i class="fas fa-reply" style="color: var(--primary);"></i> Balas Pesan
+            </button>
             <button class="action-btn" onclick="handleCopyMessage()">
                 <i class="fas fa-copy" style="color: var(--primary);"></i> Salin Teks Pesan
             </button>
@@ -300,6 +314,12 @@
                 <div style="display: flex; gap: 0.4rem; flex-shrink: 0;">
                     <button type="button" class="btn btn-secondary btn-icon-only" title="Informasi Mitra" onclick="showToast('Fitur profil mitra aktif.')"><i class="fas fa-info"></i></button>
                 </div>
+            </div>
+
+            <!-- BANNER REPLY -->
+            <div id="replyBanner">
+                <div><i class="fas fa-reply"></i> Membalas <span id="replyTargetName" style="font-weight: 700;"></span>: <span id="replyTargetText" style="opacity: 0.85;"></span></div>
+                <button type="button" onclick="cancelReplyMode()"><i class="fas fa-times"></i></button>
             </div>
 
             <!-- BANNER EDIT PESAN -->
@@ -354,12 +374,17 @@
         let currentUid = null;
         let activeChatUserId = null;
         let activeChatId = null;
+        let otherUserName = "Mitra Sitenexs";
         let unsubscribeMessages = null;
+        let isInitialLoad = true; // Untuk mencegah suara berbunyi saat memuat riwayat awal
 
+        // Variabel untuk Edit, Hapus, & Reply
         let selectedMessageId = null;
         let selectedMessageText = "";
         let selectedMessageSender = "";
         let isEditing = false;
+        
+        let replyingTo = null; // Menyimpan data pesan yang sedang dibalas
 
         const urlParams = new URLSearchParams(window.location.search);
         const targetUserId = urlParams.get('to');
@@ -377,6 +402,39 @@
             toast.innerHTML = `<i class="fas fa-check-circle" style="color: var(--accent); font-size: 1rem;"></i> <span>${msg}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 3200);
+        }
+
+        // --- EFEK SUARA NOTIFIKASI (WEB AUDIO API) ---
+        function playChatSound(type) {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'send') {
+                    // Nada naik (Chime terkirim)
+                    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12); // A5
+                    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.15);
+                } else if (type === 'receive') {
+                    // Dua nada lembut (Pesan diterima)
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+                    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.08); // G5
+                    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.22);
+                }
+            } catch (e) {
+                // Audio diblokir browser sebelum user interaksi pertama, diabaikan dengan aman
+            }
         }
 
         function escapeHtml(text) {
@@ -400,19 +458,18 @@
             const participants = [currentUid, activeChatUserId].sort();
             activeChatId = `${participants[0]}_${participants[1]}`;
 
-            let otherName = "Mitra Sitenexs";
             try {
                 const userSnap = await getDoc(doc(db, "users", activeChatUserId));
                 if (userSnap.exists()) {
                     const d = userSnap.data();
-                    otherName = d.namaLengkap || (d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '')) || otherName;
+                    otherUserName = d.namaLengkap || (d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '')) || otherUserName;
                 }
             } catch(e) {}
 
             const avatarUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(activeChatUserId)}/profile-photo`;
-            const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(otherName)}&background=2563eb&color=fff`;
+            const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUserName)}&background=2563eb&color=fff`;
 
-            document.getElementById('activeChatName').innerText = otherName;
+            document.getElementById('activeChatName').innerText = otherUserName;
             const headerAvatar = document.getElementById('activeChatAvatar');
             headerAvatar.src = avatarUrl;
             headerAvatar.onerror = () => { headerAvatar.src = fallbackAvatar; };
@@ -422,16 +479,17 @@
 
             if (unsubscribeMessages) unsubscribeMessages();
 
+            let previousDocCount = 0;
+
             unsubscribeMessages = onSnapshot(qMsgs, (snapshot) => {
                 const messagesContainer = document.getElementById('chatMessages');
                 const loadingState = document.getElementById('loadingState');
                 if (loadingState) loadingState.remove();
 
                 const existingBubbles = messagesContainer.querySelectorAll('.message-bubble');
-                const existingIds = new Set(Array.from(existingBubbles).map(b => b.dataset.id));
                 const incomingIds = new Set(snapshot.docs.map(d => d.id));
 
-                // 1. Hapus pesan yang sudah dihapus dari database
+                // 1. Hapus pesan yang sudah dihapus di database
                 existingBubbles.forEach(bubble => {
                     if (!incomingIds.has(bubble.dataset.id)) {
                         bubble.remove();
@@ -443,8 +501,9 @@
                     shouldScrollToBottom = true;
                 }
 
-                // 2. Tambah/Perbarui pesan secara incremental tanpa kedip
+                let docIndex = 0;
                 snapshot.forEach(docSnap => {
+                    docIndex++;
                     const m = docSnap.data();
                     const msgId = docSnap.id;
                     const isOutgoing = m.senderUid === currentUid;
@@ -455,35 +514,81 @@
                     const existingBubble = messagesContainer.querySelector(`[data-id="${msgId}"]`);
 
                     if (existingBubble) {
-                        const textNode = existingBubble.querySelector('div');
+                        // Update teks jika diedit
+                        const textContentDiv = existingBubble.querySelector('.message-content-text');
                         const expectedHtml = `${escapeHtml(m.text)} ${editedLabel}`;
-                        if (textNode.innerHTML !== expectedHtml) {
-                            textNode.innerHTML = expectedHtml;
+                        if (textContentDiv && textContentDiv.innerHTML !== expectedHtml) {
+                            textContentDiv.innerHTML = expectedHtml;
                             existingBubble.dataset.text = safeText;
                         }
                     } else {
+                        // Pesan baru masuk / terkirim
                         shouldScrollToBottom = true;
+                        
+                        // Bunyikan suara terima jika pesan baru dari orang lain dan bukan saat initial load
+                        if (!isInitialLoad && docIndex > previousDocCount && m.senderUid !== currentUid) {
+                            playChatSound('receive');
+                        }
+
                         const bubbleDiv = document.createElement('div');
                         bubbleDiv.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
                         bubbleDiv.setAttribute('data-id', msgId);
                         bubbleDiv.setAttribute('data-sender', m.senderUid);
                         bubbleDiv.setAttribute('data-text', safeText);
 
+                        let replyHtml = '';
+                        if (m.replyTo) {
+                            const replySenderLabel = m.replyTo.senderUid === currentUid ? 'Anda' : otherUserName;
+                            replyHtml = `
+                                <div class="quoted-reply">
+                                    <div class="quoted-reply-sender">${replySenderLabel}</div>
+                                    <div>${escapeHtml(m.replyTo.text)}</div>
+                                </div>
+                            `;
+                        }
+
                         bubbleDiv.innerHTML = `
-                            <div>${escapeHtml(m.text)} ${editedLabel}</div>
+                            ${replyHtml}
+                            <div class="message-content-text">${escapeHtml(m.text)} ${editedLabel}</div>
                             <div class="message-time">${timeStr}</div>
                         `;
 
-                        bubbleDiv.addEventListener('contextmenu', (e) => openActionModal(e, msgId, m.senderUid, safeText));
-                        bubbleDiv.addEventListener('touchstart', (e) => startTouchTimer(e, msgId, m.senderUid, safeText));
-                        bubbleDiv.addEventListener('touchend', clearTouchTimer);
+                        // --- SWIPE TO REPLY HANDLERS ---
+                        let startX = 0;
+                        let currentX = 0;
+                        bubbleDiv.addEventListener('touchstart', (e) => {
+                            startX = e.touches[0].clientX;
+                            startTouchTimer(e, msgId, m.senderUid, safeText);
+                        }, {passive: true});
+
+                        bubbleDiv.addEventListener('touchmove', (e) => {
+                            currentX = e.touches[0].clientX;
+                            const diff = currentX - startX;
+                            if (diff > 20 && diff < 100) {
+                                bubbleDiv.style.transform = `translateX(${diff}px)`;
+                            }
+                        }, {passive: true});
+
+                        bubbleDiv.addEventListener('touchend', (e) => {
+                            clearTouchTimer();
+                            const diff = currentX - startX;
+                            bubbleDiv.style.transform = 'translateX(0px)';
+                            if (diff > 60) {
+                                triggerReplyMode(m.senderUid === currentUid ? 'Anda' : otherUserName, m.text, msgId);
+                            }
+                        });
+
                         bubbleDiv.addEventListener('mousedown', (e) => startMouseTimer(e, msgId, m.senderUid, safeText));
                         bubbleDiv.addEventListener('mouseup', clearMouseTimer);
                         bubbleDiv.addEventListener('mouseleave', clearMouseTimer);
+                        bubbleDiv.addEventListener('contextmenu', (e) => openActionModal(e, msgId, m.senderUid, safeText));
 
                         messagesContainer.appendChild(bubbleDiv);
                     }
                 });
+
+                previousDocCount = snapshot.size;
+                isInitialLoad = false;
 
                 if (shouldScrollToBottom) {
                     messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -546,7 +651,25 @@
             if (pressTimer) clearTimeout(pressTimer);
         }
 
-        // --- AKSI MENU ---
+        // --- MENU AKSI & REPLY ---
+        window.handleReplyMessage = function() {
+            closeActionModal();
+            triggerReplyMode(selectedMessageSender === currentUid ? 'Anda' : otherUserName, selectedMessageText, selectedMessageId);
+        }
+
+        window.triggerReplyMode = function(senderName, text, msgId) {
+            replyingTo = { id: msgId, senderUid: selectedMessageSender, text: text };
+            document.getElementById('replyTargetName').innerText = senderName;
+            document.getElementById('replyTargetText').innerText = text.length > 35 ? text.substring(0, 35) + '...' : text;
+            document.getElementById('replyBanner').style.display = 'flex';
+            document.getElementById('messageInput').focus();
+        }
+
+        window.cancelReplyMode = function() {
+            replyingTo = null;
+            document.getElementById('replyBanner').style.display = 'none';
+        }
+
         window.handleCopyMessage = function() {
             navigator.clipboard.writeText(selectedMessageText).then(() => {
                 showToast("Pesan berhasil disalin ke clipboard.");
@@ -559,6 +682,7 @@
         window.handleStartEdit = function() {
             closeActionModal();
             isEditing = true;
+            cancelReplyMode();
             document.getElementById('editModeBanner').style.display = 'flex';
             const inputEl = document.getElementById('messageInput');
             inputEl.value = selectedMessageText;
@@ -616,6 +740,8 @@
                 }
             } else {
                 try {
+                    playChatSound('send'); // Bunyikan suara terkirim
+
                     const chatDocRef = doc(db, "chats", activeChatId);
                     const chatSnap = await getDoc(chatDocRef);
 
@@ -632,12 +758,23 @@
                         }, { merge: true });
                     }
 
-                    await addDoc(collection(db, "chats", activeChatId, "messages"), {
+                    const messageData = {
                         senderUid: currentUid,
                         text: text,
                         createdAt: serverTimestamp(),
                         isEdited: false
-                    });
+                    };
+
+                    if (replyingTo) {
+                        messageData.replyTo = {
+                            id: replyingTo.id,
+                            senderUid: replyingTo.senderUid,
+                            text: replyingTo.text
+                        };
+                        cancelReplyMode();
+                    }
+
+                    await addDoc(collection(db, "chats", activeChatId, "messages"), messageData);
 
                 } catch (err) {
                     console.error("Gagal mengirim pesan:", err);
