@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- DINAMIS META SEO (DIUPDATE OLEH JAVASCRIPT JIKA MEMBUKA PERMALINK) -->
+    <!-- DINAMIS META SEO -->
     <title id="metaTitle">Forum Diskusi Komunitas — Sitenexs</title>
     <meta id="metaDesc" name="description" content="Forum diskusi resmi Sitenexs. Tempat berdiskusi, bertanya, dan berbagi pengalaman bagi seluruh mitra dan pengguna terdaftar Sitenexs.">
     
@@ -595,7 +595,7 @@
             }, 3000);
         };
 
-        // --- MODE FOKUS KARTU (PENGGANTI HIGHLIGHT HIJAU) ---
+        // --- MODE FOKUS KARTU ---
         window.activateFocusMode = function(card) {
             document.querySelectorAll('.post-card').forEach(c => c.classList.remove('focused-card'));
             card.classList.add('focused-card');
@@ -608,7 +608,7 @@
             document.querySelectorAll('.post-card').forEach(c => c.classList.remove('focused-card'));
         }
 
-        // --- SALIN TAUTAN & AKTIFKAN MODE FOKUS ---
+        // --- SALIN TAUTAN & AKTIFKAN MODE FOKUS (TANPA GARIS HIJAU) ---
         window.copyPermalink = function(postId, event) {
             event.stopPropagation();
             const link = `https://sitenexs.com/community/?post=${postId}`;
@@ -1073,7 +1073,6 @@
             const commentsDisabled = data.commentsDisabled === true;
             const hideStats = data.hideStats === true;
             const isPrioritized = data.isPrioritized === true;
-            const isPermalinkTarget = (postId === permalinkPostId);
 
             const dateObj = data.createdAt ? data.createdAt.toDate() : new Date();
             const waktuString = timeAgo(dateObj);
@@ -1205,7 +1204,7 @@
                     </div>
 
                     ${!commentsDisabled ? `
-                    <div class="comments-section ${isPermalinkTarget ? 'active' : ''}" id="comments-${postId}">
+                    <div class="comments-section" id="comments-${postId}">
                         <div class="comment-list">
                             ${commentsHtml}
                         </div>
