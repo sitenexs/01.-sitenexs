@@ -308,11 +308,11 @@
             </div>
 
             <!-- INPUT PESAN BAWAH -->
-            <form class="chat-input-box" id="sendMessageForm" onsubmit="handleChatFormSubmit(event)">
+            <form class="chat-input-box" id="sendMessageForm" onsubmit="handleChatFormSubmit(event)" autocomplete="off">
                 <div class="chat-input-actions">
                     <button type="button" title="Lampirkan File" onclick="showToast('Lampiran file akan segera hadir.')"><i class="fas fa-paperclip"></i></button>
                 </div>
-                <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." required autocomplete="off">
+                <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." required autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false" name="chat_msg_input">
                 <button type="submit" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane" id="sendBtnIcon"></i></button>
             </form>
         </div>
