@@ -276,10 +276,11 @@
                     <p style="font-size: 0.88rem; max-width: 320px; color: var(--text-muted);">Pilih percakapan di samping atau kunjungi profil anggota komunitas untuk mulai berinteraksi langsung.</p>
                 </div>
 
-                <div id="activeChatContainer" style="display: none; display: flex; flex-direction: column; height: 100%;">
+                <!-- Kontainer chat aktif (Disembunyikan secara default menggunakan display: none) -->
+                <div id="activeChatContainer" style="display: none; flex-direction: column; height: 100%;">
                     <div class="chat-header">
                         <div class="chat-header-left">
-                            <button type="button" class="btn btn-secondary btn-icon-only" id="backToSidebarBtn" style="display: none;"><i class="fas fa-arrow-left"></i></button>
+                            <button type="button" class="btn btn-secondary btn-icon-only" id="backToSidebarBtn"><i class="fas fa-arrow-left"></i></button>
                             <div style="position: relative;">
                                 <img id="activeChatAvatar" src="" class="chat-header-avatar" alt="Avatar">
                                 <span class="status-dot" style="bottom: 0; right: 0;"></span>
@@ -487,7 +488,6 @@
 
             if (window.innerWidth <= 768) {
                 document.getElementById('chatSidebar').classList.add('hidden-mobile');
-                document.getElementById('backToSidebarBtn').style.display = 'inline-flex';
             }
 
             // Highlight active in list
@@ -585,7 +585,8 @@
 
         document.getElementById('backToSidebarBtn').addEventListener('click', () => {
             document.getElementById('chatSidebar').classList.remove('hidden-mobile');
-            document.getElementById('chatMain').classList.add('hidden-mobile');
+            document.getElementById('activeChatContainer').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'flex';
         });
     </script>
 </body>
