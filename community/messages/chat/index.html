@@ -122,7 +122,7 @@
         .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); flex-shrink: 0; }
         .chat-header-name { font-weight: 850; font-size: 0.98rem; color: var(--text-main); letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* ISI CHAT YANG BERGERAK/SCROLL */
+        /* ISI CHAT DENGAN LATAR BELAKANG POLA TITIK HALUS & GRADASI */
         .chat-messages {
             flex: 1 1 auto; 
             min-height: 0;
@@ -131,7 +131,12 @@
             display: flex; 
             flex-direction: column; 
             gap: 0.75rem;
-            background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
+            background-color: #f8fafc;
+            background-image: 
+                radial-gradient(rgba(37, 99, 235, 0.08) 1px, transparent 1px),
+                radial-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+            background-size: 24px 24px;
+            background-position: 0 0, 12px 12px;
             -webkit-overflow-scrolling: touch;
         }
         .chat-messages::-webkit-scrollbar { width: 5px; }
@@ -139,13 +144,13 @@
 
         .message-bubble {
             max-width: 70%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
-            line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
             animation: fadeIn 0.2s ease-out; flex-shrink: 0;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-        .message-bubble.incoming { background: #fff; color: var(--text-main); border: 1px solid var(--border-subtle); align-self: flex-start; border-bottom-left-radius: 4px; }
-        .message-bubble.outgoing { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .message-bubble.outgoing { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
         .message-time { font-size: 0.65rem; opacity: 0.75; margin-top: 0.3rem; text-align: right; font-weight: 500; }
 
         /* INPUT PESAN DI BAWAH (MENETAP) */
@@ -233,7 +238,7 @@
 
             <!-- ISI PESAN (BISA DIGULIR/SCROLL) -->
             <div class="chat-messages" id="chatMessages">
-                <div style="text-align: center; margin: auto; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+                <div style="text-align: center; margin: auto; padding: 2rem; color: var(--text-muted); font-size: 0.9rem; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px); border-radius: var(--radius-lg);">
                     <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom: 0.75rem;"></i>
                     <div>Memuat pesan...</div>
                 </div>
@@ -336,7 +341,7 @@
 
                 if (snapshot.empty) {
                     messagesContainer.innerHTML = `
-                        <div style="text-align: center; margin: auto; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+                        <div style="text-align: center; margin: auto; padding: 2rem; color: var(--text-muted); font-size: 0.9rem; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px); border-radius: var(--radius-lg);">
                             <i class="far fa-paper-plane fa-3x" style="color: var(--border-medium); margin-bottom: 0.75rem;"></i>
                             <div style="font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">Belum ada pesan</div>
                             <div>Kirim salam atau mulai diskusi bisnis dengan ${otherName}!</div>
