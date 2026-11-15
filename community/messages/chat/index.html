@@ -162,6 +162,30 @@
         .chat-messages::-webkit-scrollbar { width: 5px; }
         .chat-messages::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 10px; }
 
+        /* WRAPPER BUBBLE PESAN DENGAN INDIKATOR SWIPE REPLY DI BELAKANGNYA */
+        .message-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            flex-shrink: 0;
+        }
+        .message-wrapper.incoming { align-items: flex-start; }
+        .message-wrapper.outgoing { align-items: flex-end; }
+
+        .swipe-reply-indicator {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 0.95rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+
         /* ANIMASI MASUK PESAN */
         @keyframes messageSlideIn {
             from { opacity: 0; transform: translateY(14px) scale(0.95); }
@@ -171,13 +195,15 @@
         .message-bubble {
             max-width: 70%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
             line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-            flex-shrink: 0; cursor: pointer; user-select: text; -webkit-user-select: text;
+            cursor: pointer; user-select: text; -webkit-user-select: text;
             animation: messageSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            transition: transform 0.2s ease;
+            touch-action: pan-y;
+            z-index: 2;
+            background: #fff;
         }
 
-        .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); align-self: flex-start; border-bottom-left-radius: 4px; transform-origin: bottom left; }
-        .message-bubble.outgoing { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); transform-origin: bottom right; }
+        .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); border-bottom-left-radius: 4px; transform-origin: bottom left; }
+        .message-bubble.outgoing { background: var(--primary); color: #fff; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); transform-origin: bottom right; }
         .message-time { font-size: 0.65rem; opacity: 0.75; margin-top: 0.3rem; text-align: right; font-weight: 500; }
         .edited-tag { font-size: 0.6rem; opacity: 0.7; font-style: italic; margin-left: 4px; }
 
@@ -556,12 +582,13 @@
                 const loadingState = document.getElementById('loadingState');
                 if (loadingState) loadingState.remove();
 
-                const existingBubbles = messagesContainer.querySelectorAll('.message-bubble');
+                const existingWrappers = messagesContainer.querySelectorAll('.message-wrapper');
                 const incomingIds = new Set(snapshot.docs.map(d => d.id));
 
-                existingBubbles.forEach(bubble => {
+                existingWrappers.forEach(wrapper => {
+                    const bubble = wrapper.querySelector('.message-bubble');
                     if (!incomingIds.has(bubble.dataset.id)) {
-                        bubble.remove();
+                        wrapper.remove();
                     }
                 });
 
@@ -580,14 +607,14 @@
                     const editedLabel = m.isEdited ? '<span class="edited-tag">(diedit)</span>' : '';
                     const safeText = (m.text || '').replace(/'/g, "&#39;").replace(/"/g, "&quot;");
 
-                    const existingBubble = messagesContainer.querySelector(`[data-id="${msgId}"]`);
+                    const existingWrapper = messagesContainer.querySelector(`[data-id="${msgId}"]`)?.closest('.message-wrapper');
 
-                    if (existingBubble) {
-                        const textContentDiv = existingBubble.querySelector('.message-content-text');
+                    if (existingWrapper) {
+                        const textContentDiv = existingWrapper.querySelector('.message-content-text');
                         const expectedHtml = `${escapeHtml(m.text)} ${editedLabel}`;
                         if (textContentDiv && textContentDiv.innerHTML !== expectedHtml) {
                             textContentDiv.innerHTML = expectedHtml;
-                            existingBubble.dataset.text = safeText;
+                            existingWrapper.querySelector('.message-bubble').dataset.text = safeText;
                         }
                     } else {
                         shouldScrollToBottom = true;
@@ -595,6 +622,14 @@
                         if (!isInitialLoad && docIndex > previousDocCount && m.senderUid !== currentUid) {
                             playChatSound('receive');
                         }
+
+                        // Buat Wrapper untuk mendukung efek geser (swipe-to-reply)
+                        const wrapperDiv = document.createElement('div');
+                        wrapperDiv.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
+
+                        const indicatorDiv = document.createElement('div');
+                        indicatorDiv.className = 'swipe-reply-indicator';
+                        indicatorDiv.innerHTML = '<i class="fas fa-reply"></i>';
 
                         const bubbleDiv = document.createElement('div');
                         bubbleDiv.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
@@ -619,25 +654,42 @@
                             <div class="message-time">${timeStr}</div>
                         `;
 
+                        wrapperDiv.appendChild(indicatorDiv);
+                        wrapperDiv.appendChild(bubbleDiv);
+
+                        // --- SWIPE TO REPLY DENGAN GESER GELEMBUNG CHAT ---
                         let startX = 0;
                         let currentX = 0;
+                        let isSwiping = false;
+
                         bubbleDiv.addEventListener('touchstart', (e) => {
                             startX = e.touches[0].clientX;
+                            isSwiping = true;
                             startTouchTimer(e, msgId, m.senderUid, safeText);
                         }, {passive: true});
 
                         bubbleDiv.addEventListener('touchmove', (e) => {
+                            if (!isSwiping) return;
                             currentX = e.touches[0].clientX;
                             const diff = currentX - startX;
-                            if (diff > 20 && diff < 100) {
+                            if (diff > 0 && diff < 110) {
                                 bubbleDiv.style.transform = `translateX(${diff}px)`;
+                                indicatorDiv.style.opacity = Math.min(diff / 60, 1);
                             }
                         }, {passive: true});
 
                         bubbleDiv.addEventListener('touchend', (e) => {
                             clearTouchTimer();
+                            isSwiping = false;
                             const diff = currentX - startX;
+                            bubbleDiv.style.transition = 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)';
                             bubbleDiv.style.transform = 'translateX(0px)';
+                            indicatorDiv.style.opacity = '0';
+                            
+                            setTimeout(() => {
+                                bubbleDiv.style.transition = '';
+                            }, 200);
+
                             if (diff > 60) {
                                 triggerReplyMode(m.senderUid === currentUid ? 'Anda' : otherUserName, m.text, msgId);
                             }
@@ -649,7 +701,7 @@
                         bubbleDiv.addEventListener('contextmenu', (e) => openActionModal(e, msgId, m.senderUid, safeText));
 
                         const typingBubble = document.getElementById('typingIndicatorBubble');
-                        messagesContainer.insertBefore(bubbleDiv, typingBubble);
+                        messagesContainer.insertBefore(wrapperDiv, typingBubble);
                     }
                 });
 
