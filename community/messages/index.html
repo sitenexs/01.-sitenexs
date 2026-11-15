@@ -278,18 +278,21 @@
                     return;
                 }
 
-                // GABUNGKAN CHAT BERDASARKAN OTHERUID UNTUK MENCEGAH DUPLIKASI KONTAK
+                // DEDUPLIKASI KETAT BERDASARKAN CLEAN OTHERUID MENGGUNAKAN MAP
                 const chatsMap = new Map();
                 snapshot.forEach(docSnap => {
                     const chatData = docSnap.data();
-                    const otherUid = chatData.participants.find(p => p !== uid);
-                    if (!otherUid) return;
+                    if (!chatData.participants || !Array.isArray(chatData.participants)) return;
+
+                    const rawOtherUid = chatData.participants.find(p => String(p).trim() !== String(uid).trim());
+                    if (!rawOtherUid) return;
+                    const otherUid = String(rawOtherUid).trim();
 
                     const currentMillis = chatData.lastTimestamp?.toMillis() || 0;
                     const existing = chatsMap.get(otherUid);
                     const existingMillis = existing?.lastTimestamp?.toMillis() || 0;
 
-                    if (!existing || currentMillis > existingMillis) {
+                    if (!existing || currentMillis >= existingMillis) {
                         chatsMap.set(otherUid, { id: docSnap.id, otherUid, ...chatData });
                     }
                 });
@@ -335,8 +338,9 @@
         // Listener real-time per chat untuk status typing & unread status
         function setupRealtimeSublisteners(chats, uid) {
             chats.forEach(chat => {
-                const otherUid = chat.participants.find(p => p !== uid);
-                if (!otherUid) return;
+                const rawOtherUid = chat.participants.find(p => String(p).trim() !== String(uid).trim());
+                if (!rawOtherUid) return;
+                const otherUid = String(rawOtherUid).trim();
 
                 if (unsubscribesMap[chat.id]) {
                     unsubscribesMap[chat.id]();
