@@ -30,19 +30,13 @@
             --text-muted: #64748b;
             --border-subtle: #e2e8f0;
             --border-medium: #cbd5e1;
-            --border-accent: #93c5fd;
             --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04);
             --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.07), 0 8px 10px -6px rgba(15, 23, 42, 0.07);
-            --shadow-lg: 0 20px 35px -10px rgba(15, 23, 42, 0.12);
-            --radius-sm: 0.5rem;
-            --radius-md: 0.75rem;
-            --radius-lg: 1rem;
-            --radius-xl: 1.25rem;
             --radius-full: 9999px;
+            --radius-xl: 1.25rem;
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* SISTEM TEMA PAKET */
         body[data-package="pro"] {
             --primary: #0284c7;
             --primary-dark: #0369a1;
@@ -65,21 +59,20 @@
             color: var(--text-main);
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
         }
 
         a { text-decoration: none; color: inherit; }
         ul { list-style: none; }
-        button, input, textarea { font-family: inherit; outline: none; border: none; }
+        button, input { font-family: inherit; outline: none; border: none; }
 
-        .container { width: 100%; max-width: 1024px; margin: 0 auto; padding: 0 1rem; }
+        .container { width: 100%; max-width: 800px; margin: 0 auto; padding: 0 1rem; }
 
         /* NAVBAR */
         #navbar {
             position: sticky; top: 0; z-index: 1000; background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);
         }
-        .nav-container { display: flex; align-items: center; justify-content: space-between; height: 64px; width: 100%; max-width: 1024px; margin: 0 auto; padding: 0 1.25rem; }
+        .nav-container { display: flex; align-items: center; justify-content: space-between; height: 64px; width: 100%; max-width: 800px; margin: 0 auto; padding: 0 1.25rem; }
         .logo { display: flex; align-items: center; gap: 0.65rem; font-weight: 800; font-size: 1.1rem; color: var(--text-main); }
         .logo img { height: 32px; width: 32px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .logo-text { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; font-weight: 800; letter-spacing: -0.5px; }
@@ -95,165 +88,57 @@
         .btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
         .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
         .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-        .btn-icon-only { width: 38px; height: 38px; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
 
-        /* CHAT APP LAYOUT */
-        .chat-wrapper {
-            display: grid; grid-template-columns: 340px 1fr; gap: 0;
-            max-width: 1024px; margin: 1.5rem auto 2.5rem auto; height: calc(100vh - 115px);
-            background: #fff; border: 1px solid var(--border-subtle); border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-md); overflow: hidden;
+        /* INBOX WRAPPER */
+        .inbox-wrapper {
+            max-width: 800px; margin: 1.5rem auto 2.5rem auto; background: #fff;
+            border: 1px solid var(--border-subtle); border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md); overflow: hidden; min-height: calc(100vh - 115px);
+            display: flex; flex-direction: column;
         }
 
-        /* SIDEBAR DAFTAR PERCAKAPAN */
-        .chat-sidebar {
-            border-right: 1px solid var(--border-subtle); display: flex; flex-direction: column; background: var(--bg-card);
-            height: 100%; overflow: hidden;
-        }
-        .sidebar-header { 
-            padding: 1.25rem 1.25rem 0.85rem 1.25rem; border-bottom: 1px solid var(--border-subtle); 
+        .inbox-header { 
+            padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-subtle); 
             display: flex; flex-direction: column; gap: 0.85rem; background: #fff; flex-shrink: 0;
         }
-        .sidebar-title-row { display: flex; align-items: center; justify-content: space-between; font-weight: 800; font-size: 1.05rem; color: var(--text-main); }
+        .inbox-title-row { display: flex; align-items: center; justify-content: space-between; font-weight: 800; font-size: 1.15rem; color: var(--text-main); }
         
         /* SEARCH BOX */
         .search-box-wrapper { position: relative; width: 100%; }
         .search-box-wrapper input {
-            width: 100%; padding: 0.55rem 0.85rem 0.55rem 2.3rem; background: var(--bg-body);
-            border: 1px solid var(--border-subtle); border-radius: var(--radius-full); font-size: 0.82rem;
+            width: 100%; padding: 0.65rem 1rem 0.65rem 2.5rem; background: var(--bg-body);
+            border: 1px solid var(--border-subtle); border-radius: var(--radius-full); font-size: 0.88rem;
             color: var(--text-main); transition: var(--transition);
         }
         .search-box-wrapper input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-        .search-box-wrapper i { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem; }
+        .search-box-wrapper i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem; }
 
         .conversations-list { flex: 1; overflow-y: auto; padding: 0.5rem 0; }
-        .conversations-list::-webkit-scrollbar, .chat-messages::-webkit-scrollbar { width: 5px; }
-        .conversations-list::-webkit-scrollbar-thumb, .chat-messages::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 10px; }
+        .conversations-list::-webkit-scrollbar { width: 5px; }
+        .conversations-list::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 10px; }
 
         .conversation-item {
-            display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1.25rem;
+            display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem;
             cursor: pointer; transition: var(--transition); position: relative; border-bottom: 1px solid #f8fafc;
         }
         .conversation-item:hover { background: #f8fafc; }
-        .conversation-item.active { background: var(--primary-light); border-left: 4px solid var(--primary); }
         
         .conv-avatar-wrap { position: relative; flex-shrink: 0; }
-        .conv-avatar { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); }
+        .conv-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); }
         .status-dot {
-            position: absolute; bottom: 2px; right: 2px; width: 11px; height: 11px;
+            position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px;
             background: var(--accent); border: 2px solid #fff; border-radius: 50%;
         }
 
         .conv-info { flex: 1; min-width: 0; }
-        .conv-name-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem; }
-        .conv-name { font-weight: 700; font-size: 0.9rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .conv-time { font-size: 0.7rem; color: var(--text-muted); flex-shrink: 0; }
-        .conv-last-msg { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* AREA RUANG CHAT UTAMA */
-        .chat-main { display: flex; flex-direction: column; background: #fafbfc; height: 100%; position: relative; overflow: hidden; }
-        
-        .chat-header {
-            padding: 0.85rem 1.5rem; background: #fff; border-bottom: 1px solid var(--border-subtle);
-            display: flex; align-items: center; justify-content: space-between; z-index: 10; box-shadow: var(--shadow-sm); flex-shrink: 0;
-        }
-        .chat-header-left { display: flex; align-items: center; gap: 0.85rem; }
-        .chat-header-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); }
-        .chat-header-name { font-weight: 850; font-size: 0.95rem; color: var(--text-main); }
-        .chat-header-status { font-size: 0.75rem; color: var(--accent); font-weight: 600; display: flex; align-items: center; gap: 0.35rem; }
-
-        .chat-messages {
-            flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.85rem;
-            background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
-        }
-
-        .message-bubble {
-            max-width: 65%; padding: 0.75rem 1rem; border-radius: var(--radius-lg); font-size: 0.88rem;
-            line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            animation: fadeIn 0.2s ease-out;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-
-        .message-bubble.incoming { background: #fff; color: var(--text-main); border: 1px solid var(--border-subtle); align-self: flex-start; border-bottom-left-radius: 4px; }
-        .message-bubble.outgoing { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
-        .message-time { font-size: 0.65rem; opacity: 0.75; margin-top: 0.3rem; text-align: right; font-weight: 500; }
-
-        /* INPUT PESAN */
-        .chat-input-box {
-            padding: 1rem 1.5rem; background: #fff; border-top: 1px solid var(--border-subtle);
-            display: flex; align-items: center; gap: 0.85rem; box-shadow: 0 -4px 12px rgba(0,0,0,0.02); flex-shrink: 0;
-        }
-        .chat-input-actions { display: flex; gap: 0.5rem; color: var(--text-muted); }
-        .chat-input-actions button { background: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; transition: var(--transition); padding: 0.25rem; }
-        .chat-input-actions button:hover { color: var(--primary); }
-
-        .chat-input {
-            flex: 1; padding: 0.75rem 1.15rem; background: var(--bg-body); border: 1px solid var(--border-medium);
-            border-radius: var(--radius-full); font-size: 0.88rem; color: var(--text-main); transition: var(--transition);
-        }
-        .chat-input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-        
-        .chat-send-btn {
-            width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: #fff;
-            display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); flex-shrink: 0;
-        }
-        .chat-send-btn:hover { background: var(--primary-dark); transform: scale(1.05); }
-
-        .empty-chat-state {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100%; color: var(--text-muted); text-align: center; padding: 2.5rem; background: #fff;
-        }
-        .empty-icon-wrap {
-            width: 72px; height: 72px; border-radius: 50%; background: var(--primary-light);
-            display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.8rem; margin-bottom: 1.25rem;
-            box-shadow: inset 0 2px 4px rgba(37, 99, 235, 0.1);
-        }
+        .conv-name-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
+        .conv-name { font-weight: 750; font-size: 0.98rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .conv-time { font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0; }
+        .conv-last-msg { font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         /* TOAST */
         #toastContainer { position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 0.5rem; max-width: 340px; }
-        .toast { background: #0f172a; color: #fff; padding: 0.85rem 1.15rem; border-radius: var(--radius-md); font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 0.75rem; border-left: 4px solid var(--accent); animation: slideIn 0.3s ease; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
-
-        /* RESPONSIVITAS SELULER */
-        @media (max-width: 768px) {
-            body { background-color: #fff; }
-            .container { padding: 0; }
-            .chat-wrapper { 
-                grid-template-columns: 1fr; 
-                height: calc(100vh - 64px); 
-                margin: 0; 
-                border: none; 
-                border-radius: 0; 
-                box-shadow: none; 
-            }
-            .chat-sidebar { 
-                display: flex; 
-                width: 100%; 
-                height: 100%; 
-            }
-            .chat-sidebar.hidden-mobile { 
-                display: none !important; 
-            }
-            .chat-main { 
-                width: 100%; 
-                height: 100%; 
-            }
-            .chat-main.hidden-mobile { 
-                display: none !important; 
-            }
-            .message-bubble { 
-                max-width: 85%; 
-            }
-        }
-
-        /* MEMASTIKAN TAMPILAN DESKTOP AMAN DARI OVERRIDE */
-        @media (min-width: 769px) {
-            .chat-sidebar.hidden-mobile,
-            .chat-main.hidden-mobile {
-                display: flex !important;
-            }
-        }
+        .toast { background: #0f172a; color: #fff; padding: 0.85rem 1.15rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 0.75rem; border-left: 4px solid var(--accent); }
     </style>
 </head>
 <body data-package="basic">
@@ -268,87 +153,40 @@
                 <span class="logo-text">Sitenexs Chat</span>
             </a>
             <div class="nav-actions">
-                <a href="https://sitenexs.com/community/" class="btn btn-secondary btn-sm" title="Komunitas"><i class="fas fa-users"></i> <span style="display: none; @media(min-width: 576px){display:inline;}">Komunitas</span></a>
+                <a href="https://sitenexs.com/community/" class="btn btn-secondary btn-sm" title="Komunitas"><i class="fas fa-users"></i> Komunitas</a>
                 <a href="https://account.sitenexs.com/profile" class="btn btn-primary btn-sm"><i class="fas fa-user-circle"></i> Profil</a>
             </div>
         </div>
     </header>
 
-    <!-- KONTEN CHAT -->
-    <main class="container" style="max-width: 1024px; padding: 0;">
-        <div class="chat-wrapper">
+    <!-- KONTEN INBOX -->
+    <main class="container">
+        <div class="inbox-wrapper">
+            <div class="inbox-header">
+                <div class="inbox-title-row">
+                    <span><i class="fas fa-comments" style="color: var(--primary);"></i> Pesan Masuk</span>
+                    <span id="chatCountBadge" style="font-size: 0.75rem; background: var(--primary-light); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: var(--radius-full); font-weight: 700;">0 Percakapan</span>
+                </div>
+                <div class="search-box-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchConversationInput" placeholder="Cari percakapan mitra..." onkeyup="filterConversations()">
+                </div>
+            </div>
             
-            <!-- SIDEBAR DAFTAR CHAT -->
-            <div class="chat-sidebar" id="chatSidebar">
-                <div class="sidebar-header">
-                    <div class="sidebar-title-row">
-                        <span><i class="fas fa-comments" style="color: var(--primary);"></i> Pesan Masuk</span>
-                        <span id="chatCountBadge" style="font-size: 0.75rem; background: var(--primary-light); color: var(--primary); padding: 0.15rem 0.5rem; border-radius: var(--radius-full); font-weight: 700;">0 Percakapan</span>
-                    </div>
-                    <div class="search-box-wrapper">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="searchConversationInput" placeholder="Cari percakapan mitra..." onkeyup="filterConversations()">
-                    </div>
-                </div>
-                <div class="conversations-list" id="conversationsList">
-                    <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); font-size: 0.85rem;">
-                        <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom: 0.75rem;"></i>
-                        <div>Memuat daftar percakapan...</div>
-                    </div>
+            <div class="conversations-list" id="conversationsList">
+                <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-size: 0.9rem;">
+                    <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom: 0.75rem;"></i>
+                    <div>Memuat daftar percakapan...</div>
                 </div>
             </div>
-
-            <!-- RUANG CHAT -->
-            <div class="chat-main" id="chatMain">
-                <div class="empty-chat-state" id="emptyState">
-                    <div class="empty-icon-wrap">
-                        <i class="far fa-comment-dots"></i>
-                    </div>
-                    <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.4rem; color: var(--text-main);">Pusat Pesan Komunitas Sitenexs</h3>
-                    <p style="font-size: 0.88rem; max-width: 320px; color: var(--text-muted);">Pilih percakapan di samping atau kunjungi profil anggota komunitas untuk mulai berinteraksi langsung.</p>
-                </div>
-
-                <!-- Kontainer chat aktif (Disembunyikan secara default menggunakan display: none) -->
-                <div id="activeChatContainer" style="display: none; flex-direction: column; height: 100%;">
-                    <div class="chat-header">
-                        <div class="chat-header-left">
-                            <button type="button" class="btn btn-secondary btn-icon-only" id="backToSidebarBtn"><i class="fas fa-arrow-left"></i></button>
-                            <div style="position: relative;">
-                                <img id="activeChatAvatar" src="" class="chat-header-avatar" alt="Avatar">
-                                <span class="status-dot" style="bottom: 0; right: 0;"></span>
-                            </div>
-                            <div>
-                                <div class="chat-header-name" id="activeChatName">Pilih Anggota</div>
-                                <div class="chat-header-status"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> Aktif di Sitenexs</div>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 0.4rem;">
-                            <button type="button" class="btn btn-secondary btn-icon-only" title="Informasi Mitra" onclick="showToast('Fitur profil mitra aktif.')"><i class="fas fa-info"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="chat-messages" id="chatMessages">
-                        <!-- Pesan-pesan akan dimuat di sini -->
-                    </div>
-
-                    <form class="chat-input-box" id="sendMessageForm" onsubmit="sendDirectMessage(event)">
-                        <div class="chat-input-actions">
-                            <button type="button" title="Lampirkan File/Gambar" onclick="showToast('Lampiran file akan segera hadir.')"><i class="fas fa-paperclip"></i></button>
-                        </div>
-                        <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." required autocomplete="off">
-                        <button type="submit" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane"></i></button>
-                    </form>
-                </div>
-            </div>
-
         </div>
     </main>
 
-    <!-- FIREBASE & SUPABASE INTEGRATION -->
+    <!-- FIREBASE & SUPABASE SCRIPT -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getFirestore, doc, getDoc, collection, query, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
@@ -369,13 +207,7 @@
         setPersistence(auth, browserLocalPersistence).catch(err => console.log(err));
 
         let currentUid = null;
-        let activeChatUserId = null;
-        let activeChatId = null;
-        let unsubscribeMessages = null;
         let allConversationsData = [];
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const targetUserId = urlParams.get('to');
 
         window.showToast = function(msg) {
             const container = document.getElementById('toastContainer');
@@ -386,33 +218,21 @@
             setTimeout(() => toast.remove(), 3200);
         }
 
-        async function initChatApp(user) {
-            currentUid = user.uid;
-            loadConversations(currentUid);
-
-            if (window.innerWidth <= 768 && !targetUserId) {
-                document.getElementById('chatMain').classList.add('hidden-mobile');
-            }
-
-            if (targetUserId && targetUserId !== currentUid) {
-                openChatWithUser(targetUserId);
-            }
-        }
-
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                initChatApp(user);
+                currentUid = user.uid;
+                loadConversations(currentUid);
             } else {
                 const savedUid = localStorage.getItem('sitenexs_uid');
                 if (savedUid) {
-                    initChatApp({ uid: savedUid });
+                    currentUid = savedUid;
+                    loadConversations(currentUid);
                 } else {
                     window.location.replace("https://account.sitenexs.com/sign-in/");
                 }
             }
         });
 
-        // Ambil daftar percakapan
         async function loadConversations(uid) {
             const listEl = document.getElementById('conversationsList');
             const q = query(collection(db, "chats"), where("participants", "array-contains", uid));
@@ -420,9 +240,9 @@
             onSnapshot(q, async (snapshot) => {
                 if (snapshot.empty) {
                     listEl.innerHTML = `
-                        <div style="text-align: center; padding: 3rem 1.5rem; color: var(--text-muted); font-size: 0.85rem;">
-                            <i class="far fa-comments fa-2x" style="color: var(--border-medium); margin-bottom: 0.75rem;"></i>
-                            <div style="font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">Belum ada percakapan</div>
+                        <div style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
+                            <i class="far fa-comments fa-3x" style="color: var(--border-medium); margin-bottom: 1rem;"></i>
+                            <div style="font-weight: 750; color: var(--text-main); margin-bottom: 0.35rem; font-size: 1.05rem;">Belum ada percakapan</div>
                             <div>Mulai kirim pesan dari profil anggota komunitas Sitenexs!</div>
                         </div>`;
                     document.getElementById('chatCountBadge').innerText = '0 Percakapan';
@@ -467,7 +287,7 @@
         window.renderConversationsList = function(chats) {
             const listEl = document.getElementById('conversationsList');
             if (chats.length === 0) {
-                listEl.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem;">Tidak ada percakapan yang cocok.</div>';
+                listEl.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.9rem;">Tidak ada percakapan yang cocok dengan pencarian.</div>';
                 return;
             }
 
@@ -475,7 +295,6 @@
             for (const chat of chats) {
                 const avatarUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(chat.otherUid)}/profile-photo`;
                 const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.otherName)}&background=2563eb&color=fff`;
-                const activeClass = chat.otherUid === activeChatUserId ? 'active' : '';
 
                 let timeStr = '';
                 if (chat.lastTimestamp?.toDate) {
@@ -489,7 +308,7 @@
                 }
 
                 html += `
-                    <div class="conversation-item ${activeClass}" onclick="openChatWithUser('${chat.otherUid}')">
+                    <div class="conversation-item" onclick="window.location.href='chat.html?to=${chat.otherUid}'">
                         <div class="conv-avatar-wrap">
                             <img src="${avatarUrl}" class="conv-avatar" onerror="this.src='${fallbackAvatar}';">
                             <span class="status-dot"></span>
@@ -512,120 +331,6 @@
             const filtered = allConversationsData.filter(c => c.otherName.toLowerCase().includes(keyword) || c.lastMessage.toLowerCase().includes(keyword));
             renderConversationsList(filtered);
         }
-
-        window.openChatWithUser = async function(otherUid) {
-            activeChatUserId = otherUid;
-            
-            const participants = [currentUid, otherUid].sort();
-            activeChatId = `${participants[0]}_${participants[1]}`;
-
-            document.getElementById('emptyState').style.display = 'none';
-            document.getElementById('activeChatContainer').style.display = 'flex';
-
-            if (window.innerWidth <= 768) {
-                document.getElementById('chatSidebar').classList.add('hidden-mobile');
-                document.getElementById('chatMain').classList.remove('hidden-mobile');
-            }
-
-            // Highlight active in list
-            renderConversationsList(allConversationsData);
-
-            let otherName = "Mitra Sitenexs";
-            try {
-                const userSnap = await getDoc(doc(db, "users", otherUid));
-                if (userSnap.exists()) {
-                    const d = userSnap.data();
-                    otherName = d.namaLengkap || (d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '')) || otherName;
-                }
-            } catch(e) {}
-
-            const avatarUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(otherUid)}/profile-photo`;
-            const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(otherName)}&background=2563eb&color=fff`;
-
-            document.getElementById('activeChatName').innerText = otherName;
-            const headerAvatar = document.getElementById('activeChatAvatar');
-            headerAvatar.src = avatarUrl;
-            headerAvatar.onerror = () => { headerAvatar.src = fallbackAvatar; };
-
-            const messagesRef = collection(db, "chats", activeChatId, "messages");
-            const qMsgs = query(messagesRef, orderBy("createdAt", "asc"));
-
-            if (unsubscribeMessages) unsubscribeMessages();
-
-            unsubscribeMessages = onSnapshot(qMsgs, (snapshot) => {
-                const messagesContainer = document.getElementById('chatMessages');
-                let msgHtml = '';
-
-                if (snapshot.empty) {
-                    messagesContainer.innerHTML = `
-                        <div style="text-align: center; margin: auto; padding: 2rem; color: var(--text-muted); font-size: 0.85rem;">
-                            <i class="far fa-paper-plane fa-2x" style="color: var(--border-medium); margin-bottom: 0.5rem;"></i>
-                            <div>Belum ada pesan dalam percakapan ini. Kirim salam atau mulai diskusi bisnis dengan ${otherName}!</div>
-                        </div>`;
-                    return;
-                }
-
-                snapshot.forEach(docSnap => {
-                    const m = docSnap.data();
-                    const isOutgoing = m.senderUid === currentUid;
-                    const timeStr = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Baru saja';
-
-                    msgHtml += `
-                        <div class="message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}">
-                            <div>${m.text}</div>
-                            <div class="message-time">${timeStr}</div>
-                        </div>
-                    `;
-                });
-
-                messagesContainer.innerHTML = msgHtml;
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            });
-        }
-
-        window.sendDirectMessage = async function(event) {
-            event.preventDefault();
-            const inputEl = document.getElementById('messageInput');
-            const text = inputEl.value.trim();
-            if (!text || !activeChatId || !activeChatUserId) return;
-
-            inputEl.value = '';
-
-            try {
-                const chatDocRef = doc(db, "chats", activeChatId);
-                const chatSnap = await getDoc(chatDocRef);
-
-                if (!chatSnap.exists()) {
-                    await setDoc(chatDocRef, {
-                        participants: [currentUid, activeChatUserId],
-                        lastMessage: text,
-                        lastTimestamp: serverTimestamp()
-                    });
-                } else {
-                    await setDoc(chatDocRef, {
-                        lastMessage: text,
-                        lastTimestamp: serverTimestamp()
-                    }, { merge: true });
-                }
-
-                await addDoc(collection(db, "chats", activeChatId, "messages"), {
-                    senderUid: currentUid,
-                    text: text,
-                    createdAt: serverTimestamp()
-                });
-
-            } catch (err) {
-                console.error("Gagal mengirim pesan:", err);
-                showToast("Gagal mengirim pesan. Periksa koneksi Anda.");
-            }
-        }
-
-        document.getElementById('backToSidebarBtn').addEventListener('click', () => {
-            document.getElementById('chatSidebar').classList.remove('hidden-mobile');
-            document.getElementById('chatMain').classList.add('hidden-mobile');
-            document.getElementById('activeChatContainer').style.display = 'none';
-            document.getElementById('emptyState').style.display = 'flex';
-        });
     </script>
 </body>
 </html>
