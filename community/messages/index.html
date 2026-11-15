@@ -343,17 +343,19 @@
                         const chatData = docSnap.data();
                         if (!chatData.participants || !Array.isArray(chatData.participants)) return;
 
+                        // Cari partisipan lain selain currentUid, normalisasi ke lowercase dan trim agar tidak ada variasi spasi/kapital
                         const rawOtherUid = chatData.participants.find(p => String(p || '').trim() !== String(uid || '').trim());
                         if (!rawOtherUid) return;
                         const otherUid = String(rawOtherUid).trim();
+                        const uniqueKey = otherUid.toLowerCase();
 
                         const currentMillis = chatData.lastTimestamp?.toMillis() || chatData.createdAt?.toMillis() || 0;
-                        const existing = chatsMap.get(otherUid);
+                        const existing = chatsMap.get(uniqueKey);
                         const existingMillis = existing ? (existing.lastTimestamp?.toMillis() || existing.createdAt?.toMillis() || 0) : 0;
 
-                        // Deduplikasi ketat: Simpan hanya dokumen chat dengan timestamp paling baru untuk setiap lawan bicara
+                        // Simpan dokumen dengan timestamp paling baru untuk key uniqueKey yang sama
                         if (!existing || currentMillis >= existingMillis) {
-                            chatsMap.set(otherUid, { id: docSnap.id, otherUid, ...chatData });
+                            chatsMap.set(uniqueKey, { id: docSnap.id, otherUid, ...chatData });
                         }
                     });
                 }
@@ -361,7 +363,7 @@
                 const chats = Array.from(chatsMap.values());
                 chats.sort((a, b) => (b.lastTimestamp?.toMillis() || b.createdAt?.toMillis() || 0) - (a.lastTimestamp?.toMillis() || a.createdAt?.toMillis() || 0));
                 
-                allConversationsData = [];
+                const rawConversationsData = [];
                 for (const chat of chats) {
                     let otherName = "Mitra Sitenexs";
                     let isVerified = false;
@@ -385,7 +387,7 @@
 
                     const isUnread = chat[`unread_${uid}`] === true;
 
-                    allConversationsData.push({
+                    rawConversationsData.push({
                         chatId: chat.id,
                         otherUid: chat.otherUid,
                         otherName: otherName,
@@ -397,6 +399,17 @@
                         unread: isUnread
                     });
                 }
+
+                // DEDUPLIKASI LAPIS KEDUA: Berdasarkan Nama & UID untuk memastikan mutlak tidak ada duplikat yang lolos
+                const finalMap = new Map();
+                for (const item of rawConversationsData) {
+                    const dedupeKey = item.isAi ? 'sitenexs_ai_assistant' : (item.otherUid || item.otherName.toLowerCase().trim());
+                    if (!finalMap.has(dedupeKey)) {
+                        finalMap.set(dedupeKey, item);
+                    }
+                }
+
+                allConversationsData = Array.from(finalMap.values());
 
                 document.getElementById('chatCountBadge').innerText = `${allConversationsData.length} Percakapan`;
                 renderConversationsList(allConversationsData);
