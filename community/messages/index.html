@@ -272,8 +272,8 @@
         </div>
     </main>
 
-    <!-- BOLA MELAYANG AI ASSISTANT -->
-    <a href="https://sitenexs.com/community/messages/chat?ai=true" class="floating-ai-btn" title="Chat dengan Sitenexs AI">
+    <!-- BOLA MELAYANG AI ASSISTANT (MENGGUNAKAN PATH RELATIF) -->
+    <a href="chat/?ai=true" class="floating-ai-btn" title="Chat dengan Sitenexs AI">
         <i class="fas fa-robot"></i>
         <span class="floating-ai-tooltip">Tanya Sitenexs AI 🤖</span>
     </a>
@@ -477,7 +477,7 @@
                 const unreadBadgeStyle = chat.unread ? 'display: inline-block;' : 'display: none;';
 
                 html += `
-                    <div class="conversation-item" onclick="window.location.href='https://sitenexs.com/community/messages/chat?to=${chat.otherUid}'">
+                    <div class="conversation-item" onclick="window.location.href='chat/?to=${chat.otherUid}'">
                         <div class="conv-avatar-wrap">
                             <img src="${avatarUrl}" class="conv-avatar" onerror="this.src='${fallbackAvatar}';">
                             <span class="status-dot"></span>
