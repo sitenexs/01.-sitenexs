@@ -173,6 +173,8 @@
             body { padding: 0; }
             .container { max-width: 100%; max-height: 100vh; height: 100vh; }
             .chat-wrapper { border: none; border-radius: 0; height: 100%; }
+            /* Tambahan padding atas agar header tidak menabrak batas atas layar/status bar */
+            .chat-header { padding-top: max(0.85rem, env(safe-area-inset-top, 10px)); }
             .message-bubble { max-width: 85%; }
         }
     </style>
