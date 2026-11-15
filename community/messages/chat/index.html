@@ -23,6 +23,7 @@
             --primary-dark: #1d4ed8;
             --primary-light: #eff6ff;
             --accent: #10b981;
+            --danger: #ef4444;
             --bg-body: #f8fafc;
             --bg-card: #ffffff;
             --text-main: #0f172a;
@@ -57,6 +58,8 @@
             height: 100svh;
             overflow: hidden; 
             font-size: 15px; 
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         body {
@@ -105,6 +108,7 @@
             display: flex; 
             flex-direction: column; 
             overflow: hidden;
+            position: relative;
         }
         
         .chat-header {
@@ -122,7 +126,7 @@
         .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); flex-shrink: 0; }
         .chat-header-name { font-weight: 850; font-size: 0.98rem; color: var(--text-main); letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* ISI CHAT DENGAN LATAR BELAKANG POLA TITIK HALUS & GRADASI */
+        /* ISI CHAT */
         .chat-messages {
             flex: 1 1 auto; 
             min-height: 0;
@@ -145,15 +149,24 @@
         .message-bubble {
             max-width: 70%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
             line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-            animation: fadeIn 0.2s ease-out; flex-shrink: 0;
+            animation: fadeIn 0.2s ease-out; flex-shrink: 0; cursor: pointer;
+            user-select: text; -webkit-user-select: text;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
         .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); align-self: flex-start; border-bottom-left-radius: 4px; }
         .message-bubble.outgoing { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
         .message-time { font-size: 0.65rem; opacity: 0.75; margin-top: 0.3rem; text-align: right; font-weight: 500; }
+        .edited-tag { font-size: 0.6rem; opacity: 0.7; font-style: italic; margin-left: 4px; }
 
-        /* INPUT PESAN DI BAWAH (MENETAP) */
+        /* BANNER MODE EDIT */
+        #editModeBanner {
+            display: none; padding: 0.5rem 1.25rem; background: #fef3c7; border-bottom: 1px solid #fde68a;
+            font-size: 0.8rem; font-weight: 600; color: #92400e; align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        #editModeBanner button { background: none; color: #92400e; cursor: pointer; font-size: 0.9rem; }
+
+        /* INPUT PESAN DI BAWAH */
         .chat-input-box {
             padding: 0.75rem 1.25rem; 
             background: #fff; 
@@ -182,8 +195,31 @@
         }
         .chat-send-btn:hover { background: var(--primary-dark); transform: scale(1.05); }
 
+        /* ACTION MODAL / BOTTOM SHEET UNTUK LONG PRESS */
+        #actionModal {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px);
+            z-index: 20000; display: none; align-items: flex-end; justify-content: center; animation: fadeInModal 0.2s ease;
+        }
+        @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+        
+        .action-sheet {
+            background: #fff; width: 100%; max-width: 500px; border-top-left-radius: 1.5rem; border-top-right-radius: 1.5rem;
+            padding: 1.25rem 1.25rem 2rem 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
+            animation: slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUpModal { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .action-btn {
+            display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1rem; width: 100%;
+            background: var(--bg-body); border-radius: var(--radius-lg); font-size: 0.92rem; font-weight: 700; color: var(--text-main);
+            cursor: pointer; transition: var(--transition); border: 1px solid var(--border-subtle);
+        }
+        .action-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--border-medium); }
+        .action-btn.danger { color: var(--danger); background: #fef2f2; border-color: #fee2e2; }
+        .action-btn.danger:hover { background: #fee2e2; color: #dc2626; }
+
         /* TOAST */
-        #toastContainer { position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 0.5rem; max-width: 340px; }
+        #toastContainer { position: fixed; bottom: 24px; right: 24px; z-index: 30000; display: flex; flex-direction: column; gap: 0.5rem; max-width: 340px; }
         .toast { background: #0f172a; color: #fff; padding: 0.85rem 1.15rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 0.75rem; border-left: 4px solid var(--accent); }
 
         @media (max-width: 768px) {
@@ -216,10 +252,31 @@
 
     <div id="toastContainer"></div>
 
+    <!-- MODAL AKSI (TEKAN LAMA / LONG PRESS) -->
+    <div id="actionModal" onclick="closeActionModal(event)">
+        <div class="action-sheet" onclick="event.stopPropagation()">
+            <div style="width: 40px; height: 4px; background: var(--border-medium); border-radius: 2px; margin: 0 auto 0.75rem auto;"></div>
+            <div style="font-weight: 800; font-size: 1rem; color: var(--text-main); margin-bottom: 0.25rem; text-align: center;">Opsi Pesan</div>
+            
+            <button class="action-btn" onclick="handleCopyMessage()">
+                <i class="fas fa-copy" style="color: var(--primary);"></i> Salin Teks Pesan
+            </button>
+            <button class="action-btn" id="editActionBtn" onclick="handleStartEdit()" style="display: none;">
+                <i class="fas fa-pen" style="color: var(--primary);"></i> Edit Pesan
+            </button>
+            <button class="action-btn danger" id="deleteActionBtn" onclick="handleDeleteMessage()">
+                <i class="fas fa-trash-alt"></i> Hapus Pesan
+            </button>
+            <button class="action-btn" onclick="closeActionModal()" style="justify-content: center; background: #fff; margin-top: 0.25rem;">
+                Batal
+            </button>
+        </div>
+    </div>
+
     <!-- RUANG CHAT -->
     <main class="container">
         <div class="chat-wrapper">
-            <!-- HEADER ATAS (MENETAP) -->
+            <!-- HEADER ATAS -->
             <div class="chat-header">
                 <div class="chat-header-left">
                     <a href="../messages" class="btn btn-secondary btn-icon-only" title="Kembali ke Pesan Masuk"><i class="fas fa-arrow-left"></i></a>
@@ -236,7 +293,13 @@
                 </div>
             </div>
 
-            <!-- ISI PESAN (BISA DIGULIR/SCROLL) -->
+            <!-- BANNER EDIT PESAN -->
+            <div id="editModeBanner">
+                <span><i class="fas fa-pen"></i> Mengedit pesan...</span>
+                <button type="button" onclick="cancelEditMode()"><i class="fas fa-times"></i> Batal</button>
+            </div>
+
+            <!-- ISI PESAN -->
             <div class="chat-messages" id="chatMessages">
                 <div style="text-align: center; margin: auto; padding: 2rem; color: var(--text-muted); font-size: 0.9rem; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px); border-radius: var(--radius-lg);">
                     <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom: 0.75rem;"></i>
@@ -244,13 +307,13 @@
                 </div>
             </div>
 
-            <!-- INPUT PESAN BAWAH (MENETAP) -->
-            <form class="chat-input-box" id="sendMessageForm" onsubmit="sendDirectMessage(event)">
+            <!-- INPUT PESAN BAWAH -->
+            <form class="chat-input-box" id="sendMessageForm" onsubmit="handleChatFormSubmit(event)">
                 <div class="chat-input-actions">
                     <button type="button" title="Lampirkan File" onclick="showToast('Lampiran file akan segera hadir.')"><i class="fas fa-paperclip"></i></button>
                 </div>
                 <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." required autocomplete="off">
-                <button type="submit" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane"></i></button>
+                <button type="submit" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane" id="sendBtnIcon"></i></button>
             </form>
         </div>
     </main>
@@ -259,7 +322,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
@@ -284,11 +347,17 @@
         let activeChatId = null;
         let unsubscribeMessages = null;
 
+        // Variabel untuk Edit & Hapus
+        let selectedMessageId = null;
+        let selectedMessageText = "";
+        let selectedMessageSender = "";
+        let isEditing = false;
+
         const urlParams = new URLSearchParams(window.location.search);
         const targetUserId = urlParams.get('to');
 
         if (!targetUserId) {
-            window.location.replace('https://sitenexs.com/messanges/');
+            window.location.replace('../messages');
         } else {
             activeChatUserId = targetUserId;
         }
@@ -351,12 +420,26 @@
 
                 snapshot.forEach(docSnap => {
                     const m = docSnap.data();
+                    const msgId = docSnap.id;
                     const isOutgoing = m.senderUid === currentUid;
                     const timeStr = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Baru saja';
+                    const editedLabel = m.isEdited ? '<span class="edited-tag">(diedit)</span>' : '';
+
+                    // Escape teks untuk atribut data agar aman
+                    const safeText = (m.text || '').replace(/'/g, "&#39;").replace(/"/g, "&quot;");
 
                     msgHtml += `
-                        <div class="message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}">
-                            <div>${m.text}</div>
+                        <div class="message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}" 
+                             data-id="${msgId}" 
+                             data-sender="${m.senderUid}" 
+                             data-text="${safeText}"
+                             oncontextmenu="openActionModal(event, '${msgId}', '${m.senderUid}', '${safeText}')"
+                             ontouchstart="startTouchTimer(event, '${msgId}', '${m.senderUid}', '${safeText}')"
+                             ontouchend="clearTouchTimer()"
+                             onmousedown="startMouseTimer(event, '${msgId}', '${m.senderUid}', '${safeText}')"
+                             onmouseup="clearMouseTimer()"
+                             onmouseleave="clearMouseTimer()">
+                            <div>${m.text} ${editedLabel}</div>
                             <div class="message-time">${timeStr}</div>
                         </div>
                     `;
@@ -380,40 +463,148 @@
             }
         });
 
-        window.sendDirectMessage = async function(event) {
+        // --- SISTEM DETEKSI LONG PRESS (TEKAN LAMA) ---
+        let pressTimer = null;
+
+        window.openActionModal = function(e, msgId, senderUid, text) {
+            e.preventDefault();
+            selectedMessageId = msgId;
+            selectedMessageSender = senderUid;
+            selectedMessageText = decodeURIComponent(text.replace(/&#39;/g, "'").replace(/&quot;/g, '"'));
+
+            const editBtn = document.getElementById('editActionBtn');
+            // Hanya izinkan edit pesan milik sendiri (outgoing)
+            if (senderUid === currentUid) {
+                editBtn.style.display = 'flex';
+            } else {
+                editBtn.style.display = 'none';
+            }
+
+            document.getElementById('actionModal').style.display = 'flex';
+        }
+
+        window.closeActionModal = function() {
+            document.getElementById('actionModal').style.display = 'none';
+        }
+
+        window.startTouchTimer = function(e, msgId, senderUid, text) {
+            pressTimer = setTimeout(() => {
+                openActionModal(e, msgId, senderUid, text);
+            }, 550); // Tekan selama 550ms
+        }
+        window.clearTouchTimer = function() {
+            if (pressTimer) clearTimeout(pressTimer);
+        }
+
+        window.startMouseTimer = function(e, msgId, senderUid, text) {
+            if (e.button !== 0) return; // Hanya klik kiri
+            pressTimer = setTimeout(() => {
+                openActionModal(e, msgId, senderUid, text);
+            }, 550);
+        }
+        window.clearMouseTimer = function() {
+            if (pressTimer) clearTimeout(pressTimer);
+        }
+
+        // --- AKSI MENU (SALIN, EDIT, HAPUS) ---
+        window.handleCopyMessage = function() {
+            navigator.clipboard.writeText(selectedMessageText).then(() => {
+                showToast("Pesan berhasil disalin ke clipboard.");
+            }).catch(() => {
+                showToast("Gagal menyalin pesan.");
+            });
+            closeActionModal();
+        }
+
+        window.handleStartEdit = function() {
+            closeActionModal();
+            isEditing = true;
+            document.getElementById('editModeBanner').style.display = 'flex';
+            const inputEl = document.getElementById('messageInput');
+            inputEl.value = selectedMessageText;
+            inputEl.focus();
+            document.getElementById('sendBtnIcon').className = "fas fa-check";
+        }
+
+        window.cancelEditMode = function() {
+            isEditing = false;
+            selectedMessageId = null;
+            selectedMessageText = "";
+            document.getElementById('editModeBanner').style.display = 'none';
+            document.getElementById('messageInput').value = '';
+            document.getElementById('sendBtnIcon').className = "fas fa-paper-plane";
+        }
+
+        window.handleDeleteMessage = async function() {
+            closeActionModal();
+            if (!selectedMessageId) return;
+
+            if (!confirm("Apakah Anda yakin ingin menghapus pesan ini?")) return;
+
+            try {
+                const msgDocRef = doc(db, "chats", activeChatId, "messages", selectedMessageId);
+                await deleteDoc(msgDocRef);
+                showToast("Pesan berhasil dihapus.");
+                cancelEditMode();
+            } catch (err) {
+                console.error("Gagal menghapus pesan:", err);
+                showToast("Gagal menghapus pesan. Coba lagi.");
+            }
+        }
+
+        // --- KIRIM / UPDATE PESAN ---
+        window.handleChatFormSubmit = async function(event) {
             event.preventDefault();
             const inputEl = document.getElementById('messageInput');
             const text = inputEl.value.trim();
-            if (!text || !activeChatId || !activeChatUserId) return;
+            if (!text || !activeChatId || !currentUid) return;
 
             inputEl.value = '';
 
-            try {
-                const chatDocRef = doc(db, "chats", activeChatId);
-                const chatSnap = await getDoc(chatDocRef);
-
-                if (!chatSnap.exists()) {
-                    await setDoc(chatDocRef, {
-                        participants: [currentUid, activeChatUserId],
-                        lastMessage: text,
-                        lastTimestamp: serverTimestamp()
+            if (isEditing && selectedMessageId) {
+                // Proses Update Pesan
+                try {
+                    const msgDocRef = doc(db, "chats", activeChatId, "messages", selectedMessageId);
+                    await updateDoc(msgDocRef, {
+                        text: text,
+                        isEdited: true
                     });
-                } else {
-                    await setDoc(chatDocRef, {
-                        lastMessage: text,
-                        lastTimestamp: serverTimestamp()
-                    }, { merge: true });
+                    showToast("Pesan berhasil diperbarui.");
+                    cancelEditMode();
+                } catch (err) {
+                    console.error("Gagal mengedit pesan:", err);
+                    showToast("Gagal mengedit pesan.");
                 }
+            } else {
+                // Proses Kirim Pesan Baru
+                try {
+                    const chatDocRef = doc(db, "chats", activeChatId);
+                    const chatSnap = await getDoc(chatDocRef);
 
-                await addDoc(collection(db, "chats", activeChatId, "messages"), {
-                    senderUid: currentUid,
-                    text: text,
-                    createdAt: serverTimestamp()
-                });
+                    if (!chatSnap.exists()) {
+                        await setDoc(chatDocRef, {
+                            participants: [currentUid, activeChatUserId],
+                            lastMessage: text,
+                            lastTimestamp: serverTimestamp()
+                        });
+                    } else {
+                        await setDoc(chatDocRef, {
+                            lastMessage: text,
+                            lastTimestamp: serverTimestamp()
+                        }, { merge: true });
+                    }
 
-            } catch (err) {
-                console.error("Gagal mengirim pesan:", err);
-                showToast("Gagal mengirim pesan. Periksa koneksi Anda.");
+                    await addDoc(collection(db, "chats", activeChatId, "messages"), {
+                        senderUid: currentUid,
+                        text: text,
+                        createdAt: serverTimestamp(),
+                        isEdited: false
+                    });
+
+                } catch (err) {
+                    console.error("Gagal mengirim pesan:", err);
+                    showToast("Gagal mengirim pesan. Periksa koneksi Anda.");
+                }
             }
         }
     </script>
