@@ -153,6 +153,20 @@
         .logo-text { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; font-weight: 800; letter-spacing: -0.02em; }
         .nav-actions { display: flex; gap: 0.4rem; align-items: center; }
 
+        /* NAVBAR PROFILE BUTTON / ICON */
+        .nav-profile-link {
+            width: 38px; height: 38px; border-radius: 50%; overflow: hidden;
+            border: 1px solid var(--border-medium); display: inline-flex; align-items: center; justify-content: center;
+            background: #fff; transition: var(--transition); box-shadow: var(--shadow-sm);
+            position: relative; text-decoration: none;
+        }
+        .nav-profile-link:hover { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
+        .nav-profile-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .nav-profile-initials {
+            width: 100%; height: 100%; background: #cbd5e1; color: var(--text-muted);
+            font-size: 0.75rem; font-weight: 800; display: grid; place-items: center;
+        }
+
         /* HEADER FORUM */
         .forum-header { background: #fff; border-bottom: 1px solid var(--border-subtle); padding: 1rem 0; margin-bottom: 1rem; width: 100%; overflow: hidden; }
         .forum-header-content { display: flex; flex-direction: column; align-items: flex-start; gap: 0.6rem; width: 100%; max-width: 680px; margin: 0 auto; padding: 0 1rem; }
@@ -460,8 +474,12 @@
                 <span class="logo-text" id="navLogoText">SITENEXS</span>
             </a>
             <div class="nav-actions">
-                <a href="https://sitenexs.com/community/messages/" class="btn btn-secondary btn-icon-only" title="Komunitas"><i class="fas fa-comments"></i></a>
+                <a href="https://sitenexs.com/community/messages/" class="btn btn-secondary btn-icon-only" title="Pesan"><i class="fas fa-comments"></i></a>
                 <a href="https://sitenexs.com/" class="btn btn-secondary btn-icon-only" title="Beranda"><i class="fas fa-home"></i></a>
+                <a href="https://sitenexs.com/community/profile" id="navProfileLink" class="nav-profile-link" title="Profil Saya">
+                    <img id="navProfileImg" src="" alt="Profil" class="nav-profile-img" hidden>
+                    <div id="navProfileInitials" class="nav-profile-initials"><i class="fas fa-user"></i></div>
+                </a>
             </div>
         </div>
     </header>
@@ -563,6 +581,10 @@
         const avatarImg = document.getElementById('currentUserAvatar');
         const promptText = document.getElementById('createPostPromptText');
 
+        const navProfileLink = document.getElementById('navProfileLink');
+        const navProfileImg = document.getElementById('navProfileImg');
+        const navProfileInitials = document.getElementById('navProfileInitials');
+
         // --- SISTEM NOTIFIKASI TOAST ---
         window.showToast = function(message, type = 'success') {
             const container = document.getElementById('toastContainer');
@@ -600,7 +622,6 @@
                 showToast("Gagal menyalin tautan.", "error");
             });
 
-            // Aktifkan efek fokus pada kartu postingan
             const card = document.getElementById(`post-${postId}`);
             if (card) {
                 activateFocusMode(card);
@@ -880,10 +901,32 @@
                 localStorage.setItem('sitenexs_logged_in', 'true');
                 localStorage.setItem('sitenexs_uid', uid);
 
+                // Set link profil mengarah ke halaman profil pengguna saat ini
+                if (navProfileLink) {
+                    navProfileLink.href = `https://sitenexs.com/community/profile?uid=${encodeURIComponent(uid)}`;
+                }
+
+                const initials = namaLengkap.trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase() || 'S';
+
+                navProfileImg.onload = () => {
+                    navProfileImg.hidden = false;
+                    navProfileInitials.hidden = true;
+                };
+                navProfileImg.onerror = () => {
+                    navProfileImg.hidden = true;
+                    navProfileInitials.innerHTML = `<span style="font-size: 0.75rem; font-weight:800; color:#475569;">${initials}</span>`;
+                    navProfileInitials.hidden = false;
+                };
+                navProfileImg.src = photoUrl;
+
                 avatarImg.src = photoUrl;
                 avatarImg.onerror = () => { avatarImg.src = fallbackUrl; };
                 promptText.innerText = `Halo ${namaLengkap}, apa yang ingin didiskusikan?`;
-            } catch (err) {}
+            } catch (err) {
+                if (navProfileLink) {
+                    navProfileLink.href = `https://account.sitenexs.com/sign-in/`;
+                }
+            }
         }
 
         const urlUid = urlParams.get('uid');
@@ -900,6 +943,10 @@
                     const isLogged = localStorage.getItem('sitenexs_logged_in') === 'true';
                     if (isLogged && savedUid) {
                         await fetchUserProfile(savedUid);
+                    } else {
+                        if (navProfileLink) {
+                            navProfileLink.href = `https://account.sitenexs.com/sign-in/`;
+                        }
                     }
                 }
             });
