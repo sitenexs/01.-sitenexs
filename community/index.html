@@ -153,18 +153,19 @@
         .logo-text { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; font-weight: 800; letter-spacing: -0.02em; }
         .nav-actions { display: flex; gap: 0.4rem; align-items: center; }
 
-        /* NAVBAR PROFILE BUTTON / ICON */
+        /* NAVBAR PROFILE BUTTON / ICON (PERBAIKAN TATA LETAK MUTLAK AGAR TIDAK TUMPANG TINDIH) */
         .nav-profile-link {
             width: 38px; height: 38px; border-radius: 50%; overflow: hidden;
             border: 1px solid var(--border-medium); display: inline-flex; align-items: center; justify-content: center;
             background: #fff; transition: var(--transition); box-shadow: var(--shadow-sm);
-            position: relative; text-decoration: none;
+            position: relative; text-decoration: none; flex-shrink: 0;
         }
         .nav-profile-link:hover { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
-        .nav-profile-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .nav-profile-img { width: 100%; height: 100%; object-fit: cover; display: none; position: absolute; top: 0; left: 0; z-index: 2; }
         .nav-profile-initials {
             width: 100%; height: 100%; background: #cbd5e1; color: var(--text-muted);
-            font-size: 0.75rem; font-weight: 800; display: grid; place-items: center;
+            font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
+            position: absolute; top: 0; left: 0; z-index: 1;
         }
 
         /* HEADER FORUM */
@@ -477,7 +478,7 @@
                 <a href="https://sitenexs.com/community/messages/" class="btn btn-secondary btn-icon-only" title="Pesan"><i class="fas fa-comments"></i></a>
                 <a href="https://sitenexs.com/" class="btn btn-secondary btn-icon-only" title="Beranda"><i class="fas fa-home"></i></a>
                 <a href="https://sitenexs.com/community/profile" id="navProfileLink" class="nav-profile-link" title="Profil Saya">
-                    <img id="navProfileImg" src="" alt="Profil" class="nav-profile-img" hidden>
+                    <img id="navProfileImg" src="" alt="Profil" class="nav-profile-img">
                     <div id="navProfileInitials" class="nav-profile-initials"><i class="fas fa-user"></i></div>
                 </a>
             </div>
@@ -901,7 +902,6 @@
                 localStorage.setItem('sitenexs_logged_in', 'true');
                 localStorage.setItem('sitenexs_uid', uid);
 
-                // Set link profil mengarah ke halaman profil pengguna saat ini
                 if (navProfileLink) {
                     navProfileLink.href = `https://sitenexs.com/community/profile?uid=${encodeURIComponent(uid)}`;
                 }
@@ -909,13 +909,13 @@
                 const initials = namaLengkap.trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase() || 'S';
 
                 navProfileImg.onload = () => {
-                    navProfileImg.hidden = false;
-                    navProfileInitials.hidden = true;
+                    navProfileImg.style.display = 'block';
+                    navProfileInitials.style.display = 'none';
                 };
                 navProfileImg.onerror = () => {
-                    navProfileImg.hidden = true;
+                    navProfileImg.style.display = 'none';
                     navProfileInitials.innerHTML = `<span style="font-size: 0.75rem; font-weight:800; color:#475569;">${initials}</span>`;
-                    navProfileInitials.hidden = false;
+                    navProfileInitials.style.display = 'flex';
                 };
                 navProfileImg.src = photoUrl;
 
@@ -1340,7 +1340,6 @@
             console.error("Gagal memuat post:", error);
         });
 
-        // Event listener klik di luar kartu untuk keluar dari mode fokus
         document.addEventListener('click', (e) => {
             if (document.body.classList.contains('forum-focus-mode')) {
                 if (!e.target.closest('.post-card.focused-card')) {
