@@ -6,7 +6,7 @@
     <title>Ruang Chat — Komunitas Sitenexs</title>
     
     <!-- Meta SEO -->
-    <meta name="description" content="Kirim dan terima pesan langsung dengan sesama mitra UMKM di ekosistem Sitenexs.">
+    <meta name="description" content="Kirim dan terima pesan langsung dengan sesama mitra UMKM serta Sitenexs AI di ekosistem Sitenexs.">
     <link rel="icon" type="image/png" href="https://sitenexs.com/assets/logo/logo.png">
 
     <!-- Google Fonts -->
@@ -124,6 +124,8 @@
         }
         .chat-header-left { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
         .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); flex-shrink: 0; }
+        .chat-header-avatar.ai-avatar-bg { background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; }
+        
         .chat-header-info { min-width: 0; display: flex; flex-direction: column; }
         
         .chat-header-name-row { display: flex; align-items: center; gap: 0.3rem; min-width: 0; }
@@ -131,9 +133,7 @@
         .chat-header-verif { width: 14px; height: 14px; object-fit: contain; flex-shrink: 0; display: inline-block; }
         
         .chat-header-typing { font-size: 0.73rem; color: var(--accent); font-weight: 600; font-style: italic; display: none; }
-        .typing-dots span {
-            animation: typingBlink 1.4s infinite both;
-        }
+        .typing-dots span { animation: typingBlink 1.4s infinite both; }
         .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
         .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes typingBlink {
@@ -162,7 +162,7 @@
         .chat-messages::-webkit-scrollbar { width: 5px; }
         .chat-messages::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 10px; }
 
-        /* WRAPPER BUBBLE PESAN DENGAN INDIKATOR SWIPE REPLY DI BELAKANGNYA */
+        /* WRAPPER BUBBLE PESAN */
         .message-wrapper {
             position: relative;
             display: flex;
@@ -186,7 +186,6 @@
             z-index: 1;
         }
 
-        /* ANIMASI MASUK PESAN */
         @keyframes messageSlideIn {
             from { opacity: 0; transform: translateY(14px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
@@ -207,7 +206,7 @@
         .message-time { font-size: 0.65rem; opacity: 0.75; margin-top: 0.3rem; text-align: right; font-weight: 500; }
         .edited-tag { font-size: 0.6rem; opacity: 0.7; font-style: italic; margin-left: 4px; }
 
-        /* BUBBLE MENGETIK (TYPING INDICATOR BUBBLE) */
+        /* BUBBLE MENGETIK */
         .typing-bubble {
             background: #ffffff; border: 1px solid var(--border-subtle); align-self: flex-start;
             padding: 0.6rem 0.9rem; border-radius: var(--radius-lg); border-bottom-left-radius: 4px;
@@ -225,7 +224,7 @@
             40% { transform: scale(1); opacity: 1; }
         }
 
-        /* KUTIPAN REPLY DI DALAM BUBBLE */
+        /* KUTIPAN REPLY */
         .quoted-reply {
             background: rgba(0, 0, 0, 0.06);
             border-left: 3px solid var(--primary);
@@ -249,7 +248,7 @@
         #replyBanner { background: var(--primary-light); border-bottom-color: var(--border-subtle); color: var(--primary-dark); }
         #editModeBanner button, #replyBanner button { background: none; color: inherit; cursor: pointer; font-size: 0.9rem; }
 
-        /* INPUT PESAN DI BAWAH */
+        /* INPUT PESAN */
         .chat-input-box {
             padding: 0.75rem 1.25rem; 
             background: #fff; 
@@ -278,7 +277,7 @@
         }
         .chat-send-btn:hover { background: var(--primary-dark); transform: scale(1.05); }
 
-        /* ACTION MODAL / BOTTOM SHEET UNTUK LONG PRESS */
+        /* ACTION MODAL */
         #actionModal {
             position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px);
             z-index: 20000; display: none; align-items: flex-end; justify-content: center;
@@ -303,27 +302,12 @@
         .toast { background: #0f172a; color: #fff; padding: 0.85rem 1.15rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 0.75rem; border-left: 4px solid var(--accent); }
 
         @media (max-width: 768px) {
-            html, body {
-                height: 100svh;
-                overflow: hidden;
-            }
+            html, body { height: 100svh; overflow: hidden; }
             body { padding: 0; }
-            .container { 
-                max-width: 100%; 
-                height: 100svh; 
-                max-height: none; 
-            }
-            .chat-wrapper { 
-                border: none; 
-                border-radius: 0; 
-                height: 100%; 
-            }
-            .chat-header { 
-                padding-top: max(0.75rem, env(safe-area-inset-top, 12px)); 
-            }
-            .chat-input-box {
-                padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 12px));
-            }
+            .container { max-width: 100%; height: 100svh; max-height: none; }
+            .chat-wrapper { border: none; border-radius: 0; height: 100%; }
+            .chat-header { padding-top: max(0.75rem, env(safe-area-inset-top, 12px)); }
+            .chat-input-box { padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 12px)); }
             .message-bubble { max-width: 85%; }
         }
     </style>
@@ -332,7 +316,7 @@
 
     <div id="toastContainer"></div>
 
-    <!-- MODAL AKSI (TEKAN LAMA / LONG PRESS) -->
+    <!-- MODAL AKSI -->
     <div id="actionModal" onclick="closeActionModal(event)">
         <div class="action-sheet" onclick="event.stopPropagation()">
             <div style="width: 40px; height: 4px; background: var(--border-medium); border-radius: 2px; margin: 0 auto 0.75rem auto;"></div>
@@ -363,7 +347,7 @@
             <div class="chat-header">
                 <div class="chat-header-left">
                     <a href="https://sitenexs.com/community/messages/" class="btn btn-secondary btn-icon-only" title="Kembali ke Pesan Masuk"><i class="fas fa-arrow-left"></i></a>
-                    <div style="position: relative;">
+                    <div style="position: relative;" id="avatarContainer">
                         <img id="activeChatAvatar" src="" class="chat-header-avatar" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
                         <span class="status-dot" style="position: absolute; bottom: 2px; right: 2px; width: 10px; height: 10px; background: var(--accent); border: 2px solid #fff; border-radius: 50%;"></span>
                     </div>
@@ -376,7 +360,7 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 0.4rem; flex-shrink: 0;">
-                    <button type="button" class="btn btn-secondary btn-icon-only" title="Informasi Mitra" onclick="showToast('Fitur profil mitra aktif.')"><i class="fas fa-info"></i></button>
+                    <button type="button" class="btn btn-secondary btn-icon-only" title="Informasi" onclick="showToast('Sistem chat aktif.')"><i class="fas fa-info"></i></button>
                 </div>
             </div>
 
@@ -399,7 +383,6 @@
                     <div>Memuat pesan...</div>
                 </div>
 
-                <!-- BUBBLE INDIKATOR MENGETIK DI BAWAH CHAT -->
                 <div class="typing-bubble" id="typingIndicatorBubble">
                     <div class="typing-dot"></div>
                     <div class="typing-dot"></div>
@@ -446,6 +429,7 @@
         let activeChatUserId = null;
         let activeChatId = null;
         let otherUserName = "Mitra Sitenexs";
+        let isAiChat = false;
         let unsubscribeMessages = null;
         let unsubscribeChatDoc = null;
         let isInitialLoad = true;
@@ -455,13 +439,16 @@
         let selectedMessageSender = "";
         let isEditing = false;
         let replyingTo = null;
-
         let typingTimeout = null;
 
         const urlParams = new URLSearchParams(window.location.search);
         const targetUserId = urlParams.get('to');
+        const aiParam = urlParams.get('ai');
 
-        if (!targetUserId) {
+        if (aiParam === 'true') {
+            isAiChat = true;
+            activeChatUserId = 'sitenexs_ai_assistant';
+        } else if (!targetUserId) {
             window.location.replace('https://sitenexs.com/community/messages/');
         } else {
             activeChatUserId = targetUserId;
@@ -514,7 +501,6 @@
                 .replace(/'/g, "&#039;");
         }
 
-        // Fungsi helper untuk mendeteksi link dan menghasilkan tombol "Buka Link"
         function renderMessageBody(text, isOutgoing, editedLabel) {
             const urlRegex = /(https?:\/\/[^\s]+)/g;
             let urls = [];
@@ -548,42 +534,76 @@
             `;
         }
 
+        // Fungsi AI Response Generator untuk Sitenexs AI Assistant
+        async function getAiResponse(userText) {
+            const lower = userText.toLowerCase();
+            await new Promise(resolve => setTimeout(resolve, 1400)); // Simulasi berpikir AI
+
+            if (lower.includes('halo') || lower.includes('hai') || lower.includes('pagi') || lower.includes('siang')) {
+                return "Halo Mitra! Saya Sitenexs AI Assistant. Ada strategi UMKM, pengelolaan QR kasir, atau bantuan koding yang ingin kita diskusikan hari ini?";
+            } else if (lower.includes('koding') || lower.includes('code') || lower.includes('html') || lower.includes('js')) {
+                return "Sebagai pengembang yang ngoding langsung di HP menggunakan Acode editor, pastikan struktur single-file HTML, CSS, dan JavaScript Anda tetap bersih tanpa Tailwind CSS. Apakah ada snippet kode yang ingin saya periksa atau lengkapi?";
+            } else if (lower.includes('umkm') || lower.includes('sitenexs') || lower.includes('bisnis') || lower.includes('kasir')) {
+                return "Ekosistem Sitenexs dirancang untuk mendukung UMKM melalui fitur Point of Sale (POS), QR ordering meja, absensi karyawan, hingga pencatatan keuangan modular. Mau tahu cara mengoptimalkan fitur yang mana?";
+            } else {
+                return `Pertanyaan menarik tentang "${userText}". Dalam ekosistem Sitenexs, kami selalu siap membantu mengotomatisasi bisnis dan pengembangan platform Anda. Ada hal spesifik lain yang bisa saya bantu?`;
+            }
+        }
+
         async function initChat(user) {
             currentUid = user.uid;
             
-            if (activeChatUserId === currentUid) {
-                window.location.replace('https://sitenexs.com/community/messages');
+            if (!isAiChat && activeChatUserId === currentUid) {
+                window.location.replace('https://sitenexs.com/community/messages/');
                 return;
             }
 
-            const participants = [currentUid, activeChatUserId].sort();
-            activeChatId = `${participants[0]}_${participants[1]}`;
+            if (isAiChat) {
+                otherUserName = "Sitenexs AI Assistant";
+                activeChatId = `${currentUid}_ai_assistant`;
+                
+                document.getElementById('activeChatName').innerText = otherUserName;
+                document.getElementById('activeChatBadges').innerHTML = `
+                    <img src="https://sitenexs.com/assets/logo/verified.png" class="chat-header-verif" alt="Verified" title="Official AI">
+                `;
+                
+                const avatarContainer = document.getElementById('avatarContainer');
+                avatarContainer.innerHTML = `
+                    <div class="chat-header-avatar ai-avatar-bg">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <span class="status-dot" style="position: absolute; bottom: 2px; right: 2px; width: 10px; height: 10px; background: var(--accent); border: 2px solid #fff; border-radius: 50%;"></span>
+                `;
+            } else {
+                const participants = [currentUid, activeChatUserId].sort();
+                activeChatId = `${participants[0]}_${participants[1]}`;
 
-            try {
-                const userSnap = await getDoc(doc(db, "users", activeChatUserId));
-                if (userSnap.exists()) {
-                    const d = userSnap.data();
-                    otherUserName = d.namaLengkap || (d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '')) || otherUserName;
-                    
-                    let badgesHtml = '';
-                    if (d.isVerified) {
-                        badgesHtml += `<img src="https://sitenexs.com/assets/logo/verified.png" class="chat-header-verif" alt="Verified" title="Terverifikasi">`;
+                try {
+                    const userSnap = await getDoc(doc(db, "users", activeChatUserId));
+                    if (userSnap.exists()) {
+                        const d = userSnap.data();
+                        otherUserName = d.namaLengkap || (d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '')) || otherUserName;
+                        
+                        let badgesHtml = '';
+                        if (d.isVerified) {
+                            badgesHtml += `<img src="https://sitenexs.com/assets/logo/verified.png" class="chat-header-verif" alt="Verified" title="Terverifikasi">`;
+                        }
+                        const isPro = Boolean(d.isPro) || Boolean(d.lencanaKuning) || Boolean(d.isLencanaKuning);
+                        if (isPro) {
+                            badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="chat-header-verif" alt="Pro" title="Lencana Pro" style="margin-left: 2px;">`;
+                        }
+                        document.getElementById('activeChatBadges').innerHTML = badgesHtml;
                     }
-                    const isPro = Boolean(d.isPro) || Boolean(d.lencanaKuning) || Boolean(d.isLencanaKuning);
-                    if (isPro) {
-                        badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="chat-header-verif" alt="Pro" title="Lencana Pro" style="margin-left: 2px;">`;
-                    }
-                    document.getElementById('activeChatBadges').innerHTML = badgesHtml;
-                }
-            } catch(e) {}
+                } catch(e) {}
 
-            const avatarUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(activeChatUserId)}/profile-photo`;
-            const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUserName)}&background=2563eb&color=fff`;
+                const avatarUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(activeChatUserId)}/profile-photo`;
+                const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUserName)}&background=2563eb&color=fff`;
 
-            document.getElementById('activeChatName').innerText = otherUserName;
-            const headerAvatar = document.getElementById('activeChatAvatar');
-            headerAvatar.src = avatarUrl;
-            headerAvatar.onerror = () => { headerAvatar.src = fallbackAvatar; };
+                document.getElementById('activeChatName').innerText = otherUserName;
+                const headerAvatar = document.getElementById('activeChatAvatar');
+                headerAvatar.src = avatarUrl;
+                headerAvatar.onerror = () => { headerAvatar.src = fallbackAvatar; };
+            }
 
             // --- LISTEN CHAT DOCUMENT UNTUK STATUS TYPING ---
             if (unsubscribeChatDoc) unsubscribeChatDoc();
@@ -592,9 +612,11 @@
                 const typingBubble = document.getElementById('typingIndicatorBubble');
                 const messagesContainer = document.getElementById('chatMessages');
 
+                const typingKey = isAiChat ? 'typing_sitenexs_ai_assistant' : `typing_${activeChatUserId}`;
+
                 if (chatDocSnap.exists()) {
                     const data = chatDocSnap.data();
-                    const isOtherTyping = data[`typing_${activeChatUserId}`];
+                    const isOtherTyping = data[typingKey];
                     if (isOtherTyping) {
                         typingEl.style.display = 'block';
                         typingBubble.style.display = 'flex';
@@ -617,10 +639,26 @@
 
             let previousDocCount = 0;
 
-            unsubscribeMessages = onSnapshot(qMsgs, (snapshot) => {
+            unsubscribeMessages = onSnapshot(qMsgs, async (snapshot) => {
                 const messagesContainer = document.getElementById('chatMessages');
                 const loadingState = document.getElementById('loadingState');
                 if (loadingState) loadingState.remove();
+
+                // Jika chat AI kosong, buat sambutan awal otomatis
+                if (isAiChat && snapshot.empty && isInitialLoad) {
+                    await setDoc(doc(db, "chats", activeChatId), {
+                        participants: [currentUid, 'sitenexs_ai_assistant'],
+                        lastMessage: "Halo! Saya Sitenexs AI Assistant.",
+                        lastTimestamp: serverTimestamp()
+                    });
+                    await addDoc(collection(db, "chats", activeChatId, "messages"), {
+                        senderUid: 'sitenexs_ai_assistant',
+                        text: "Halo Mitra Sitenexs! 👋 Saya Sitenexs AI Assistant siap membantu Anda berdiskusi seputar strategi UMKM, koding web di HP, maupun pengelolaan fitur Sitenexs. Ada yang ingin ditanyakan?",
+                        createdAt: serverTimestamp(),
+                        isEdited: false
+                    });
+                    return;
+                }
 
                 const existingWrappers = messagesContainer.querySelectorAll('.message-wrapper');
                 const incomingIds = new Set(snapshot.docs.map(d => d.id));
@@ -674,7 +712,6 @@
                             playChatSound('receive');
                         }
 
-                        // Buat Wrapper untuk mendukung efek geser (swipe-to-reply)
                         const wrapperDiv = document.createElement('div');
                         wrapperDiv.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
 
@@ -709,7 +746,6 @@
                         wrapperDiv.appendChild(indicatorDiv);
                         wrapperDiv.appendChild(bubbleDiv);
 
-                        // --- SWIPE TO REPLY DENGAN GESER GELEMBUNG CHAT ---
                         let startX = 0;
                         let currentX = 0;
                         let isSwiping = false;
@@ -738,9 +774,7 @@
                             bubbleDiv.style.transform = 'translateX(0px)';
                             indicatorDiv.style.opacity = '0';
                             
-                            setTimeout(() => {
-                                bubbleDiv.style.transition = '';
-                            }, 200);
+                            setTimeout(() => { bubbleDiv.style.transition = ''; }, 200);
 
                             if (diff > 60) {
                                 triggerReplyMode(m.senderUid === currentUid ? 'Anda' : otherUserName, m.text, msgId);
@@ -779,26 +813,28 @@
             }
         });
 
-        // --- TYPING DETECTOR PADA INPUT ---
+        // --- TYPING DETECTOR ---
         const messageInput = document.getElementById('messageInput');
         messageInput.addEventListener('input', () => {
             if (!activeChatId || !currentUid) return;
 
+            const typingKey = isAiChat ? 'typing_current_user' : `typing_${currentUid}`;
+
             setDoc(doc(db, "chats", activeChatId), {
                 participants: [currentUid, activeChatUserId],
-                [`typing_${currentUid}`]: true
+                [typingKey]: true
             }, { merge: true }).catch(() => {});
 
             if (typingTimeout) clearTimeout(typingTimeout);
 
             typingTimeout = setTimeout(() => {
                 setDoc(doc(db, "chats", activeChatId), {
-                    [`typing_${currentUid}`]: false
+                    [typingKey]: false
                 }, { merge: true }).catch(() => {});
             }, 1500);
         });
 
-        // --- SISTEM DETEKSI LONG PRESS ---
+        // --- LONG PRESS & AKSI MODAL ---
         let pressTimer = null;
 
         window.openActionModal = function(e, msgId, senderUid, text) {
@@ -822,23 +858,15 @@
         }
 
         window.startTouchTimer = function(e, msgId, senderUid, text) {
-            pressTimer = setTimeout(() => {
-                openActionModal(e, msgId, senderUid, text);
-            }, 550);
+            pressTimer = setTimeout(() => { openActionModal(e, msgId, senderUid, text); }, 550);
         }
-        window.clearTouchTimer = function() {
-            if (pressTimer) clearTimeout(pressTimer);
-        }
+        window.clearTouchTimer = function() { if (pressTimer) clearTimeout(pressTimer); }
 
         window.startMouseTimer = function(e, msgId, senderUid, text) {
             if (e.button !== 0) return;
-            pressTimer = setTimeout(() => {
-                openActionModal(e, msgId, senderUid, text);
-            }, 550);
+            pressTimer = setTimeout(() => { openActionModal(e, msgId, senderUid, text); }, 550);
         }
-        window.clearMouseTimer = function() {
-            if (pressTimer) clearTimeout(pressTimer);
-        }
+        window.clearMouseTimer = function() { if (pressTimer) clearTimeout(pressTimer); }
 
         window.handleReplyMessage = function() {
             closeActionModal();
@@ -890,16 +918,13 @@
         window.handleDeleteMessage = async function() {
             closeActionModal();
             if (!selectedMessageId) return;
-
             if (!confirm("Apakah Anda yakin ingin menghapus pesan ini?")) return;
 
             try {
-                const msgDocRef = doc(db, "chats", activeChatId, "messages", selectedMessageId);
-                await deleteDoc(msgDocRef);
+                await deleteDoc(doc(db, "chats", activeChatId, "messages", selectedMessageId));
                 showToast("Pesan berhasil dihapus.");
                 cancelEditMode();
             } catch (err) {
-                console.error("Gagal menghapus pesan:", err);
                 showToast("Gagal menghapus pesan. Coba lagi.");
             }
         }
@@ -912,21 +937,18 @@
 
             inputEl.value = '';
 
-            setDoc(doc(db, "chats", activeChatId), {
-                [`typing_${currentUid}`]: false
-            }, { merge: true }).catch(() => {});
+            const typingKey = isAiChat ? 'typing_current_user' : `typing_${currentUid}`;
+            setDoc(doc(db, "chats", activeChatId), { [typingKey]: false }, { merge: true }).catch(() => {});
 
             if (isEditing && selectedMessageId) {
                 try {
-                    const msgDocRef = doc(db, "chats", activeChatId, "messages", selectedMessageId);
-                    await updateDoc(msgDocRef, {
+                    await updateDoc(doc(db, "chats", activeChatId, "messages", selectedMessageId), {
                         text: text,
                         isEdited: true
                     });
                     showToast("Pesan berhasil diperbarui.");
                     cancelEditMode();
                 } catch (err) {
-                    console.error("Gagal mengedit pesan:", err);
                     showToast("Gagal mengedit pesan.");
                 }
             } else {
@@ -934,20 +956,11 @@
                     playChatSound('send');
 
                     const chatDocRef = doc(db, "chats", activeChatId);
-                    const chatSnap = await getDoc(chatDocRef);
-
-                    if (!chatSnap.exists()) {
-                        await setDoc(chatDocRef, {
-                            participants: [currentUid, activeChatUserId],
-                            lastMessage: text,
-                            lastTimestamp: serverTimestamp()
-                        });
-                    } else {
-                        await setDoc(chatDocRef, {
-                            lastMessage: text,
-                            lastTimestamp: serverTimestamp()
-                        }, { merge: true });
-                    }
+                    await setDoc(chatDocRef, {
+                        participants: [currentUid, activeChatUserId],
+                        lastMessage: text,
+                        lastTimestamp: serverTimestamp()
+                    }, { merge: true });
 
                     const messageData = {
                         senderUid: currentUid,
@@ -959,13 +972,36 @@
                     if (replyingTo) {
                         messageData.replyTo = {
                             id: replyingTo.id,
-                            senderUid: replyingTo.replyingTo || replyingTo.senderUid,
+                            senderUid: replyingTo.senderUid,
                             text: replyingTo.text
                         };
                         cancelReplyMode();
                     }
 
                     await addDoc(collection(db, "chats", activeChatId, "messages"), messageData);
+
+                    // Jika ini chat AI, aktifkan respons AI otomatis
+                    if (isAiChat) {
+                        const aiTypingKey = 'typing_sitenexs_ai_assistant';
+                        await updateDoc(chatDocRef, { [aiTypingKey]: true });
+
+                        const aiReplyText = await getAiResponse(text);
+
+                        await updateDoc(chatDocRef, {
+                            [aiTypingKey]: false,
+                            lastMessage: aiReplyText,
+                            lastTimestamp: serverTimestamp()
+                        });
+
+                        await addDoc(collection(db, "chats", activeChatId, "messages"), {
+                            senderUid: 'sitenexs_ai_assistant',
+                            text: aiReplyText,
+                            createdAt: serverTimestamp(),
+                            isEdited: false
+                        });
+
+                        playChatSound('receive');
+                    }
 
                 } catch (err) {
                     console.error("Gagal mengirim pesan:", err);
