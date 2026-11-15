@@ -153,10 +153,9 @@
         .verified-badge { width: 16px; height: 16px; object-fit: contain; }
         
         .profile-badges-wrapper {
-            display: flex; flex-direction: column; align-items: center; gap: 0.4rem; margin-bottom: 1rem; width: 100%;
+            display: flex; flex-direction: column; align-items: center; gap: 0.6rem; margin-bottom: 1rem; width: 100%;
         }
         
-        /* LOGO BISNIS ASLI DI HEADER PROFIL */
         .profile-business-tag {
             font-size: 0.8rem; font-weight: 700; color: var(--text-main); background: var(--bg-body);
             padding: 0.3rem 0.85rem; border-radius: var(--radius-full); display: inline-flex; align-items: center; gap: 0.5rem;
@@ -193,7 +192,6 @@
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* MODE FOKUS & BLUR */
         body.forum-focus-mode header,
         body.forum-focus-mode .profile-header-card,
         body.forum-focus-mode .card-title,
@@ -234,7 +232,6 @@
         .post-content { font-size: 0.8rem; color: var(--text-main); margin-bottom: 0.65rem; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
         .post-image { width: 100%; max-height: 350px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 0.65rem; border: 1px solid var(--border-subtle); }
 
-        /* TOMBOL AKSI POSTINGAN */
         .post-actions {
             display: flex; align-items: center; justify-content: space-between; 
             border-top: 1px solid var(--border-subtle); padding: 0.3rem 0.5rem; gap: 0.25rem;
@@ -355,6 +352,13 @@
                     <img id="profileBusinessLogoImg" src="" alt="Logo" class="profile-business-logo" onerror="this.style.display='none';">
                     <span id="profileBusinessNameText">UMKM / Bisnis Mitra</span>
                 </span>
+
+                <!-- TOMBOL KIRIM PESAN LANGSUNG KE PENGGUNA INI -->
+                <div id="messageBtnContainer" style="display: none;">
+                    <a id="sendMessageBtn" href="#" class="btn btn-primary" style="font-size: 0.78rem; padding: 0.4rem 1.1rem; border-radius: var(--radius-full);">
+                        <i class="fas fa-comment-dots"></i> Kirim Pesan
+                    </a>
+                </div>
             </div>
 
             <div class="profile-stats">
@@ -422,6 +426,8 @@
         const statPostCount = document.getElementById('statPostCount');
         const statLikeCount = document.getElementById('statLikeCount');
         const myPostsContainer = document.getElementById('myPostsContainer');
+        const messageBtnContainer = document.getElementById('messageBtnContainer');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
 
         const urlParams = new URLSearchParams(window.location.search);
         profileUid = urlParams.get('uid');
@@ -632,6 +638,13 @@
                 return;
             }
 
+            // Cek apakah pengguna sedang melihat profilnya sendiri
+            const myUid = localStorage.getItem('sitenexs_uid');
+            if (myUid && myUid !== profileUid) {
+                messageBtnContainer.style.display = 'block';
+                sendMessageBtn.href = `https://sitenexs.com/messages.html?to=${profileUid}`;
+            }
+
             try {
                 const userDocRef = doc(db, "users", profileUid);
                 const userDocSnap = await getDoc(userDocRef);
@@ -664,7 +677,6 @@
                 headerName.innerText = namaLengkap;
                 profileBusinessNameText.innerText = bisnisNama;
 
-                // Tampilkan Logo Bisnis Asli
                 const finalLogoUrl = logoUrl || `${supabaseUrl}/storage/v1/object/public/${logoBucket}/${encodeURIComponent(profileUid)}/business-logo?t=${Date.now()}`;
                 profileBusinessLogoImg.src = finalLogoUrl;
                 profileBusinessLogoImg.onerror = () => { profileBusinessLogoImg.style.display = 'none'; };
