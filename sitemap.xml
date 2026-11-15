@@ -50,5 +50,40 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- Community -->
+  <url>
+    <loc>https://sitenexs.com/community</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- sign-in -->
+  <url>
+    <loc>https://account.sitenexs.com/sign-in</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- register -->
+  <url>
+    <loc>https://account.sitenexs.com/register</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- profile -->
+  <url>
+    <loc>https://account.sitenexs.com/profile</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- event -->
+  <url>
+    <loc>https://event.sitenexs.com</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
   
 </urlset>
