@@ -514,6 +514,40 @@
                 .replace(/'/g, "&#039;");
         }
 
+        // Fungsi helper untuk mendeteksi link dan menghasilkan tombol "Buka Link"
+        function renderMessageBody(text, isOutgoing, editedLabel) {
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            let urls = [];
+            let match;
+            while ((match = urlRegex.exec(text)) !== null) {
+                urls.push(match[1]);
+            }
+
+            let escapedText = escapeHtml(text).replace(urlRegex, (url) => {
+                return `<a href="${url}" target="_blank" style="color: inherit; text-decoration: underline; word-break: break-all;">${url}</a>`;
+            });
+
+            let linkButtonHtml = '';
+            if (urls.length > 0) {
+                const primaryUrl = urls[0];
+                const btnBg = isOutgoing ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.06)';
+                const btnColor = isOutgoing ? '#fff' : 'var(--primary)';
+                
+                linkButtonHtml = `
+                    <div style="margin-top: 6px;">
+                        <a href="${primaryUrl}" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: ${btnBg}; color: ${btnColor}; padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none; transition: background 0.2s;">
+                            <i class="fas fa-external-link-alt" style="font-size: 0.75rem;"></i> Buka Link
+                        </a>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="message-content-text">${escapedText} ${editedLabel}</div>
+                ${linkButtonHtml}
+            `;
+        }
+
         async function initChat(user) {
             currentUid = user.uid;
             
@@ -616,11 +650,22 @@
                     const existingWrapper = messagesContainer.querySelector(`[data-id="${msgId}"]`)?.closest('.message-wrapper');
 
                     if (existingWrapper) {
-                        const textContentDiv = existingWrapper.querySelector('.message-content-text');
-                        const expectedHtml = `${escapeHtml(m.text)} ${editedLabel}`;
-                        if (textContentDiv && textContentDiv.innerHTML !== expectedHtml) {
-                            textContentDiv.innerHTML = expectedHtml;
-                            existingWrapper.querySelector('.message-bubble').dataset.text = safeText;
+                        const bubbleDiv = existingWrapper.querySelector('.message-bubble');
+                        const currentRenderedText = bubbleDiv.dataset.rawText || "";
+                        if (currentRenderedText !== m.text) {
+                            bubbleDiv.dataset.rawText = m.text;
+                            bubbleDiv.dataset.text = safeText;
+                            
+                            let replyHtml = '';
+                            const replyContainer = bubbleDiv.querySelector('.quoted-reply');
+                            if (replyContainer) {
+                                replyHtml = replyContainer.outerHTML;
+                            }
+                            
+                            const timeContainer = bubbleDiv.querySelector('.message-time');
+                            const timeHtml = timeContainer ? timeContainer.outerHTML : `<div class="message-time">${timeStr}</div>`;
+                            
+                            bubbleDiv.innerHTML = replyHtml + renderMessageBody(m.text, isOutgoing, editedLabel) + timeHtml;
                         }
                     } else {
                         shouldScrollToBottom = true;
@@ -642,6 +687,7 @@
                         bubbleDiv.setAttribute('data-id', msgId);
                         bubbleDiv.setAttribute('data-sender', m.senderUid);
                         bubbleDiv.setAttribute('data-text', safeText);
+                        bubbleDiv.dataset.rawText = m.text || '';
 
                         let replyHtml = '';
                         if (m.replyTo) {
@@ -656,7 +702,7 @@
 
                         bubbleDiv.innerHTML = `
                             ${replyHtml}
-                            <div class="message-content-text">${escapeHtml(m.text)} ${editedLabel}</div>
+                            ${renderMessageBody(m.text || '', isOutgoing, editedLabel)}
                             <div class="message-time">${timeStr}</div>
                         `;
 
