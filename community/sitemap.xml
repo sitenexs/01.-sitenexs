@@ -12,20 +12,21 @@
         <priority>1.0</priority>
     </url>
 
-    <!-- Contoh Permalink Postingan 1 (Ganti dengan ID asli dari Firestore) -->
+  <!-- profile Syafaat Nuryadi -->
     <url>
-        <loc>https://sitenexs.com/community/?post=nf91F8YzO9VBmzSenLoT</loc>
+        <loc>https://sitenexs.com/community/profile/?uid=2KOySowxxJTi06nrbar55u7IdNv2</loc>
         <lastmod>2026-11-15</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.8</priority>
     </url>
 
-    <!-- Contoh Permalink Postingan 2 (Ganti dengan ID asli dari Firestore) -->
+  <!-- profile Vita Naila -->
     <url>
-        <loc>https://sitenexs.com/community/?post=def456uvw</loc>
+        <loc>https://sitenexs.com/community/profile/?uid=ndnOJGjaXWZNorWjborUK4H0B973</loc>
         <lastmod>2026-11-15</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.8</priority>
     </url>
+
 
 </urlset>
