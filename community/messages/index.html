@@ -49,7 +49,7 @@
         }
 
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; font-size: 15px; }
+        html, body { height: 100%; font-size: 15px; user-select: none; -webkit-user-select: none; }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -65,7 +65,7 @@
         ul { list-style: none; }
         button, input { font-family: inherit; outline: none; border: none; }
 
-        /* NAVBAR YANG LEBIH RAPI & KOMPAK */
+        /* NAVBAR */
         #navbar {
             position: sticky; top: 0; z-index: 1000; background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-subtle); flex-shrink: 0;
@@ -90,7 +90,7 @@
         .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2); }
         .btn-primary:hover { background: var(--primary-dark); }
 
-        /* INBOX LAYOUT (TANPA CARD / FULL SEAMLESS) */
+        /* INBOX LAYOUT */
         .inbox-wrapper {
             width: 100%; max-width: 800px; margin: 0 auto; background: #fff;
             border: none; border-radius: 0; box-shadow: none; 
@@ -132,9 +132,33 @@
 
         .conv-info { flex: 1; min-width: 0; }
         .conv-name-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem; }
+        
+        .conv-name-group { display: flex; align-items: center; gap: 0.3rem; min-width: 0; }
         .conv-name { font-weight: 750; font-size: 0.92rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .conv-verif { width: 13px; height: 13px; object-fit: contain; flex-shrink: 0; display: inline-block; }
+
         .conv-time { font-size: 0.72rem; color: var(--text-muted); flex-shrink: 0; }
+        
+        .conv-msg-row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
         .conv-last-msg { font-size: 0.82rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .conv-last-msg.unread { font-weight: 700; color: var(--text-main); }
+        
+        /* TYPING STATUS DALAM LIST */
+        .conv-typing { font-size: 0.78rem; color: var(--accent); font-weight: 600; font-style: italic; display: none; }
+        .typing-dots span { animation: typingBlink 1.4s infinite both; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBlink {
+            0% { opacity: 0.2; }
+            20% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+
+        /* UNREAD BADGE */
+        .unread-badge {
+            background: var(--primary); color: #fff; font-size: 0.68rem; font-weight: 700;
+            padding: 0.1rem 0.45rem; border-radius: var(--radius-full); flex-shrink: 0; display: none;
+        }
 
         /* TOAST */
         #toastContainer { position: fixed; bottom: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 0.5rem; max-width: 320px; }
@@ -142,7 +166,7 @@
 
         @media (max-width: 576px) {
             .nav-container { padding: 0 0.75rem; }
-            .logo-text { display: none; } /* Sembunyikan teks logo di layar sangat kecil agar navbar sangat lega */
+            .logo-text { display: none; }
             .conversation-item { padding: 0.75rem 1rem; }
         }
     </style>
@@ -212,6 +236,7 @@
 
         let currentUid = null;
         let allConversationsData = [];
+        let unsubscribesMap = {}; // Menyimpan listener real-time per chat
 
         window.showToast = function(msg) {
             const container = document.getElementById('toastContainer');
@@ -266,11 +291,15 @@
                     if (!otherUid) continue;
 
                     let otherName = "Mitra Sitenexs";
+                    let isVerified = false;
+                    let isPro = false;
                     try {
                         const userSnap = await getDoc(doc(db, "users", otherUid));
                         if (userSnap.exists()) {
                             const d = userSnap.data();
                             otherName = d.namaLengkap || (d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '')) || otherName;
+                            isVerified = Boolean(d.isVerified);
+                            isPro = Boolean(d.isPro) || Boolean(d.lencanaKuning) || Boolean(d.isLencanaKuning);
                         }
                     } catch(e) {}
 
@@ -278,6 +307,8 @@
                         chatId: chat.id,
                         otherUid: otherUid,
                         otherName: otherName,
+                        isVerified: isVerified,
+                        isPro: isPro,
                         lastMessage: chat.lastMessage || 'Mulai percakapan...',
                         lastTimestamp: chat.lastTimestamp
                     });
@@ -285,6 +316,39 @@
 
                 document.getElementById('chatCountBadge').innerText = `${allConversationsData.length} Percakapan`;
                 renderConversationsList(allConversationsData);
+                setupRealtimeSublisteners(chats, uid);
+            });
+        }
+
+        // Listener real-time untuk mendeteksi status typing dan unread per chat
+        function setupRealtimeSublisteners(chats, uid) {
+            chats.forEach(chat => {
+                const otherUid = chat.participants.find(p => p !== uid);
+                if (!otherUid) return;
+
+                if (unsubscribesMap[chat.id]) {
+                    unsubscribesMap[chat.id]();
+                }
+
+                unsubscribesMap[chat.id] = onSnapshot(doc(db, "chats", chat.id), (docSnap) => {
+                    if (!docSnap.exists()) return;
+                    const data = docSnap.data();
+                    
+                    // Status mengetik
+                    const isTyping = data[`typing_${otherUid}`];
+                    const typingEl = document.getElementById(`typing-${chat.id}`);
+                    const msgEl = document.getElementById(`msg-${chat.id}`);
+
+                    if (typingEl && msgEl) {
+                        if (isTyping) {
+                            typingEl.style.display = 'inline-block';
+                            msgEl.style.display = 'none';
+                        } else {
+                            typingEl.style.display = 'none';
+                            msgEl.style.display = 'block';
+                        }
+                    }
+                });
             });
         }
 
@@ -311,6 +375,14 @@
                     }
                 }
 
+                let badgesHtml = '';
+                if (chat.isVerified) {
+                    badgesHtml += `<img src="https://sitenexs.com/assets/logo/verified.png" class="conv-verif" alt="Verified" title="Terverifikasi">`;
+                }
+                if (chat.isPro) {
+                    badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="conv-verif" alt="Pro" title="Lencana Pro" style="margin-left: 2px;">`;
+                }
+
                 html += `
                     <div class="conversation-item" onclick="window.location.href='chat/?to=${chat.otherUid}'">
                         <div class="conv-avatar-wrap">
@@ -319,10 +391,18 @@
                         </div>
                         <div class="conv-info">
                             <div class="conv-name-row">
-                                <span class="conv-name">${chat.otherName}</span>
+                                <div class="conv-name-group">
+                                    <span class="conv-name">${chat.otherName}</span>
+                                    ${badgesHtml}
+                                </div>
                                 <span class="conv-time">${timeStr}</span>
                             </div>
-                            <div class="conv-last-msg">${chat.lastMessage}</div>
+                            <div class="conv-msg-row">
+                                <div style="min-width: 0; flex: 1;">
+                                    <div class="conv-last-msg" id="msg-${chat.chatId}">${chat.lastMessage}</div>
+                                    <div class="conv-typing" id="typing-${chat.chatId}">Sedang mengetik<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
