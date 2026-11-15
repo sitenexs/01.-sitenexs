@@ -197,7 +197,7 @@
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; cursor: text;
         }
 
-        /* POST CARD DINAMIS */
+        /* POST CARD DINAMIS & FOCUS MODE */
         .post-card {
             background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
             padding: 0; box-shadow: var(--shadow-sm); transition: var(--transition); animation: fadeIn 0.3s ease; width: 100%; overflow: hidden;
@@ -207,10 +207,41 @@
             border: 2px solid var(--primary);
             background: linear-gradient(to bottom, #ffffff, var(--primary-light));
         }
-        .post-card.highlighted-permalink {
-            border: 2px solid var(--accent);
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+        
+        /* MODE FOKUS & BLUR */
+        body.forum-focus-mode header,
+        body.forum-focus-mode .forum-header,
+        body.forum-focus-mode .create-post-box,
+        body.forum-focus-mode .post-card:not(.focused-card) {
+            filter: blur(5px);
+            opacity: 0.35;
+            pointer-events: none;
+            user-select: none;
+            transition: all 0.3s ease;
         }
+        .post-card.focused-card {
+            position: relative;
+            z-index: 9999;
+            transform: scale(1.02);
+            box-shadow: 0 15px 35px rgba(15, 23, 42, 0.25);
+            border-color: var(--primary);
+            transition: all 0.3s ease;
+        }
+        .focus-backdrop {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(2px);
+            z-index: 9998;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        body.forum-focus-mode .focus-backdrop {
+            display: block;
+            opacity: 1;
+        }
+
         .post-card-inner { padding: 0.85rem; }
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
@@ -426,6 +457,9 @@
 </head>
 <body data-package="basic">
 
+    <!-- BACKDROP MODE FOKUS -->
+    <div class="focus-backdrop" id="focusBackdrop" onclick="exitFocusMode()"></div>
+
     <!-- CONTAINER TOAST NOTIFICATION -->
     <div id="toastContainer"></div>
 
@@ -561,6 +595,36 @@
             }, 3000);
         };
 
+        // --- MODE FOKUS KARTU (PENGGANTI HIGHLIGHT HIJAU) ---
+        window.activateFocusMode = function(card) {
+            document.querySelectorAll('.post-card').forEach(c => c.classList.remove('focused-card'));
+            card.classList.add('focused-card');
+            document.body.classList.add('forum-focus-mode');
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
+
+        window.exitFocusMode = function() {
+            document.body.classList.remove('forum-focus-mode');
+            document.querySelectorAll('.post-card').forEach(c => c.classList.remove('focused-card'));
+        }
+
+        // --- SALIN TAUTAN & AKTIFKAN MODE FOKUS ---
+        window.copyPermalink = function(postId, event) {
+            event.stopPropagation();
+            const link = `https://sitenexs.com/community/?post=${postId}`;
+            navigator.clipboard.writeText(link).then(() => {
+                showToast("Tautan postingan berhasil disalin!");
+            }).catch(() => {
+                showToast("Gagal menyalin tautan.", "error");
+            });
+
+            // Aktifkan efek fokus pada kartu postingan
+            const card = document.getElementById(`post-${postId}`);
+            if (card) {
+                activateFocusMode(card);
+            }
+        }
+
         // --- DINAMIS SEO META & SCHEMA UPDATER UNTUK PERMALINK ---
         async function loadPermalinkPostMeta(postId) {
             try {
@@ -573,7 +637,6 @@
                     const image = data.imageUrl || "https://sitenexs.com/assets/logo/logo.png";
                     const permalinkUrl = `https://sitenexs.com/community/?post=${postId}`;
 
-                    // Update DOM Meta Tags untuk Googlebot & Social Media Crawler
                     document.getElementById('metaTitle').innerText = title;
                     document.getElementById('metaDesc').setAttribute('content', description);
                     document.getElementById('ogTitle').setAttribute('content', title);
@@ -582,7 +645,6 @@
                     document.getElementById('ogUrl').setAttribute('content', permalinkUrl);
                     document.getElementById('canonicalLink').setAttribute('href', permalinkUrl);
 
-                    // Update JSON-LD Schema
                     const schemaData = {
                         "@context": "https://schema.org",
                         "@type": "DiscussionForumPosting",
@@ -601,7 +663,6 @@
             }
         }
 
-        // Cek apakah URL memuat parameter ?post=ID
         const urlParams = new URLSearchParams(window.location.search);
         const permalinkPostId = urlParams.get('post');
         if (permalinkPostId) {
@@ -626,16 +687,6 @@
             }
         }
         fetchAllUsersForMention();
-
-        window.copyPermalink = function(postId, event) {
-            event.stopPropagation();
-            const link = `https://sitenexs.com/community/?post=${postId}`;
-            navigator.clipboard.writeText(link).then(() => {
-                showToast("Tautan postingan berhasil disalin!");
-            }).catch(() => {
-                showToast("Gagal menyalin tautan.", "error");
-            });
-        }
 
         function playLikeSound(isLiked) {
             try {
@@ -1115,7 +1166,7 @@
             }
 
             return `
-                <article class="post-card ${isPrioritized ? 'prioritized-card' : ''} ${isPermalinkTarget ? 'highlighted-permalink' : ''}" data-post-id="${postId}" id="post-${postId}">
+                <article class="post-card ${isPrioritized ? 'prioritized-card' : ''}" data-post-id="${postId}" id="post-${postId}">
                     <div class="post-card-inner">
                         <div class="post-header">
                             <div class="post-author">
@@ -1247,6 +1298,7 @@
                         const targetEl = document.getElementById(`post-${permalinkPostId}`);
                         if (targetEl) {
                             targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            activateFocusMode(targetEl);
                         }
                     }, 400);
                 }
@@ -1257,6 +1309,15 @@
 
         }, (error) => {
             console.error("Gagal memuat post:", error);
+        });
+
+        // Event listener klik di luar kartu untuk keluar dari mode fokus
+        document.addEventListener('click', (e) => {
+            if (document.body.classList.contains('forum-focus-mode')) {
+                if (!e.target.closest('.post-card.focused-card')) {
+                    exitFocusMode();
+                }
+            }
         });
 
         form.addEventListener('submit', async (e) => {
