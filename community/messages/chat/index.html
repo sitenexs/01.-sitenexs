@@ -534,19 +534,21 @@
             `;
         }
 
-        // Fungsi AI Response Generator untuk Sitenexs AI Assistant
+        // --- FUNGSI AI RESPONSE YANG SUDAH DIPERBAIKI ---
         async function getAiResponse(userText) {
             const lower = userText.toLowerCase();
             await new Promise(resolve => setTimeout(resolve, 1400)); // Simulasi berpikir AI
 
             if (lower.includes('halo') || lower.includes('hai') || lower.includes('pagi') || lower.includes('siang')) {
                 return "Halo Mitra! Saya Sitenexs AI Assistant. Ada strategi UMKM, pengelolaan QR kasir, atau bantuan koding yang ingin kita diskusikan hari ini?";
-            } else if (lower.includes('koding') || lower.includes('code') || lower.includes('html') || lower.includes('js')) {
-                return "Sebagai pengembang yang ngoding langsung di HP menggunakan Acode editor, pastikan struktur single-file HTML, CSS, dan JavaScript Anda tetap bersih tanpa Tailwind CSS. Apakah ada snippet kode yang ingin saya periksa atau lengkapi?";
-            } else if (lower.includes('umkm') || lower.includes('sitenexs') || lower.includes('bisnis') || lower.includes('kasir')) {
-                return "Ekosistem Sitenexs dirancang untuk mendukung UMKM melalui fitur Point of Sale (POS), QR ordering meja, absensi karyawan, hingga pencatatan keuangan modular. Mau tahu cara mengoptimalkan fitur yang mana?";
+            } else if (lower.includes('nama') || lower.includes('kenal') || lower.includes('syafaat') || lower.includes('saya')) {
+                return "Salam kenal! Senang bisa terhubung dengan Anda di ekosistem Sitenexs. Ada project web, kasir POS, atau pengelolaan UMKM yang sedang ingin Anda kembangkan?";
+            } else if (lower.includes('koding') || lower.includes('code') || lower.includes('html') || lower.includes('js') || lower.includes('acode') || lower.includes('hp')) {
+                return "Mantap! Mengembangkan web langsung dari HP menggunakan Acode editor memang sangat praktis. Pastikan struktur single-file HTML, CSS, dan JS tetap bersih tanpa Tailwind CSS. Ada bagian kode yang ingin dibantu periksa atau lengkapi?";
+            } else if (lower.includes('umkm') || lower.includes('sitenexs') || lower.includes('bisnis') || lower.includes('kasir') || lower.includes('qr')) {
+                return "Ekosistem Sitenexs dirancang untuk mendukung UMKM melalui Point of Sale (POS), QR ordering meja, absensi karyawan, hingga pencatatan keuangan modular. Fitur apa yang sedang Anda kerjakan saat ini?";
             } else {
-                return `Pertanyaan menarik tentang "${userText}". Dalam ekosistem Sitenexs, kami selalu siap membantu mengotomatisasi bisnis dan pengembangan platform Anda. Ada hal spesifik lain yang bisa saya bantu?`;
+                return "Paham sekali. Untuk mendukung pengembangan sistem atau bisnis Anda di Sitenexs, silakan beri tahu detail atau kendala teknisnya agar saya bisa memberikan solusi terbaik!";
             }
         }
 
@@ -644,7 +646,6 @@
                 const loadingState = document.getElementById('loadingState');
                 if (loadingState) loadingState.remove();
 
-                // Jika chat AI kosong, buat sambutan awal otomatis
                 if (isAiChat && snapshot.empty && isInitialLoad) {
                     await setDoc(doc(db, "chats", activeChatId), {
                         participants: [currentUid, 'sitenexs_ai_assistant'],
