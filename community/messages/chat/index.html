@@ -124,7 +124,9 @@
         }
         .chat-header-left { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
         .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); flex-shrink: 0; }
+        .chat-header-info { min-width: 0; display: flex; flex-direction: column; }
         .chat-header-name { font-weight: 850; font-size: 0.98rem; color: var(--text-main); letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-header-typing { font-size: 0.73rem; color: var(--accent); font-weight: 600; font-style: italic; display: none; }
 
         /* ISI CHAT */
         .chat-messages {
@@ -146,7 +148,7 @@
         .chat-messages::-webkit-scrollbar { width: 5px; }
         .chat-messages::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 10px; }
 
-        /* ANIMASI MASUK PESAN & PENCEGAHAN BLOK TEKS SAAT LONG-PRESS */
+        /* ANIMASI MASUK PESAN */
         @keyframes messageSlideIn {
             from { opacity: 0; transform: translateY(14px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
@@ -155,8 +157,7 @@
         .message-bubble {
             max-width: 70%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
             line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-            flex-shrink: 0; cursor: pointer; 
-            user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+            flex-shrink: 0; cursor: pointer; user-select: text; -webkit-user-select: text;
             animation: messageSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             transition: transform 0.2s ease;
         }
@@ -308,8 +309,9 @@
                         <img id="activeChatAvatar" src="" class="chat-header-avatar" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
                         <span class="status-dot" style="position: absolute; bottom: 2px; right: 2px; width: 10px; height: 10px; background: var(--accent); border: 2px solid #fff; border-radius: 50%;"></span>
                     </div>
-                    <div style="min-width: 0;">
+                    <div class="chat-header-info">
                         <div class="chat-header-name" id="activeChatName">Memuat...</div>
+                        <div class="chat-header-typing" id="activeChatTyping">Sedang mengetik...</div>
                     </div>
                 </div>
                 <div style="display: flex; gap: 0.4rem; flex-shrink: 0;">
@@ -377,14 +379,16 @@
         let activeChatId = null;
         let otherUserName = "Mitra Sitenexs";
         let unsubscribeMessages = null;
+        let unsubscribeChatDoc = null;
         let isInitialLoad = true;
 
         let selectedMessageId = null;
         let selectedMessageText = "";
         let selectedMessageSender = "";
         let isEditing = false;
-        
         let replyingTo = null;
+
+        let typingTimeout = null;
 
         const urlParams = new URLSearchParams(window.location.search);
         const targetUserId = urlParams.get('to');
@@ -469,6 +473,24 @@
             headerAvatar.src = avatarUrl;
             headerAvatar.onerror = () => { headerAvatar.src = fallbackAvatar; };
 
+            // --- LISTEN CHAT DOCUMENT UNTUK STATUS TYPING ---
+            if (unsubscribeChatDoc) unsubscribeChatDoc();
+            unsubscribeChatDoc = onSnapshot(doc(db, "chats", activeChatId), (chatDocSnap) => {
+                const typingEl = document.getElementById('activeChatTyping');
+                if (chatDocSnap.exists()) {
+                    const data = chatDocSnap.data();
+                    const isOtherTyping = data[`typing_${activeChatUserId}`];
+                    if (isOtherTyping) {
+                        typingEl.style.display = 'block';
+                    } else {
+                        typingEl.style.display = 'none';
+                    }
+                } else {
+                    typingEl.style.display = 'none';
+                }
+            });
+
+            // --- LISTEN MESSAGES ---
             const messagesRef = collection(db, "chats", activeChatId, "messages");
             const qMsgs = query(messagesRef, orderBy("createdAt", "asc"));
 
@@ -599,6 +621,27 @@
             }
         });
 
+        // --- TYPING DETECTOR PADA INPUT ---
+        const messageInput = document.getElementById('messageInput');
+        messageInput.addEventListener('input', () => {
+            if (!activeChatId || !currentUid) return;
+
+            // Kirim status mengetik true
+            setDoc(doc(db, "chats", activeChatId), {
+                [`typing_${currentUid}`]: true
+            }, { merge: true }).catch(() => {});
+
+            if (typingTimeout) clearTimeout(typingTimeout);
+
+            // Jika berhenti mengetik selama 1.5 detik, set false
+            typingTimeout = setTimeout(() => {
+                setDoc(doc(db, "chats", activeChatId), {
+                    [`typing_${currentUid}`]: false
+                }, { merge: true }).catch(() => {});
+            }, 1500);
+        });
+
+        // --- SISTEM DETEKSI LONG PRESS ---
         let pressTimer = null;
 
         window.openActionModal = function(e, msgId, senderUid, text) {
@@ -711,6 +754,11 @@
             if (!text || !activeChatId || !currentUid) return;
 
             inputEl.value = '';
+
+            // Pastikan status mengetik dimatikan saat pesan dikirim
+            setDoc(doc(db, "chats", activeChatId), {
+                [`typing_${currentUid}`]: false
+            }, { merge: true }).catch(() => {});
 
             if (isEditing && selectedMessageId) {
                 try {
