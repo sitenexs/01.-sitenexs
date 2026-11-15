@@ -6,7 +6,7 @@
     <title>Pesan Masuk — Komunitas Sitenexs</title>
     
     <!-- Meta SEO -->
-    <meta name="description" content="Kirim dan terima pesan langsung dengan sesama mitra UMKM di ekosistem Sitenexs.">
+    <meta name="description" content="Kirim dan terima pesan langsung dengan sesama mitra UMKM serta Asisten AI di ekosistem Sitenexs.">
     <link rel="icon" type="image/png" href="https://sitenexs.com/assets/logo/logo.png">
 
     <!-- Google Fonts -->
@@ -117,6 +117,18 @@
         .conversations-list::-webkit-scrollbar { width: 4px; }
         .conversations-list::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 10px; }
 
+        /* AI CHAT PINNED CARD */
+        .ai-chat-card {
+            display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1.25rem;
+            cursor: pointer; transition: var(--transition); background: linear-gradient(135deg, var(--primary-light) 0%, #f8fafc 100%);
+            border-bottom: 2px solid var(--border-subtle); position: relative;
+        }
+        .ai-chat-card:hover { background: #e2e8f0; }
+        .ai-avatar {
+            width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.2rem; flex-shrink: 0; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
         .conversation-item {
             display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1.25rem;
             cursor: pointer; transition: var(--transition); position: relative; border-bottom: 1px solid #f1f5f9;
@@ -167,7 +179,7 @@
         @media (max-width: 576px) {
             .nav-container { padding: 0 0.75rem; }
             .logo-text { display: none; }
-            .conversation-item { padding: 0.75rem 1rem; }
+            .conversation-item, .ai-chat-card { padding: 0.75rem 1rem; }
         }
     </style>
 </head>
@@ -198,7 +210,7 @@
             </div>
             <div class="search-box-wrapper">
                 <i class="fas fa-search"></i>
-                <input type="text" id="searchConversationInput" placeholder="Cari percakapan mitra..." onkeyup="filterConversations()">
+                <input type="text" id="searchConversationInput" placeholder="Cari percakapan mitra atau AI..." onkeyup="filterConversations()">
             </div>
         </div>
         
@@ -267,35 +279,25 @@
             const q = query(collection(db, "chats"), where("participants", "array-contains", uid));
 
             onSnapshot(q, async (snapshot) => {
-                if (snapshot.empty) {
-                    listEl.innerHTML = `
-                        <div style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted); font-size: 0.88rem;">
-                            <i class="far fa-comments fa-3x" style="color: var(--border-medium); margin-bottom: 1rem;"></i>
-                            <div style="font-weight: 750; color: var(--text-main); margin-bottom: 0.35rem; font-size: 1rem;">Belum ada percakapan</div>
-                            <div>Mulai kirim pesan dari profil anggota komunitas Sitenexs!</div>
-                        </div>`;
-                    document.getElementById('chatCountBadge').innerText = '0 Percakapan';
-                    return;
-                }
-
-                // DEDUPLIKASI KETAT BERDASARKAN CLEAN OTHERUID MENGGUNAKAN MAP
                 const chatsMap = new Map();
-                snapshot.forEach(docSnap => {
-                    const chatData = docSnap.data();
-                    if (!chatData.participants || !Array.isArray(chatData.participants)) return;
+                if (!snapshot.empty) {
+                    snapshot.forEach(docSnap => {
+                        const chatData = docSnap.data();
+                        if (!chatData.participants || !Array.isArray(chatData.participants)) return;
 
-                    const rawOtherUid = chatData.participants.find(p => String(p).trim() !== String(uid).trim());
-                    if (!rawOtherUid) return;
-                    const otherUid = String(rawOtherUid).trim();
+                        const rawOtherUid = chatData.participants.find(p => String(p).trim() !== String(uid).trim());
+                        if (!rawOtherUid) return;
+                        const otherUid = String(rawOtherUid).trim();
 
-                    const currentMillis = chatData.lastTimestamp?.toMillis() || 0;
-                    const existing = chatsMap.get(otherUid);
-                    const existingMillis = existing?.lastTimestamp?.toMillis() || 0;
+                        const currentMillis = chatData.lastTimestamp?.toMillis() || 0;
+                        const existing = chatsMap.get(otherUid);
+                        const existingMillis = existing?.lastTimestamp?.toMillis() || 0;
 
-                    if (!existing || currentMillis >= existingMillis) {
-                        chatsMap.set(otherUid, { id: docSnap.id, otherUid, ...chatData });
-                    }
-                });
+                        if (!existing || currentMillis >= existingMillis) {
+                            chatsMap.set(otherUid, { id: docSnap.id, otherUid, ...chatData });
+                        }
+                    });
+                }
 
                 const chats = Array.from(chatsMap.values());
                 chats.sort((a, b) => (b.lastTimestamp?.toMillis() || 0) - (a.lastTimestamp?.toMillis() || 0));
@@ -329,7 +331,7 @@
                     });
                 }
 
-                document.getElementById('chatCountBadge').innerText = `${allConversationsData.length} Percakapan`;
+                document.getElementById('chatCountBadge').innerText = `${allConversationsData.length + 1} Percakapan`;
                 renderConversationsList(allConversationsData);
                 setupRealtimeSublisteners(chats, uid);
             });
@@ -350,7 +352,6 @@
                     if (!docSnap.exists()) return;
                     const data = docSnap.data();
                     
-                    // Status mengetik
                     const isTyping = data[`typing_${otherUid}`];
                     const typingEl = document.getElementById(`typing-${chat.id}`);
                     const msgEl = document.getElementById(`msg-${chat.id}`);
@@ -365,7 +366,6 @@
                         }
                     }
 
-                    // Status Unread
                     const isUnread = data[`unread_${uid}`] === true;
                     const badgeEl = document.getElementById(`badge-${chat.id}`);
                     if (badgeEl && msgEl) {
@@ -383,12 +383,37 @@
 
         window.renderConversationsList = function(chats) {
             const listEl = document.getElementById('conversationsList');
+            
+            // AI Assistant Pinned Card at the Top
+            let html = `
+                <div class="ai-chat-card" onclick="window.location.href='https://sitenexs.com/community/message/chat?ai=true'">
+                    <div class="ai-avatar">
+                        <i class="fas fa-robot"></i>
+                        <span class="status-dot"></span>
+                    </div>
+                    <div class="conv-info">
+                        <div class="conv-name-row">
+                            <div class="conv-name-group">
+                                <span class="conv-name">Sitenexs AI Assistant</span>
+                                <img src="https://sitenexs.com/assets/logo/verified.png" class="conv-verif" alt="Verified" title="Official AI">
+                            </div>
+                            <span class="conv-time">Online</span>
+                        </div>
+                        <div class="conv-msg-row">
+                            <div style="min-width: 0; flex: 1;">
+                                <div class="conv-last-msg" style="font-weight: 600; color: var(--primary);">Tanya strategi UMKM, koding, atau solusi bisnis...</div>
+                            </div>
+                            <span class="unread-badge" style="display: inline-block; background: var(--accent);">AI</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
             if (chats.length === 0) {
-                listEl.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.88rem;">Tidak ada percakapan yang cocok dengan pencarian.</div>';
+                listEl.innerHTML = html + '<div style="text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.88rem;">Belum ada percakapan mitra lain.</div>';
                 return;
             }
 
-            let html = '';
             for (const chat of chats) {
                 const avatarUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(chat.otherUid)}/profile-photo`;
                 const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.otherName)}&background=2563eb&color=fff`;
@@ -416,7 +441,7 @@
                 const unreadBadgeStyle = chat.unread ? 'display: inline-block;' : 'display: none;';
 
                 html += `
-                    <div class="conversation-item" onclick="window.location.href='chat/?to=${chat.otherUid}'">
+                    <div class="conversation-item" onclick="window.location.href='https://sitenexs.com/community/message/chat?to=${chat.otherUid}'">
                         <div class="conv-avatar-wrap">
                             <img src="${avatarUrl}" class="conv-avatar" onerror="this.src='${fallbackAvatar}';">
                             <span class="status-dot"></span>
