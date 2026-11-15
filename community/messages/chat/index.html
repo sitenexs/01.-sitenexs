@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruang Chat — Komunitas Sitenexs</title>
+    
+    <!-- Meta SEO -->
+    <meta name="description" content="Kirim dan terima pesan langsung dengan sesama mitra UMKM di ekosistem Sitenexs.">
+    <link rel="icon" type="image/png" href="https://sitenexs.com/assets/logo/logo.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --accent: #10b981;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-subtle: #e2e8f0;
+            --border-medium: #cbd5e1;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04);
+            --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.07), 0 8px 10px -6px rgba(15, 23, 42, 0.07);
+            --radius-full: 9999px;
+            --radius-lg: 1rem;
+            --radius-xl: 1.25rem;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body[data-package="pro"] {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --primary-light: #f0f9ff;
+            --accent: #f59e0b;
+        }
+        body[data-package="vip"], body[data-package="ultimate"], body[data-package="premium"] {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --primary-light: #f5f3ff;
+            --accent: #fbbf24;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; font-size: 15px; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        button, input { font-family: inherit; outline: none; border: none; }
+
+        .container { width: 100%; max-width: 800px; margin: 0 auto; padding: 0 1rem; }
+
+        /* NAVBAR */
+        #navbar {
+            position: sticky; top: 0; z-index: 1000; background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);
+        }
+        .nav-container { display: flex; align-items: center; justify-content: space-between; height: 64px; width: 100%; max-width: 800px; margin: 0 auto; padding: 0 1.25rem; }
+        .logo { display: flex; align-items: center; gap: 0.65rem; font-weight: 800; font-size: 1.1rem; color: var(--text-main); }
+        .logo img { height: 32px; width: 32px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .logo-text { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; font-weight: 800; letter-spacing: -0.5px; }
+        .nav-actions { display: flex; gap: 0.65rem; align-items: center; }
+
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+            padding: 0.55rem 1.1rem; font-size: 0.85rem; font-weight: 700;
+            border-radius: var(--radius-full); cursor: pointer; transition: var(--transition);
+            border: 1px solid transparent; background: #fff; color: var(--text-main);
+        }
+        .btn-secondary { border: 1px solid var(--border-medium); background: #fff; box-shadow: var(--shadow-sm); }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+        .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-icon-only { width: 38px; height: 38px; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
+
+        /* RUANG CHAT UTAMA */
+        .chat-wrapper {
+            max-width: 800px; margin: 1.5rem auto 2.5rem auto; height: calc(100vh - 115px);
+            background: #fafbfc; border: 1px solid var(--border-subtle); border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md); overflow: hidden; display: flex; flex-direction: column; position: relative;
+        }
+        
+        .chat-header {
+            padding: 0.85rem 1.5rem; background: #fff; border-bottom: 1px solid var(--border-subtle);
+            display: flex; align-items: center; justify-content: space-between; z-index: 10; box-shadow: var(--shadow-sm); flex-shrink: 0;
+        }
+        .chat-header-left { display: flex; align-items: center; gap: 0.85rem; }
+        .chat-header-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); }
+        .chat-header-name { font-weight: 850; font-size: 0.98rem; color: var(--text-main); }
+        .chat-header-status { font-size: 0.75rem; color: var(--accent); font-weight: 600; display: flex; align-items: center; gap: 0.35rem; }
+
+        .chat-messages {
+            flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.85rem;
+            background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
+        }
+        .chat-messages::-webkit-scrollbar { width: 5px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 10px; }
+
+        .message-bubble {
+            max-width: 70%; padding: 0.75rem 1rem; border-radius: var(--radius-lg); font-size: 0.88rem;
+            line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        .message-bubble.incoming { background: #fff; color: var(--text-main); border: 1px solid var(--border-subtle); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .message-bubble.outgoing { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .message-time { font-size: 0.65rem; opacity: 0.75; margin-top: 0.3rem; text-align: right; font-weight: 500; }
+
+        /* INPUT PESAN */
+        .chat-input-box {
+            padding: 1rem 1.5rem; background: #fff; border-top: 1px solid var(--border-subtle);
+            display: flex; align-items: center; gap: 0.85rem; box-shadow: 0 -4px 12px rgba(0,0,0,0.02); flex-shrink: 0;
+        }
+        .chat-input-actions { display: flex; gap: 0.5rem; color: var(--text-muted); }
+        .chat-input-actions button { background: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; transition: var(--transition); padding: 0.25rem; }
+        .chat-input-actions button:hover { color: var(--primary); }
+
+        .chat-input {
+            flex: 1; padding: 0.75rem 1.15rem; background: var(--bg-body); border: 1px solid var(--border-medium);
+            border-radius: var(--radius-full); font-size: 0.88rem; color: var(--text-main); transition: var(--transition);
+        }
+        .chat-input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        
+        .chat-send-btn {
+            width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: #fff;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); flex-shrink: 0;
+        }
+        .chat-send-btn:hover { background: var(--primary-dark); transform: scale(1.05); }
+
+        /* TOAST */
+        #toastContainer { position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 0.5rem; max-width: 340px; }
+        .toast { background: #0f172a; color: #fff; padding: 0.85rem 1.15rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 0.75rem; border-left: 4px solid var(--accent); }
+
+        @media (max-width: 768px) {
+            .chat-wrapper { height: calc(100vh - 64px); margin: 0; border: none; border-radius: 0; }
+            .message-bubble { max-width: 85%; }
+        }
+    </style>
+</head>
+<body data-package="basic">
+
+    <div id="toastContainer"></div>
+
+    <!-- NAVBAR -->
+    <header id="navbar">
+        <div class="nav-container">
+            <a href="messages.html" class="logo">
+                <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff'">
+                <span class="logo-text">Sitenexs Chat</span>
+            </a>
+            <div class="nav-actions">
+                <a href="messages.html" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Kotak Masuk</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- RUANG CHAT -->
+    <main class="container" style="padding: 0;">
+        <div class="chat-wrapper">
+            <div class="chat-header">
+                <div class="chat-header-left">
+                    <a href="messages.html" class="btn btn-secondary btn-icon-only"><i class="fas fa-arrow-left"></i></a>
+                    <div style="position: relative;">
+                        <img id="activeChatAvatar" src="" class="chat-header-avatar" alt="Avatar">
+                        <span class="status-dot" style="position: absolute; bottom: 2px; right: 2px; width: 10px; height: 10px; background: var(--accent); border: 2px solid #fff; border-radius: 50%;"></span>
+                    </div>
+                    <div>
+                        <div class="chat-header-name" id="activeChatName">Memuat...</div>
+                        <div class="chat-header-status"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> Aktif di Sitenexs</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.4rem;">
+                    <button type="button" class="btn btn-secondary btn-icon-only" title="Informasi Mitra" onclick="showToast('Fitur profil mitra aktif.')"><i class="fas fa-info"></i></button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div style="text-align: center; margin: auto; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+                    <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom: 0.75rem;"></i>
+                    <div>Memuat pesan...</div>
+                </div>
+            </div>
+
+            <form class="chat-input-box" id="sendMessageForm" onsubmit="sendDirectMessage(event)">
+                <div class="chat-input-actions">
+                    <button type="button" title="Lampirkan File" onclick="showToast('Lampiran file akan segera hadir.')"><i class="fas fa-paperclip"></i></button>
+                </div>
+                <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." required autocomplete="off">
+                <button type="submit" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane"></i></button>
+            </form>
+        </div>
+    </main>
+
+    <!-- FIREBASE & SUPABASE SCRIPT -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
+            authDomain: 'sitenexs-62919.firebaseapp.com',
+            projectId: 'sitenexs-62919',
+            storageBucket: 'sitenexs-62919.firebasestorage.app',
+            messagingSenderId: '1060348110644',
+            appId: '1:1060348110644:web:e45af14d5f26a9cf8e6761'
+        };
+
+        const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
+        const avatarBucket = 'profile-photos';
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        setPersistence(auth, browserLocalPersistence).catch(err => console.log(err));
+
+        let currentUid = null;
+        let activeChatUserId = null;
+        let activeChatId = null;
+        let unsubscribeMessages = null;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetUserId = urlParams.get('to');
+
+        if (!targetUserId) {
+            window.location.replace('messages.html');
+        } else {
+            activeChatUserId = targetUserId;
+        }
+
+        window.showToast = function(msg) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fas fa-check-circle" style="color: var(--accent); font-size: 1rem;"></i> <span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3200);
+        }
+
+        async function initChat(user) {
+            currentUid = user.uid;
+            
+            if (activeChatUserId === currentUid) {
+                window.location.replace('messages.html');
+                return;
+            }
+
+            const participants = [currentUid, activeChatUserId].sort();
+            activeChatId = `${participants[0]}_${participants[1]}`;
+
+            let otherName = "Mitra Sitenexs";
+            try {
+                const userSnap = await getDoc(doc(db, "users", activeChatUserId));
+                if (userSnap.exists()) {
+                    const d = userSnap.data();
+                    otherName = d.namaLengkap || (d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '')) || otherName;
+                }
+            } catch(e) {}
+
+            const avatarUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(activeChatUserId)}/profile-photo`;
+            const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(otherName)}&background=2563eb&color=fff`;
+
+            document.getElementById('activeChatName').innerText = otherName;
+            const headerAvatar = document.getElementById('activeChatAvatar');
+            headerAvatar.src = avatarUrl;
+            headerAvatar.onerror = () => { headerAvatar.src = fallbackAvatar; };
+
+            const messagesRef = collection(db, "chats", activeChatId, "messages");
+            const qMsgs = query(messagesRef, orderBy("createdAt", "asc"));
+
+            if (unsubscribeMessages) unsubscribeMessages();
+
+            unsubscribeMessages = onSnapshot(qMsgs, (snapshot) => {
+                const messagesContainer = document.getElementById('chatMessages');
+                let msgHtml = '';
+
+                if (snapshot.empty) {
+                    messagesContainer.innerHTML = `
+                        <div style="text-align: center; margin: auto; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+                            <i class="far fa-paper-plane fa-3x" style="color: var(--border-medium); margin-bottom: 0.75rem;"></i>
+                            <div style="font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">Belum ada pesan</div>
+                            <div>Kirim salam atau mulai diskusi bisnis dengan ${otherName}!</div>
+                        </div>`;
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const m = docSnap.data();
+                    const isOutgoing = m.senderUid === currentUid;
+                    const timeStr = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Baru saja';
+
+                    msgHtml += `
+                        <div class="message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}">
+                            <div>${m.text}</div>
+                            <div class="message-time">${timeStr}</div>
+                        </div>
+                    `;
+                });
+
+                messagesContainer.innerHTML = msgHtml;
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                initChat(user);
+            } else {
+                const savedUid = localStorage.getItem('sitenexs_uid');
+                if (savedUid) {
+                    initChat({ uid: savedUid });
+                } else {
+                    window.location.replace("https://account.sitenexs.com/sign-in/");
+                }
+            }
+        });
+
+        window.sendDirectMessage = async function(event) {
+            event.preventDefault();
+            const inputEl = document.getElementById('messageInput');
+            const text = inputEl.value.trim();
+            if (!text || !activeChatId || !activeChatUserId) return;
+
+            inputEl.value = '';
+
+            try {
+                const chatDocRef = doc(db, "chats", activeChatId);
+                const chatSnap = await getDoc(chatDocRef);
+
+                if (!chatSnap.exists()) {
+                    await setDoc(chatDocRef, {
+                        participants: [currentUid, activeChatUserId],
+                        lastMessage: text,
+                        lastTimestamp: serverTimestamp()
+                    });
+                } else {
+                    await setDoc(chatDocRef, {
+                        lastMessage: text,
+                        lastTimestamp: serverTimestamp()
+                    }, { merge: true });
+                }
+
+                await addDoc(collection(db, "chats", activeChatId, "messages"), {
+                    senderUid: currentUid,
+                    text: text,
+                    createdAt: serverTimestamp()
+                });
+
+            } catch (err) {
+                console.error("Gagal mengirim pesan:", err);
+                showToast("Gagal mengirim pesan. Periksa koneksi Anda.");
+            }
+        }
+    </script>
+</body>
+</html>
