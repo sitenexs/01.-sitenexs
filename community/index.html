@@ -67,7 +67,7 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* SISTEM TEMA PAKET LANGGANAN */
+        /* SISTEM TEMA PAKET LANGGANAN (BASIC, PRO, PREMIUM) */
         body[data-package="pro"] {
             --primary: #0284c7;
             --primary-dark: #0369a1;
@@ -82,26 +82,11 @@
             box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35);
         }
 
-        body[data-package="vip"],
-        body[data-package="ultimate"],
-        body[data-package="premium"] {
-            --primary: #7c3aed;
-            --primary-dark: #6d28d9;
-            --primary-light: #f5f3ff;
-            --accent: #fbbf24;
-            --border-accent: #c084fc;
-            --shadow-card: 0 25px 50px -12px rgba(124, 58, 237, 0.28);
-        }
-
-        body[data-package="vip"] #navbar,
-        body[data-package="ultimate"] #navbar,
         body[data-package="premium"] #navbar {
             border-bottom: 2px solid transparent;
             border-image: linear-gradient(90deg, #7c3aed, #fbbf24, #7c3aed) 1;
         }
 
-        body[data-package="vip"] .btn-primary,
-        body[data-package="ultimate"] .btn-primary,
         body[data-package="premium"] .btn-primary {
             background: linear-gradient(135deg, #7c3aed 0%, #d97706 100%);
             box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
@@ -260,9 +245,6 @@
             font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: var(--radius-full);
             background: var(--bg-body); color: var(--text-muted); flex-shrink: 0; border: 1px solid var(--border-subtle);
         }
-        .badge-pengumuman { background: #fef2f2; color: #ef4444; border-color: #fca5a5; }
-        .badge-tips { background: #fffbeb; color: #d97706; border-color: #fcd34d; }
-        .badge-bug { background: #faf5ff; color: #7e22ce; border-color: #d8b4fe; }
         .badge-priority { background: #eff6ff; color: var(--primary); border-color: var(--border-accent); display: inline-flex; align-items: center; gap: 0.2rem; }
 
         .post-title { font-size: 0.95rem; font-weight: 800; margin-bottom: 0.3rem; line-height: 1.3; color: var(--text-main); word-break: break-word; }
@@ -765,10 +747,10 @@
                     const data = userDocSnap.data();
                     let rawPkg = data.paketLangganan || data.paket || 'Basic';
                     rawPkg = rawPkg.replace(/^(paket\s*)+/i, '').trim().toLowerCase();
-                    if (rawPkg.includes('pro') || rawPkg.includes('business')) {
+                    if (rawPkg.includes('pro')) {
                         pkg = 'pro';
-                    } else if (rawPkg.includes('vip') || rawPkg.includes('ultimate') || rawPkg.includes('premium')) {
-                        pkg = 'vip';
+                    } else if (rawPkg.includes('premium')) {
+                        pkg = 'premium';
                     }
                 }
                 document.body.setAttribute('data-package', pkg);
@@ -1049,12 +1031,6 @@
             if (isPrioritized) {
                 badgesHtml += `<span class="post-badge badge-priority"><i class="fas fa-thumbtack"></i> Unggulan</span>`;
             }
-            if (data.kategori && data.kategori !== "Diskusi Umum") {
-                let badgeClass = 'badge-tips';
-                if (data.kategori === 'Pengumuman') badgeClass = 'badge-pengumuman';
-                else if (data.kategori === 'Lapor Bug') badgeClass = 'badge-bug';
-                badgesHtml += `<span class="post-badge ${badgeClass}">${data.kategori}</span>`;
-            }
 
             const authorPhoto = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(authorUid)}/profile-photo`;
             const authorFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.penulis)}&background=2563eb&color=fff`;
@@ -1237,7 +1213,6 @@
                 const dataA = a.data();
                 const dataB = b.data();
                 
-                // Jika ada permalink target, letakkan di urutan paling atas
                 if (permalinkPostId) {
                     if (a.id === permalinkPostId) return -1;
                     if (b.id === permalinkPostId) return 1;
@@ -1267,7 +1242,6 @@
             } else {
                 postContainer.innerHTML = htmlString;
                 
-                // Scroll otomatis ke postingan jika diakses melalui permalink
                 if (isInitialLoad && permalinkPostId) {
                     setTimeout(() => {
                         const targetEl = document.getElementById(`post-${permalinkPostId}`);
