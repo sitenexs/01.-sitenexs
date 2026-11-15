@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sitenexs.com/sitemap.xml
+Sitemap: https://sitenexs.com/sitemap-post.xml
