@@ -146,15 +146,28 @@
         .chat-messages::-webkit-scrollbar { width: 5px; }
         .chat-messages::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 10px; }
 
+        /* ANIMASI MASUK PESAN (MESSAGE POP-IN & SLIDE UP) */
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(14px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
         .message-bubble {
             max-width: 70%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
             line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
             flex-shrink: 0; cursor: pointer;
             user-select: text; -webkit-user-select: text;
+            animation: messageSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); align-self: flex-start; border-bottom-left-radius: 4px; }
-        .message-bubble.outgoing { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
+        .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); align-self: flex-start; border-bottom-left-radius: 4px; transform-origin: bottom left; }
+        .message-bubble.outgoing { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); transform-origin: bottom right; }
         .message-time { font-size: 0.65rem; opacity: 0.75; margin-top: 0.3rem; text-align: right; font-weight: 500; }
         .edited-tag { font-size: 0.6rem; opacity: 0.7; font-style: italic; margin-left: 4px; }
 
@@ -342,7 +355,6 @@
         let activeChatUserId = null;
         let activeChatId = null;
         let unsubscribeMessages = null;
-        let renderedMessageIds = new Set(); // Menyimpan ID pesan yang sudah dirender agar tidak render ulang total
 
         let selectedMessageId = null;
         let selectedMessageText = "";
@@ -419,7 +431,7 @@
                 const existingIds = new Set(Array.from(existingBubbles).map(b => b.dataset.id));
                 const incomingIds = new Set(snapshot.docs.map(d => d.id));
 
-                // 1. Hapus elemen pesan di DOM yang sudah dihapus di database (jika ada)
+                // 1. Hapus pesan yang sudah dihapus dari database
                 existingBubbles.forEach(bubble => {
                     if (!incomingIds.has(bubble.dataset.id)) {
                         bubble.remove();
@@ -431,7 +443,7 @@
                     shouldScrollToBottom = true;
                 }
 
-                // 2. Tambahkan atau perbarui pesan secara incremental tanpa mereset DOM lain (mencegah kedip)
+                // 2. Tambah/Perbarui pesan secara incremental tanpa kedip
                 snapshot.forEach(docSnap => {
                     const m = docSnap.data();
                     const msgId = docSnap.id;
@@ -443,7 +455,6 @@
                     const existingBubble = messagesContainer.querySelector(`[data-id="${msgId}"]`);
 
                     if (existingBubble) {
-                        // Perbarui teks/status jika ada perubahan (misal: habis diedit)
                         const textNode = existingBubble.querySelector('div');
                         const expectedHtml = `${escapeHtml(m.text)} ${editedLabel}`;
                         if (textNode.innerHTML !== expectedHtml) {
@@ -451,7 +462,6 @@
                             existingBubble.dataset.text = safeText;
                         }
                     } else {
-                        // Tambahkan bubble pesan baru secara mulus
                         shouldScrollToBottom = true;
                         const bubbleDiv = document.createElement('div');
                         bubbleDiv.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
@@ -464,7 +474,6 @@
                             <div class="message-time">${timeStr}</div>
                         `;
 
-                        // Event listener untuk long press
                         bubbleDiv.addEventListener('contextmenu', (e) => openActionModal(e, msgId, m.senderUid, safeText));
                         bubbleDiv.addEventListener('touchstart', (e) => startTouchTimer(e, msgId, m.senderUid, safeText));
                         bubbleDiv.addEventListener('touchend', clearTouchTimer);
@@ -495,7 +504,7 @@
             }
         });
 
-        // --- SISTEM DETEKSI LONG PRESS (TEKAN LAMA) ---
+        // --- SISTEM DETEKSI LONG PRESS ---
         let pressTimer = null;
 
         window.openActionModal = function(e, msgId, senderUid, text) {
@@ -537,7 +546,7 @@
             if (pressTimer) clearTimeout(pressTimer);
         }
 
-        // --- AKSI MENU (SALIN, EDIT, HAPUS) ---
+        // --- AKSI MENU ---
         window.handleCopyMessage = function() {
             navigator.clipboard.writeText(selectedMessageText).then(() => {
                 showToast("Pesan berhasil disalin ke clipboard.");
@@ -583,7 +592,7 @@
             }
         }
 
-        // --- KIRIM / UPDATE PESAN DENGAN OPTIMISTIC RENDERING ---
+        // --- KIRIM / UPDATE PESAN ---
         window.handleChatFormSubmit = async function(event) {
             event.preventDefault();
             const inputEl = document.getElementById('messageInput');
@@ -623,7 +632,6 @@
                         }, { merge: true });
                     }
 
-                    // Kirim ke Firestore secara asinkron tanpa menunggu UI berkedip
                     await addDoc(collection(db, "chats", activeChatId, "messages"), {
                         senderUid: currentUid,
                         text: text,
