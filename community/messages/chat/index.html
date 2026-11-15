@@ -146,7 +146,7 @@
         .chat-messages::-webkit-scrollbar { width: 5px; }
         .chat-messages::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 10px; }
 
-        /* ANIMASI MASUK PESAN */
+        /* ANIMASI MASUK PESAN & PENCEGAHAN BLOK TEKS SAAT LONG-PRESS */
         @keyframes messageSlideIn {
             from { opacity: 0; transform: translateY(14px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
@@ -155,7 +155,8 @@
         .message-bubble {
             max-width: 70%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
             line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-            flex-shrink: 0; cursor: pointer; user-select: text; -webkit-user-select: text;
+            flex-shrink: 0; cursor: pointer; 
+            user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
             animation: messageSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             transition: transform 0.2s ease;
         }
@@ -376,15 +377,14 @@
         let activeChatId = null;
         let otherUserName = "Mitra Sitenexs";
         let unsubscribeMessages = null;
-        let isInitialLoad = true; // Untuk mencegah suara berbunyi saat memuat riwayat awal
+        let isInitialLoad = true;
 
-        // Variabel untuk Edit, Hapus, & Reply
         let selectedMessageId = null;
         let selectedMessageText = "";
         let selectedMessageSender = "";
         let isEditing = false;
         
-        let replyingTo = null; // Menyimpan data pesan yang sedang dibalas
+        let replyingTo = null;
 
         const urlParams = new URLSearchParams(window.location.search);
         const targetUserId = urlParams.get('to');
@@ -404,7 +404,6 @@
             setTimeout(() => toast.remove(), 3200);
         }
 
-        // --- EFEK SUARA NOTIFIKASI (WEB AUDIO API) ---
         function playChatSound(type) {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -416,25 +415,21 @@
                 gain.connect(ctx.destination);
 
                 if (type === 'send') {
-                    // Nada naik (Chime terkirim)
-                    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12); // A5
+                    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
                     gain.gain.setValueAtTime(0.08, ctx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
                     osc.start();
                     osc.stop(ctx.currentTime + 0.15);
                 } else if (type === 'receive') {
-                    // Dua nada lembut (Pesan diterima)
-                    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-                    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.08); // G5
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.08);
                     gain.gain.setValueAtTime(0.08, ctx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
                     osc.start();
                     osc.stop(ctx.currentTime + 0.22);
                 }
-            } catch (e) {
-                // Audio diblokir browser sebelum user interaksi pertama, diabaikan dengan aman
-            }
+            } catch (e) {}
         }
 
         function escapeHtml(text) {
@@ -489,7 +484,6 @@
                 const existingBubbles = messagesContainer.querySelectorAll('.message-bubble');
                 const incomingIds = new Set(snapshot.docs.map(d => d.id));
 
-                // 1. Hapus pesan yang sudah dihapus di database
                 existingBubbles.forEach(bubble => {
                     if (!incomingIds.has(bubble.dataset.id)) {
                         bubble.remove();
@@ -514,7 +508,6 @@
                     const existingBubble = messagesContainer.querySelector(`[data-id="${msgId}"]`);
 
                     if (existingBubble) {
-                        // Update teks jika diedit
                         const textContentDiv = existingBubble.querySelector('.message-content-text');
                         const expectedHtml = `${escapeHtml(m.text)} ${editedLabel}`;
                         if (textContentDiv && textContentDiv.innerHTML !== expectedHtml) {
@@ -522,10 +515,8 @@
                             existingBubble.dataset.text = safeText;
                         }
                     } else {
-                        // Pesan baru masuk / terkirim
                         shouldScrollToBottom = true;
                         
-                        // Bunyikan suara terima jika pesan baru dari orang lain dan bukan saat initial load
                         if (!isInitialLoad && docIndex > previousDocCount && m.senderUid !== currentUid) {
                             playChatSound('receive');
                         }
@@ -553,7 +544,6 @@
                             <div class="message-time">${timeStr}</div>
                         `;
 
-                        // --- SWIPE TO REPLY HANDLERS ---
                         let startX = 0;
                         let currentX = 0;
                         bubbleDiv.addEventListener('touchstart', (e) => {
@@ -609,7 +599,6 @@
             }
         });
 
-        // --- SISTEM DETEKSI LONG PRESS ---
         let pressTimer = null;
 
         window.openActionModal = function(e, msgId, senderUid, text) {
@@ -651,7 +640,6 @@
             if (pressTimer) clearTimeout(pressTimer);
         }
 
-        // --- MENU AKSI & REPLY ---
         window.handleReplyMessage = function() {
             closeActionModal();
             triggerReplyMode(selectedMessageSender === currentUid ? 'Anda' : otherUserName, selectedMessageText, selectedMessageId);
@@ -716,7 +704,6 @@
             }
         }
 
-        // --- KIRIM / UPDATE PESAN ---
         window.handleChatFormSubmit = async function(event) {
             event.preventDefault();
             const inputEl = document.getElementById('messageInput');
@@ -740,7 +727,7 @@
                 }
             } else {
                 try {
-                    playChatSound('send'); // Bunyikan suara terkirim
+                    playChatSound('send');
 
                     const chatDocRef = doc(db, "chats", activeChatId);
                     const chatSnap = await getDoc(chatDocRef);
