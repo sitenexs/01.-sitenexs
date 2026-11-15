@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sitenexs Instagram Post Generator</title>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #050b14;
+            --bg-card: #0a1424;
+            --border-color: #162a4a;
+            --sitenexs-cyan: #00e5ff;
+            --sitenexs-blue: #0070f3;
+            --sitenexs-accent: #338eff;
+            --text-main: #f0f6fc;
+            --text-muted: #8b949e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--sitenexs-accent); }
+
+        /* Notification Toast */
+        #toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            background: #0a192f;
+            border: 1px solid var(--sitenexs-cyan);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 229, 255, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        #toast.show {
+            transform: translateX(0);
+        }
+
+        /* Header */
+        header {
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(5, 11, 20, 0.9);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--sitenexs-blue), var(--sitenexs-cyan));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #050b14;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);
+            overflow: hidden;
+        }
+        .logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 6px;
+        }
+        .logo-text h1 {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #ffffff, var(--sitenexs-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .logo-text p {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .badge-tag {
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--sitenexs-cyan);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--sitenexs-cyan);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(0, 229, 255, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
+        }
+
+        /* Main Layout - Optimized Studio Workspace */
+        main {
+            flex: 1;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 24px 20px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+        @media (min-width: 1024px) {
+            main {
+                grid-template-columns: 450px 1fr;
+            }
+            .col-preview { 
+                position: sticky;
+                top: 94px;
+            }
+        }
+
+        /* Card Container */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            margin-bottom: 20px;
+        }
+        .card-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--sitenexs-cyan);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            background: rgba(0, 229, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--sitenexs-cyan);
+        }
+
+        /* Upload Drop Zone */
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 14px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(10, 20, 36, 0.6);
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .drop-zone:hover {
+            border-color: rgba(0, 229, 255, 0.5);
+            background: rgba(10, 20, 36, 0.9);
+        }
+        .drop-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #112240;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            color: var(--sitenexs-cyan);
+            font-size: 15px;
+            transition: transform 0.3s ease;
+        }
+        .drop-zone:hover .drop-icon {
+            transform: scale(1.1);
+        }
+        .drop-zone p {
+            font-size: 12px;
+            color: var(--text-main);
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        .drop-zone span {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Preset Images Grid */
+        .preset-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .preset-btn {
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            height: 60px;
+            background: #050b14;
+            transition: all 0.2s ease;
+            position: relative;
+            outline: none;
+        }
+        .preset-btn:hover {
+            border-color: rgba(0, 229, 255, 0.6);
+            transform: translateY(-2px);
+        }
+        .preset-btn.active {
+            border-color: var(--sitenexs-cyan);
+            box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.3);
+        }
+        .preset-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Adjustments Stack */
+        .adjust-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .form-control {
+            width: 100%;
+            background: #050b14;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 14px;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: var(--sitenexs-cyan);
+        }
+        textarea.form-control {
+            resize: none;
+            height: 65px;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--sitenexs-cyan);
+            cursor: pointer;
+        }
+
+        /* Frame Selection Grid */
+        .frame-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        @media(min-width: 640px) {
+            .frame-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        .frame-btn {
+            background: rgba(10, 20, 36, 0.8);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            height: 85px;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .frame-btn:hover {
+            border-color: rgba(0, 229, 255, 0.6);
+        }
+        .frame-btn.active {
+            border-color: var(--sitenexs-cyan);
+            box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.3);
+            background: rgba(10, 20, 36, 1);
+        }
+        .frame-icon-preview {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .frame-btn span {
+            font-size: 11px;
+            font-weight: 500;
+            color: #cbd5e1;
+        }
+
+        /* Frame Visual Previews */
+        .prev-vignette { background: radial-gradient(circle, #0070f3 0%, #050b14 80%); }
+        .prev-banner { background: linear-gradient(to top, #00e5ff, #050b14); }
+        .prev-border { border: 2px solid var(--sitenexs-cyan); background: rgba(5,11,20,0.5); }
+        .prev-diagonal { background: linear-gradient(135deg, var(--sitenexs-cyan), #050b14); }
+
+        /* Toggle & Checkbox */
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+        .checkbox-label input {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--sitenexs-cyan);
+            cursor: pointer;
+        }
+
+        /* Canvas Container */
+        .canvas-container {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #000;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 4px 20px rgba(0,0,0,0.8);
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Action Buttons */
+        .btn-download {
+            width: 100%;
+            background: linear-gradient(135deg, var(--sitenexs-blue), var(--sitenexs-cyan));
+            color: #050b14;
+            font-weight: 700;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 14px;
+            box-shadow: 0 8px 20px rgba(0, 229, 255, 0.25);
+            transition: all 0.2s ease;
+            margin-top: 16px;
+        }
+        .btn-download:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+        .btn-download:active {
+            transform: scale(0.98);
+        }
+        .preview-footer-note {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 10px;
+        }
+        .preview-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .reset-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .reset-btn:hover {
+            color: var(--sitenexs-cyan);
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-dark);
+            padding: 24px 0;
+            text-align: center;
+            font-size: 12px;
+            color: #484f58;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Notification Toast -->
+    <div id="toast">
+        <i class="fa-solid fa-circle-check" style="color: var(--sitenexs-cyan); font-size: 18px;"></i>
+        <span id="toast-message">Berhasil!</span>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo-wrapper">
+                <div class="logo-icon">
+                    <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" crossorigin="anonymous">
+                </div>
+                <div class="logo-text">
+                    <h1>SITENEXS</h1>
+                    <p>Instagram Post Studio</p>
+                </div>
+            </div>
+            <div>
+                <span class="badge-tag">
+                    <span class="pulse-dot"></span> 1080x1080 Square
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Left Column: Sticky Live Preview -->
+        <div class="col-preview">
+            <div class="card">
+                <div class="preview-header-bar">
+                    <div class="card-title" style="margin-bottom: 0;">
+                        <i class="fa-solid fa-eye" style="color: var(--sitenexs-cyan);"></i>
+                        <span>Live Preview</span>
+                    </div>
+                    <button type="button" onclick="resetDefaults()" class="reset-btn">
+                        <i class="fa-solid fa-rotate-right" style="margin-right: 4px;"></i> Reset
+                    </button>
+                </div>
+
+                <!-- Canvas Preview Container -->
+                <div class="canvas-container">
+                    <canvas id="post-canvas" width="1080" height="1080"></canvas>
+                </div>
+
+                <!-- Download Button -->
+                <button type="button" onclick="downloadImage()" class="btn-download">
+                    <i class="fa-solid fa-download" style="font-size: 16px;"></i>
+                    <span>Download Post Instagram (PNG)</span>
+                </button>
+                <p class="preview-footer-note">Hasil render otomatis berukuran 1080x1080 piksel.</p>
+            </div>
+        </div>
+
+        <!-- Right Column: Controls -->
+        <div class="col-controls">
+            
+            <!-- Step 1: Upload Image & Templates -->
+            <div class="card">
+                <div class="card-title">
+                    <div class="step-num">1</div>
+                    <span>Pilih atau Upload Foto Background</span>
+                </div>
+                
+                <!-- Gallery Upload -->
+                <label id="drop-zone" class="drop-zone">
+                    <div class="drop-icon">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <p>Klik untuk upload foto dari galeri</p>
+                    <span>JPG, PNG, WEBP (Min. 1080px)</span>
+                    <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                </label>
+
+                <!-- Preset Template Photos from Internet (8 Choices) -->
+                <div class="preset-section-title">Pilih Template Sitenexs Populer (8 Pilihan)</div>
+                <div class="preset-grid">
+                    <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1080&auto=format&fit=crop', this)" class="preset-btn active" title="Restoran & Kafe">
+                        <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=200&auto=format&fit=crop" crossorigin="anonymous" alt="Restoran">
+                    </button>
+                    <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1080&auto=format&fit=crop', this)" class="preset-btn" title="Grafik Keuangan">
+                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=200&auto=format&fit=crop" crossorigin="anonymous" alt="Keuangan">
+                    </button>
+                    <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1080&auto=format&fit=crop', this)" class="preset-btn" title="Teknologi AI">
+                        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=200&auto=format&fit=crop" crossorigin="anonymous" alt="Teknologi">
+                    </button>
+                    <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1080&auto=format&fit=crop', this)" class="preset-btn" title="Bisnis & Tim">
+                        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=200&auto=format&fit=crop" crossorigin="anonymous" alt="Bisnis">
+                    </button>
+                    <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=1080&auto=format&fit=crop', this)" class="preset-btn" title="Coffee Shop">
+                        <img src="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=200&auto=format&fit=crop" crossorigin="anonymous" alt="Coffee">
+                    </button>
+                    <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1080&auto=format&fit=crop', this)" class="preset-btn" title="Kantor Modern">
+                        <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=200&auto=format&fit=crop" crossorigin="anonymous" alt="Office">
+                    </button>
+                    <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1556742049-0a67d553c2a5?q=80&w=1080&auto=format&fit=crop', this)" class="preset-btn" title="Retail & Kasir">
+                        <img src="https://images.unsplash.com/photo-1556742049-0a67d553c2a5?q=80&w=200&auto=format&fit=crop" crossorigin="anonymous" alt="Retail">
+                    </button>
+                    <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=1080&auto=format&fit=crop', this)" class="preset-btn" title="Digital Creative">
+                        <img src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=200&auto=format&fit=crop" crossorigin="anonymous" alt="Creative">
+                    </button>
+                </div>
+                
+                <!-- Image Adjustments (Zoom, Vertical Crop Offset, Brightness) -->
+                <div id="image-adjustments" class="adjust-stack">
+                    <div>
+                        <label>Zoom Foto: <span id="zoom-val">100</span>%</label>
+                        <input type="range" id="zoom-range" min="50" max="250" value="100">
+                    </div>
+                    <div>
+                        <label>Geser Vertikal (Crop): <span id="offsety-val">0</span>%</label>
+                        <input type="range" id="offsety-range" min="-100" max="100" value="0">
+                    </div>
+                    <div>
+                        <label>Kecerahan: <span id="brightness-val">100</span>%</label>
+                        <input type="range" id="brightness-range" min="50" max="150" value="100">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Select Frame / Overlay -->
+            <div class="card">
+                <div class="card-title">
+                    <div class="step-num">2</div>
+                    <span>Pilih Bingkai Gradasi Biru Sitenexs</span>
+                </div>
+                <div class="frame-grid">
+                    <button type="button" onclick="setFrame('vignette')" class="frame-btn active" data-frame="vignette">
+                        <div class="frame-icon-preview prev-vignette"></div>
+                        <span>Cyber Vignette</span>
+                    </button>
+                    <button type="button" onclick="setFrame('bottom-banner')" class="frame-btn" data-frame="bottom-banner">
+                        <div class="frame-icon-preview prev-banner"></div>
+                        <span>Bottom Horizon</span>
+                    </button>
+                    <button type="button" onclick="setFrame('full-border')" class="frame-btn" data-frame="full-border">
+                        <div class="frame-icon-preview prev-border"></div>
+                        <span>Neon Border</span>
+                    </button>
+                    <button type="button" onclick="setFrame('diagonal')" class="frame-btn" data-frame="diagonal">
+                        <div class="frame-icon-preview prev-diagonal"></div>
+                        <span>Diagonal Glow</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Text & Caption Customization -->
+            <div class="card">
+                <div class="card-title">
+                    <div class="step-num">3</div>
+                    <span>Kustomisasi Teks & Tag</span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label>Badge / Tag Atas</label>
+                        <input type="text" id="input-badge" value="SITENEXS INSIGHTS" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Posisi Teks</label>
+                        <select id="input-align" class="form-control">
+                            <option value="left">Rata Kiri</option>
+                            <option value="center">Tengah (Center)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Judul Utama (Heading)</label>
+                    <textarea id="input-title" class="form-control">Solusi Digital & Manajemen UMKM Modern Bersama Sitenexs</textarea>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 8px;">
+                    <label>Sub-Judul / Keterangan</label>
+                    <input type="text" id="input-subtitle" value="Tingkatkan efisiensi operasional bisnis Anda sekarang." class="form-control">
+                </div>
+
+                <div style="padding-top: 6px;">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggle-branding" checked>
+                        <span>Tampilkan Sitenexs Footer Brand</span>
+                    </label>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Sitenexs Instagram Post Generator. All rights reserved.</p>
+    </footer>
+
+    <!-- Application Script -->
+    <script>
+        let currentFrame = 'vignette';
+        let uploadedImage = null;
+        let imageZoom = 100;
+        let imageOffsetY = 0;
+        let imageBrightness = 100;
+
+        // Load Sitenexs official logo for Canvas rendering
+        const sitenexsLogo = new Image();
+        sitenexsLogo.crossOrigin = "anonymous";
+        sitenexsLogo.src = "https://sitenexs.com/assets/logo/logo.png";
+        sitenexsLogo.onload = () => {
+            renderCanvas();
+        };
+
+        // Default initial preset image (Restoran / Kafe)
+        const defaultImg = new Image();
+        defaultImg.crossOrigin = "anonymous";
+        defaultImg.src = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1080&auto=format&fit=crop";
+        defaultImg.onload = () => {
+            if (!uploadedImage) {
+                uploadedImage = defaultImg;
+                renderCanvas();
+            }
+        };
+
+        const canvas = document.getElementById('post-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // DOM elements
+        const imageUpload = document.getElementById('image-upload');
+        const dropZone = document.getElementById('drop-zone');
+        const zoomRange = document.getElementById('zoom-range');
+        const zoomVal = document.getElementById('zoom-val');
+        const offsetYRange = document.getElementById('offsety-range');
+        const offsetYVal = document.getElementById('offsety-val');
+        const brightnessRange = document.getElementById('brightness-range');
+        const brightnessVal = document.getElementById('brightness-val');
+        
+        const inputBadge = document.getElementById('input-badge');
+        const inputTitle = document.getElementById('input-title');
+        const inputSubtitle = document.getElementById('input-subtitle');
+        const inputAlign = document.getElementById('input-align');
+        const toggleBranding = document.getElementById('toggle-branding');
+
+        // Input listeners
+        [inputBadge, inputTitle, inputSubtitle, inputAlign, toggleBranding, zoomRange, offsetYRange, brightnessRange].forEach(el => {
+            el.addEventListener('input', () => {
+                if (el === zoomRange) {
+                    imageZoom = parseInt(zoomRange.value);
+                    zoomVal.textContent = imageZoom;
+                }
+                if (el === offsetYRange) {
+                    imageOffsetY = parseInt(offsetYRange.value);
+                    offsetYVal.textContent = imageOffsetY;
+                }
+                if (el === brightnessRange) {
+                    imageBrightness = parseInt(brightnessRange.value);
+                    brightnessVal.textContent = imageBrightness;
+                }
+                renderCanvas();
+            });
+        });
+
+        // Preset template photo selector
+        function selectPreset(url, btnElement) {
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            if (btnElement) btnElement.classList.add('active');
+
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.onload = () => {
+                uploadedImage = img;
+                zoomRange.value = 100;
+                imageZoom = 100;
+                zoomVal.textContent = '100';
+                offsetYRange.value = 0;
+                imageOffsetY = 0;
+                offsetYVal.textContent = '0';
+                brightnessRange.value = 100;
+                imageBrightness = 100;
+                brightnessVal.textContent = '100';
+                renderCanvas();
+                showToast('Template foto dimuat!');
+            };
+            img.src = url;
+        }
+
+        // File upload handling
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) loadImageFromFile(file);
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--sitenexs-cyan)';
+            dropZone.style.background = 'rgba(10, 20, 36, 0.9)';
+        });
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--border-color)';
+            dropZone.style.background = 'rgba(10, 20, 36, 0.6)';
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--border-color)';
+            dropZone.style.background = 'rgba(10, 20, 36, 0.6)';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                loadImageFromFile(file);
+            }
+        });
+        dropZone.addEventListener('click', () => {
+            imageUpload.click();
+        });
+
+        function loadImageFromFile(file) {
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    uploadedImage = img;
+                    zoomRange.value = 100;
+                    imageZoom = 100;
+                    zoomVal.textContent = '100';
+                    offsetYRange.value = 0;
+                    imageOffsetY = 0;
+                    offsetYVal.textContent = '0';
+                    brightnessRange.value = 100;
+                    imageBrightness = 100;
+                    brightnessVal.textContent = '100';
+                    renderCanvas();
+                    showToast('Foto galeri berhasil dimuat!');
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Frame switcher
+        function setFrame(frameName) {
+            currentFrame = frameName;
+            document.querySelectorAll('.frame-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-frame') === frameName) {
+                    btn.classList.add('active');
+                }
+            });
+            renderCanvas();
+        }
+
+        function resetDefaults() {
+            inputBadge.value = "SITENEXS INSIGHTS";
+            inputTitle.value = "Solusi Digital & Manajemen UMKM Modern Bersama Sitenexs";
+            inputSubtitle.value = "Tingkatkan efisiensi operasional bisnis Anda sekarang.";
+            inputAlign.value = "left";
+            toggleBranding.checked = true;
+            zoomRange.value = 100;
+            imageZoom = 100;
+            zoomVal.textContent = '100';
+            offsetYRange.value = 0;
+            imageOffsetY = 0;
+            offsetYVal.textContent = '0';
+            brightnessRange.value = 100;
+            imageBrightness = 100;
+            brightnessVal.textContent = '100';
+            setFrame('vignette');
+            showToast('Pengaturan direset ke awal');
+        }
+
+        // Text wrapping helper
+        function wrapText(context, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+            let linesDrawn = 0;
+
+            for(let n = 0; n < words.length; n++) {
+                let testLine = line + words[n] + ' ';
+                let metrics = context.measureText(testLine);
+                let testWidth = metrics.width;
+                if (testWidth > maxWidth && n > 0) {
+                    context.fillText(line, x, y);
+                    line = words[n] + ' ';
+                    y += lineHeight;
+                    linesDrawn++;
+                } else {
+                    line = testLine;
+                }
+            }
+            context.fillText(line, x, y);
+            return linesDrawn + 1;
+        }
+
+        // Canvas Engine (1080x1080)
+        function renderCanvas() {
+            ctx.clearRect(0, 0, 1080, 1080);
+
+            // 1. Draw Background Image with Zoom, Vertical Offset (Crop), & Brightness
+            if (uploadedImage) {
+                ctx.save();
+                ctx.filter = `brightness(${imageBrightness}%)`;
+                
+                const canvasAspect = 1;
+                const imgAspect = uploadedImage.width / uploadedImage.height;
+                let renderWidth, renderHeight, offsetX, offsetY;
+
+                if (imgAspect > canvasAspect) {
+                    renderHeight = 1080 * (imageZoom / 100);
+                    renderWidth = renderHeight * imgAspect;
+                } else {
+                    renderWidth = 1080 * (imageZoom / 100);
+                    renderHeight = renderWidth / imgAspect;
+                }
+
+                offsetX = (1080 - renderWidth) / 2;
+                
+                let baseOffsetY = (1080 - renderHeight) / 2;
+                offsetY = baseOffsetY + (imageOffsetY / 100) * (renderHeight / 2);
+
+                ctx.drawImage(uploadedImage, offsetX, offsetY, renderWidth, renderHeight);
+                ctx.restore();
+            } else {
+                ctx.fillStyle = '#050b14';
+                ctx.fillRect(0, 0, 1080, 1080);
+            }
+
+            // 2. Apply Sitenexs Transparent Blue Gradient Frames
+            ctx.save();
+            if (currentFrame === 'vignette') {
+                const grad = ctx.createRadialGradient(540, 540, 300, 540, 540, 800);
+                grad.addColorStop(0, 'rgba(5, 11, 20, 0)');
+                grad.addColorStop(0.6, 'rgba(5, 11, 20, 0.65)');
+                grad.addColorStop(1, 'rgba(2, 6, 12, 0.96)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, 1080, 1080);
+
+                const topGrad = ctx.createLinearGradient(0, 0, 0, 400);
+                topGrad.addColorStop(0, 'rgba(5, 11, 20, 0.85)');
+                topGrad.addColorStop(1, 'rgba(5, 11, 20, 0)');
+                ctx.fillStyle = topGrad;
+                ctx.fillRect(0, 0, 1080, 400);
+
+                const botGrad = ctx.createLinearGradient(0, 700, 0, 1080);
+                botGrad.addColorStop(0, 'rgba(5, 11, 20, 0)');
+                botGrad.addColorStop(1, 'rgba(2, 6, 12, 0.96)');
+                ctx.fillStyle = botGrad;
+                ctx.fillRect(0, 700, 1080, 380);
+
+            } else if (currentFrame === 'bottom-banner') {
+                const topGrad = ctx.createLinearGradient(0, 0, 0, 300);
+                topGrad.addColorStop(0, 'rgba(5, 11, 20, 0.7)');
+                topGrad.addColorStop(1, 'rgba(5, 11, 20, 0)');
+                ctx.fillStyle = topGrad;
+                ctx.fillRect(0, 0, 1080, 300);
+
+                const botGrad = ctx.createLinearGradient(0, 550, 0, 1080);
+                botGrad.addColorStop(0, 'rgba(5, 11, 20, 0)');
+                botGrad.addColorStop(0.3, 'rgba(10, 20, 36, 0.85)');
+                botGrad.addColorStop(1, 'rgba(2, 6, 12, 0.96)');
+                ctx.fillStyle = botGrad;
+                ctx.fillRect(0, 550, 1080, 530);
+
+                ctx.fillStyle = '#00e5ff';
+                ctx.fillRect(80, 550, 200, 4);
+
+            } else if (currentFrame === 'full-border') {
+                ctx.fillStyle = 'rgba(5, 11, 20, 0.45)';
+                ctx.fillRect(0, 0, 1080, 1080);
+
+                ctx.lineWidth = 16;
+                const borderGrad = ctx.createLinearGradient(0, 0, 1080, 1080);
+                borderGrad.addColorStop(0, '#00e5ff');
+                borderGrad.addColorStop(0.5, '#0070f3');
+                borderGrad.addColorStop(1, '#1d4ed8');
+                ctx.strokeStyle = borderGrad;
+                ctx.strokeRect(30, 30, 1020, 1020);
+
+                const innerGrad = ctx.createLinearGradient(0, 800, 0, 1080);
+                innerGrad.addColorStop(0, 'transparent');
+                innerGrad.addColorStop(1, 'rgba(2, 6, 12, 0.96)');
+                ctx.fillStyle = innerGrad;
+                ctx.fillRect(40, 750, 1000, 290);
+
+            } else if (currentFrame === 'diagonal') {
+                const diagGrad = ctx.createLinearGradient(0, 0, 1080, 1080);
+                diagGrad.addColorStop(0, 'rgba(0, 229, 255, 0.35)');
+                diagGrad.addColorStop(0.4, 'rgba(0, 112, 243, 0.15)');
+                diagGrad.addColorStop(1, 'rgba(5, 11, 20, 0.9)');
+                ctx.fillStyle = diagGrad;
+                ctx.fillRect(0, 0, 1080, 1080);
+
+                const botGrad = ctx.createLinearGradient(0, 650, 0, 1080);
+                botGrad.addColorStop(0, 'transparent');
+                botGrad.addColorStop(1, 'rgba(2, 6, 12, 0.96)');
+                ctx.fillStyle = botGrad;
+                ctx.fillRect(0, 650, 1080, 430);
+            }
+            ctx.restore();
+
+            // 3. Render Texts & Content
+            const align = inputAlign.value;
+            const badgeText = inputBadge.value.toUpperCase();
+            const titleText = inputTitle.value;
+            const subtitleText = inputSubtitle.value;
+            const showBrand = toggleBranding.checked;
+
+            ctx.save();
+            let textX = 80;
+            if (align === 'center') {
+                textX = 540;
+                ctx.textAlign = 'center';
+            } else {
+                ctx.textAlign = 'left';
+            }
+
+            if (badgeText.trim() !== '') {
+                ctx.font = '700 22px "Inter", sans-serif';
+                ctx.fillStyle = '#00e5ff';
+                ctx.fillText(badgeText, textX, 680);
+            }
+
+            ctx.font = '800 48px "Inter", sans-serif';
+            ctx.fillStyle = '#ffffff';
+            let titleY = 745;
+            
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+            ctx.shadowBlur = 14;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 4;
+
+            const linesDrawn = wrapText(ctx, titleText, textX, titleY, 920, 60);
+
+            if (subtitleText.trim() !== '') {
+                ctx.font = '400 26px "Inter", sans-serif';
+                ctx.fillStyle = '#cbd5e1';
+                let subY = titleY + (linesDrawn * 60) + 10;
+                ctx.fillText(subtitleText, textX, subY);
+            }
+
+            ctx.restore();
+
+            // 4. Draw Sitenexs Circular Footer Logo Badge
+            if (showBrand) {
+                ctx.save();
+                const circleRadius = 32;
+                const circleX = 1080 - 80 - circleRadius;
+                const circleY = 80 + circleRadius;
+
+                // Background circular container
+                ctx.fillStyle = 'rgba(10, 20, 36, 0.9)';
+                ctx.strokeStyle = 'rgba(0, 229, 255, 0.4)';
+                ctx.lineWidth = 3;
+
+                ctx.beginPath();
+                ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Draw official circular logo inside
+                if (sitenexsLogo.complete && sitenexsLogo.naturalWidth !== 0) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(circleX, circleY, circleRadius - 3, 0, Math.PI * 2);
+                    ctx.clip();
+                    ctx.drawImage(sitenexsLogo, circleX - (circleRadius - 3), circleY - (circleRadius - 3), (circleRadius - 3) * 2, (circleRadius - 3) * 2);
+                    ctx.restore();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // Download Image
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = `sitenexs-instagram-post-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('Post Instagram berhasil di-download!');
+        }
+
+        // Toast helper
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        window.onload = () => {
+            renderCanvas();
+        };
+    </script>
+</body>
+</html>
