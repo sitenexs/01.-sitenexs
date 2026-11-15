@@ -236,7 +236,7 @@
 
         let currentUid = null;
         let allConversationsData = [];
-        let unsubscribesMap = {}; // Menyimpan listener real-time per chat
+        let unsubscribesMap = {};
 
         window.showToast = function(msg) {
             const container = document.getElementById('toastContainer');
@@ -278,23 +278,32 @@
                     return;
                 }
 
-                const chats = [];
+                // GABUNGKAN CHAT BERDASARKAN OTHERUID UNTUK MENCEGAH DUPLIKASI KONTAK
+                const chatsMap = new Map();
                 snapshot.forEach(docSnap => {
-                    chats.push({ id: docSnap.id, ...docSnap.data() });
+                    const chatData = docSnap.data();
+                    const otherUid = chatData.participants.find(p => p !== uid);
+                    if (!otherUid) return;
+
+                    const currentMillis = chatData.lastTimestamp?.toMillis() || 0;
+                    const existing = chatsMap.get(otherUid);
+                    const existingMillis = existing?.lastTimestamp?.toMillis() || 0;
+
+                    if (!existing || currentMillis > existingMillis) {
+                        chatsMap.set(otherUid, { id: docSnap.id, otherUid, ...chatData });
+                    }
                 });
 
+                const chats = Array.from(chatsMap.values());
                 chats.sort((a, b) => (b.lastTimestamp?.toMillis() || 0) - (a.lastTimestamp?.toMillis() || 0));
                 
                 allConversationsData = [];
                 for (const chat of chats) {
-                    const otherUid = chat.participants.find(p => p !== uid);
-                    if (!otherUid) continue;
-
                     let otherName = "Mitra Sitenexs";
                     let isVerified = false;
                     let isPro = false;
                     try {
-                        const userSnap = await getDoc(doc(db, "users", otherUid));
+                        const userSnap = await getDoc(doc(db, "users", chat.otherUid));
                         if (userSnap.exists()) {
                             const d = userSnap.data();
                             otherName = d.namaLengkap || (d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '')) || otherName;
@@ -303,14 +312,17 @@
                         }
                     } catch(e) {}
 
+                    const isUnread = chat[`unread_${uid}`] === true;
+
                     allConversationsData.push({
                         chatId: chat.id,
-                        otherUid: otherUid,
+                        otherUid: chat.otherUid,
                         otherName: otherName,
                         isVerified: isVerified,
                         isPro: isPro,
                         lastMessage: chat.lastMessage || 'Mulai percakapan...',
-                        lastTimestamp: chat.lastTimestamp
+                        lastTimestamp: chat.lastTimestamp,
+                        unread: isUnread
                     });
                 }
 
@@ -320,7 +332,7 @@
             });
         }
 
-        // Listener real-time untuk mendeteksi status typing dan unread per chat
+        // Listener real-time per chat untuk status typing & unread status
         function setupRealtimeSublisteners(chats, uid) {
             chats.forEach(chat => {
                 const otherUid = chat.participants.find(p => p !== uid);
@@ -346,6 +358,19 @@
                         } else {
                             typingEl.style.display = 'none';
                             msgEl.style.display = 'block';
+                        }
+                    }
+
+                    // Status Unread
+                    const isUnread = data[`unread_${uid}`] === true;
+                    const badgeEl = document.getElementById(`badge-${chat.id}`);
+                    if (badgeEl && msgEl) {
+                        if (isUnread) {
+                            badgeEl.style.display = 'inline-block';
+                            msgEl.classList.add('unread');
+                        } else {
+                            badgeEl.style.display = 'none';
+                            msgEl.classList.remove('unread');
                         }
                     }
                 });
@@ -383,6 +408,9 @@
                     badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="conv-verif" alt="Pro" title="Lencana Pro" style="margin-left: 2px;">`;
                 }
 
+                const unreadClass = chat.unread ? 'unread' : '';
+                const unreadBadgeStyle = chat.unread ? 'display: inline-block;' : 'display: none;';
+
                 html += `
                     <div class="conversation-item" onclick="window.location.href='chat/?to=${chat.otherUid}'">
                         <div class="conv-avatar-wrap">
@@ -399,9 +427,10 @@
                             </div>
                             <div class="conv-msg-row">
                                 <div style="min-width: 0; flex: 1;">
-                                    <div class="conv-last-msg" id="msg-${chat.chatId}">${chat.lastMessage}</div>
+                                    <div class="conv-last-msg ${unreadClass}" id="msg-${chat.chatId}">${chat.lastMessage}</div>
                                     <div class="conv-typing" id="typing-${chat.chatId}">Sedang mengetik<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></div>
                                 </div>
+                                <span class="unread-badge" id="badge-${chat.chatId}" style="${unreadBadgeStyle}">Baru</span>
                             </div>
                         </div>
                     </div>
