@@ -149,10 +149,9 @@
         .message-bubble {
             max-width: 70%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
             line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-            animation: fadeIn 0.15s ease-out; flex-shrink: 0; cursor: pointer;
+            flex-shrink: 0; cursor: pointer;
             user-select: text; -webkit-user-select: text;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
         .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); align-self: flex-start; border-bottom-left-radius: 4px; }
         .message-bubble.outgoing { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
@@ -198,16 +197,13 @@
         /* ACTION MODAL / BOTTOM SHEET UNTUK LONG PRESS */
         #actionModal {
             position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px);
-            z-index: 20000; display: none; align-items: flex-end; justify-content: center; animation: fadeInModal 0.2s ease;
+            z-index: 20000; display: none; align-items: flex-end; justify-content: center;
         }
-        @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
         
         .action-sheet {
             background: #fff; width: 100%; max-width: 500px; border-top-left-radius: 1.5rem; border-top-right-radius: 1.5rem;
             padding: 1.25rem 1.25rem 2rem 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
-            animation: slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        @keyframes slideUpModal { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
         .action-btn {
             display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1rem; width: 100%;
@@ -301,7 +297,7 @@
 
             <!-- ISI PESAN -->
             <div class="chat-messages" id="chatMessages">
-                <div style="text-align: center; margin: auto; padding: 2rem; color: var(--text-muted); font-size: 0.9rem; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px); border-radius: var(--radius-lg);">
+                <div id="loadingState" style="text-align: center; margin: auto; padding: 2rem; color: var(--text-muted); font-size: 0.9rem; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px); border-radius: var(--radius-lg);">
                     <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom: 0.75rem;"></i>
                     <div>Memuat pesan...</div>
                 </div>
@@ -346,9 +342,8 @@
         let activeChatUserId = null;
         let activeChatId = null;
         let unsubscribeMessages = null;
-        let lastRenderedHtml = ""; // Variabel pencegah kedip (blinking)
+        let renderedMessageIds = new Set(); // Menyimpan ID pesan yang sudah dirender agar tidak render ulang total
 
-        // Variabel untuk Edit & Hapus
         let selectedMessageId = null;
         let selectedMessageText = "";
         let selectedMessageSender = "";
@@ -417,52 +412,72 @@
 
             unsubscribeMessages = onSnapshot(qMsgs, (snapshot) => {
                 const messagesContainer = document.getElementById('chatMessages');
-                let msgHtml = '';
+                const loadingState = document.getElementById('loadingState');
+                if (loadingState) loadingState.remove();
 
-                if (snapshot.empty) {
-                    msgHtml = `
-                        <div style="text-align: center; margin: auto; padding: 2rem; color: var(--text-muted); font-size: 0.9rem; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px); border-radius: var(--radius-lg);">
-                            <i class="far fa-paper-plane fa-3x" style="color: var(--border-medium); margin-bottom: 0.75rem;"></i>
-                            <div style="font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">Belum ada pesan</div>
-                            <div>Kirim salam atau mulai diskusi bisnis dengan ${otherName}!</div>
-                        </div>`;
-                } else {
-                    snapshot.forEach(docSnap => {
-                        const m = docSnap.data();
-                        const msgId = docSnap.id;
-                        const isOutgoing = m.senderUid === currentUid;
-                        const timeStr = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Baru saja';
-                        const editedLabel = m.isEdited ? '<span class="edited-tag">(diedit)</span>' : '';
+                const existingBubbles = messagesContainer.querySelectorAll('.message-bubble');
+                const existingIds = new Set(Array.from(existingBubbles).map(b => b.dataset.id));
+                const incomingIds = new Set(snapshot.docs.map(d => d.id));
 
-                        const safeText = (m.text || '').replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+                // 1. Hapus elemen pesan di DOM yang sudah dihapus di database (jika ada)
+                existingBubbles.forEach(bubble => {
+                    if (!incomingIds.has(bubble.dataset.id)) {
+                        bubble.remove();
+                    }
+                });
 
-                        msgHtml += `
-                            <div class="message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}" 
-                                 data-id="${msgId}" 
-                                 data-sender="${m.senderUid}" 
-                                 data-text="${safeText}"
-                                 oncontextmenu="openActionModal(event, '${msgId}', '${m.senderUid}', '${safeText}')"
-                                 ontouchstart="startTouchTimer(event, '${msgId}', '${m.senderUid}', '${safeText}')"
-                                 ontouchend="clearTouchTimer()"
-                                 onmousedown="startMouseTimer(event, '${msgId}', '${m.senderUid}', '${safeText}')"
-                                 onmouseup="clearMouseTimer()"
-                                 onmouseleave="clearMouseTimer()">
-                                <div>${escapeHtml(m.text)} ${editedLabel}</div>
-                                <div class="message-time">${timeStr}</div>
-                            </div>
-                        `;
-                    });
+                let shouldScrollToBottom = false;
+                if (messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 150) {
+                    shouldScrollToBottom = true;
                 }
 
-                // Cek apakah konten benar-benar berubah untuk mencegah kedip (blinking) dari update snapshot ganda
-                if (msgHtml !== lastRenderedHtml) {
-                    const isNearBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 150;
-                    lastRenderedHtml = msgHtml;
-                    messagesContainer.innerHTML = msgHtml;
+                // 2. Tambahkan atau perbarui pesan secara incremental tanpa mereset DOM lain (mencegah kedip)
+                snapshot.forEach(docSnap => {
+                    const m = docSnap.data();
+                    const msgId = docSnap.id;
+                    const isOutgoing = m.senderUid === currentUid;
+                    const timeStr = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Baru saja';
+                    const editedLabel = m.isEdited ? '<span class="edited-tag">(diedit)</span>' : '';
+                    const safeText = (m.text || '').replace(/'/g, "&#39;").replace(/"/g, "&quot;");
 
-                    if (isNearBottom || messagesContainer.scrollTop === 0) {
-                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    const existingBubble = messagesContainer.querySelector(`[data-id="${msgId}"]`);
+
+                    if (existingBubble) {
+                        // Perbarui teks/status jika ada perubahan (misal: habis diedit)
+                        const textNode = existingBubble.querySelector('div');
+                        const expectedHtml = `${escapeHtml(m.text)} ${editedLabel}`;
+                        if (textNode.innerHTML !== expectedHtml) {
+                            textNode.innerHTML = expectedHtml;
+                            existingBubble.dataset.text = safeText;
+                        }
+                    } else {
+                        // Tambahkan bubble pesan baru secara mulus
+                        shouldScrollToBottom = true;
+                        const bubbleDiv = document.createElement('div');
+                        bubbleDiv.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
+                        bubbleDiv.setAttribute('data-id', msgId);
+                        bubbleDiv.setAttribute('data-sender', m.senderUid);
+                        bubbleDiv.setAttribute('data-text', safeText);
+
+                        bubbleDiv.innerHTML = `
+                            <div>${escapeHtml(m.text)} ${editedLabel}</div>
+                            <div class="message-time">${timeStr}</div>
+                        `;
+
+                        // Event listener untuk long press
+                        bubbleDiv.addEventListener('contextmenu', (e) => openActionModal(e, msgId, m.senderUid, safeText));
+                        bubbleDiv.addEventListener('touchstart', (e) => startTouchTimer(e, msgId, m.senderUid, safeText));
+                        bubbleDiv.addEventListener('touchend', clearTouchTimer);
+                        bubbleDiv.addEventListener('mousedown', (e) => startMouseTimer(e, msgId, m.senderUid, safeText));
+                        bubbleDiv.addEventListener('mouseup', clearMouseTimer);
+                        bubbleDiv.addEventListener('mouseleave', clearMouseTimer);
+
+                        messagesContainer.appendChild(bubbleDiv);
                     }
+                });
+
+                if (shouldScrollToBottom) {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 }
             });
         }
@@ -568,7 +583,7 @@
             }
         }
 
-        // --- KIRIM / UPDATE PESAN ---
+        // --- KIRIM / UPDATE PESAN DENGAN OPTIMISTIC RENDERING ---
         window.handleChatFormSubmit = async function(event) {
             event.preventDefault();
             const inputEl = document.getElementById('messageInput');
@@ -608,6 +623,7 @@
                         }, { merge: true });
                     }
 
+                    // Kirim ke Firestore secara asinkron tanpa menunggu UI berkedip
                     await addDoc(collection(db, "chats", activeChatId, "messages"), {
                         senderUid: currentUid,
                         text: text,
