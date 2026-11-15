@@ -477,7 +477,7 @@
                 const unreadBadgeStyle = chat.unread ? 'display: inline-block;' : 'display: none;';
 
                 html += `
-                    <div class="conversation-item" onclick="window.location.href='https://sitenexs.com/community/message/chat?to=${chat.otherUid}'">
+                    <div class="conversation-item" onclick="window.location.href='https://sitenexs.com/community/messages/chat?to=${chat.otherUid}'">
                         <div class="conv-avatar-wrap">
                             <img src="${avatarUrl}" class="conv-avatar" onerror="this.src='${fallbackAvatar}';">
                             <span class="status-dot"></span>
