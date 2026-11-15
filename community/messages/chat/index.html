@@ -126,7 +126,19 @@
         .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); flex-shrink: 0; }
         .chat-header-info { min-width: 0; display: flex; flex-direction: column; }
         .chat-header-name { font-weight: 850; font-size: 0.98rem; color: var(--text-main); letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* TYPING HEADER ANIMATION */
         .chat-header-typing { font-size: 0.73rem; color: var(--accent); font-weight: 600; font-style: italic; display: none; }
+        .typing-dots span {
+            animation: typingBlink 1.4s infinite both;
+        }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBlink {
+            0% { opacity: 0.2; }
+            20% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
 
         /* ISI CHAT */
         .chat-messages {
@@ -329,7 +341,7 @@
                     </div>
                     <div class="chat-header-info">
                         <div class="chat-header-name" id="activeChatName">Memuat...</div>
-                        <div class="chat-header-typing" id="activeChatTyping">Sedang mengetik<span class="typing-dots-anim">...</span></div>
+                        <div class="chat-header-typing" id="activeChatTyping">Sedang mengetik<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></div>
                     </div>
                 </div>
                 <div style="display: flex; gap: 0.4rem; flex-shrink: 0;">
@@ -627,7 +639,6 @@
                         bubbleDiv.addEventListener('mouseleave', clearMouseTimer);
                         bubbleDiv.addEventListener('contextmenu', (e) => openActionModal(e, msgId, m.senderUid, safeText));
 
-                        // Sisipkan sebelum elemen typing bubble agar typing bubble selalu di paling bawah
                         const typingBubble = document.getElementById('typingIndicatorBubble');
                         messagesContainer.insertBefore(bubbleDiv, typingBubble);
                     }
@@ -835,7 +846,7 @@
                     if (replyingTo) {
                         messageData.replyTo = {
                             id: replyingTo.id,
-                            senderUid: replyingTo.replyingTo || replyingTo.senderUid,
+                            senderUid: replyingTo.senderUid,
                             text: replyingTo.text
                         };
                         cancelReplyMode();
