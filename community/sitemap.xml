@@ -28,5 +28,8 @@
         <priority>0.8</priority>
     </url>
 
+  <sitemap>
+    <loc>https://sitenexs.com/community/sitemap-post.xml</loc>
+  </sitemap>
 
 </urlset>
