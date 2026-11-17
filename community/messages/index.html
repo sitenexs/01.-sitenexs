@@ -77,7 +77,7 @@
         .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 0.95rem; color: var(--text-main); white-space: nowrap; }
         .logo img { height: 28px; width: 28px; border-radius: 50%; object-fit: cover; }
         .logo-text { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; font-weight: 800; letter-spacing: -0.5px; font-size: 0.9rem; }
-        .nav-actions { display: flex; gap: 0.4rem; align-items: center; }
+        .nav-actions { display: flex; gap: 0.5rem; align-items: center; }
 
         .btn {
             display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
@@ -89,6 +89,19 @@
         .btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
         .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2); }
         .btn-primary:hover { background: var(--primary-dark); }
+
+        /* IKON NOTIFIKASI LONCENG */
+        .notification-bell-btn {
+            position: relative; width: 36px; height: 36px; border-radius: 50%; background: var(--bg-alt);
+            border: 1px solid var(--border-subtle); display: inline-flex; align-items: center; justify-content: center;
+            color: var(--text-main); cursor: pointer; transition: var(--transition);
+        }
+        .notification-bell-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--border-medium); }
+        .global-unread-badge {
+            position: absolute; top: -3px; right: -3px; background: #ef4444; color: #fff;
+            font-size: 0.62rem; font-weight: 800; padding: 0.1rem 0.35rem; border-radius: var(--radius-full);
+            border: 2px solid #fff; display: none; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.3);
+        }
 
         /* INBOX LAYOUT */
         .inbox-wrapper {
@@ -122,6 +135,7 @@
             cursor: pointer; transition: var(--transition); position: relative; border-bottom: 1px solid #f1f5f9;
         }
         .conversation-item:hover { background: #f8fafc; }
+        .conversation-item.unread-chat-item { background: #f0f7ff; border-left: 4px solid var(--primary); }
         
         .conv-avatar-wrap { position: relative; flex-shrink: 0; }
         .conv-avatar { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); }
@@ -141,9 +155,9 @@
         
         .conv-msg-row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
         .conv-last-msg { font-size: 0.82rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .conv-last-msg.unread { font-weight: 700; color: var(--text-main); }
+        .conv-last-msg.unread { font-weight: 800; color: var(--text-main); }
         
-        /* TYPING STATUS DALAM LIST */
+        /* TYPING STATUS */
         .conv-typing { font-size: 0.78rem; color: var(--accent); font-weight: 600; font-style: italic; display: none; }
         .typing-dots span { animation: typingBlink 1.4s infinite both; }
         .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
@@ -156,8 +170,9 @@
 
         /* UNREAD BADGE */
         .unread-badge {
-            background: var(--primary); color: #fff; font-size: 0.68rem; font-weight: 700;
-            padding: 0.1rem 0.45rem; border-radius: var(--radius-full); flex-shrink: 0; display: none;
+            background: #ef4444; color: #fff; font-size: 0.68rem; font-weight: 800;
+            padding: 0.15rem 0.5rem; border-radius: var(--radius-full); flex-shrink: 0; display: none;
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
         }
 
         /* TOAST */
@@ -183,7 +198,12 @@
                 <span class="logo-text">Sitenexs Chat</span>
             </a>
             <div class="nav-actions">
-                <a href="https://sitenexs.com/community/" class="btn btn-secondary" title="Komunitas"><i class="fas fa-users"></i> Komunitas</a>
+                <!-- Tombol Lonceng Notifikasi Global -->
+                <div class="notification-bell-btn" title="Notifikasi Pesan Belum Dibaca">
+                    <i class="fas fa-bell"></i>
+                    <span class="global-unread-badge" id="globalUnreadBadge">0</span>
+                </div>
+                <a href="https://sitenexs.com/community/" class="btn btn-secondary" title="Komunitas"><i class="fas fa-users"></i></a>
                 <a href="https://account.sitenexs.com/profile" class="btn btn-primary"><i class="fas fa-user-circle"></i> Profil</a>
             </div>
         </div>
@@ -275,10 +295,10 @@
                             <div>Mulai kirim pesan dari profil anggota komunitas Sitenexs!</div>
                         </div>`;
                     document.getElementById('chatCountBadge').innerText = '0 Percakapan';
+                    updateGlobalUnreadBadge(0);
                     return;
                 }
 
-                // DEDUPLIKASI KETAT BERDASARKAN CLEAN OTHERUID MENGGUNAKAN MAP
                 const chatsMap = new Map();
                 snapshot.forEach(docSnap => {
                     const chatData = docSnap.data();
@@ -331,11 +351,28 @@
 
                 document.getElementById('chatCountBadge').innerText = `${allConversationsData.length} Percakapan`;
                 renderConversationsList(allConversationsData);
+                updateGlobalUnreadCount();
                 setupRealtimeSublisteners(chats, uid);
             });
         }
 
-        // Listener real-time per chat untuk status typing & unread status
+        function updateGlobalUnreadCount() {
+            const unreadCount = allConversationsData.filter(c => c.unread).length;
+            updateGlobalUnreadBadge(unreadCount);
+        }
+
+        function updateGlobalUnreadBadge(count) {
+            const badge = document.getElementById('globalUnreadBadge');
+            if (badge) {
+                if (count > 0) {
+                    badge.innerText = count;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
         function setupRealtimeSublisteners(chats, uid) {
             chats.forEach(chat => {
                 const rawOtherUid = chat.participants.find(p => String(p).trim() !== String(uid).trim());
@@ -350,7 +387,6 @@
                     if (!docSnap.exists()) return;
                     const data = docSnap.data();
                     
-                    // Status mengetik
                     const isTyping = data[`typing_${otherUid}`];
                     const typingEl = document.getElementById(`typing-${chat.id}`);
                     const msgEl = document.getElementById(`msg-${chat.id}`);
@@ -365,16 +401,26 @@
                         }
                     }
 
-                    // Status Unread
                     const isUnread = data[`unread_${uid}`] === true;
                     const badgeEl = document.getElementById(`badge-${chat.id}`);
-                    if (badgeEl && msgEl) {
+                    const itemEl = document.getElementById(`item-${chat.id}`);
+
+                    // Update di dalam array data lokal
+                    const targetConv = allConversationsData.find(c => c.chatId === chat.id);
+                    if (targetConv) {
+                        targetConv.unread = isUnread;
+                        updateGlobalUnreadCount();
+                    }
+
+                    if (badgeEl && msgEl && itemEl) {
                         if (isUnread) {
                             badgeEl.style.display = 'inline-block';
                             msgEl.classList.add('unread');
+                            itemEl.classList.add('unread-chat-item');
                         } else {
                             badgeEl.style.display = 'none';
                             msgEl.classList.remove('unread');
+                            itemEl.classList.remove('unread-chat-item');
                         }
                     }
                 });
@@ -414,9 +460,10 @@
 
                 const unreadClass = chat.unread ? 'unread' : '';
                 const unreadBadgeStyle = chat.unread ? 'display: inline-block;' : 'display: none;';
+                const unreadItemClass = chat.unread ? 'unread-chat-item' : '';
 
                 html += `
-                    <div class="conversation-item" onclick="window.location.href='chat/?to=${chat.otherUid}'">
+                    <div class="conversation-item ${unreadItemClass}" id="item-${chat.chatId}" onclick="window.location.href='chat/?to=${chat.otherUid}'">
                         <div class="conv-avatar-wrap">
                             <img src="${avatarUrl}" class="conv-avatar" onerror="this.src='${fallbackAvatar}';">
                             <span class="status-dot"></span>
@@ -434,7 +481,7 @@
                                     <div class="conv-last-msg ${unreadClass}" id="msg-${chat.chatId}">${chat.lastMessage}</div>
                                     <div class="conv-typing" id="typing-${chat.chatId}">Sedang mengetik<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></div>
                                 </div>
-                                <span class="unread-badge" id="badge-${chat.chatId}" style="${unreadBadgeStyle}">Baru</span>
+                                <span class="unread-badge" id="badge-${chat.chatId}" style="${unreadBadgeStyle}">Belum dibaca</span>
                             </div>
                         </div>
                     </div>
