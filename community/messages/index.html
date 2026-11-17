@@ -33,7 +33,6 @@
             --border-medium: #cbd5e1;
             --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04);
             --radius-full: 9999px;
-            --radius-lg: 1rem;
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -137,6 +136,8 @@
             cursor: pointer; transition: var(--transition); position: relative; border-bottom: 1px solid #f1f5f9;
         }
         .conversation-item:hover { background: #f8fafc; }
+        
+        /* GAYA KARTU CHAT BELUM DIBACA */
         .conversation-item.unread-chat-item { background: #f0f7ff; border-left: 4px solid var(--primary); }
         .conversation-item.pinned-chat-item { background: #fafafa; }
         
@@ -173,7 +174,7 @@
             100% { opacity: 0.2; }
         }
 
-        /* UNREAD BADGE */
+        /* UNREAD BADGE LABEL */
         .unread-badge {
             background: #ef4444; color: #fff; font-size: 0.68rem; font-weight: 800;
             padding: 0.15rem 0.5rem; border-radius: var(--radius-full); flex-shrink: 0; display: none;
@@ -389,12 +390,13 @@
                         }
                     } catch(e) {}
 
+                    // Pengecekan atribut unread secara tepat di dokumen chat
                     const isUnread = chat[`unread_${uid}`] === true;
                     const isPinned = chat[`pinned_${uid}`] === true;
                     const isArchived = chat[`archived_${uid}`] === true;
                     const isMuted = chat[`muted_${uid}`] === true;
 
-                    if (!isArchived) { // Sembunyikan yang diarsipkan dari inbox utama
+                    if (!isArchived) {
                         allConversationsData.push({
                             chatId: chat.id,
                             otherUid: chat.otherUid,
@@ -410,7 +412,6 @@
                     }
                 }
 
-                // Urutkan: Pinned di atas, lalu berdasarkan waktu terbaru
                 allConversationsData.sort((a, b) => {
                     if (a.pinned !== b.pinned) return b.pinned - a.pinned;
                     return (b.lastTimestamp?.toMillis() || 0) - (a.lastTimestamp?.toMillis() || 0);
@@ -465,6 +466,29 @@
                         } else {
                             typingEl.style.display = 'none';
                             msgEl.style.display = 'block';
+                        }
+                    }
+
+                    // Sinkronisasi status unread real-time dari dokumen chat
+                    const isUnread = data[`unread_${uid}`] === true;
+                    const badgeEl = document.getElementById(`badge-${chat.id}`);
+                    const itemEl = document.getElementById(`item-${chat.id}`);
+
+                    const targetConv = allConversationsData.find(c => c.chatId === chat.id);
+                    if (targetConv) {
+                        targetConv.unread = isUnread;
+                        updateGlobalUnreadCount();
+                    }
+
+                    if (badgeEl && msgEl && itemEl) {
+                        if (isUnread) {
+                            badgeEl.style.display = 'inline-block';
+                            msgEl.classList.add('unread');
+                            itemEl.classList.add('unread-chat-item');
+                        } else {
+                            badgeEl.style.display = 'none';
+                            msgEl.classList.remove('unread');
+                            itemEl.classList.remove('unread-chat-item');
                         }
                     }
                 });
@@ -544,7 +568,6 @@
             listEl.innerHTML = html;
         }
 
-        // --- SISTEM LONG PRESS (TEKAN LAMA) ---
         let isLongPress = false;
         window.startPressTimer = function(chatId, chatName) {
             isLongPress = false;
@@ -553,7 +576,6 @@
                 selectedChatId = chatId;
                 selectedChatName = chatName;
                 
-                // Update teks tombol modal berdasarkan status saat ini
                 const currentChat = allConversationsData.find(c => c.chatId === chatId);
                 if (currentChat) {
                     document.getElementById('pinActionText').innerText = currentChat.pinned ? 'Lepas Sematan' : 'Sematkan Chat';
@@ -585,7 +607,6 @@
             document.getElementById('actionModal').style.display = 'none';
         }
 
-        // --- AKSI MODAL ---
         window.handlePinChat = async function() {
             closeActionModal();
             if (!selectedChatId || !currentUid) return;
