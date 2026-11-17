@@ -23,6 +23,7 @@
             --primary-dark: #1d4ed8;
             --primary-light: #eff6ff;
             --accent: #10b981;
+            --danger: #ef4444;
             --bg-body: #ffffff;
             --bg-card: #ffffff;
             --bg-alt: #f1f5f9;
@@ -32,6 +33,7 @@
             --border-medium: #cbd5e1;
             --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04);
             --radius-full: 9999px;
+            --radius-lg: 1rem;
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -136,6 +138,7 @@
         }
         .conversation-item:hover { background: #f8fafc; }
         .conversation-item.unread-chat-item { background: #f0f7ff; border-left: 4px solid var(--primary); }
+        .conversation-item.pinned-chat-item { background: #fafafa; }
         
         .conv-avatar-wrap { position: relative; flex-shrink: 0; }
         .conv-avatar { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); }
@@ -150,6 +153,8 @@
         .conv-name-group { display: flex; align-items: center; gap: 0.3rem; min-width: 0; }
         .conv-name { font-weight: 750; font-size: 0.92rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .conv-verif { width: 13px; height: 13px; object-fit: contain; flex-shrink: 0; display: inline-block; }
+        .pin-icon { color: var(--primary); font-size: 0.75rem; margin-left: 4px; display: none; }
+        .muted-icon { color: var(--text-muted); font-size: 0.75rem; margin-left: 4px; display: none; }
 
         .conv-time { font-size: 0.72rem; color: var(--text-muted); flex-shrink: 0; }
         
@@ -175,6 +180,29 @@
             box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
         }
 
+        /* ACTION MODAL (LONG PRESS) */
+        #actionModal {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px);
+            z-index: 20000; display: none; align-items: flex-end; justify-content: center;
+        }
+        .action-sheet {
+            background: #fff; width: 100%; max-width: 500px; border-top-left-radius: 1.5rem; border-top-right-radius: 1.5rem;
+            padding: 1.25rem 1.25rem 2rem 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
+            animation: slideUpSheet 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideUpSheet {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .action-btn {
+            display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1rem; width: 100%;
+            background: var(--bg-alt); border-radius: var(--radius-lg); font-size: 0.92rem; font-weight: 700; color: var(--text-main);
+            cursor: pointer; transition: var(--transition); border: 1px solid var(--border-subtle);
+        }
+        .action-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--border-medium); }
+        .action-btn.danger { color: var(--danger); background: #fef2f2; border-color: #fee2e2; }
+        .action-btn.danger:hover { background: #fee2e2; color: #dc2626; }
+
         /* TOAST */
         #toastContainer { position: fixed; bottom: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 0.5rem; max-width: 320px; }
         .toast { background: #0f172a; color: #fff; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.82rem; font-weight: 600; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1); display: flex; align-items: center; gap: 0.6rem; border-left: 4px solid var(--accent); }
@@ -190,6 +218,30 @@
 
     <div id="toastContainer"></div>
 
+    <!-- MODAL AKSI (LONG PRESS MENU) -->
+    <div id="actionModal" onclick="closeActionModal(event)">
+        <div class="action-sheet" onclick="event.stopPropagation()">
+            <div style="width: 40px; height: 4px; background: var(--border-medium); border-radius: 2px; margin: 0 auto 0.75rem auto;"></div>
+            <div style="font-weight: 800; font-size: 1rem; color: var(--text-main); margin-bottom: 0.25rem; text-align: center;" id="modalChatTitle">Opsi Percakapan</div>
+            
+            <button class="action-btn" onclick="handlePinChat()">
+                <i class="fas fa-thumbtack" style="color: var(--primary);"></i> <span id="pinActionText">Sematkan Chat</span>
+            </button>
+            <button class="action-btn" onclick="handleArchiveChat()">
+                <i class="fas fa-archive" style="color: var(--primary);"></i> Arsipkan Chat
+            </button>
+            <button class="action-btn" onclick="handleMuteChat()">
+                <i class="fas fa-bell-slash" style="color: var(--primary);"></i> <span id="muteActionText">Bisukan Notifikasi</span>
+            </button>
+            <button class="action-btn danger" onclick="handleDeleteChat()">
+                <i class="fas fa-trash-alt"></i> Hapus Percakapan
+            </button>
+            <button class="action-btn" onclick="closeActionModal()" style="justify-content: center; background: #fff; margin-top: 0.25rem;">
+                Batal
+            </button>
+        </div>
+    </div>
+
     <!-- NAVBAR -->
     <header id="navbar">
         <div class="nav-container">
@@ -198,7 +250,6 @@
                 <span class="logo-text">Sitenexs Chat</span>
             </a>
             <div class="nav-actions">
-                <!-- Tombol Lonceng Notifikasi Global -->
                 <div class="notification-bell-btn" title="Notifikasi Pesan Belum Dibaca">
                     <i class="fas fa-bell"></i>
                     <span class="global-unread-badge" id="globalUnreadBadge">0</span>
@@ -234,7 +285,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, collection, query, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getFirestore, doc, getDoc, updateDoc, deleteDoc, collection, query, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
@@ -257,6 +308,10 @@
         let currentUid = null;
         let allConversationsData = [];
         let unsubscribesMap = {};
+        
+        let selectedChatId = null;
+        let selectedChatName = "";
+        let pressTimer = null;
 
         window.showToast = function(msg) {
             const container = document.getElementById('toastContainer');
@@ -318,7 +373,6 @@
                 });
 
                 const chats = Array.from(chatsMap.values());
-                chats.sort((a, b) => (b.lastTimestamp?.toMillis() || 0) - (a.lastTimestamp?.toMillis() || 0));
                 
                 allConversationsData = [];
                 for (const chat of chats) {
@@ -336,18 +390,31 @@
                     } catch(e) {}
 
                     const isUnread = chat[`unread_${uid}`] === true;
+                    const isPinned = chat[`pinned_${uid}`] === true;
+                    const isArchived = chat[`archived_${uid}`] === true;
+                    const isMuted = chat[`muted_${uid}`] === true;
 
-                    allConversationsData.push({
-                        chatId: chat.id,
-                        otherUid: chat.otherUid,
-                        otherName: otherName,
-                        isVerified: isVerified,
-                        isPro: isPro,
-                        lastMessage: chat.lastMessage || 'Mulai percakapan...',
-                        lastTimestamp: chat.lastTimestamp,
-                        unread: isUnread
-                    });
+                    if (!isArchived) { // Sembunyikan yang diarsipkan dari inbox utama
+                        allConversationsData.push({
+                            chatId: chat.id,
+                            otherUid: chat.otherUid,
+                            otherName: otherName,
+                            isVerified: isVerified,
+                            isPro: isPro,
+                            lastMessage: chat.lastMessage || 'Mulai percakapan...',
+                            lastTimestamp: chat.lastTimestamp,
+                            unread: isUnread,
+                            pinned: isPinned,
+                            muted: isMuted
+                        });
+                    }
                 }
+
+                // Urutkan: Pinned di atas, lalu berdasarkan waktu terbaru
+                allConversationsData.sort((a, b) => {
+                    if (a.pinned !== b.pinned) return b.pinned - a.pinned;
+                    return (b.lastTimestamp?.toMillis() || 0) - (a.lastTimestamp?.toMillis() || 0);
+                });
 
                 document.getElementById('chatCountBadge').innerText = `${allConversationsData.length} Percakapan`;
                 renderConversationsList(allConversationsData);
@@ -400,29 +467,6 @@
                             msgEl.style.display = 'block';
                         }
                     }
-
-                    const isUnread = data[`unread_${uid}`] === true;
-                    const badgeEl = document.getElementById(`badge-${chat.id}`);
-                    const itemEl = document.getElementById(`item-${chat.id}`);
-
-                    // Update di dalam array data lokal
-                    const targetConv = allConversationsData.find(c => c.chatId === chat.id);
-                    if (targetConv) {
-                        targetConv.unread = isUnread;
-                        updateGlobalUnreadCount();
-                    }
-
-                    if (badgeEl && msgEl && itemEl) {
-                        if (isUnread) {
-                            badgeEl.style.display = 'inline-block';
-                            msgEl.classList.add('unread');
-                            itemEl.classList.add('unread-chat-item');
-                        } else {
-                            badgeEl.style.display = 'none';
-                            msgEl.classList.remove('unread');
-                            itemEl.classList.remove('unread-chat-item');
-                        }
-                    }
                 });
             });
         }
@@ -430,7 +474,7 @@
         window.renderConversationsList = function(chats) {
             const listEl = document.getElementById('conversationsList');
             if (chats.length === 0) {
-                listEl.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.88rem;">Tidak ada percakapan yang cocok dengan pencarian.</div>';
+                listEl.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.88rem;">Tidak ada percakapan aktif.</div>';
                 return;
             }
 
@@ -461,9 +505,17 @@
                 const unreadClass = chat.unread ? 'unread' : '';
                 const unreadBadgeStyle = chat.unread ? 'display: inline-block;' : 'display: none;';
                 const unreadItemClass = chat.unread ? 'unread-chat-item' : '';
+                const pinnedItemClass = chat.pinned ? 'pinned-chat-item' : '';
+
+                const pinDisplay = chat.pinned ? 'inline-block' : 'none';
+                const muteDisplay = chat.muted ? 'inline-block' : 'none';
 
                 html += `
-                    <div class="conversation-item ${unreadItemClass}" id="item-${chat.chatId}" onclick="window.location.href='chat/?to=${chat.otherUid}'">
+                    <div class="conversation-item ${unreadItemClass} ${pinnedItemClass}" id="item-${chat.chatId}"
+                         onpointerdown="startPressTimer('${chat.chatId}', '${chat.otherName.replace(/'/g, "\\'")}')"
+                         onpointerup="clearPressTimer()"
+                         onpointerleave="clearPressTimer()"
+                         onclick="openChatSafely('${chat.otherUid}')">
                         <div class="conv-avatar-wrap">
                             <img src="${avatarUrl}" class="conv-avatar" onerror="this.src='${fallbackAvatar}';">
                             <span class="status-dot"></span>
@@ -473,6 +525,8 @@
                                 <div class="conv-name-group">
                                     <span class="conv-name">${chat.otherName}</span>
                                     ${badgesHtml}
+                                    <i class="fas fa-thumbtack pin-icon" id="pin-icon-${chat.chatId}" style="display: ${pinDisplay};"></i>
+                                    <i class="fas fa-bell-slash muted-icon" id="mute-icon-${chat.chatId}" style="display: ${muteDisplay};"></i>
                                 </div>
                                 <span class="conv-time">${timeStr}</span>
                             </div>
@@ -481,13 +535,121 @@
                                     <div class="conv-last-msg ${unreadClass}" id="msg-${chat.chatId}">${chat.lastMessage}</div>
                                     <div class="conv-typing" id="typing-${chat.chatId}">Sedang mengetik<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></div>
                                 </div>
-                                <span class="unread-badge" id="badge-${chat.chatId}" style="${unreadBadgeStyle}">Belum dibaca</span>
+                                <span class="unread-badge" id="badge-${chat.chatId}" style="${unreadBadgeStyle}">Baru</span>
                             </div>
                         </div>
                     </div>
                 `;
             }
             listEl.innerHTML = html;
+        }
+
+        // --- SISTEM LONG PRESS (TEKAN LAMA) ---
+        let isLongPress = false;
+        window.startPressTimer = function(chatId, chatName) {
+            isLongPress = false;
+            pressTimer = setTimeout(() => {
+                isLongPress = true;
+                selectedChatId = chatId;
+                selectedChatName = chatName;
+                
+                // Update teks tombol modal berdasarkan status saat ini
+                const currentChat = allConversationsData.find(c => c.chatId === chatId);
+                if (currentChat) {
+                    document.getElementById('pinActionText').innerText = currentChat.pinned ? 'Lepas Sematan' : 'Sematkan Chat';
+                    document.getElementById('muteActionText').innerText = currentChat.muted ? 'Bunyikan Notifikasi' : 'Bisukan Notifikasi';
+                }
+
+                document.getElementById('modalChatTitle').innerText = chatName;
+                document.getElementById('actionModal').style.display = 'flex';
+                if (navigator.vibrate) navigator.vibrate(50);
+            }, 600);
+        }
+
+        window.clearPressTimer = function() {
+            if (pressTimer) {
+                clearTimeout(pressTimer);
+                pressTimer = null;
+            }
+        }
+
+        window.openChatSafely = function(otherUid) {
+            if (isLongPress) {
+                isLongPress = false;
+                return;
+            }
+            window.location.href = `chat/?to=${otherUid}`;
+        }
+
+        window.closeActionModal = function() {
+            document.getElementById('actionModal').style.display = 'none';
+        }
+
+        // --- AKSI MODAL ---
+        window.handlePinChat = async function() {
+            closeActionModal();
+            if (!selectedChatId || !currentUid) return;
+            const chatObj = allConversationsData.find(c => c.chatId === selectedChatId);
+            if (!chatObj) return;
+
+            const newPinnedState = !chatObj.pinned;
+            try {
+                await updateDoc(doc(db, "chats", selectedChatId), {
+                    [`pinned_${currentUid}`]: newPinnedState
+                });
+                showToast(newPinnedState ? "Chat berhasil disematkan." : "Sematan chat dilepas.");
+            } catch (err) {
+                showToast("Gagal memperbarui sematan.");
+            }
+        }
+
+        window.handleArchiveChat = async function() {
+            closeActionModal();
+            if (!selectedChatId || !currentUid) return;
+            if (!confirm(`Arsipkan percakapan dengan ${selectedChatName}?`)) return;
+
+            try {
+                await updateDoc(doc(db, "chats", selectedChatId), {
+                    [`archived_${currentUid}`]: true
+                });
+                showToast("Percakapan diarsipkan.");
+            } catch (err) {
+                showToast("Gagal mengarsipkan chat.");
+            }
+        }
+
+        window.handleMuteChat = async function() {
+            closeActionModal();
+            if (!selectedChatId || !currentUid) return;
+            const chatObj = allConversationsData.find(c => c.chatId === selectedChatId);
+            if (!chatObj) return;
+
+            const newMutedState = !chatObj.muted;
+            try {
+                await updateDoc(doc(db, "chats", selectedChatId), {
+                    [`muted_${currentUid}`]: newMutedState
+                });
+                showToast(newMutedState ? "Notifikasi dibisukan." : "Notifikasi diaktifkan kembali.");
+            } catch (err) {
+                showToast("Gagal mengubah pengaturan notifikasi.");
+            }
+        }
+
+        window.handleDeleteChat = async function() {
+            closeActionModal();
+            if (!selectedChatId) return;
+            if (!confirm("Apakah Anda yakin ingin menghapus percakapan ini secara permanen?")) return;
+
+            try {
+                if (unsubscribesMap[selectedChatId]) {
+                    unsubscribesMap[selectedChatId]();
+                    delete unsubscribesMap[selectedChatId];
+                }
+                await deleteDoc(doc(db, "chats", selectedChatId));
+                showToast("Percakapan berhasil dihapus.");
+            } catch (err) {
+                showToast("Gagal menghapus percakapan.");
+            }
         }
 
         window.filterConversations = function() {
