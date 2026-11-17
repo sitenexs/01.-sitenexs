@@ -503,7 +503,7 @@
                 .replace(/'/g, "&#039;");
         }
 
-        // --- RENDER PESAN: MENDETEKSI KARTU LAMARAN KERJA OTOMATIS ---
+        // --- RENDER PESAN: KARTU LAMARAN KERJA EKSKLUSIF ---
         function renderMessageBody(text, isOutgoing, editedLabel) {
             if (text && text.includes('📋 *LAMARAN KERJA BARU*')) {
                 const posMatch = text.match(/🔹 \*Posisi:\* (.*)/);
@@ -514,7 +514,7 @@
                 const sosmedMatch = text.match(/🔗 \*Sosmed:\* (.*)/);
                 const cvMatch = text.match(/📄 \*Link CV:\* (.*)/);
                 const ijazahMatch = text.match(/🎓 \*Link Ijazah:\* (.*)/);
-                const motivasiMatch = text.match(/💬 \*Motivasi \/ Pengalaman:\*\n"([\s\S]*)"/);
+                const motivasiMatch = text.match(/💬 \*Motivasi:\*\n"([\s\S]*)"/);
 
                 const position = posMatch ? posMatch[1].trim() : 'Pekerjaan';
                 const name = nameMatch ? nameMatch[1].trim() : '-';
@@ -660,6 +660,13 @@
             } else {
                 const participants = [currentUid, activeChatUserId].sort();
                 activeChatId = `${participants[0]}_${participants[1]}`;
+
+                // --- TANDAI CHAT SUDAH DIBACA (HILANGKAN BADGE UNREAD SAAT DIBUKA) ---
+                try {
+                    await updateDoc(doc(db, "chats", activeChatId), {
+                        [`unread_${currentUid}`]: false
+                    });
+                } catch(e) {}
 
                 try {
                     const userSnap = await getDoc(doc(db, "users", activeChatUserId));
@@ -1033,11 +1040,15 @@
                 try {
                     playChatSound('send');
 
+                    // Tentukan penerima chat untuk ditandai unread
+                    const recipientUid = isAiChat ? 'sitenexs_ai_assistant' : activeChatUserId;
+
                     const chatDocRef = doc(db, "chats", activeChatId);
                     await setDoc(chatDocRef, {
                         participants: [currentUid, activeChatUserId],
                         lastMessage: text,
-                        lastTimestamp: serverTimestamp()
+                        lastTimestamp: serverTimestamp(),
+                        [`unread_${recipientUid}`]: true
                     }, { merge: true });
 
                     const messageData = {
@@ -1050,7 +1061,7 @@
                     if (replyingTo) {
                         messageData.replyTo = {
                             id: replyingTo.id,
-                            senderUid: replyingTo.senderUid,
+                            senderUid: replyingTo.replyTo?.senderUid || replyingTo.senderUid,
                             text: replyingTo.text
                         };
                         cancelReplyMode();
@@ -1067,7 +1078,8 @@
                         await updateDoc(chatDocRef, {
                             [aiTypingKey]: false,
                             lastMessage: aiReplyText,
-                            lastTimestamp: serverTimestamp()
+                            lastTimestamp: serverTimestamp(),
+                            [`unread_${currentUid}`]: true
                         });
 
                         await addDoc(collection(db, "chats", activeChatId, "messages"), {
