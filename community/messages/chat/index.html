@@ -192,7 +192,7 @@
         }
 
         .message-bubble {
-            max-width: 70%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
+            max-width: 75%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
             line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
             cursor: pointer; user-select: text; -webkit-user-select: text;
             animation: messageSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -308,7 +308,7 @@
             .chat-wrapper { border: none; border-radius: 0; height: 100%; }
             .chat-header { padding-top: max(0.75rem, env(safe-area-inset-top, 12px)); }
             .chat-input-box { padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 12px)); }
-            .message-bubble { max-width: 85%; }
+            .message-bubble { max-width: 88%; }
         }
     </style>
 </head>
@@ -441,7 +441,6 @@
         let replyingTo = null;
         let typingTimeout = null;
 
-        // --- GOOGLE GEMINI API KEY & BEARER CONFIG ---
         const GEMINI_API_KEY = "AQ.Ab8RN6IrbqDJ8pYKwp5qPn0i7xkg3k7LYJWStopjD4ypYHHeJQ";
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -504,7 +503,75 @@
                 .replace(/'/g, "&#039;");
         }
 
+        // --- RENDER PESAN: MENDETEKSI KARTU LAMARAN KERJA OTOMATIS ---
         function renderMessageBody(text, isOutgoing, editedLabel) {
+            if (text && text.includes('📋 *LAMARAN KERJA BARU*')) {
+                const posMatch = text.match(/🔹 \*Posisi:\* (.*)/);
+                const nameMatch = text.match(/👤 \*Nama:\* (.*)/);
+                const phoneMatch = text.match(/📞 \*WhatsApp:\* (.*)/);
+                const emailMatch = text.match(/📧 \*Email:\* (.*)/);
+                const cityMatch = text.match(/🏠 \*Domisili:\* (.*)/);
+                const sosmedMatch = text.match(/🔗 \*Sosmed:\* (.*)/);
+                const cvMatch = text.match(/📄 \*Link CV:\* (.*)/);
+                const ijazahMatch = text.match(/🎓 \*Link Ijazah:\* (.*)/);
+                const motivasiMatch = text.match(/💬 \*Motivasi \/ Pengalaman:\*\n"([\s\S]*)"/);
+
+                const position = posMatch ? posMatch[1].trim() : 'Pekerjaan';
+                const name = nameMatch ? nameMatch[1].trim() : '-';
+                const phone = phoneMatch ? phoneMatch[1].trim() : '-';
+                const email = emailMatch ? emailMatch[1].trim() : '-';
+                const city = cityMatch ? cityMatch[1].trim() : '-';
+                const sosmed = sosmedMatch ? sosmedMatch[1].trim() : '-';
+                const cvUrl = cvMatch ? cvMatch[1].trim() : '-';
+                const ijazahUrl = ijazahMatch ? ijazahMatch[1].trim() : '#';
+                const motivasi = motivasiMatch ? motivasiMatch[1].trim() : '-';
+
+                const cardBg = isOutgoing ? 'rgba(255, 255, 255, 0.12)' : '#f8fafc';
+                const cardBorder = isOutgoing ? 'rgba(255, 255, 255, 0.25)' : 'var(--border-subtle)';
+                const textColor = isOutgoing ? '#fff' : 'var(--text-main)';
+
+                return `
+                    <div style="background: ${cardBg}; border: 1px solid ${cardBorder}; border-radius: 12px; padding: 12px; margin-bottom: 4px; color: ${textColor}; text-align: left; font-size: 0.85rem;">
+                        <div style="display: flex; align-items: center; gap: 8px; border-bottom: 1px solid ${cardBorder}; padding-bottom: 8px; margin-bottom: 8px;">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 800; font-size: 0.9rem;">Lamaran Kerja Masuk</div>
+                                <div style="font-size: 0.75rem; opacity: 0.85;">Posisi: ${position}</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; margin-bottom: 10px;">
+                            <div><b>Nama:</b> ${name}</div>
+                            <div><b>WhatsApp:</b> <a href="https://wa.me/${phone.replace(/[^0-9]/g, '')}" target="_blank" style="color: inherit; text-decoration: underline;">${phone}</a></div>
+                            <div><b>Email:</b> ${email}</div>
+                            <div><b>Domisili:</b> ${city}</div>
+                            <div><b>Sosmed:</b> ${sosmed}</div>
+                        </div>
+
+                        ${motivasi !== '-' ? `
+                            <div style="background: rgba(0,0,0,0.04); padding: 8px; border-radius: 6px; font-size: 0.78rem; font-style: italic; margin-bottom: 10px;">
+                                "${motivasi}"
+                            </div>
+                        ` : ''}
+
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            ${cvUrl !== '-' ? `
+                                <a href="${cvUrl}" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; background: var(--primary); color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-decoration: none;">
+                                    <i class="fas fa-file-pdf"></i> Lihat CV
+                                </a>
+                            ` : ''}
+                            ${ijazahUrl !== '#' ? `
+                                <a href="${ijazahUrl}" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; background: var(--accent); color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-decoration: none;">
+                                    <i class="fas fa-certificate"></i> Lihat Ijazah
+                                </a>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
             const urlRegex = /(https?:\/\/[^\s]+)/g;
             let urls = [];
             let match;
@@ -537,7 +604,6 @@
             `;
         }
 
-        // --- PANGGILAN REAL-TIME KE GOOGLE GEMINI API MENGGUNAKAN BEARER TOKEN ---
         async function getAiResponse(userText) {
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, {
@@ -550,7 +616,7 @@
                         contents: [
                             {
                                 role: 'user',
-                                parts: [{ text: "Anda adalah Sitenexs AI Assistant, asisten cerdas yang ramah, profesional, dan membantu untuk mitra UMKM serta pengembang web di ekosistem Sitenexs (mengembangkan aplikasi web mobile, POS, QR ordering, dll). Jawablah dalam bahasa Indonesia dengan natural dan to the point. Pertanyaan pengguna: " + userText }]
+                                parts: [{ text: "Anda adalah Sitenexs AI Assistant, asisten cerdas yang ramah, profesional, dan membantu untuk mitra UMKM serta pengembang web di ekosistem Sitenexs. Jawablah dalam bahasa Indonesia dengan natural dan to the point. Pertanyaan pengguna: " + userText }]
                             }
                         ]
                     })
@@ -559,14 +625,11 @@
                 const data = await response.json();
                 if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
                     return data.candidates[0].content.parts[0].text;
-                } else if (data.error) {
-                    return `⚠️ Error dari Gemini API: ${data.error.message || 'Gagal menghasilkan respons.'}`;
                 } else {
                     return "Maaf, Gemini AI tidak dapat memproses respons saat ini.";
                 }
             } catch (err) {
-                console.error("Gemini API Error:", err);
-                return "⚠️ Gagal terhubung ke server Gemini AI. Periksa koneksi internet Anda.";
+                return "⚠️ Gagal terhubung ke server Gemini AI.";
             }
         }
 
@@ -625,7 +688,6 @@
                 headerAvatar.onerror = () => { headerAvatar.src = fallbackAvatar; };
             }
 
-            // --- LISTEN CHAT DOCUMENT UNTUK STATUS TYPING ---
             if (unsubscribeChatDoc) unsubscribeChatDoc();
             unsubscribeChatDoc = onSnapshot(doc(db, "chats", activeChatId), (chatDocSnap) => {
                 const typingEl = document.getElementById('activeChatTyping');
@@ -651,7 +713,6 @@
                 }
             });
 
-            // --- LISTEN MESSAGES ---
             const messagesRef = collection(db, "chats", activeChatId, "messages");
             const qMsgs = query(messagesRef, orderBy("createdAt", "asc"));
 
@@ -672,7 +733,7 @@
                     });
                     await addDoc(collection(db, "chats", activeChatId, "messages"), {
                         senderUid: 'sitenexs_ai_assistant',
-                        text: "Halo Mitra Sitenexs! 👋 Saya Sitenexs AI Assistant yang didukung oleh Google Gemini. Ada strategi UMKM, koding web, atau solusi bisnis yang ingin kita diskusikan?",
+                        text: "Halo Mitra Sitenexs! 👋 Saya Sitenexs AI Assistant yang didukung oleh Google Gemini.",
                         createdAt: serverTimestamp(),
                         isEdited: false
                     });
@@ -832,7 +893,6 @@
             }
         });
 
-        // --- TYPING DETECTOR ---
         const messageInput = document.getElementById('messageInput');
         messageInput.addEventListener('input', () => {
             if (!activeChatId || !currentUid) return;
@@ -853,7 +913,6 @@
             }, 1500);
         });
 
-        // --- LONG PRESS & AKSI MODAL ---
         let pressTimer = null;
 
         window.openActionModal = function(e, msgId, senderUid, text) {
@@ -999,7 +1058,6 @@
 
                     await addDoc(collection(db, "chats", activeChatId, "messages"), messageData);
 
-                    // Jika ini chat AI, kirim pesan ke Gemini API secara real-time
                     if (isAiChat) {
                         const aiTypingKey = 'typing_sitenexs_ai_assistant';
                         await updateDoc(chatDocRef, { [aiTypingKey]: true });
