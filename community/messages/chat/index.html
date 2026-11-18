@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ruang Chat — Komunitas Sitenexs</title>
     
     <!-- Meta SEO -->
@@ -261,8 +261,8 @@
             box-shadow: 0 -4px 12px rgba(0,0,0,0.02);
         }
         .chat-input-actions { display: flex; gap: 0.5rem; color: var(--text-muted); flex-shrink: 0; }
-        .chat-input-actions button { background: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; transition: var(--transition); padding: 0.25rem; }
-        .chat-input-actions button:hover { color: var(--primary); }
+        .chat-input-actions label { background: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; transition: var(--transition); padding: 0.25rem; display: inline-flex; align-items: center; justify-content: center; }
+        .chat-input-actions label:hover { color: var(--primary); }
 
         .chat-input {
             flex: 1; padding: 0.65rem 1rem; background: var(--bg-body); border: 1px solid var(--border-medium);
@@ -393,7 +393,10 @@
             <!-- INPUT PESAN BAWAH -->
             <form class="chat-input-box" id="sendMessageForm" onsubmit="handleChatFormSubmit(event)" autocomplete="off">
                 <div class="chat-input-actions">
-                    <button type="button" title="Lampirkan File" onclick="showToast('Lampiran file akan segera hadir.')"><i class="fas fa-paperclip"></i></button>
+                    <label title="Kirim Pasfoto / Gambar" for="chatImageInput">
+                        <i class="fas fa-image"></i>
+                    </label>
+                    <input type="file" id="chatImageInput" accept="image/*" style="display: none;" onchange="handleImageAttachment(event)">
                 </div>
                 <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." required autocomplete="off">
                 <button type="submit" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane" id="sendBtnIcon"></i></button>
@@ -417,7 +420,9 @@
         };
 
         const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
+        const supabasePublishableKey = 'sb_publishable_XKHXYrEw2EDdfYH17Uyx6w_k_BtGLQa';
         const avatarBucket = 'profile-photos';
+        const chatImageBucket = 'job-cvs';
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -503,8 +508,80 @@
                 .replace(/'/g, "&#039;");
         }
 
-        // --- RENDER PESAN: KARTU LAMARAN KERJA EKSKLUSIF ---
-        function renderMessageBody(text, isOutgoing, editedLabel) {
+        // --- UPLOAD PASFOTO / GAMBAR KE SUPABASE ---
+        window.handleImageAttachment = async function(event) {
+            const file = event.target.files[0];
+            if (!file || !activeChatId || !currentUid) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                showToast("Ukuran gambar maksimal 5MB.");
+                event.target.value = '';
+                return;
+            }
+
+            showToast("Mengunggah pasfoto/gambar...");
+
+            try {
+                const ext = file.name ? file.name.split('.').pop() : 'jpg';
+                const fileName = `${Date.now()}_chat_img_${Math.floor(Math.random()*1000)}.${ext}`;
+                const filePath = `chat-attachments/${activeChatId}/${fileName}`;
+
+                const uploadRes = await fetch(`${supabaseUrl}/storage/v1/object/${chatImageBucket}/${filePath}`, {
+                    method: 'POST',
+                    headers: {
+                        apikey: supabasePublishableKey,
+                        'Content-Type': file.type || 'image/jpeg',
+                        'x-upsert': 'true'
+                    },
+                    body: file
+                });
+
+                if (!uploadRes.ok) throw new Error('Gagal mengunggah gambar.');
+                const imageUrl = `${supabaseUrl}/storage/v1/object/public/${chatImageBucket}/${filePath}`;
+
+                // Kirim pesan gambar otomatis
+                const recipientUid = isAiChat ? 'sitenexs_ai_assistant' : activeChatUserId;
+                const chatDocRef = doc(db, "chats", activeChatId);
+                
+                await setDoc(chatDocRef, {
+                    participants: [currentUid, activeChatUserId],
+                    lastMessage: "📷 [Pasfoto/Gambar]",
+                    lastTimestamp: serverTimestamp(),
+                    [`unread_${recipientUid}`]: true
+                }, { merge: true });
+
+                await addDoc(collection(db, "chats", activeChatId, "messages"), {
+                    senderUid: currentUid,
+                    text: imageUrl,
+                    isImage: true,
+                    createdAt: serverTimestamp(),
+                    isEdited: false
+                });
+
+                playChatSound('send');
+                showToast("Pasfoto berhasil dikirim.");
+                event.target.value = '';
+
+            } catch (err) {
+                console.error("Gagal kirim gambar:", err);
+                showToast("Gagal mengunggah gambar.");
+                event.target.value = '';
+            }
+        }
+
+        // --- RENDER PESAN (GAMBAR ATAU TEKS) ---
+        function renderMessageBody(text, isImage, isOutgoing, editedLabel) {
+            if (isImage || (text && text.startsWith('http') && (text.includes('.jpg') || text.includes('.jpeg') || text.includes('.png') || text.includes('.webp')))) {
+                return `
+                    <div style="border-radius: 8px; overflow: hidden; max-width: 240px; margin-bottom: 4px;">
+                        <a href="${text}" target="_blank">
+                            <img src="${text}" alt="Pasfoto / Gambar" style="width: 100%; height: auto; display: block; border-radius: 8px;">
+                        </a>
+                    </div>
+                    ${editedLabel}
+                `;
+            }
+
             if (text && text.includes('📋 *LAMARAN KERJA BARU*')) {
                 const posMatch = text.match(/🔹 \*Posisi:\* (.*)/);
                 const nameMatch = text.match(/👤 \*Nama:\* (.*)/);
@@ -661,7 +738,6 @@
                 const participants = [currentUid, activeChatUserId].sort();
                 activeChatId = `${participants[0]}_${participants[1]}`;
 
-                // --- TANDAI CHAT SUDAH DIBACA (HILANGKAN BADGE UNREAD SAAT DIBUKA) ---
                 try {
                     await updateDoc(doc(db, "chats", activeChatId), {
                         [`unread_${currentUid}`]: false
@@ -790,7 +866,7 @@
                             const timeContainer = bubbleDiv.querySelector('.message-time');
                             const timeHtml = timeContainer ? timeContainer.outerHTML : `<div class="message-time">${timeStr}</div>`;
                             
-                            bubbleDiv.innerHTML = replyHtml + renderMessageBody(m.text, isOutgoing, editedLabel) + timeHtml;
+                            bubbleDiv.innerHTML = replyHtml + renderMessageBody(m.text, m.isImage, isOutgoing, editedLabel) + timeHtml;
                         }
                     } else {
                         shouldScrollToBottom = true;
@@ -826,7 +902,7 @@
 
                         bubbleDiv.innerHTML = `
                             ${replyHtml}
-                            ${renderMessageBody(m.text || '', isOutgoing, editedLabel)}
+                            ${renderMessageBody(m.text || '', m.isImage, isOutgoing, editedLabel)}
                             <div class="message-time">${timeStr}</div>
                         `;
 
@@ -1040,7 +1116,6 @@
                 try {
                     playChatSound('send');
 
-                    // Tentukan penerima chat untuk ditandai unread
                     const recipientUid = isAiChat ? 'sitenexs_ai_assistant' : activeChatUserId;
 
                     const chatDocRef = doc(db, "chats", activeChatId);
