@@ -107,7 +107,7 @@
         }
 
         .message-bubble {
-            max-width: 78%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
+            max-width: 82%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
             line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
             animation: messageSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; background: #fff;
         }
@@ -118,7 +118,7 @@
 
         /* PRATINJAU PASFOTO / GAMBAR DI DALAM CHAT */
         .chat-image-preview {
-            width: 100%; max-width: 220px; border-radius: 8px; overflow: hidden; margin-bottom: 4px;
+            width: 100%; max-width: 220px; border-radius: 8px; overflow: hidden; margin-bottom: 6px;
             border: 1px solid rgba(0,0,0,0.1); background: #000; display: block;
         }
         .chat-image-preview img {
@@ -150,6 +150,7 @@
             body { padding: 0; }
             .container { max-width: 100%; height: 100svh; max-height: none; }
             .chat-wrapper { border: none; border-radius: 0; height: 100%; }
+            .message-bubble { max-width: 88%; }
         }
     </style>
 </head>
@@ -243,21 +244,8 @@
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
-        // --- FUNGSI UTAMA PENGOBROLAN & PENERIMAAN PASFOTO ---
+        // --- RENDER ISI PESAN & KARTU LAMARAN KERJA (TERMASUK MOTIVASI & RINGKASAN) ---
         function renderMessageBody(text) {
-            // Deteksi jika pesan berisi URL gambar (seperti pasfoto formal berlatar merah atau ijazah)
-            if (text && (text.startsWith('http://') || text.startsWith('https://')) && (text.includes('pasfoto') || text.includes('ijazah') || text.includes('.jpg') || text.includes('.jpeg') || text.includes('.png') || text.includes('.webp'))) {
-                return `
-                    <div style="font-size: 0.78rem; font-weight: 700; margin-bottom: 4px; opacity: 0.9;"><i class="fas fa-image"></i> Berkas Gambar / Pasfoto:</div>
-                    <div class="chat-image-preview">
-                        <a href="${text}" target="_blank">
-                            <img src="${text}" alt="Pasfoto / Lampiran" loading="lazy">
-                        </a>
-                    </div>
-                `;
-            }
-
-            // Render teks biasa atau kartu lamaran kerja otomatis
             if (text && text.includes('📋 *LAMARAN KERJA BARU*')) {
                 const posMatch = text.match(/🔹 \*Posisi:\* (.*)/);
                 const nameMatch = text.match(/👤 \*Nama:\* (.*)/);
@@ -267,7 +255,7 @@
                 const fotoMatch = text.match(/🖼️ \*Link Pasfoto \(Bg Merah\):\* (.*)/);
                 const cvMatch = text.match(/📄 \*Link CV:\* (.*)/);
                 const ijazahMatch = text.match(/🎓 \*Link Ijazah:\* (.*)/);
-                const motivasiMatch = text.match(/💬 \*Motivasi:\*\n"([\s\S]*)"/);
+                const motivasiMatch = text.match(/💬 \*Motivasi:\*\n([\s\S]*)/);
 
                 const position = posMatch ? posMatch[1].trim() : 'Pekerjaan';
                 const name = nameMatch ? nameMatch[1].trim() : '-';
@@ -280,21 +268,35 @@
                 const motivasi = motivasiMatch ? motivasiMatch[1].trim() : '-';
 
                 return `
-                    <div style="background: rgba(0,0,0,0.03); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 10px; font-size: 0.82rem; text-align: left;">
-                        <div style="font-weight: 800; font-size: 0.9rem; margin-bottom: 6px; color: var(--primary);"><i class="fas fa-briefcase"></i> Lamaran Kerja: ${position}</div>
+                    <div style="background: rgba(0,0,0,0.03); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px; font-size: 0.82rem; text-align: left;">
+                        <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-briefcase"></i> Lamaran Kerja: ${position}
+                        </div>
+                        
                         ${pasfotoUrl ? `
-                            <div style="margin-bottom: 8px;">
-                                <div style="font-size: 0.72rem; font-weight: 700; margin-bottom: 2px;">Pasfoto (Bg Merah):</div>
+                            <div style="margin-bottom: 10px;">
+                                <div style="font-size: 0.72rem; font-weight: 700; margin-bottom: 3px; color: var(--text-muted);">Pasfoto Formal (Bg Merah):</div>
                                 <div class="chat-image-preview"><a href="${pasfotoUrl}" target="_blank"><img src="${pasfotoUrl}" alt="Pasfoto"></a></div>
                             </div>
                         ` : ''}
-                        <div><b>Nama:</b> ${name}</div>
-                        <div><b>WhatsApp:</b> ${phone}</div>
-                        <div><b>Domisili:</b> ${city}</div>
-                        ${motivasi !== '-' ? `<div style="margin-top: 6px; font-style: italic;">"${motivasi}"</div>` : ''}
-                        <div style="display: flex; gap: 6px; margin-top: 8px;">
-                            ${cvUrl !== '-' ? `<a href="${cvUrl}" target="_blank" class="btn" style="padding: 3px 8px; font-size: 0.72rem; background: var(--primary); color: #fff;">CV</a>` : ''}
-                            ${ijazahUrl !== '#' ? `<a href="${ijazahUrl}" target="_blank" class="btn" style="padding: 3px 8px; font-size: 0.72rem; background: var(--accent); color: #fff;">Ijazah</a>` : ''}
+
+                        <div style="display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px;">
+                            <div><b>Nama:</b> ${name}</div>
+                            <div><b>WhatsApp:</b> ${phone}</div>
+                            <div><b>Email:</b> ${email}</div>
+                            <div><b>Domisili:</b> ${city}</div>
+                        </div>
+
+                        ${motivasi !== '-' ? `
+                            <div style="background: #fff; border-left: 3px solid var(--primary); padding: 8px; border-radius: 4px; margin-bottom: 10px; font-size: 0.78rem;">
+                                <div style="font-weight: 700; margin-bottom: 2px; color: var(--primary);">Ringkasan & Motivasi:</div>
+                                <div style="font-style: italic; opacity: 0.9; white-space: pre-wrap;">${escapeHtml(motivasi)}</div>
+                            </div>
+                        ` : ''}
+
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            ${cvUrl !== '-' ? `<a href="${cvUrl}" target="_blank" class="btn" style="padding: 4px 10px; font-size: 0.75rem; background: var(--primary); color: #fff;"><i class="fas fa-file-pdf"></i> CV</a>` : ''}
+                            ${ijazahUrl !== '#' ? `<a href="${ijazahUrl}" target="_blank" class="btn" style="padding: 4px 10px; font-size: 0.75rem; background: var(--accent); color: #fff;"><i class="fas fa-certificate"></i> Ijazah</a>` : ''}
                         </div>
                     </div>
                 `;
