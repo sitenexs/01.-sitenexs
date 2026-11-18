@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ruang Chat — Komunitas Sitenexs</title>
     
     <!-- Meta SEO -->
@@ -38,54 +38,24 @@
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        body[data-package="pro"] {
-            --primary: #0284c7;
-            --primary-dark: #0369a1;
-            --primary-light: #f0f9ff;
-            --accent: #f59e0b;
-        }
-        body[data-package="vip"], body[data-package="ultimate"], body[data-package="premium"] {
-            --primary: #7c3aed;
-            --primary-dark: #6d28d9;
-            --primary-light: #f5f3ff;
-            --accent: #fbbf24;
-        }
-
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         
         html, body { 
-            height: 100%;
-            height: 100svh;
-            overflow: hidden; 
-            font-size: 15px; 
-            user-select: none;
-            -webkit-user-select: none;
+            height: 100%; height: 100svh; overflow: hidden; font-size: 15px; 
+            user-select: none; -webkit-user-select: none;
         }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 0.75rem;
+            background-color: var(--bg-body); color: var(--text-main); line-height: 1.5;
+            -webkit-font-smoothing: antialiased; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; padding: 0.75rem;
         }
 
         a { text-decoration: none; color: inherit; }
         button, input { font-family: inherit; outline: none; border: none; }
 
-        .container { 
-            width: 100%; 
-            max-width: 800px; 
-            height: 100%; 
-            max-height: 100%; 
-            display: flex; 
-            flex-direction: column; 
-        }
+        .container { width: 100%; max-width: 800px; height: 100%; max-height: 100%; display: flex; flex-direction: column; }
 
         .btn {
             display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
@@ -99,92 +69,37 @@
 
         /* RUANG CHAT UTAMA */
         .chat-wrapper {
-            width: 100%;
-            height: 100%;
-            background: #fafbfc; 
-            border: 1px solid var(--border-subtle); 
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-md); 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden;
-            position: relative;
+            width: 100%; height: 100%; background: #fafbfc; border: 1px solid var(--border-subtle); 
+            border-radius: var(--radius-xl); box-shadow: var(--shadow-md); display: flex; flex-direction: column; 
+            overflow: hidden; position: relative;
         }
         
         .chat-header {
-            padding: 0.75rem 1.25rem; 
-            background: #fff; 
-            border-bottom: 1px solid var(--border-subtle);
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            flex: 0 0 auto; 
-            z-index: 10;
+            padding: 0.75rem 1.25rem; background: #fff; border-bottom: 1px solid var(--border-subtle);
+            display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto; z-index: 10;
             box-shadow: var(--shadow-sm);
         }
         .chat-header-left { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
         .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); flex-shrink: 0; }
-        .chat-header-avatar.ai-avatar-bg { background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; }
         
         .chat-header-info { min-width: 0; display: flex; flex-direction: column; }
-        
         .chat-header-name-row { display: flex; align-items: center; gap: 0.3rem; min-width: 0; }
-        .chat-header-name { font-weight: 850; font-size: 0.98rem; color: var(--text-main); letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-header-name { font-weight: 850; font-size: 0.98rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .chat-header-verif { width: 14px; height: 14px; object-fit: contain; flex-shrink: 0; display: inline-block; }
-        
-        .chat-header-typing { font-size: 0.73rem; color: var(--accent); font-weight: 600; font-style: italic; display: none; }
-        .typing-dots span { animation: typingBlink 1.4s infinite both; }
-        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typingBlink {
-            0% { opacity: 0.2; }
-            20% { opacity: 1; }
-            100% { opacity: 0.2; }
-        }
 
         /* ISI CHAT */
         .chat-messages {
-            flex: 1 1 auto; 
-            min-height: 0;
-            padding: 1.25rem; 
-            overflow-y: auto; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 0.75rem;
-            background-color: #f8fafc;
-            background-image: 
-                radial-gradient(rgba(37, 99, 235, 0.08) 1px, transparent 1px),
-                radial-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px);
-            background-size: 24px 24px;
-            background-position: 0 0, 12px 12px;
-            -webkit-overflow-scrolling: touch;
+            flex: 1 1 auto; min-height: 0; padding: 1.25rem; overflow-y: auto; 
+            display: flex; flex-direction: column; gap: 0.75rem; background-color: #f8fafc;
+            background-image: radial-gradient(rgba(37, 99, 235, 0.08) 1px, transparent 1px), radial-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+            background-size: 24px 24px; background-position: 0 0, 12px 12px; -webkit-overflow-scrolling: touch;
         }
         .chat-messages::-webkit-scrollbar { width: 5px; }
         .chat-messages::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 10px; }
 
-        /* WRAPPER BUBBLE PESAN */
-        .message-wrapper {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            flex-shrink: 0;
-        }
+        .message-wrapper { position: relative; display: flex; flex-direction: column; width: 100%; flex-shrink: 0; }
         .message-wrapper.incoming { align-items: flex-start; }
         .message-wrapper.outgoing { align-items: flex-end; }
-
-        .swipe-reply-indicator {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--primary);
-            font-size: 0.95rem;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            pointer-events: none;
-            z-index: 1;
-        }
 
         @keyframes messageSlideIn {
             from { opacity: 0; transform: translateY(14px) scale(0.95); }
@@ -192,112 +107,41 @@
         }
 
         .message-bubble {
-            max-width: 75%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
+            max-width: 78%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
             line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-            cursor: pointer; user-select: text; -webkit-user-select: text;
-            animation: messageSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            touch-action: pan-y;
-            z-index: 2;
-            background: #fff;
+            animation: messageSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; background: #fff;
         }
 
-        .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); border-bottom-left-radius: 4px; transform-origin: bottom left; }
-        .message-bubble.outgoing { background: var(--primary); color: #fff; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); transform-origin: bottom right; }
+        .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); border-bottom-left-radius: 4px; }
+        .message-bubble.outgoing { background: var(--primary); color: #fff; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
         .message-time { font-size: 0.65rem; opacity: 0.75; margin-top: 0.3rem; text-align: right; font-weight: 500; }
-        .edited-tag { font-size: 0.6rem; opacity: 0.7; font-style: italic; margin-left: 4px; }
 
-        /* BUBBLE MENGETIK */
-        .typing-bubble {
-            background: #ffffff; border: 1px solid var(--border-subtle); align-self: flex-start;
-            padding: 0.6rem 0.9rem; border-radius: var(--radius-lg); border-bottom-left-radius: 4px;
-            display: none; align-items: center; gap: 0.35rem; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-            animation: messageSlideIn 0.2s ease-out forwards;
+        /* PRATINJAU PASFOTO / GAMBAR DI DALAM CHAT */
+        .chat-image-preview {
+            width: 100%; max-width: 220px; border-radius: 8px; overflow: hidden; margin-bottom: 4px;
+            border: 1px solid rgba(0,0,0,0.1); background: #000; display: block;
         }
-        .typing-dot {
-            width: 7px; height: 7px; background: var(--text-muted); border-radius: 50%; opacity: 0.4;
-            animation: typingBounce 1.4s infinite ease-in-out both;
+        .chat-image-preview img {
+            width: 100%; height: auto; display: block; object-fit: cover; max-height: 280px;
         }
-        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
-        @keyframes typingBounce {
-            0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
-            40% { transform: scale(1); opacity: 1; }
-        }
-
-        /* KUTIPAN REPLY */
-        .quoted-reply {
-            background: rgba(0, 0, 0, 0.06);
-            border-left: 3px solid var(--primary);
-            padding: 0.35rem 0.6rem;
-            margin-bottom: 0.4rem;
-            border-radius: 4px;
-            font-size: 0.78rem;
-            opacity: 0.9;
-        }
-        .message-bubble.outgoing .quoted-reply {
-            background: rgba(255, 255, 255, 0.15);
-            border-left-color: #fff;
-        }
-        .quoted-reply-sender { font-weight: 700; margin-bottom: 0.1rem; }
-
-        /* BANNER MODE EDIT & REPLY */
-        #editModeBanner, #replyBanner {
-            display: none; padding: 0.5rem 1.25rem; background: #fef3c7; border-bottom: 1px solid #fde68a;
-            font-size: 0.8rem; font-weight: 600; color: #92400e; align-items: center; justify-content: space-between; flex-shrink: 0;
-        }
-        #replyBanner { background: var(--primary-light); border-bottom-color: var(--border-subtle); color: var(--primary-dark); }
-        #editModeBanner button, #replyBanner button { background: none; color: inherit; cursor: pointer; font-size: 0.9rem; }
 
         /* INPUT PESAN */
         .chat-input-box {
-            padding: 0.75rem 1.25rem; 
-            background: #fff; 
-            border-top: 1px solid var(--border-subtle);
-            display: flex; 
-            align-items: center; 
-            gap: 0.75rem; 
-            flex: 0 0 auto; 
-            z-index: 10;
-            box-shadow: 0 -4px 12px rgba(0,0,0,0.02);
+            padding: 0.75rem 1.25rem; background: #fff; border-top: 1px solid var(--border-subtle);
+            display: flex; align-items: center; gap: 0.75rem; flex: 0 0 auto; z-index: 10;
         }
-        .chat-input-actions { display: flex; gap: 0.5rem; color: var(--text-muted); flex-shrink: 0; }
-        .chat-input-actions label { background: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; transition: var(--transition); padding: 0.25rem; display: inline-flex; align-items: center; justify-content: center; }
-        .chat-input-actions label:hover { color: var(--primary); }
-
         .chat-input {
             flex: 1; padding: 0.65rem 1rem; background: var(--bg-body); border: 1px solid var(--border-medium);
-            border-radius: var(--radius-full); font-size: 0.88rem; color: var(--text-main); transition: var(--transition); min-width: 0;
+            border-radius: var(--radius-full); font-size: 0.88rem; color: var(--text-main);
         }
         .chat-input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
         
         .chat-send-btn {
             width: 42px; height: 42px; border-radius: 50%; background: var(--primary); color: #fff;
-            display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); flex-shrink: 0;
         }
-        .chat-send-btn:hover { background: var(--primary-dark); transform: scale(1.05); }
 
-        /* ACTION MODAL */
-        #actionModal {
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px);
-            z-index: 20000; display: none; align-items: flex-end; justify-content: center;
-        }
-        
-        .action-sheet {
-            background: #fff; width: 100%; max-width: 500px; border-top-left-radius: 1.5rem; border-top-right-radius: 1.5rem;
-            padding: 1.25rem 1.25rem 2rem 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
-        }
-
-        .action-btn {
-            display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1rem; width: 100%;
-            background: var(--bg-body); border-radius: var(--radius-lg); font-size: 0.92rem; font-weight: 700; color: var(--text-main);
-            cursor: pointer; transition: var(--transition); border: 1px solid var(--border-subtle);
-        }
-        .action-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--border-medium); }
-        .action-btn.danger { color: var(--danger); background: #fef2f2; border-color: #fee2e2; }
-        .action-btn.danger:hover { background: #fee2e2; color: #dc2626; }
-
-        /* TOAST */
         #toastContainer { position: fixed; bottom: 24px; right: 24px; z-index: 30000; display: flex; flex-direction: column; gap: 0.5rem; max-width: 340px; }
         .toast { background: #0f172a; color: #fff; padding: 0.85rem 1.15rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 0.75rem; border-left: 4px solid var(--accent); }
 
@@ -306,9 +150,6 @@
             body { padding: 0; }
             .container { max-width: 100%; height: 100svh; max-height: none; }
             .chat-wrapper { border: none; border-radius: 0; height: 100%; }
-            .chat-header { padding-top: max(0.75rem, env(safe-area-inset-top, 12px)); }
-            .chat-input-box { padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 12px)); }
-            .message-bubble { max-width: 88%; }
         }
     </style>
 </head>
@@ -316,90 +157,34 @@
 
     <div id="toastContainer"></div>
 
-    <!-- MODAL AKSI -->
-    <div id="actionModal" onclick="closeActionModal(event)">
-        <div class="action-sheet" onclick="event.stopPropagation()">
-            <div style="width: 40px; height: 4px; background: var(--border-medium); border-radius: 2px; margin: 0 auto 0.75rem auto;"></div>
-            <div style="font-weight: 800; font-size: 1rem; color: var(--text-main); margin-bottom: 0.25rem; text-align: center;">Opsi Pesan</div>
-            
-            <button class="action-btn" onclick="handleReplyMessage()">
-                <i class="fas fa-reply" style="color: var(--primary);"></i> Balas Pesan
-            </button>
-            <button class="action-btn" onclick="handleCopyMessage()">
-                <i class="fas fa-copy" style="color: var(--primary);"></i> Salin Teks Pesan
-            </button>
-            <button class="action-btn" id="editActionBtn" onclick="handleStartEdit()" style="display: none;">
-                <i class="fas fa-pen" style="color: var(--primary);"></i> Edit Pesan
-            </button>
-            <button class="action-btn danger" id="deleteActionBtn" onclick="handleDeleteMessage()">
-                <i class="fas fa-trash-alt"></i> Hapus Pesan
-            </button>
-            <button class="action-btn" onclick="closeActionModal()" style="justify-content: center; background: #fff; margin-top: 0.25rem;">
-                Batal
-            </button>
-        </div>
-    </div>
-
-    <!-- RUANG CHAT -->
     <main class="container">
         <div class="chat-wrapper">
             <!-- HEADER ATAS -->
             <div class="chat-header">
                 <div class="chat-header-left">
-                    <a href="https://sitenexs.com/community/messages/" class="btn btn-secondary btn-icon-only" title="Kembali ke Pesan Masuk"><i class="fas fa-arrow-left"></i></a>
-                    <div style="position: relative;" id="avatarContainer">
-                        <img id="activeChatAvatar" src="" class="chat-header-avatar" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
-                        <span class="status-dot" style="position: absolute; bottom: 2px; right: 2px; width: 10px; height: 10px; background: var(--accent); border: 2px solid #fff; border-radius: 50%;"></span>
-                    </div>
+                    <a href="https://sitenexs.com/community/messages/" class="btn btn-secondary btn-icon-only" title="Kembali"><i class="fas fa-arrow-left"></i></a>
+                    <img id="activeChatAvatar" src="" class="chat-header-avatar" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
                     <div class="chat-header-info">
                         <div class="chat-header-name-row">
                             <div class="chat-header-name" id="activeChatName">Memuat...</div>
                             <div id="activeChatBadges" style="display: inline-flex; align-items: center; gap: 2px;"></div>
                         </div>
-                        <div class="chat-header-typing" id="activeChatTyping">Sedang mengetik<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></div>
                     </div>
                 </div>
-                <div style="display: flex; gap: 0.4rem; flex-shrink: 0;">
-                    <button type="button" class="btn btn-secondary btn-icon-only" title="Informasi" onclick="showToast('Sistem chat aktif.')"><i class="fas fa-info"></i></button>
-                </div>
-            </div>
-
-            <!-- BANNER REPLY -->
-            <div id="replyBanner">
-                <div><i class="fas fa-reply"></i> Membalas <span id="replyTargetName" style="font-weight: 700;"></span>: <span id="replyTargetText" style="opacity: 0.85;"></span></div>
-                <button type="button" onclick="cancelReplyMode()"><i class="fas fa-times"></i></button>
-            </div>
-
-            <!-- BANNER EDIT PESAN -->
-            <div id="editModeBanner">
-                <span><i class="fas fa-pen"></i> Mengedit pesan...</span>
-                <button type="button" onclick="cancelEditMode()"><i class="fas fa-times"></i> Batal</button>
             </div>
 
             <!-- ISI PESAN -->
             <div class="chat-messages" id="chatMessages">
-                <div id="loadingState" style="text-align: center; margin: auto; padding: 2rem; color: var(--text-muted); font-size: 0.9rem; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px); border-radius: var(--radius-lg);">
+                <div id="loadingState" style="text-align: center; margin: auto; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
                     <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom: 0.75rem;"></i>
                     <div>Memuat pesan...</div>
-                </div>
-
-                <div class="typing-bubble" id="typingIndicatorBubble">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
                 </div>
             </div>
 
             <!-- INPUT PESAN BAWAH -->
             <form class="chat-input-box" id="sendMessageForm" onsubmit="handleChatFormSubmit(event)" autocomplete="off">
-                <div class="chat-input-actions">
-                    <label title="Kirim Pasfoto / Gambar" for="chatImageInput">
-                        <i class="fas fa-image"></i>
-                    </label>
-                    <input type="file" id="chatImageInput" accept="image/*" style="display: none;" onchange="handleImageAttachment(event)">
-                </div>
                 <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." required autocomplete="off">
-                <button type="submit" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane" id="sendBtnIcon"></i></button>
+                <button type="submit" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane"></i></button>
             </form>
         </div>
     </main>
@@ -408,7 +193,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
@@ -420,42 +205,25 @@
         };
 
         const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
-        const supabasePublishableKey = 'sb_publishable_XKHXYrEw2EDdfYH17Uyx6w_k_BtGLQa';
         const avatarBucket = 'profile-photos';
-        const chatImageBucket = 'job-cvs';
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        setPersistence(auth, browserLocalPersistence).catch(err => console.log(err));
+        setPersistence(auth, browserLocalPersistence).catch(err => {});
 
         let currentUid = null;
         let activeChatUserId = null;
         let activeChatId = null;
         let otherUserName = "Mitra Sitenexs";
-        let isAiChat = false;
         let unsubscribeMessages = null;
-        let unsubscribeChatDoc = null;
         let isInitialLoad = true;
-
-        let selectedMessageId = null;
-        let selectedMessageText = "";
-        let selectedMessageSender = "";
-        let isEditing = false;
-        let replyingTo = null;
-        let typingTimeout = null;
-
-        const GEMINI_API_KEY = "AQ.Ab8RN6IrbqDJ8pYKwp5qPn0i7xkg3k7LYJWStopjD4ypYHHeJQ";
 
         const urlParams = new URLSearchParams(window.location.search);
         const targetUserId = urlParams.get('to');
-        const aiParam = urlParams.get('ai');
 
-        if (aiParam === 'true') {
-            isAiChat = true;
-            activeChatUserId = 'sitenexs_ai_assistant';
-        } else if (!targetUserId) {
+        if (!targetUserId) {
             window.location.replace('https://sitenexs.com/community/messages/');
         } else {
             activeChatUserId = targetUserId;
@@ -470,125 +238,33 @@
             setTimeout(() => toast.remove(), 3200);
         }
 
-        function playChatSound(type) {
-            try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (!AudioContext) return;
-                const ctx = new AudioContext();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-
-                if (type === 'send') {
-                    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
-                    gain.gain.setValueAtTime(0.08, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.15);
-                } else if (type === 'receive') {
-                    osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-                    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.08);
-                    gain.gain.setValueAtTime(0.08, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.22);
-                }
-            } catch (e) {}
-        }
-
         function escapeHtml(text) {
             if (!text) return '';
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
-        // --- UPLOAD PASFOTO / GAMBAR KE SUPABASE ---
-        window.handleImageAttachment = async function(event) {
-            const file = event.target.files[0];
-            if (!file || !activeChatId || !currentUid) return;
-
-            if (file.size > 5 * 1024 * 1024) {
-                showToast("Ukuran gambar maksimal 5MB.");
-                event.target.value = '';
-                return;
-            }
-
-            showToast("Mengunggah pasfoto/gambar...");
-
-            try {
-                const ext = file.name ? file.name.split('.').pop() : 'jpg';
-                const fileName = `${Date.now()}_chat_img_${Math.floor(Math.random()*1000)}.${ext}`;
-                const filePath = `chat-attachments/${activeChatId}/${fileName}`;
-
-                const uploadRes = await fetch(`${supabaseUrl}/storage/v1/object/${chatImageBucket}/${filePath}`, {
-                    method: 'POST',
-                    headers: {
-                        apikey: supabasePublishableKey,
-                        'Content-Type': file.type || 'image/jpeg',
-                        'x-upsert': 'true'
-                    },
-                    body: file
-                });
-
-                if (!uploadRes.ok) throw new Error('Gagal mengunggah gambar.');
-                const imageUrl = `${supabaseUrl}/storage/v1/object/public/${chatImageBucket}/${filePath}`;
-
-                // Kirim pesan gambar otomatis
-                const recipientUid = isAiChat ? 'sitenexs_ai_assistant' : activeChatUserId;
-                const chatDocRef = doc(db, "chats", activeChatId);
-                
-                await setDoc(chatDocRef, {
-                    participants: [currentUid, activeChatUserId],
-                    lastMessage: "📷 [Pasfoto/Gambar]",
-                    lastTimestamp: serverTimestamp(),
-                    [`unread_${recipientUid}`]: true
-                }, { merge: true });
-
-                await addDoc(collection(db, "chats", activeChatId, "messages"), {
-                    senderUid: currentUid,
-                    text: imageUrl,
-                    isImage: true,
-                    createdAt: serverTimestamp(),
-                    isEdited: false
-                });
-
-                playChatSound('send');
-                showToast("Pasfoto berhasil dikirim.");
-                event.target.value = '';
-
-            } catch (err) {
-                console.error("Gagal kirim gambar:", err);
-                showToast("Gagal mengunggah gambar.");
-                event.target.value = '';
-            }
-        }
-
-        // --- RENDER PESAN (GAMBAR ATAU TEKS) ---
-        function renderMessageBody(text, isImage, isOutgoing, editedLabel) {
-            if (isImage || (text && text.startsWith('http') && (text.includes('.jpg') || text.includes('.jpeg') || text.includes('.png') || text.includes('.webp')))) {
+        // --- FUNGSI UTAMA PENGOBROLAN & PENERIMAAN PASFOTO ---
+        function renderMessageBody(text) {
+            // Deteksi jika pesan berisi URL gambar (seperti pasfoto formal berlatar merah atau ijazah)
+            if (text && (text.startsWith('http://') || text.startsWith('https://')) && (text.includes('pasfoto') || text.includes('ijazah') || text.includes('.jpg') || text.includes('.jpeg') || text.includes('.png') || text.includes('.webp'))) {
                 return `
-                    <div style="border-radius: 8px; overflow: hidden; max-width: 240px; margin-bottom: 4px;">
+                    <div style="font-size: 0.78rem; font-weight: 700; margin-bottom: 4px; opacity: 0.9;"><i class="fas fa-image"></i> Berkas Gambar / Pasfoto:</div>
+                    <div class="chat-image-preview">
                         <a href="${text}" target="_blank">
-                            <img src="${text}" alt="Pasfoto / Gambar" style="width: 100%; height: auto; display: block; border-radius: 8px;">
+                            <img src="${text}" alt="Pasfoto / Lampiran" loading="lazy">
                         </a>
                     </div>
-                    ${editedLabel}
                 `;
             }
 
+            // Render teks biasa atau kartu lamaran kerja otomatis
             if (text && text.includes('📋 *LAMARAN KERJA BARU*')) {
                 const posMatch = text.match(/🔹 \*Posisi:\* (.*)/);
                 const nameMatch = text.match(/👤 \*Nama:\* (.*)/);
                 const phoneMatch = text.match(/📞 \*WhatsApp:\* (.*)/);
                 const emailMatch = text.match(/📧 \*Email:\* (.*)/);
                 const cityMatch = text.match(/🏠 \*Domisili:\* (.*)/);
-                const sosmedMatch = text.match(/🔗 \*Sosmed:\* (.*)/);
+                const fotoMatch = text.match(/🖼️ \*Link Pasfoto \(Bg Merah\):\* (.*)/);
                 const cvMatch = text.match(/📄 \*Link CV:\* (.*)/);
                 const ijazahMatch = text.match(/🎓 \*Link Ijazah:\* (.*)/);
                 const motivasiMatch = text.match(/💬 \*Motivasi:\*\n"([\s\S]*)"/);
@@ -598,368 +274,91 @@
                 const phone = phoneMatch ? phoneMatch[1].trim() : '-';
                 const email = emailMatch ? emailMatch[1].trim() : '-';
                 const city = cityMatch ? cityMatch[1].trim() : '-';
-                const sosmed = sosmedMatch ? sosmedMatch[1].trim() : '-';
+                const pasfotoUrl = fotoMatch ? fotoMatch[1].trim() : '';
                 const cvUrl = cvMatch ? cvMatch[1].trim() : '-';
                 const ijazahUrl = ijazahMatch ? ijazahMatch[1].trim() : '#';
                 const motivasi = motivasiMatch ? motivasiMatch[1].trim() : '-';
 
-                const cardBg = isOutgoing ? 'rgba(255, 255, 255, 0.12)' : '#f8fafc';
-                const cardBorder = isOutgoing ? 'rgba(255, 255, 255, 0.25)' : 'var(--border-subtle)';
-                const textColor = isOutgoing ? '#fff' : 'var(--text-main)';
-
                 return `
-                    <div style="background: ${cardBg}; border: 1px solid ${cardBorder}; border-radius: 12px; padding: 12px; margin-bottom: 4px; color: ${textColor}; text-align: left; font-size: 0.85rem;">
-                        <div style="display: flex; align-items: center; gap: 8px; border-bottom: 1px solid ${cardBorder}; padding-bottom: 8px; margin-bottom: 8px;">
-                            <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
-                                <i class="fas fa-briefcase"></i>
-                            </div>
-                            <div>
-                                <div style="font-weight: 800; font-size: 0.9rem;">Lamaran Kerja Masuk</div>
-                                <div style="font-size: 0.75rem; opacity: 0.85;">Posisi: ${position}</div>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; margin-bottom: 10px;">
-                            <div><b>Nama:</b> ${name}</div>
-                            <div><b>WhatsApp:</b> <a href="https://wa.me/${phone.replace(/[^0-9]/g, '')}" target="_blank" style="color: inherit; text-decoration: underline;">${phone}</a></div>
-                            <div><b>Email:</b> ${email}</div>
-                            <div><b>Domisili:</b> ${city}</div>
-                            <div><b>Sosmed:</b> ${sosmed}</div>
-                        </div>
-
-                        ${motivasi !== '-' ? `
-                            <div style="background: rgba(0,0,0,0.04); padding: 8px; border-radius: 6px; font-size: 0.78rem; font-style: italic; margin-bottom: 10px;">
-                                "${motivasi}"
+                    <div style="background: rgba(0,0,0,0.03); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 10px; font-size: 0.82rem; text-align: left;">
+                        <div style="font-weight: 800; font-size: 0.9rem; margin-bottom: 6px; color: var(--primary);"><i class="fas fa-briefcase"></i> Lamaran Kerja: ${position}</div>
+                        ${pasfotoUrl ? `
+                            <div style="margin-bottom: 8px;">
+                                <div style="font-size: 0.72rem; font-weight: 700; margin-bottom: 2px;">Pasfoto (Bg Merah):</div>
+                                <div class="chat-image-preview"><a href="${pasfotoUrl}" target="_blank"><img src="${pasfotoUrl}" alt="Pasfoto"></a></div>
                             </div>
                         ` : ''}
-
-                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                            ${cvUrl !== '-' ? `
-                                <a href="${cvUrl}" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; background: var(--primary); color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-decoration: none;">
-                                    <i class="fas fa-file-pdf"></i> Lihat CV
-                                </a>
-                            ` : ''}
-                            ${ijazahUrl !== '#' ? `
-                                <a href="${ijazahUrl}" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; background: var(--accent); color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-decoration: none;">
-                                    <i class="fas fa-certificate"></i> Lihat Ijazah
-                                </a>
-                            ` : ''}
+                        <div><b>Nama:</b> ${name}</div>
+                        <div><b>WhatsApp:</b> ${phone}</div>
+                        <div><b>Domisili:</b> ${city}</div>
+                        ${motivasi !== '-' ? `<div style="margin-top: 6px; font-style: italic;">"${motivasi}"</div>` : ''}
+                        <div style="display: flex; gap: 6px; margin-top: 8px;">
+                            ${cvUrl !== '-' ? `<a href="${cvUrl}" target="_blank" class="btn" style="padding: 3px 8px; font-size: 0.72rem; background: var(--primary); color: #fff;">CV</a>` : ''}
+                            ${ijazahUrl !== '#' ? `<a href="${ijazahUrl}" target="_blank" class="btn" style="padding: 3px 8px; font-size: 0.72rem; background: var(--accent); color: #fff;">Ijazah</a>` : ''}
                         </div>
                     </div>
                 `;
             }
 
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
-            let urls = [];
-            let match;
-            while ((match = urlRegex.exec(text)) !== null) {
-                urls.push(match[1]);
-            }
-
-            let escapedText = escapeHtml(text).replace(urlRegex, (url) => {
-                return `<a href="${url}" target="_blank" style="color: inherit; text-decoration: underline; word-break: break-all;">${url}</a>`;
-            });
-
-            let linkButtonHtml = '';
-            if (urls.length > 0) {
-                const primaryUrl = urls[0];
-                const btnBg = isOutgoing ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.06)';
-                const btnColor = isOutgoing ? '#fff' : 'var(--primary)';
-                
-                linkButtonHtml = `
-                    <div style="margin-top: 6px;">
-                        <a href="${primaryUrl}" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: ${btnBg}; color: ${btnColor}; padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none; transition: background 0.2s;">
-                            <i class="fas fa-external-link-alt" style="font-size: 0.75rem;"></i> Buka Link
-                        </a>
-                    </div>
-                `;
-            }
-
-            return `
-                <div class="message-content-text">${escapedText} ${editedLabel}</div>
-                ${linkButtonHtml}
-            `;
-        }
-
-        async function getAiResponse(userText) {
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${GEMINI_API_KEY}`
-                    },
-                    body: JSON.stringify({
-                        contents: [
-                            {
-                                role: 'user',
-                                parts: [{ text: "Anda adalah Sitenexs AI Assistant, asisten cerdas yang ramah, profesional, dan membantu untuk mitra UMKM serta pengembang web di ekosistem Sitenexs. Jawablah dalam bahasa Indonesia dengan natural dan to the point. Pertanyaan pengguna: " + userText }]
-                            }
-                        ]
-                    })
-                });
-
-                const data = await response.json();
-                if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-                    return data.candidates[0].content.parts[0].text;
-                } else {
-                    return "Maaf, Gemini AI tidak dapat memproses respons saat ini.";
-                }
-            } catch (err) {
-                return "⚠️ Gagal terhubung ke server Gemini AI.";
-            }
+            return escapeHtml(text).replace(/\n/g, '<br>');
         }
 
         async function initChat(user) {
             currentUid = user.uid;
-            
-            if (!isAiChat && activeChatUserId === currentUid) {
-                window.location.replace('https://sitenexs.com/community/messages/');
-                return;
-            }
+            const participants = [currentUid, activeChatUserId].sort();
+            activeChatId = `${participants[0]}_${participants[1]}`;
 
-            if (isAiChat) {
-                otherUserName = "Sitenexs AI Assistant";
-                activeChatId = `${currentUid}_ai_assistant`;
-                
-                document.getElementById('activeChatName').innerText = otherUserName;
-                document.getElementById('activeChatBadges').innerHTML = `
-                    <img src="https://sitenexs.com/assets/logo/verified.png" class="chat-header-verif" alt="Verified" title="Official AI">
-                `;
-                
-                const avatarContainer = document.getElementById('avatarContainer');
-                avatarContainer.innerHTML = `
-                    <div class="chat-header-avatar ai-avatar-bg">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <span class="status-dot" style="position: absolute; bottom: 2px; right: 2px; width: 10px; height: 10px; background: var(--accent); border: 2px solid #fff; border-radius: 50%;"></span>
-                `;
-            } else {
-                const participants = [currentUid, activeChatUserId].sort();
-                activeChatId = `${participants[0]}_${participants[1]}`;
+            try {
+                await updateDoc(doc(db, "chats", activeChatId), { [`unread_${currentUid}`]: false });
+            } catch(e) {}
 
-                try {
-                    await updateDoc(doc(db, "chats", activeChatId), {
-                        [`unread_${currentUid}`]: false
-                    });
-                } catch(e) {}
-
-                try {
-                    const userSnap = await getDoc(doc(db, "users", activeChatUserId));
-                    if (userSnap.exists()) {
-                        const d = userSnap.data();
-                        otherUserName = d.namaLengkap || (d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '')) || otherUserName;
-                        
-                        let badgesHtml = '';
-                        if (d.isVerified) {
-                            badgesHtml += `<img src="https://sitenexs.com/assets/logo/verified.png" class="chat-header-verif" alt="Verified" title="Terverifikasi">`;
-                        }
-                        const isPro = Boolean(d.isPro) || Boolean(d.lencanaKuning) || Boolean(d.isLencanaKuning);
-                        if (isPro) {
-                            badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="chat-header-verif" alt="Pro" title="Lencana Pro" style="margin-left: 2px;">`;
-                        }
-                        document.getElementById('activeChatBadges').innerHTML = badgesHtml;
+            try {
+                const userSnap = await getDoc(doc(db, "users", activeChatUserId));
+                if (userSnap.exists()) {
+                    const d = userSnap.data();
+                    otherUserName = d.namaLengkap || (d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '')) || otherUserName;
+                    
+                    let badgesHtml = '';
+                    if (d.isVerified) {
+                        badgesHtml += `<img src="https://sitenexs.com/assets/logo/verified.png" class="chat-header-verif" alt="Verified">`;
                     }
-                } catch(e) {}
-
-                const avatarUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(activeChatUserId)}/profile-photo`;
-                const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUserName)}&background=2563eb&color=fff`;
-
-                document.getElementById('activeChatName').innerText = otherUserName;
-                const headerAvatar = document.getElementById('activeChatAvatar');
-                headerAvatar.src = avatarUrl;
-                headerAvatar.onerror = () => { headerAvatar.src = fallbackAvatar; };
-            }
-
-            if (unsubscribeChatDoc) unsubscribeChatDoc();
-            unsubscribeChatDoc = onSnapshot(doc(db, "chats", activeChatId), (chatDocSnap) => {
-                const typingEl = document.getElementById('activeChatTyping');
-                const typingBubble = document.getElementById('typingIndicatorBubble');
-                const messagesContainer = document.getElementById('chatMessages');
-
-                const typingKey = isAiChat ? 'typing_sitenexs_ai_assistant' : `typing_${activeChatUserId}`;
-
-                if (chatDocSnap.exists()) {
-                    const data = chatDocSnap.data();
-                    const isOtherTyping = data[typingKey];
-                    if (isOtherTyping) {
-                        typingEl.style.display = 'block';
-                        typingBubble.style.display = 'flex';
-                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                    } else {
-                        typingEl.style.display = 'none';
-                        typingBubble.style.display = 'none';
-                    }
-                } else {
-                    typingEl.style.display = 'none';
-                    typingBubble.style.display = 'none';
+                    document.getElementById('activeChatBadges').innerHTML = badgesHtml;
                 }
-            });
+            } catch(e) {}
+
+            const avatarUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(activeChatUserId)}/profile-photo`;
+            document.getElementById('activeChatName').innerText = otherUserName;
+            document.getElementById('activeChatAvatar').src = avatarUrl;
 
             const messagesRef = collection(db, "chats", activeChatId, "messages");
             const qMsgs = query(messagesRef, orderBy("createdAt", "asc"));
 
             if (unsubscribeMessages) unsubscribeMessages();
 
-            let previousDocCount = 0;
-
-            unsubscribeMessages = onSnapshot(qMsgs, async (snapshot) => {
+            unsubscribeMessages = onSnapshot(qMsgs, (snapshot) => {
                 const messagesContainer = document.getElementById('chatMessages');
                 const loadingState = document.getElementById('loadingState');
                 if (loadingState) loadingState.remove();
 
-                if (isAiChat && snapshot.empty && isInitialLoad) {
-                    await setDoc(doc(db, "chats", activeChatId), {
-                        participants: [currentUid, 'sitenexs_ai_assistant'],
-                        lastMessage: "Halo! Saya Sitenexs AI Assistant.",
-                        lastTimestamp: serverTimestamp()
-                    });
-                    await addDoc(collection(db, "chats", activeChatId, "messages"), {
-                        senderUid: 'sitenexs_ai_assistant',
-                        text: "Halo Mitra Sitenexs! 👋 Saya Sitenexs AI Assistant yang didukung oleh Google Gemini.",
-                        createdAt: serverTimestamp(),
-                        isEdited: false
-                    });
-                    return;
-                }
-
-                const existingWrappers = messagesContainer.querySelectorAll('.message-wrapper');
-                const incomingIds = new Set(snapshot.docs.map(d => d.id));
-
-                existingWrappers.forEach(wrapper => {
-                    const bubble = wrapper.querySelector('.message-bubble');
-                    if (!incomingIds.has(bubble.dataset.id)) {
-                        wrapper.remove();
-                    }
-                });
-
-                let shouldScrollToBottom = false;
-                if (messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 150) {
-                    shouldScrollToBottom = true;
-                }
-
-                let docIndex = 0;
+                let html = '';
                 snapshot.forEach(docSnap => {
-                    docIndex++;
                     const m = docSnap.data();
-                    const msgId = docSnap.id;
                     const isOutgoing = m.senderUid === currentUid;
                     const timeStr = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Baru saja';
-                    const editedLabel = m.isEdited ? '<span class="edited-tag">(diedit)</span>' : '';
-                    const safeText = (m.text || '').replace(/'/g, "&#39;").replace(/"/g, "&quot;");
 
-                    const existingWrapper = messagesContainer.querySelector(`[data-id="${msgId}"]`)?.closest('.message-wrapper');
-
-                    if (existingWrapper) {
-                        const bubbleDiv = existingWrapper.querySelector('.message-bubble');
-                        const currentRenderedText = bubbleDiv.dataset.rawText || "";
-                        if (currentRenderedText !== m.text) {
-                            bubbleDiv.dataset.rawText = m.text;
-                            bubbleDiv.dataset.text = safeText;
-                            
-                            let replyHtml = '';
-                            const replyContainer = bubbleDiv.querySelector('.quoted-reply');
-                            if (replyContainer) {
-                                replyHtml = replyContainer.outerHTML;
-                            }
-                            
-                            const timeContainer = bubbleDiv.querySelector('.message-time');
-                            const timeHtml = timeContainer ? timeContainer.outerHTML : `<div class="message-time">${timeStr}</div>`;
-                            
-                            bubbleDiv.innerHTML = replyHtml + renderMessageBody(m.text, m.isImage, isOutgoing, editedLabel) + timeHtml;
-                        }
-                    } else {
-                        shouldScrollToBottom = true;
-                        
-                        if (!isInitialLoad && docIndex > previousDocCount && m.senderUid !== currentUid) {
-                            playChatSound('receive');
-                        }
-
-                        const wrapperDiv = document.createElement('div');
-                        wrapperDiv.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
-
-                        const indicatorDiv = document.createElement('div');
-                        indicatorDiv.className = 'swipe-reply-indicator';
-                        indicatorDiv.innerHTML = '<i class="fas fa-reply"></i>';
-
-                        const bubbleDiv = document.createElement('div');
-                        bubbleDiv.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
-                        bubbleDiv.setAttribute('data-id', msgId);
-                        bubbleDiv.setAttribute('data-sender', m.senderUid);
-                        bubbleDiv.setAttribute('data-text', safeText);
-                        bubbleDiv.dataset.rawText = m.text || '';
-
-                        let replyHtml = '';
-                        if (m.replyTo) {
-                            const replySenderLabel = m.replyTo.senderUid === currentUid ? 'Anda' : otherUserName;
-                            replyHtml = `
-                                <div class="quoted-reply">
-                                    <div class="quoted-reply-sender">${replySenderLabel}</div>
-                                    <div>${escapeHtml(m.replyTo.text)}</div>
-                                </div>
-                            `;
-                        }
-
-                        bubbleDiv.innerHTML = `
-                            ${replyHtml}
-                            ${renderMessageBody(m.text || '', m.isImage, isOutgoing, editedLabel)}
-                            <div class="message-time">${timeStr}</div>
-                        `;
-
-                        wrapperDiv.appendChild(indicatorDiv);
-                        wrapperDiv.appendChild(bubbleDiv);
-
-                        let startX = 0;
-                        let currentX = 0;
-                        let isSwiping = false;
-
-                        bubbleDiv.addEventListener('touchstart', (e) => {
-                            startX = e.touches[0].clientX;
-                            isSwiping = true;
-                            startTouchTimer(e, msgId, m.senderUid, safeText);
-                        }, {passive: true});
-
-                        bubbleDiv.addEventListener('touchmove', (e) => {
-                            if (!isSwiping) return;
-                            currentX = e.touches[0].clientX;
-                            const diff = currentX - startX;
-                            if (diff > 0 && diff < 110) {
-                                bubbleDiv.style.transform = `translateX(${diff}px)`;
-                                indicatorDiv.style.opacity = Math.min(diff / 60, 1);
-                            }
-                        }, {passive: true});
-
-                        bubbleDiv.addEventListener('touchend', (e) => {
-                            clearTouchTimer();
-                            isSwiping = false;
-                            const diff = currentX - startX;
-                            bubbleDiv.style.transition = 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)';
-                            bubbleDiv.style.transform = 'translateX(0px)';
-                            indicatorDiv.style.opacity = '0';
-                            
-                            setTimeout(() => { bubbleDiv.style.transition = ''; }, 200);
-
-                            if (diff > 60) {
-                                triggerReplyMode(m.senderUid === currentUid ? 'Anda' : otherUserName, m.text, msgId);
-                            }
-                        });
-
-                        bubbleDiv.addEventListener('mousedown', (e) => startMouseTimer(e, msgId, m.senderUid, safeText));
-                        bubbleDiv.addEventListener('mouseup', clearMouseTimer);
-                        bubbleDiv.addEventListener('mouseleave', clearMouseTimer);
-                        bubbleDiv.addEventListener('contextmenu', (e) => openActionModal(e, msgId, m.senderUid, safeText));
-
-                        const typingBubble = document.getElementById('typingIndicatorBubble');
-                        messagesContainer.insertBefore(wrapperDiv, typingBubble);
-                    }
+                    html += `
+                        <div class="message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}">
+                            <div class="message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}">
+                                ${renderMessageBody(m.text || '')}
+                                <div class="message-time">${timeStr}</div>
+                            </div>
+                        </div>
+                    `;
                 });
 
-                previousDocCount = snapshot.size;
+                messagesContainer.innerHTML = html;
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 isInitialLoad = false;
-
-                if (shouldScrollToBottom) {
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                }
             });
         }
 
@@ -976,120 +375,6 @@
             }
         });
 
-        const messageInput = document.getElementById('messageInput');
-        messageInput.addEventListener('input', () => {
-            if (!activeChatId || !currentUid) return;
-
-            const typingKey = isAiChat ? 'typing_current_user' : `typing_${currentUid}`;
-
-            setDoc(doc(db, "chats", activeChatId), {
-                participants: [currentUid, activeChatUserId],
-                [typingKey]: true
-            }, { merge: true }).catch(() => {});
-
-            if (typingTimeout) clearTimeout(typingTimeout);
-
-            typingTimeout = setTimeout(() => {
-                setDoc(doc(db, "chats", activeChatId), {
-                    [typingKey]: false
-                }, { merge: true }).catch(() => {});
-            }, 1500);
-        });
-
-        let pressTimer = null;
-
-        window.openActionModal = function(e, msgId, senderUid, text) {
-            e.preventDefault();
-            selectedMessageId = msgId;
-            selectedMessageSender = senderUid;
-            selectedMessageText = decodeURIComponent(text.replace(/&#39;/g, "'").replace(/&quot;/g, '"'));
-
-            const editBtn = document.getElementById('editActionBtn');
-            if (senderUid === currentUid) {
-                editBtn.style.display = 'flex';
-            } else {
-                editBtn.style.display = 'none';
-            }
-
-            document.getElementById('actionModal').style.display = 'flex';
-        }
-
-        window.closeActionModal = function() {
-            document.getElementById('actionModal').style.display = 'none';
-        }
-
-        window.startTouchTimer = function(e, msgId, senderUid, text) {
-            pressTimer = setTimeout(() => { openActionModal(e, msgId, senderUid, text); }, 550);
-        }
-        window.clearTouchTimer = function() { if (pressTimer) clearTimeout(pressTimer); }
-
-        window.startMouseTimer = function(e, msgId, senderUid, text) {
-            if (e.button !== 0) return;
-            pressTimer = setTimeout(() => { openActionModal(e, msgId, senderUid, text); }, 550);
-        }
-        window.clearMouseTimer = function() { if (pressTimer) clearTimeout(pressTimer); }
-
-        window.handleReplyMessage = function() {
-            closeActionModal();
-            triggerReplyMode(selectedMessageSender === currentUid ? 'Anda' : otherUserName, selectedMessageText, selectedMessageId);
-        }
-
-        window.triggerReplyMode = function(senderName, text, msgId) {
-            replyingTo = { id: msgId, senderUid: selectedMessageSender, text: text };
-            document.getElementById('replyTargetName').innerText = senderName;
-            document.getElementById('replyTargetText').innerText = text.length > 35 ? text.substring(0, 35) + '...' : text;
-            document.getElementById('replyBanner').style.display = 'flex';
-            document.getElementById('messageInput').focus();
-        }
-
-        window.cancelReplyMode = function() {
-            replyingTo = null;
-            document.getElementById('replyBanner').style.display = 'none';
-        }
-
-        window.handleCopyMessage = function() {
-            navigator.clipboard.writeText(selectedMessageText).then(() => {
-                showToast("Pesan berhasil disalin ke clipboard.");
-            }).catch(() => {
-                showToast("Gagal menyalin pesan.");
-            });
-            closeActionModal();
-        }
-
-        window.handleStartEdit = function() {
-            closeActionModal();
-            isEditing = true;
-            cancelReplyMode();
-            document.getElementById('editModeBanner').style.display = 'flex';
-            const inputEl = document.getElementById('messageInput');
-            inputEl.value = selectedMessageText;
-            inputEl.focus();
-            document.getElementById('sendBtnIcon').className = "fas fa-check";
-        }
-
-        window.cancelEditMode = function() {
-            isEditing = false;
-            selectedMessageId = null;
-            selectedMessageText = "";
-            document.getElementById('editModeBanner').style.display = 'none';
-            document.getElementById('messageInput').value = '';
-            document.getElementById('sendBtnIcon').className = "fas fa-paper-plane";
-        }
-
-        window.handleDeleteMessage = async function() {
-            closeActionModal();
-            if (!selectedMessageId) return;
-            if (!confirm("Apakah Anda yakin ingin menghapus pesan ini?")) return;
-
-            try {
-                await deleteDoc(doc(db, "chats", activeChatId, "messages", selectedMessageId));
-                showToast("Pesan berhasil dihapus.");
-                cancelEditMode();
-            } catch (err) {
-                showToast("Gagal menghapus pesan. Coba lagi.");
-            }
-        }
-
         window.handleChatFormSubmit = async function(event) {
             event.preventDefault();
             const inputEl = document.getElementById('messageInput');
@@ -1098,79 +383,26 @@
 
             inputEl.value = '';
 
-            const typingKey = isAiChat ? 'typing_current_user' : `typing_${currentUid}`;
-            setDoc(doc(db, "chats", activeChatId), { [typingKey]: false }, { merge: true }).catch(() => {});
+            try {
+                const recipientUid = activeChatUserId;
+                const chatDocRef = doc(db, "chats", activeChatId);
+                
+                await setDoc(chatDocRef, {
+                    participants: [currentUid, activeChatUserId],
+                    lastMessage: text,
+                    lastTimestamp: serverTimestamp(),
+                    [`unread_${recipientUid}`]: true
+                }, { merge: true });
 
-            if (isEditing && selectedMessageId) {
-                try {
-                    await updateDoc(doc(db, "chats", activeChatId, "messages", selectedMessageId), {
-                        text: text,
-                        isEdited: true
-                    });
-                    showToast("Pesan berhasil diperbarui.");
-                    cancelEditMode();
-                } catch (err) {
-                    showToast("Gagal mengedit pesan.");
-                }
-            } else {
-                try {
-                    playChatSound('send');
+                await addDoc(collection(db, "chats", activeChatId, "messages"), {
+                    senderUid: currentUid,
+                    text: text,
+                    createdAt: serverTimestamp(),
+                    isEdited: false
+                });
 
-                    const recipientUid = isAiChat ? 'sitenexs_ai_assistant' : activeChatUserId;
-
-                    const chatDocRef = doc(db, "chats", activeChatId);
-                    await setDoc(chatDocRef, {
-                        participants: [currentUid, activeChatUserId],
-                        lastMessage: text,
-                        lastTimestamp: serverTimestamp(),
-                        [`unread_${recipientUid}`]: true
-                    }, { merge: true });
-
-                    const messageData = {
-                        senderUid: currentUid,
-                        text: text,
-                        createdAt: serverTimestamp(),
-                        isEdited: false
-                    };
-
-                    if (replyingTo) {
-                        messageData.replyTo = {
-                            id: replyingTo.id,
-                            senderUid: replyingTo.replyTo?.senderUid || replyingTo.senderUid,
-                            text: replyingTo.text
-                        };
-                        cancelReplyMode();
-                    }
-
-                    await addDoc(collection(db, "chats", activeChatId, "messages"), messageData);
-
-                    if (isAiChat) {
-                        const aiTypingKey = 'typing_sitenexs_ai_assistant';
-                        await updateDoc(chatDocRef, { [aiTypingKey]: true });
-
-                        const aiReplyText = await getAiResponse(text);
-
-                        await updateDoc(chatDocRef, {
-                            [aiTypingKey]: false,
-                            lastMessage: aiReplyText,
-                            lastTimestamp: serverTimestamp(),
-                            [`unread_${currentUid}`]: true
-                        });
-
-                        await addDoc(collection(db, "chats", activeChatId, "messages"), {
-                            senderUid: 'sitenexs_ai_assistant',
-                            text: aiReplyText,
-                            createdAt: serverTimestamp(),
-                            isEdited: false
-                        });
-
-                        playChatSound('receive');
-                    }
-
-                } catch (err) {
-                    console.error("Gagal mengirim pesan:", err);
-                    showToast("Gagal mengirim pesan. Periksa koneksi Anda.");
-                }
+            } catch (err) {
+                showToast("Gagal mengirim pesan.");
             }
         }
     </script>
