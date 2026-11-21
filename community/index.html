@@ -138,8 +138,68 @@
         .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
         
         .btn-icon-only {
-            width: 38px; height: 38px; padding: 0; border-radius: 50%;
+            position: relative; width: 38px; height: 38px; padding: 0; border-radius: 50%;
             display: inline-flex; align-items: center; justify-content: center; font-size: 0.95rem;
+        }
+
+        /* BADGE ANGKA PADA IKON PESAN & NOTIFIKASI */
+        .icon-count-badge {
+            position: absolute; top: -4px; right: -4px;
+            background: #ef4444; color: #fff;
+            font-size: 0.62rem; font-weight: 800; line-height: 1;
+            min-width: 17px; height: 17px; padding: 0 0.28rem;
+            border-radius: var(--radius-full); border: 2px solid #fff;
+            display: none; align-items: center; justify-content: center;
+            box-shadow: 0 2px 5px rgba(239, 68, 68, 0.35);
+            z-index: 5;
+        }
+        .icon-count-badge.active { display: inline-flex; }
+
+        /* DROPDOWN / PANEL NOTIFIKASI KOMUNITAS */
+        .notif-panel-wrapper { position: relative; }
+        .notif-dropdown-panel {
+            position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+            width: calc(100% - 2rem); max-width: 390px;
+            background: #fff; border: 1px solid var(--border-medium);
+            border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+            z-index: 2500; display: none; flex-direction: column; overflow: hidden;
+        }
+        .notif-dropdown-panel.active { display: flex; }
+        .notif-panel-header {
+            padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-subtle);
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fff; font-size: 0.85rem; font-weight: 800;
+        }
+        .notif-mark-read-btn {
+            background: var(--primary-light); color: var(--primary);
+            font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.6rem;
+            border-radius: var(--radius-full); cursor: pointer;
+        }
+        .notif-panel-list {
+            max-height: 320px; overflow-y: auto; display: flex; flex-direction: column;
+        }
+        .notif-entry {
+            display: flex; align-items: flex-start; gap: 0.65rem;
+            padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9;
+            cursor: pointer; transition: background 0.2s ease; text-align: left;
+            background: #fff;
+        }
+        .notif-entry:hover { background: #f8fafc; }
+        .notif-entry.unread { background: var(--primary-light); }
+        .notif-entry-icon {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; flex-shrink: 0; margin-top: 2px;
+        }
+        .notif-entry-icon.post { background: #dbeafe; color: var(--primary); }
+        .notif-entry-icon.like { background: #fee2e2; color: #ef4444; }
+        .notif-entry-body { flex: 1; min-width: 0; }
+        .notif-entry-title { font-size: 0.78rem; font-weight: 700; color: var(--text-main); line-height: 1.35; }
+        .notif-entry-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .notif-entry-time { font-size: 0.62rem; color: var(--text-muted); margin-top: 3px; }
+        .notif-empty-state {
+            padding: 2.25rem 1rem; text-align: center;
+            color: var(--text-muted); font-size: 0.8rem;
         }
 
         /* NAVBAR */
@@ -151,7 +211,7 @@
         .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.1rem; color: var(--text-main); }
         .logo img { height: 32px; width: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: var(--shadow-sm); }
         .logo-text { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; font-weight: 800; letter-spacing: -0.02em; }
-        .nav-actions { display: flex; gap: 0.4rem; align-items: center; }
+        .nav-actions { display: flex; gap: 0.45rem; align-items: center; }
 
         .nav-profile-link {
             width: 38px; height: 38px; border-radius: 50%; overflow: hidden;
@@ -474,7 +534,29 @@
                 <span class="logo-text" id="navLogoText">SITENEXS</span>
             </a>
             <div class="nav-actions">
-                <a href="https://sitenexs.com/community/messages/" class="btn btn-secondary btn-icon-only" title="Pesan"><i class="fas fa-comments"></i></a>
+                <!-- IKON PESAN + ANGKA BELUM DIBACA -->
+                <a href="https://sitenexs.com/community/messages/" class="btn btn-secondary btn-icon-only" title="Pesan">
+                    <i class="fas fa-comments"></i>
+                    <span class="icon-count-badge" id="msgUnreadCountBadge">0</span>
+                </a>
+
+                <!-- IKON NOTIFIKASI KOMUNITAS + ANGKA + PANEL -->
+                <div class="notif-panel-wrapper">
+                    <button type="button" id="communityNotifBtn" class="btn btn-secondary btn-icon-only" onclick="toggleCommunityNotifPanel(event)" title="Notifikasi Komunitas">
+                        <i class="fas fa-bell"></i>
+                        <span class="icon-count-badge" id="communityNotifBadge">0</span>
+                    </button>
+                    <div class="notif-dropdown-panel" id="communityNotifPanel" onclick="event.stopPropagation()">
+                        <div class="notif-panel-header">
+                            <span>Notifikasi Komunitas</span>
+                            <button type="button" class="notif-mark-read-btn" onclick="markAllCommunityNotifsRead()">Tandai dibaca</button>
+                        </div>
+                        <div class="notif-panel-list" id="communityNotifList">
+                            <div class="notif-empty-state">Belum ada notifikasi postingan atau suka baru.</div>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="https://sitenexs.com/" class="btn btn-secondary btn-icon-only" title="Beranda"><i class="fas fa-home"></i></a>
                 <a href="https://sitenexs.com/community/profile" id="navProfileLink" class="nav-profile-link" title="Profil Saya">
                     <img id="navProfileImg" src="" alt="Profil" class="nav-profile-img">
@@ -567,7 +649,6 @@
         import {
             registerPushServiceWorker,
             syncFcmToken,
-            listenForegroundMessages,
             triggerLocalSystemNotification,
             sendPushNotification
         } from 'https://sitenexs.com/assets/js/sitenexs-push-client.js';
@@ -587,6 +668,7 @@
         let previousLikesByPost = new Map();
         const notifiedLikeKeys = new Set();
         const notifiedMessageKeys = new Set();
+        let communityNotifications = [];
 
         const postContainer = document.getElementById('postContainer');
         const modal = document.getElementById('postModal');
@@ -612,6 +694,132 @@
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
         };
+
+        /* =====================================================
+           PANEL & BADGE NOTIFIKASI KOMUNITAS (POSTINGAN & SUKA)
+        ===================================================== */
+        function getNotifStorageKey(uid) {
+            return `sitenexs_comm_notifs_${uid || 'guest'}`;
+        }
+
+        function loadSavedCommunityNotifications(uid) {
+            try {
+                const raw = localStorage.getItem(getNotifStorageKey(uid));
+                communityNotifications = raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                communityNotifications = [];
+            }
+            renderCommunityNotifications();
+        }
+
+        function saveCommunityNotifications() {
+            const uid = currentUserData?.uid || localStorage.getItem('sitenexs_uid');
+            if (!uid) return;
+            try {
+                localStorage.setItem(getNotifStorageKey(uid), JSON.stringify(communityNotifications.slice(0, 40)));
+            } catch (e) {}
+        }
+
+        function pushCommunityNotification({ id, kind, title, sub, postId }) {
+            if (communityNotifications.some(item => item.id === id)) return;
+            communityNotifications.unshift({
+                id,
+                kind, // 'post' | 'like'
+                title,
+                sub: sub || '',
+                postId: postId || '',
+                unread: true,
+                createdAt: Date.now()
+            });
+            saveCommunityNotifications();
+            renderCommunityNotifications();
+        }
+
+        function renderCommunityNotifications() {
+            const badgeEl = document.getElementById('communityNotifBadge');
+            const listEl = document.getElementById('communityNotifList');
+
+            const unreadCount = communityNotifications.filter(n => n.unread).length;
+            if (badgeEl) {
+                badgeEl.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+                badgeEl.classList.toggle('active', unreadCount > 0);
+            }
+
+            if (!listEl) return;
+            if (communityNotifications.length === 0) {
+                listEl.innerHTML = '<div class="notif-empty-state">Belum ada notifikasi postingan atau suka baru.</div>';
+                return;
+            }
+
+            listEl.innerHTML = communityNotifications.map(n => {
+                const isLike = n.kind === 'like';
+                const iconClass = isLike ? 'fas fa-thumbs-up' : 'fas fa-newspaper';
+                const iconKind = isLike ? 'like' : 'post';
+                const timeStr = timeAgo(new Date(n.createdAt));
+
+                return `
+                    <div class="notif-entry ${n.unread ? 'unread' : ''}" onclick="openCommunityNotifItem('${n.id}', '${n.postId}')">
+                        <div class="notif-entry-icon ${iconKind}">
+                            <i class="${iconClass}"></i>
+                        </div>
+                        <div class="notif-entry-body">
+                            <div class="notif-entry-title">${n.title}</div>
+                            ${n.sub ? `<div class="notif-entry-sub">${n.sub}</div>` : ''}
+                            <div class="notif-entry-time">${timeStr}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.toggleCommunityNotifPanel = function(event) {
+            event.stopPropagation();
+            const panel = document.getElementById('communityNotifPanel');
+            if (!panel) return;
+            panel.classList.toggle('active');
+        };
+
+        window.markAllCommunityNotifsRead = function() {
+            communityNotifications = communityNotifications.map(n => ({ ...n, unread: false }));
+            saveCommunityNotifications();
+            renderCommunityNotifications();
+        };
+
+        window.openCommunityNotifItem = function(notifId, postId) {
+            communityNotifications = communityNotifications.map(n =>
+                n.id === notifId ? { ...n, unread: false } : n
+            );
+            saveCommunityNotifications();
+            renderCommunityNotifications();
+
+            const panel = document.getElementById('communityNotifPanel');
+            if (panel) panel.classList.remove('active');
+
+            if (postId) {
+                const targetCard = document.getElementById(`post-${postId}`);
+                if (targetCard) {
+                    targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    activateFocusMode(targetCard);
+                } else {
+                    window.location.href = `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`;
+                }
+            }
+        };
+
+        /* =====================================================
+           BADGE ANGKA PESAN BELUM DIBACA DI IKON PESAN
+        ===================================================== */
+        function updateMessageUnreadCountBadge(count) {
+            const badgeEl = document.getElementById('msgUnreadCountBadge');
+            if (!badgeEl) return;
+            if (count > 0) {
+                badgeEl.textContent = count > 99 ? '99+' : String(count);
+                badgeEl.classList.add('active');
+            } else {
+                badgeEl.textContent = '0';
+                badgeEl.classList.remove('active');
+            }
+        }
 
         /* =====================================================
            PAKSA MEMBUKA HALAMAN TELEPON SAAT ADA PANGGILAN MASUK
@@ -650,7 +858,7 @@
         }
 
         /* =====================================================
-           NOTIFIKASI PESAN BARU MASUK KE USER
+           NOTIFIKASI PESAN BARU + UPDATE ANGKA PESAN BELUM DIBACA
         ===================================================== */
         function listenNewMessagesForUser(uid) {
             if (!uid) return;
@@ -659,6 +867,15 @@
 
             const qChats = query(collection(db, "chats"), where("participants", "array-contains", uid));
             unsubscribeChatsNotify = onSnapshot(qChats, async (snapshot) => {
+                let totalUnreadChats = 0;
+                snapshot.forEach(docSnap => {
+                    const chatData = docSnap.data();
+                    if (chatData[`unread_${uid}`] === true && chatData[`archived_${uid}`] !== true) {
+                        totalUnreadChats += 1;
+                    }
+                });
+                updateMessageUnreadCountBadge(totalUnreadChats);
+
                 if (isInitialChatsLoad) {
                     isInitialChatsLoad = false;
                     return;
@@ -961,6 +1178,7 @@
 
         async function fetchUserProfile(uid, fallbackName = "Mitra Sitenexs") {
             try {
+                loadSavedCommunityNotifications(uid);
                 const profile = await fetchNormalizedUserProfile(db, uid, { forceRefresh: true });
                 const namaLengkap = profile.displayName || fallbackName;
                 const isVerified = Boolean(profile.isVerified);
@@ -1397,9 +1615,19 @@
                 if (change.type === 'added' && data.authorUid && data.authorUid !== currentActiveUid) {
                     const posterName = data.penulis || 'Mitra Sitenexs';
                     const headline = data.judul || data.isi || 'Diskusi baru di komunitas';
-                    showToast(`Postingan baru dari ${posterName}`);
+                    const postNotifTitle = `Postingan baru dari ${posterName}`;
+
+                    pushCommunityNotification({
+                        id: `post-${postId}`,
+                        kind: 'post',
+                        title: postNotifTitle,
+                        sub: String(headline).slice(0, 120),
+                        postId
+                    });
+
+                    showToast(postNotifTitle);
                     triggerLocalSystemNotification(
-                        `Postingan baru dari ${posterName}`,
+                        postNotifTitle,
                         String(headline).slice(0, 120),
                         {
                             tag: `post-${postId}`,
@@ -1422,6 +1650,16 @@
                                 notifiedLikeKeys.add(likeKey);
                                 const likerProfile = await fetchNormalizedUserProfile(db, likerUid);
                                 const likeMessage = `${likerProfile.displayName} menyukai postingan Anda`;
+                                const postTitlePreview = data.judul || data.isi || '';
+
+                                pushCommunityNotification({
+                                    id: `like-${likeKey}`,
+                                    kind: 'like',
+                                    title: likeMessage,
+                                    sub: String(postTitlePreview).slice(0, 100),
+                                    postId
+                                });
+
                                 showToast(likeMessage);
                                 triggerLocalSystemNotification(
                                     'Suka Baru di Postingan Anda',
@@ -1504,6 +1742,11 @@
         });
 
         document.addEventListener('click', (e) => {
+            const notifPanel = document.getElementById('communityNotifPanel');
+            if (notifPanel && notifPanel.classList.contains('active') && !e.target.closest('.notif-panel-wrapper')) {
+                notifPanel.classList.remove('active');
+            }
+
             if (document.body.classList.contains('forum-focus-mode')) {
                 if (!e.target.closest('.post-card.focused-card')) {
                     exitFocusMode();
