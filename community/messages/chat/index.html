@@ -692,16 +692,9 @@
 
     <!-- FIREBASE (FIRESTORE + REALTIME DB) & WEBRTC SCRIPT -->
  <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
-import {
-    getAuth,
-    onAuthStateChanged,
-    setPersistence,
-    browserLocalPersistence
-} from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
 
 import {
-    getFirestore,
     doc,
     setDoc,
     updateDoc,
@@ -714,7 +707,6 @@ import {
 } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
 import {
-    getDatabase,
     ref,
     set,
     update,
@@ -723,6 +715,14 @@ import {
     onChildAdded,
     remove
 } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
+
+import {
+    app,
+    db,
+    rtdb,
+    auth,
+    PUSH_WORKER_URL
+} from './sitenexs-config.js';
 
 import {
     fetchUserProfile,
@@ -737,29 +737,6 @@ import {
     triggerLocalSystemNotification,
     sendPushNotification
 } from './sitenexs-push-client.js';
-
-/* =====================================================
-   FIREBASE
-===================================================== */
-
-const firebaseConfig = {
-    apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
-    authDomain: 'sitenexs-62919.firebaseapp.com',
-    databaseURL: 'https://sitenexs-62919-default-rtdb.asia-southeast1.firebasedatabase.app',
-    projectId: 'sitenexs-62919',
-    storageBucket: 'sitenexs-62919.firebasestorage.app',
-    messagingSenderId: '1060348110644',
-    appId: '1:1060348110644:web:e45af14d5f26a9cf8e6761'
-};
-
-const PUSH_WORKER_URL = 'https://sitenexs-push.sitenexs.workers.dev';
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const rtdb = getDatabase(app);
-const auth = getAuth(app);
-
-setPersistence(auth, browserLocalPersistence).catch(console.error);
 
 /* =====================================================
    VARIABEL GLOBAL
