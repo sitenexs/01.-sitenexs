@@ -136,158 +136,6 @@
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35); }
         .btn-secondary { background: #fff; border: 1px solid var(--border-medium); color: var(--text-main); box-shadow: var(--shadow-sm); }
         .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
-        
-        .btn-icon-only {
-            position: relative; width: 38px; height: 38px; padding: 0; border-radius: 50%;
-            display: inline-flex; align-items: center; justify-content: center; font-size: 0.95rem;
-        }
-
-        /* BADGE ANGKA PADA IKON PESAN & NOTIFIKASI */
-        .icon-count-badge {
-            position: absolute; top: -4px; right: -4px;
-            background: #ef4444; color: #fff;
-            font-size: 0.62rem; font-weight: 800; line-height: 1;
-            min-width: 17px; height: 17px; padding: 0 0.28rem;
-            border-radius: var(--radius-full); border: 2px solid #fff;
-            display: none; align-items: center; justify-content: center;
-            box-shadow: 0 2px 5px rgba(239, 68, 68, 0.35);
-            z-index: 5;
-        }
-        .icon-count-badge.active { display: inline-flex; }
-
-        /* DROPDOWN / PANEL NOTIFIKASI KOMUNITAS */
-        .notif-panel-wrapper { position: relative; }
-        .notif-dropdown-panel {
-            position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
-            width: calc(100% - 2rem); max-width: 390px;
-            background: #fff; border: 1px solid var(--border-medium);
-            border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
-            z-index: 2500; display: none; flex-direction: column; overflow: hidden;
-        }
-        .notif-dropdown-panel.active { display: flex; }
-        .notif-panel-header {
-            padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-subtle);
-            display: flex; align-items: center; justify-content: space-between;
-            background: #fff; font-size: 0.85rem; font-weight: 800;
-        }
-        .notif-mark-read-btn {
-            background: var(--primary-light); color: var(--primary);
-            font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.6rem;
-            border-radius: var(--radius-full); cursor: pointer;
-        }
-        .notif-panel-list {
-            max-height: 320px; overflow-y: auto; display: flex; flex-direction: column;
-        }
-        .notif-entry {
-            display: flex; align-items: flex-start; gap: 0.65rem;
-            padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9;
-            cursor: pointer; transition: background 0.2s ease; text-align: left;
-            background: #fff;
-        }
-        .notif-entry:hover { background: #f8fafc; }
-        .notif-entry.unread { background: var(--primary-light); }
-        .notif-entry-icon {
-            width: 32px; height: 32px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.85rem; flex-shrink: 0; margin-top: 2px;
-        }
-        .notif-entry-icon.post { background: #dbeafe; color: var(--primary); }
-        .notif-entry-icon.like { background: #fee2e2; color: #ef4444; }
-        .notif-entry-icon.comment { background: #d1fae5; color: #059669; }
-        .notif-entry-icon.mention { background: #fef3c7; color: #d97706; }
-        .notif-entry-body { flex: 1; min-width: 0; }
-        .notif-entry-title { font-size: 0.78rem; font-weight: 700; color: var(--text-main); line-height: 1.35; }
-        .notif-entry-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .notif-entry-time { font-size: 0.62rem; color: var(--text-muted); margin-top: 3px; }
-        .notif-empty-state {
-            padding: 2.25rem 1rem; text-align: center;
-            color: var(--text-muted); font-size: 0.8rem;
-        }
-
-        /* NAVBAR */
-        #navbar {
-            position: sticky; top: 0; z-index: 1000; background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);
-        }
-        .nav-container { display: flex; align-items: center; justify-content: space-between; height: 65px; width: 100%; max-width: 680px; margin: 0 auto; padding: 0 1rem; }
-        .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.1rem; color: var(--text-main); }
-        .logo img { height: 32px; width: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: var(--shadow-sm); }
-        .logo-text { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; font-weight: 800; letter-spacing: -0.02em; }
-        .nav-actions { display: flex; gap: 0.45rem; align-items: center; }
-
-        /* TOMBOL GABUNGAN GARIS 3 + FOTO PROFIL */
-        .profile-burger-combo {
-            display: inline-flex; align-items: center; gap: 0.45rem;
-            padding: 0.2rem 0.6rem 0.2rem 0.2rem;
-            border-radius: var(--radius-full);
-            background: #fff; border: 1px solid var(--border-medium);
-            box-shadow: var(--shadow-sm); cursor: pointer;
-            transition: var(--transition); color: var(--text-main);
-            flex-shrink: 0;
-        }
-        .profile-burger-combo:hover {
-            border-color: var(--primary); background: var(--primary-light); color: var(--primary);
-        }
-        .nav-profile-link {
-            width: 32px; height: 32px; border-radius: 50%; overflow: hidden;
-            border: 1px solid var(--border-medium); display: inline-flex; align-items: center; justify-content: center;
-            background: #fff; position: relative; flex-shrink: 0;
-        }
-        .nav-profile-img { width: 100%; height: 100%; object-fit: cover; display: none; position: absolute; top: 0; left: 0; z-index: 2; }
-        .nav-profile-initials {
-            width: 100%; height: 100%; background: #cbd5e1; color: var(--text-muted);
-            font-size: 0.7rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
-            position: absolute; top: 0; left: 0; z-index: 1;
-        }
-        .burger-bars-icon {
-            font-size: 0.85rem; color: var(--text-main); display: inline-flex; align-items: center; justify-content: center;
-        }
-
-        /* SIDEBAR DRAWER NAVIGASI */
-        .sidebar-backdrop {
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45);
-            backdrop-filter: blur(2px); z-index: 4000; display: none;
-        }
-        .sidebar-backdrop.active { display: block; }
-        .nav-sidebar-drawer {
-            position: fixed; top: 0; right: -300px; width: 280px; max-width: 85vw; height: 100%;
-            background: #fff; z-index: 4001; box-shadow: var(--shadow-lg);
-            border-left: 1px solid var(--border-subtle);
-            display: flex; flex-direction: column; transition: right 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-            padding: 1.15rem;
-        }
-        .nav-sidebar-drawer.active { right: 0; }
-        .sidebar-top-row {
-            display: flex; align-items: center; justify-content: space-between;
-            padding-bottom: 0.9rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 0.85rem;
-        }
-        .sidebar-user-summary {
-            display: flex; align-items: center; gap: 0.65rem; min-width: 0;
-        }
-        .sidebar-user-avatar {
-            width: 42px; height: 42px; border-radius: 50%; object-fit: cover;
-            border: 1px solid var(--border-medium); flex-shrink: 0;
-        }
-        .sidebar-user-name {
-            font-size: 0.88rem; font-weight: 800; color: var(--text-main);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .sidebar-user-sub {
-            font-size: 0.7rem; color: var(--text-muted); font-weight: 600;
-        }
-        .sidebar-menu-list {
-            display: flex; flex-direction: column; gap: 0.35rem;
-        }
-        .sidebar-menu-link {
-            display: flex; align-items: center; gap: 0.7rem;
-            padding: 0.7rem 0.85rem; border-radius: var(--radius-md);
-            font-size: 0.84rem; font-weight: 700; color: var(--text-main);
-            transition: var(--transition);
-        }
-        .sidebar-menu-link:hover {
-            background: var(--primary-light); color: var(--primary);
-        }
-        .sidebar-menu-link i { width: 18px; text-align: center; color: var(--primary); }
 
         /* HEADER FORUM */
         .forum-header { background: #fff; border-bottom: 1px solid var(--border-subtle); padding: 1rem 0; margin-bottom: 1rem; width: 100%; overflow: hidden; }
@@ -582,85 +430,14 @@
 </head>
 <body data-package="basic">
 
-    <!-- BACKDROP MODE FOKUS & SIDEBAR -->
+    <!-- BACKDROP MODE FOKUS -->
     <div class="focus-backdrop" id="focusBackdrop" onclick="exitFocusMode()"></div>
-    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleNavSidebar(false)"></div>
-
-    <!-- SIDEBAR DRAWER NAVIGASI -->
-    <aside class="nav-sidebar-drawer" id="navSidebarDrawer" onclick="event.stopPropagation()">
-        <div class="sidebar-top-row">
-            <div class="sidebar-user-summary">
-                <img id="sidebarUserAvatar" src="https://ui-avatars.com/api/?name=User&background=2563eb&color=fff" alt="Profil" class="sidebar-user-avatar">
-                <div style="min-width: 0;">
-                    <div class="sidebar-user-name" id="sidebarUserName">Mitra Sitenexs</div>
-                    <div class="sidebar-user-sub" id="sidebarUserPackage">Paket Basic</div>
-                </div>
-            </div>
-            <button type="button" class="close-modal" onclick="toggleNavSidebar(false)" title="Tutup Menu">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-
-        <nav class="sidebar-menu-list">
-            <a href="https://account.sitenexs.com/profile" id="sidebarProfileLink" class="sidebar-menu-link">
-                <i class="fas fa-user-circle"></i> <span>Profil Saya</span>
-            </a>
-            <a href="https://sitenexs.com/community/messages/" class="sidebar-menu-link">
-                <i class="fas fa-comments"></i> <span>Pesan Masuk</span>
-            </a>
-            <a href="https://sitenexs.com/" class="sidebar-menu-link">
-                <i class="fas fa-home"></i> <span>Beranda Sitenexs</span>
-            </a>
-        </nav>
-    </aside>
 
     <!-- CONTAINER TOAST NOTIFICATION -->
     <div id="toastContainer"></div>
 
-    <!-- NAVBAR -->
-    <header id="navbar">
-        <div class="nav-container">
-            <a href="https://sitenexs.com/" class="logo">
-                <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff'">
-                <span class="logo-text" id="navLogoText">SiteNexs</span>
-            </a>
-            <div class="nav-actions">
-                <!-- IKON PESAN + ANGKA BELUM DIBACA -->
-                <a href="https://sitenexs.com/community/messages/" class="btn btn-secondary btn-icon-only" title="Pesan">
-                    <i class="fas fa-comments"></i>
-                    <span class="icon-count-badge" id="msgUnreadCountBadge">0</span>
-                </a>
-
-                <!-- IKON NOTIFIKASI KOMUNITAS + ANGKA + PANEL -->
-                <div class="notif-panel-wrapper">
-                    <button type="button" id="communityNotifBtn" class="btn btn-secondary btn-icon-only" onclick="toggleCommunityNotifPanel(event)" title="Notifikasi Komunitas">
-                        <i class="fas fa-bell"></i>
-                        <span class="icon-count-badge" id="communityNotifBadge">0</span>
-                    </button>
-                    <div class="notif-dropdown-panel" id="communityNotifPanel" onclick="event.stopPropagation()">
-                        <div class="notif-panel-header">
-                            <span>Notifikasi Komunitas</span>
-                            <button type="button" class="notif-mark-read-btn" onclick="markAllCommunityNotifsRead()">Tandai dibaca</button>
-                        </div>
-                        <div class="notif-panel-list" id="communityNotifList">
-                            <div class="notif-empty-state">Belum ada notifikasi postingan, komentar, atau suka baru.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <a href="https://sitenexs.com/" class="btn btn-secondary btn-icon-only" title="Beranda"><i class="fas fa-home"></i></a>
-
-                <!-- TOMBOL GABUNGAN FOTO PROFIL + GARIS 3 SIDEBAR -->
-                <button type="button" id="profileBurgerBtn" class="profile-burger-combo" onclick="toggleNavSidebar()" title="Menu Profil & Navigasi">
-                    <span id="navProfileLink" class="nav-profile-link">
-                        <img id="navProfileImg" src="" alt="Profil" class="nav-profile-img">
-                        <div id="navProfileInitials" class="nav-profile-initials"><i class="fas fa-user"></i></div>
-                    </span>
-                    <span class="burger-bars-icon"><i class="fas fa-bars"></i></span>
-                </button>
-            </div>
-        </div>
-    </header>
+    <!-- NAVBAR DINAMIS DARI MODUL TERPISAH -->
+    <header id="navbar"></header>
 
     <!-- HEADER FORUM -->
     <div class="forum-header">
@@ -721,7 +498,7 @@
         </div>
     </div>
 
-    <!-- MODUL KONFIGURASI, DATA USER & PUSH NOTIFIKASI -->
+    <!-- MODUL KONFIGURASI, DATA USER, NAVBAR & PUSH NOTIFIKASI -->
     <script type="module">
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
         import { doc, getDoc, setDoc, deleteDoc, collection, addDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp, query, orderBy, where, onSnapshot, getDocs } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
@@ -742,6 +519,11 @@
         } from 'https://sitenexs.com/assets/js/sitenexs-user-data.js';
 
         import {
+            mountSitenexsNavbar,
+            setNavbarUserProfile
+        } from 'https://sitenexs.com/assets/js/sitenexs-navbar.js';
+
+        import {
             registerPushServiceWorker,
             syncFcmToken,
             triggerLocalSystemNotification,
@@ -760,7 +542,6 @@
         let isInitialChatsLoad = true;
         let unsubscribeIncomingCalls = null;
         let unsubscribeChatsNotify = null;
-        let unsubscribeUserNotifs = null;
         let isRedirectingToCall = false;
         let previousLikesByPost = new Map();
         let previousCommentsByPost = new Map();
@@ -768,7 +549,6 @@
         const notifiedCommentKeys = new Set();
         const notifiedMentionKeys = new Set();
         const notifiedMessageKeys = new Set();
-        let communityNotifications = [];
 
         const postContainer = document.getElementById('postContainer');
         const modal = document.getElementById('postModal');
@@ -777,19 +557,26 @@
         const avatarImg = document.getElementById('currentUserAvatar');
         const promptText = document.getElementById('createPostPromptText');
 
-        const navProfileImg = document.getElementById('navProfileImg');
-        const navProfileInitials = document.getElementById('navProfileInitials');
+        mountSitenexsNavbar({
+            targetSelector: '#navbar',
+            onSelectNotif: ({ postId, focusComments }) => {
+                if (!postId) return;
+                const targetCard = document.getElementById(`post-${postId}`);
+                if (targetCard) {
+                    if (focusComments) {
+                        const commentsSection = document.getElementById(`comments-${postId}`);
+                        if (commentsSection && !commentsSection.classList.contains('active')) {
+                            commentsSection.classList.add('active');
+                        }
+                    }
+                    targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    activateFocusMode(targetCard);
+                } else {
+                    window.location.href = `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`;
+                }
+            }
+        });
 
-        window.toggleNavSidebar = function(forceState = null) {
-            const drawer = document.getElementById('navSidebarDrawer');
-            const backdrop = document.getElementById('sidebarBackdrop');
-            if (!drawer || !backdrop) return;
-            const nextOpen = typeof forceState === 'boolean' ? forceState : !drawer.classList.contains('active');
-            drawer.classList.toggle('active', nextOpen);
-            backdrop.classList.toggle('active', nextOpen);
-        };
-
-        // --- SISTEM NOTIFIKASI TOAST ---
         window.showToast = function(message, type = 'success') {
             const container = document.getElementById('toastContainer');
             if(!container) return;
@@ -803,9 +590,6 @@
             }, 3000);
         };
 
-        /* =====================================================
-           PENYIMPANAN NOTIFIKASI FIRESTORE + RESET 3 HARI SEKALI
-        ===================================================== */
         async function ensureThreeDayNotificationReset(uid) {
             if (!uid) return;
             const userRef = doc(db, 'users', uid);
@@ -841,7 +625,7 @@
                 await setDoc(
                     doc(db, 'users', targetUid, 'notifications', notifId),
                     {
-                        kind: kind || 'post', // 'post' | 'like' | 'comment' | 'mention'
+                        kind: kind || 'post',
                         title: title || 'Notifikasi Komunitas',
                         sub: sub || '',
                         postId: postId || '',
@@ -856,139 +640,6 @@
             }
         }
 
-        function listenFirestoreUserNotifications(uid) {
-            if (!uid) return;
-            if (unsubscribeUserNotifs) unsubscribeUserNotifs();
-
-            const qNotifs = query(
-                collection(db, 'users', uid, 'notifications'),
-                orderBy('createdAt', 'desc')
-            );
-
-            unsubscribeUserNotifs = onSnapshot(qNotifs, (snapshot) => {
-                const list = [];
-                snapshot.forEach(dSnap => {
-                    const d = dSnap.data();
-                    list.push({
-                        id: dSnap.id,
-                        kind: d.kind || 'post',
-                        title: d.title || 'Notifikasi Komunitas',
-                        sub: d.sub || '',
-                        postId: d.postId || '',
-                        focusComments: Boolean(d.focusComments),
-                        unread: d.unread !== false,
-                        createdAt: Number(d.createdAt || Date.now())
-                    });
-                });
-                communityNotifications = list.slice(0, 60);
-                renderCommunityNotifications();
-            }, (err) => {
-                console.error('Gagal memuat notifikasi Firestore:', err);
-            });
-        }
-
-        function renderCommunityNotifications() {
-            const badgeEl = document.getElementById('communityNotifBadge');
-            const listEl = document.getElementById('communityNotifList');
-
-            const unreadCount = communityNotifications.filter(n => n.unread).length;
-            if (badgeEl) {
-                badgeEl.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
-                badgeEl.classList.toggle('active', unreadCount > 0);
-            }
-
-            if (!listEl) return;
-            if (communityNotifications.length === 0) {
-                listEl.innerHTML = '<div class="notif-empty-state">Belum ada notifikasi postingan, komentar, penyebutan, atau suka baru.</div>';
-                return;
-            }
-
-            listEl.innerHTML = communityNotifications.map(n => {
-                let iconClass = 'fas fa-newspaper';
-                let iconKind = 'post';
-                if (n.kind === 'like') {
-                    iconClass = 'fas fa-thumbs-up';
-                    iconKind = 'like';
-                } else if (n.kind === 'comment') {
-                    iconClass = 'fas fa-comment-alt';
-                    iconKind = 'comment';
-                } else if (n.kind === 'mention') {
-                    iconClass = 'fas fa-at';
-                    iconKind = 'mention';
-                }
-                const timeStr = timeAgo(new Date(n.createdAt));
-
-                return `
-                    <div class="notif-entry ${n.unread ? 'unread' : ''}" onclick="openCommunityNotifItem('${n.id}', '${n.postId}', ${n.focusComments ? 'true' : 'false'})">
-                        <div class="notif-entry-icon ${iconKind}">
-                            <i class="${iconClass}"></i>
-                        </div>
-                        <div class="notif-entry-body">
-                            <div class="notif-entry-title">${n.title}</div>
-                            ${n.sub ? `<div class="notif-entry-sub">${n.sub}</div>` : ''}
-                            <div class="notif-entry-time">${timeStr}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        window.toggleCommunityNotifPanel = function(event) {
-            event.stopPropagation();
-            const panel = document.getElementById('communityNotifPanel');
-            if (!panel) return;
-            panel.classList.toggle('active');
-        };
-
-        // Riwayat notifikasi TIDAK dihapus saat dibaca; hanya status unread diubah menjadi false
-        window.markAllCommunityNotifsRead = async function() {
-            const uid = currentUserData?.uid || localStorage.getItem('sitenexs_uid');
-            communityNotifications = communityNotifications.map(n => ({ ...n, unread: false }));
-            renderCommunityNotifications();
-
-            if (!uid) return;
-            try {
-                const updates = communityNotifications.map(n =>
-                    setDoc(doc(db, 'users', uid, 'notifications', n.id), { unread: false }, { merge: true })
-                );
-                await Promise.all(updates);
-            } catch (e) {}
-        };
-
-        window.openCommunityNotifItem = async function(notifId, postId, focusComments = false) {
-            const uid = currentUserData?.uid || localStorage.getItem('sitenexs_uid');
-            communityNotifications = communityNotifications.map(n =>
-                n.id === notifId ? { ...n, unread: false } : n
-            );
-            renderCommunityNotifications();
-
-            if (uid && notifId) {
-                setDoc(doc(db, 'users', uid, 'notifications', notifId), { unread: false }, { merge: true }).catch(() => {});
-            }
-
-            const panel = document.getElementById('communityNotifPanel');
-            if (panel) panel.classList.remove('active');
-
-            if (postId) {
-                const targetCard = document.getElementById(`post-${postId}`);
-                if (targetCard) {
-                    if (focusComments) {
-                        const commentsSection = document.getElementById(`comments-${postId}`);
-                        if (commentsSection && !commentsSection.classList.contains('active')) {
-                            commentsSection.classList.add('active');
-                        }
-                    }
-                    targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    activateFocusMode(targetCard);
-                } else {
-                    window.location.href = `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`;
-                }
-            }
-        };
-
-        /* =====================================================
-           DETEKSI PENYEbutan (@NAMA) PADA POSTINGAN & KOMENTAR
-        ===================================================== */
         function extractMentionedUsers(text, excludeUid = '') {
             if (!text || !allRegisteredUsers.length) return [];
             const matched = [];
@@ -1009,24 +660,6 @@
             return matched;
         }
 
-        /* =====================================================
-           BADGE ANGKA PESAN BELUM DIBACA DI IKON PESAN
-        ===================================================== */
-        function updateMessageUnreadCountBadge(count) {
-            const badgeEl = document.getElementById('msgUnreadCountBadge');
-            if (!badgeEl) return;
-            if (count > 0) {
-                badgeEl.textContent = count > 99 ? '99+' : String(count);
-                badgeEl.classList.add('active');
-            } else {
-                badgeEl.textContent = '0';
-                badgeEl.classList.remove('active');
-            }
-        }
-
-        /* =====================================================
-           PAKSA MEMBUKA HALAMAN TELEPON SAAT ADA PANGGILAN MASUK
-        ===================================================== */
         function listenIncomingCallsAndForceRedirect(uid) {
             if (!uid) return;
             const incomingRef = ref(rtdb, `incomingCalls/${uid}`);
@@ -1060,9 +693,6 @@
             });
         }
 
-        /* =====================================================
-           NOTIFIKASI PESAN BARU + UPDATE ANGKA PESAN BELUM DIBACA
-        ===================================================== */
         function listenNewMessagesForUser(uid) {
             if (!uid) return;
             if (unsubscribeChatsNotify) unsubscribeChatsNotify();
@@ -1070,15 +700,6 @@
 
             const qChats = query(collection(db, "chats"), where("participants", "array-contains", uid));
             unsubscribeChatsNotify = onSnapshot(qChats, async (snapshot) => {
-                let totalUnreadChats = 0;
-                snapshot.forEach(docSnap => {
-                    const chatData = docSnap.data();
-                    if (chatData[`unread_${uid}`] === true && chatData[`archived_${uid}`] !== true) {
-                        totalUnreadChats += 1;
-                    }
-                });
-                updateMessageUnreadCountBadge(totalUnreadChats);
-
                 if (isInitialChatsLoad) {
                     isInitialChatsLoad = false;
                     return;
@@ -1115,7 +736,6 @@
             });
         }
 
-        // --- MODE FOKUS KARTU ---
         window.activateFocusMode = function(card) {
             document.querySelectorAll('.post-card').forEach(c => c.classList.remove('focused-card'));
             card.classList.add('focused-card');
@@ -1128,7 +748,6 @@
             document.querySelectorAll('.post-card').forEach(c => c.classList.remove('focused-card'));
         }
 
-        // --- SALIN TAUTAN & AKTIFKAN MODE FOKUS ---
         window.copyPermalink = function(postId, event) {
             event.stopPropagation();
             const link = `https://sitenexs.com/community/?post=${postId}`;
@@ -1144,7 +763,6 @@
             }
         }
 
-        // --- DINAMIS SEO META & SCHEMA UPDATER UNTUK PERMALINK ---
         async function loadPermalinkPostMeta(postId) {
             try {
                 const docRef = doc(db, "forum_posts", postId);
@@ -1307,34 +925,6 @@
             return formatted;
         }
 
-        function applyUserPackageThemeFromProfile(profile) {
-            let pkg = 'basic';
-            const paketLanggananName = profile?.packageName || 'Basic';
-            let rawPkg = String(paketLanggananName).replace(/^(paket\s*)+/i, '').trim().toLowerCase();
-
-            if (rawPkg.includes('pro')) {
-                pkg = 'pro';
-            } else if (rawPkg.includes('vip') || rawPkg.includes('ultimate') || rawPkg.includes('premium')) {
-                pkg = 'vip';
-            }
-
-            document.body.setAttribute('data-package', pkg);
-
-            const logoTextEl = document.getElementById('navLogoText');
-            if (logoTextEl) {
-                if (pkg === 'basic' || !paketLanggananName || String(paketLanggananName).toLowerCase() === 'basic') {
-                    logoTextEl.innerText = 'SiteNexs';
-                } else {
-                    logoTextEl.innerText = String(paketLanggananName).toUpperCase();
-                }
-            }
-
-            const sidebarPkgEl = document.getElementById('sidebarUserPackage');
-            if (sidebarPkgEl) {
-                sidebarPkgEl.innerText = `Paket ${paketLanggananName}`;
-            }
-        }
-
         window.deleteComment = async function(postId, commentCreatedAt, commentAuthorUid) {
             const savedUid = localStorage.getItem('sitenexs_uid');
             const activeUid = currentUserData ? currentUserData.uid : (auth.currentUser ? auth.currentUser.uid : savedUid);
@@ -1387,13 +977,11 @@
         async function fetchUserProfile(uid, fallbackName = "Mitra Sitenexs") {
             try {
                 await ensureThreeDayNotificationReset(uid);
-                listenFirestoreUserNotifications(uid);
+                await setNavbarUserProfile(uid);
 
                 const profile = await fetchNormalizedUserProfile(db, uid, { forceRefresh: true });
                 const namaLengkap = profile.displayName || fallbackName;
                 const isVerified = Boolean(profile.isVerified);
-
-                applyUserPackageThemeFromProfile(profile);
 
                 const photoUrl = `${getUserAvatarUrl(uid)}?t=${Date.now()}`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff`;
@@ -1417,41 +1005,11 @@
                     await syncFcmToken({ app: undefined, db, uid, onError: () => {} });
                 }
 
-                const sidebarProfileLink = document.getElementById('sidebarProfileLink');
-                if (sidebarProfileLink) {
-                    sidebarProfileLink.href = `https://account.sitenexs.com/profile?uid=${encodeURIComponent(uid)}`;
-                }
-
-                const sidebarNameEl = document.getElementById('sidebarUserName');
-                if (sidebarNameEl) sidebarNameEl.innerText = namaLengkap;
-
-                const sidebarAvatarEl = document.getElementById('sidebarUserAvatar');
-                if (sidebarAvatarEl) {
-                    sidebarAvatarEl.src = photoUrl;
-                    sidebarAvatarEl.onerror = () => { sidebarAvatarEl.src = fallbackUrl; };
-                }
-
-                const initials = namaLengkap.trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase() || 'S';
-
-                navProfileImg.onload = () => {
-                    navProfileImg.style.display = 'block';
-                    navProfileInitials.style.display = 'none';
-                };
-                navProfileImg.onerror = () => {
-                    navProfileImg.style.display = 'none';
-                    navProfileInitials.innerHTML = `<span style="font-size: 0.7rem; font-weight:800; color:#475569;">${initials}</span>`;
-                    navProfileInitials.style.display = 'flex';
-                };
-                navProfileImg.src = photoUrl;
-
                 avatarImg.src = photoUrl;
                 avatarImg.onerror = () => { avatarImg.src = fallbackUrl; };
                 promptText.innerText = `Halo ${namaLengkap}, apa yang ingin didiskusikan?`;
             } catch (err) {
-                const sidebarProfileLink = document.getElementById('sidebarProfileLink');
-                if (sidebarProfileLink) {
-                    sidebarProfileLink.href = `https://account.sitenexs.com/sign-in/`;
-                }
+                console.warn('Gagal memuat profil pengguna:', err);
             }
         }
 
@@ -1469,11 +1027,6 @@
                     const isLogged = localStorage.getItem('sitenexs_logged_in') === 'true';
                     if (isLogged && savedUid) {
                         await fetchUserProfile(savedUid);
-                    } else {
-                        const sidebarProfileLink = document.getElementById('sidebarProfileLink');
-                        if (sidebarProfileLink) {
-                            sidebarProfileLink.href = `https://account.sitenexs.com/sign-in/`;
-                        }
                     }
                 }
             });
@@ -1553,7 +1106,6 @@
                         newLikesArr.push(uid);
                         await updateDoc(postRef, { likes: arrayUnion(uid) });
 
-                        // Catat di Firestore penerima & kirim push notifikasi suka
                         if (postAuthorUid && postAuthorUid !== uid) {
                             const likeBody = `${likerName} menyukai postingan Anda`;
                             await saveNotificationToFirestore(postAuthorUid, {
@@ -1641,7 +1193,6 @@
                     comments: arrayUnion(newComment)
                 });
 
-                // 1. Notifikasi komentar untuk pemilik postingan
                 if (postAuthorUid && postAuthorUid !== uidVal) {
                     const commentNotifText = `${nameVal} mengomentari postingan Anda`;
                     await saveNotificationToFirestore(postAuthorUid, {
@@ -1664,7 +1215,6 @@
                     });
                 }
 
-                // 2. Notifikasi penyebutan (@NamaUser) di komentar
                 const mentionedInComment = extractMentionedUsers(commentText, uidVal);
                 for (const mUser of mentionedInComment) {
                     const mentionTitle = `${nameVal} menyebut Anda dalam komentar`;
@@ -1894,7 +1444,6 @@
                 const data = change.doc.data();
                 if (data.isPrivate) continue;
 
-                // 1. Notifikasi postingan baru + deteksi penyebutan (@Nama) di postingan
                 if (change.type === 'added' && data.authorUid && data.authorUid !== currentActiveUid) {
                     const posterName = data.penulis || 'Mitra Sitenexs';
                     const fullPostText = `${data.judul || ''} ${data.isi || ''}`.trim();
@@ -1940,7 +1489,6 @@
                     }
                 }
 
-                // 2. Notifikasi like baru pada postingan milik user aktif
                 const prevLikes = previousLikesByPost.get(postId) || new Set();
                 const currLikesArr = data.likes || [];
                 const currLikesSet = new Set(currLikesArr);
@@ -1980,7 +1528,6 @@
                 }
                 previousLikesByPost.set(postId, currLikesSet);
 
-                // 3. Notifikasi komentar baru + penyebutan (@Nama) di komentar
                 const prevComments = previousCommentsByPost.get(postId) || new Set();
                 const currCommentsArr = data.comments || [];
                 const currCommentsSet = new Set();
@@ -2112,11 +1659,6 @@
         });
 
         document.addEventListener('click', (e) => {
-            const notifPanel = document.getElementById('communityNotifPanel');
-            if (notifPanel && notifPanel.classList.contains('active') && !e.target.closest('.notif-panel-wrapper')) {
-                notifPanel.classList.remove('active');
-            }
-
             if (document.body.classList.contains('forum-focus-mode')) {
                 if (!e.target.closest('.post-card.focused-card')) {
                     exitFocusMode();
@@ -2200,7 +1742,6 @@
                     createdAt: serverTimestamp()
                 });
 
-                // Kirim notifikasi & push notif ke user yang disebut (@Nama) di postingan
                 const mentionedInPost = extractMentionedUsers(`${title} ${content}`, uidVal);
                 for (const mUser of mentionedInPost) {
                     const mTitle = `${nameVal} menyebut Anda dalam postingan`;
