@@ -67,6 +67,32 @@
         .btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
         .btn-icon-only { width: 38px; height: 38px; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
+        /* BANNER IZIN NOTIFIKASI HP */
+        .notif-permission-banner {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.65rem 1.15rem;
+            background: #eff6ff;
+            border-bottom: 1px solid #bfdbfe;
+            font-size: 0.8rem;
+            color: #1e3a8a;
+            flex: 0 0 auto;
+        }
+        .notif-permission-banner.active { display: flex; }
+        .notif-enable-btn {
+            background: var(--primary);
+            color: #fff;
+            padding: 0.38rem 0.85rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
         /* RUANG CHAT UTAMA */
         .chat-wrapper {
             width: 100%; height: 100%; background: #fafbfc; border: 1px solid var(--border-subtle); 
@@ -610,6 +636,12 @@
 
     <main class="container">
         <div class="chat-wrapper">
+            <!-- BANNER AKTIFKAN PUSH NOTIFIKASI HP -->
+            <div id="notifPermissionBanner" class="notif-permission-banner">
+                <span><i class="fas fa-bell" style="margin-right: 5px;"></i> Aktifkan notifikasi agar pesan & panggilan masuk muncul di HP.</span>
+                <button type="button" class="notif-enable-btn" onclick="requestPushNotificationPermission()">Aktifkan</button>
+            </div>
+
             <!-- HEADER ATAS -->
             <div class="chat-header">
                 <div class="chat-header-left">
@@ -623,6 +655,9 @@
                     </div>
                 </div>
                 <div class="chat-header-right">
+                    <button type="button" id="notifBellBtn" class="btn btn-secondary btn-icon-only" onclick="requestPushNotificationPermission()" title="Notifikasi HP">
+                        <i class="fas fa-bell" style="color: var(--text-muted);"></i>
+                    </button>
                     <button type="button" id="startVoiceBtn" class="btn btn-secondary btn-icon-only" onclick="startVoiceCall()" title="Panggilan Suara">
                         <i class="fas fa-phone" style="color: var(--accent);"></i>
                     </button>
@@ -648,7 +683,7 @@
         </div>
     </main>
 
-    <!-- FIREBASE (FIRESTORE + REALTIME DB) & WEBRTC SCRIPT -->
+    <!-- FIREBASE (FIRESTORE + REALTIME DB + CLOUD MESSAGING) & WEBRTC SCRIPT -->
  <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
 import {
@@ -683,6 +718,13 @@ import {
     remove
 } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
 
+import {
+    getMessaging,
+    getToken,
+    onMessage,
+    isSupported
+} from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-messaging.js';
+
 /* =====================================================
    FIREBASE
 ===================================================== */
@@ -696,6 +738,9 @@ const firebaseConfig = {
     messagingSenderId: '1060348110644',
     appId: '1:1060348110644:web:e45af14d5f26a9cf8e6761'
 };
+
+// VAPID Key dari Firebase Console -> Project Settings -> Cloud Messaging -> Web Push certificates
+const FCM_VAPID_KEY = 'BLJA0jutfD7HaJA0E36vDSW8fKy2k0xv1KIgSdxH_luJ-Y8tRp6GvXifKzdWJ_V3vNXkBhe3bbNYmrXd_sCJLhY';
 
 const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
 const avatarBucket = 'profile-photos';
@@ -721,6 +766,10 @@ let otherUserName = 'Mitra Sitenexs';
 let otherUserVerified = false;
 
 let unsubscribeMessages = null;
+let isInitialMessagesLoad = true;
+let lastNotifiedMessageId = null;
+let lastNotifiedCallRoomId = null;
+let swRegistration = null;
 
 let peerConnection = null;
 let localStream = null;
@@ -754,6 +803,183 @@ let unsubscribeRemoteCandidates = null;
 let unsubscribeIncomingCalls = null;
 
 let callDirection = null; // caller / callee
+
+/* =====================================================
+   PUSH NOTIFIKASI HP (WEB PUSH + FCM + SERVICE WORKER)
+===================================================== */
+
+function updateNotificationUIState() {
+    const banner = document.getElementById('notifPermissionBanner');
+    const bellBtn = document.getElementById('notifBellBtn');
+    if (!('Notification' in window)) {
+        if (banner) banner.classList.remove('active');
+        if (bellBtn) bellBtn.style.display = 'none';
+        return;
+    }
+
+    if (Notification.permission === 'granted') {
+        if (banner) banner.classList.remove('active');
+        if (bellBtn) {
+            bellBtn.innerHTML = '<i class="fas fa-bell" style="color: var(--accent);"></i>';
+            bellBtn.title = 'Notifikasi HP Aktif';
+        }
+    } else if (Notification.permission === 'denied') {
+        if (banner) banner.classList.remove('active');
+        if (bellBtn) {
+            bellBtn.innerHTML = '<i class="fas fa-bell-slash" style="color: var(--danger);"></i>';
+            bellBtn.title = 'Notifikasi Diblokir Browser';
+        }
+    } else {
+        if (banner) banner.classList.add('active');
+        if (bellBtn) {
+            bellBtn.innerHTML = '<i class="fas fa-bell" style="color: var(--primary);"></i>';
+            bellBtn.title = 'Aktifkan Notifikasi HP';
+        }
+    }
+}
+
+async function registerPushServiceWorker() {
+    if (!('serviceWorker' in navigator)) return null;
+    try {
+        swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        return swRegistration;
+    } catch (e) {
+        console.warn('Service Worker FCM belum terdaftar:', e.message);
+        return null;
+    }
+}
+
+async function syncFcmTokenToFirestore() {
+    if (!currentUid || !('Notification' in window) || Notification.permission !== 'granted') return;
+
+    try {
+        const supported = await isSupported();
+        if (!supported) return;
+
+        const messaging = getMessaging(app);
+        const tokenOptions = { serviceWorkerRegistration: swRegistration || undefined };
+        if (FCM_VAPID_KEY && !FCM_VAPID_KEY.startsWith('MASUKKAN_')) {
+            tokenOptions.vapidKey = FCM_VAPID_KEY;
+        }
+
+        const fcmToken = await getToken(messaging, tokenOptions);
+        if (fcmToken) {
+            await setDoc(doc(db, 'users', currentUid), {
+                fcmToken,
+                fcmUpdatedAt: serverTimestamp()
+            }, { merge: true });
+        }
+
+        onMessage(messaging, (payload) => {
+            const title = payload?.notification?.title || payload?.data?.title || 'Sitenexs';
+            const body = payload?.notification?.body || payload?.data?.body || '';
+            if (document.visibilityState === 'hidden') {
+                triggerMobileSystemNotification(title, body, {
+                    tag: payload?.data?.tag || 'sitenexs-fcm',
+                    url: window.location.href
+                });
+            }
+        });
+    } catch (error) {
+        console.warn('Sinkronisasi token FCM dilewati:', error.message);
+    }
+}
+
+window.requestPushNotificationPermission = async function () {
+    if (!('Notification' in window)) {
+        showToast('Browser Anda tidak mendukung notifikasi sistem.');
+        return;
+    }
+
+    if (Notification.permission === 'denied') {
+        showToast('Notifikasi diblokir. Aktifkan izin notifikasi di pengaturan situs browser HP Anda.');
+        return;
+    }
+
+    if (Notification.permission === 'granted') {
+        await registerPushServiceWorker();
+        await syncFcmTokenToFirestore();
+        updateNotificationUIState();
+        showToast('Notifikasi HP sudah aktif.');
+        return;
+    }
+
+    try {
+        const permission = await Notification.requestPermission();
+        updateNotificationUIState();
+
+        if (permission === 'granted') {
+            await registerPushServiceWorker();
+            await syncFcmTokenToFirestore();
+            showToast('Notifikasi HP berhasil diaktifkan.');
+            triggerMobileSystemNotification(
+                'Notifikasi Sitenexs Aktif',
+                'Anda akan menerima pemberitahuan saat ada pesan atau panggilan masuk.',
+                { tag: 'sitenexs-welcome' }
+            );
+        } else {
+            showToast('Izin notifikasi tidak diaktifkan.');
+        }
+    } catch (error) {
+        console.error('Error meminta izin notifikasi:', error);
+    }
+};
+
+function playMessageNotificationSound() {
+    try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+
+        const ctx = new AudioContextClass();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.setValueAtTime(1174.66, ctx.currentTime + 0.09);
+
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.28);
+        osc.onended = () => ctx.close().catch(() => {});
+    } catch (e) {}
+}
+
+async function triggerMobileSystemNotification(title, body, options = {}) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+    const notifOptions = {
+        body: body || '',
+        icon: options.icon || 'https://sitenexs.com/assets/logo/logo.png',
+        badge: 'https://sitenexs.com/assets/logo/logo.png',
+        tag: options.tag || 'sitenexs-notif',
+        renotify: true,
+        requireInteraction: Boolean(options.requireInteraction),
+        vibrate: options.vibrate || [200, 100, 200],
+        data: { url: options.url || window.location.href }
+    };
+
+    try {
+        const reg = swRegistration || (await navigator.serviceWorker?.getRegistration());
+        if (reg && reg.showNotification) {
+            await reg.showNotification(title, notifOptions);
+            return;
+        }
+    } catch (e) {}
+
+    try {
+        const notif = new Notification(title, notifOptions);
+        notif.onclick = () => {
+            window.focus();
+            notif.close();
+        };
+    } catch (e) {}
+}
 
 /* =====================================================
    WEBRTC CONFIGURATION
@@ -2133,7 +2359,7 @@ window.toggleCamera = function () {
 };
 
 /* =====================================================
-   LISTEN INCOMING CALLS
+   LISTEN INCOMING CALLS + PUSH NOTIFIKASI PANGGILAN MASUK
 ===================================================== */
 
 function listenIncomingCalls() {
@@ -2170,6 +2396,25 @@ function listenIncomingCalls() {
             !isInCall
         ) {
             showIncomingCallPopup(data);
+
+            // Kirim Push Notifikasi sistem HP saat ada panggilan masuk
+            if (lastNotifiedCallRoomId !== data.roomId) {
+                lastNotifiedCallRoomId = data.roomId;
+                const callLabel = data.callType === 'audio'
+                    ? 'Panggilan Suara Masuk'
+                    : 'Panggilan Video Masuk';
+                triggerMobileSystemNotification(
+                    `${callLabel} • ${data.callerName || 'Mitra Sitenexs'}`,
+                    'Ketuk untuk membuka ruang chat dan menjawab panggilan.',
+                    {
+                        tag: `call-${data.roomId}`,
+                        icon: getAvatarUrl(data.callerUid),
+                        requireInteraction: true,
+                        vibrate: [400, 200, 400, 200, 400],
+                        url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(data.callerUid)}`
+                    }
+                );
+            }
         }
     }, error => {
         console.error('Incoming call listener error:', error);
@@ -2182,6 +2427,12 @@ function listenIncomingCalls() {
 
 async function initChat(user) {
     currentUid = user.uid;
+
+    updateNotificationUIState();
+    await registerPushServiceWorker();
+    if ('Notification' in window && Notification.permission === 'granted') {
+        syncFcmTokenToFirestore();
+    }
 
     const participants = [currentUid, activeChatUserId].sort();
     activeChatId = `${participants[0]}_${participants[1]}`;
@@ -2242,6 +2493,8 @@ async function initChat(user) {
         unsubscribeMessages();
     }
 
+    isInitialMessagesLoad = true;
+
     unsubscribeMessages = onSnapshot(qMsgs, snapshot => {
         const messagesContainer = document.getElementById('chatMessages');
 
@@ -2266,6 +2519,46 @@ async function initChat(user) {
 
         messagesContainer.innerHTML = html;
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // Push notifikasi saat pesan baru masuk dari lawan bicara
+        if (!isInitialMessagesLoad) {
+            snapshot.docChanges().forEach(change => {
+                if (change.type === 'added') {
+                    const msgData = change.doc.data();
+                    const msgId = change.doc.id;
+                    if (
+                        msgData.senderUid !== currentUid &&
+                        lastNotifiedMessageId !== msgId &&
+                        !String(msgData.text || '').startsWith('[CALL_LOG]|')
+                    ) {
+                        lastNotifiedMessageId = msgId;
+
+                        // Tandai terbaca jika sedang dibuka di layar
+                        if (document.visibilityState === 'visible') {
+                            updateDoc(doc(db, 'chats', activeChatId), {
+                                [`unread_${currentUid}`]: false
+                            }).catch(() => {});
+                            playMessageNotificationSound();
+                        } else {
+                            const previewText = String(msgData.text || '').includes('📋 *LAMARAN KERJA BARU*')
+                                ? 'Mengirim lamaran kerja baru'
+                                : String(msgData.text || 'Pesan baru');
+
+                            triggerMobileSystemNotification(
+                                otherUserName,
+                                previewText,
+                                {
+                                    tag: `chat-${activeChatId}`,
+                                    icon: getAvatarUrl(activeChatUserId),
+                                    url: window.location.href
+                                }
+                            );
+                        }
+                    }
+                }
+            });
+        }
+        isInitialMessagesLoad = false;
     }, error => {
         console.error('Message listener error:', error);
         showToast('Gagal memuat pesan.');
