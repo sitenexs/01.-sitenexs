@@ -556,7 +556,7 @@
             <div class="force-notif-status" id="forceNotifStatusText">
                 Status: Notifikasi belum diizinkan (tetap terbuka sampai diizinkan)
             </div>
-            <button type="button" class="force-notif-allow-btn" id="forceAllowNotifBtn" onclick="requestMandatoryNotificationPermission()">
+            <button type="button" class="force-notif-allow-btn" id="forceAllowNotifBtn" onclick="triggerNativeBrowserNotificationPrompt()">
                 <i class="fas fa-bell"></i> Izinkan Notifikasi Sekarang
             </button>
         </div>
@@ -690,7 +690,7 @@
         const promptText = document.getElementById('createPostPromptText');
 
         /* =====================================================
-           PEMANTAUAN WAJIB IZIN NOTIFIKASI (TETAP TERBUKA)
+           PEMANTAUAN WAJIB IZIN NOTIFIKASI + POPUP ASLI BROWSER
         ===================================================== */
         function enforceMandatoryNotificationGate() {
             const backdrop = document.getElementById('forceNotifBackdrop');
@@ -720,30 +720,59 @@
             }
         }
 
-        window.requestMandatoryNotificationPermission = async function() {
+        async function handlePermissionGrantedFlow() {
+            await registerPushServiceWorker();
+            const activeUid = currentUserData?.uid || localStorage.getItem('sitenexs_uid');
+            if (activeUid) {
+                await syncFcmToken({ app: undefined, db, uid: activeUid, onError: () => {} });
+            }
+            enforceMandatoryNotificationGate();
+            showToast("Terima kasih! Notifikasi telah diizinkan.");
+        }
+
+        // Dipanggil langsung sinkron saat klik tombol agar popup asli browser segera muncul
+        window.triggerNativeBrowserNotificationPrompt = function() {
             if (!('Notification' in window)) {
                 enforceMandatoryNotificationGate();
                 return;
             }
 
             const statusText = document.getElementById('forceNotifStatusText');
+
+            if (Notification.permission === 'granted') {
+                handlePermissionGrantedFlow();
+                return;
+            }
+
             try {
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    await registerPushServiceWorker();
-                    const activeUid = currentUserData?.uid || localStorage.getItem('sitenexs_uid');
-                    if (activeUid) {
-                        await syncFcmToken({ app: undefined, db, uid: activeUid, onError: () => {} });
+                const permPromise = Notification.requestPermission((permissionResult) => {
+                    if (permissionResult === 'granted') {
+                        handlePermissionGrantedFlow();
+                    } else {
+                        enforceMandatoryNotificationGate();
+                        if (statusText) {
+                            statusText.innerText = permissionResult === 'denied'
+                                ? 'Izin ditolak di popup browser. Aktifkan di pengaturan situs browser lalu tekan tombol ini lagi.'
+                                : 'Belum diizinkan! Tekan Izinkan pada popup browser agar notifikasi aktif.';
+                        }
                     }
-                    enforceMandatoryNotificationGate();
-                    showToast("Terima kasih! Notifikasi telah diizinkan.");
-                } else {
-                    enforceMandatoryNotificationGate();
-                    if (statusText) {
-                        statusText.innerText = permission === 'denied'
-                            ? 'Izin ditolak browser. Aktifkan manual di pengaturan situs browser lalu tekan tombol ini lagi.'
-                            : 'Belum diizinkan! Mohon tekan Izinkan pada prompt browser agar notifikasi aktif.';
-                    }
+                });
+
+                if (permPromise && typeof permPromise.then === 'function') {
+                    permPromise.then((permissionResult) => {
+                        if (permissionResult === 'granted') {
+                            handlePermissionGrantedFlow();
+                        } else {
+                            enforceMandatoryNotificationGate();
+                            if (statusText) {
+                                statusText.innerText = permissionResult === 'denied'
+                                    ? 'Izin ditolak di popup browser. Aktifkan di pengaturan situs browser lalu tekan tombol ini lagi.'
+                                    : 'Belum diizinkan! Tekan Izinkan pada popup browser agar notifikasi aktif.';
+                            }
+                        }
+                    }).catch(() => {
+                        enforceMandatoryNotificationGate();
+                    });
                 }
             } catch (err) {
                 enforceMandatoryNotificationGate();
