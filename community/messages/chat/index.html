@@ -683,7 +683,7 @@
         </div>
     </main>
 
-    <!-- FIREBASE (FIRESTORE + REALTIME DB + CLOUD MESSAGING) & WEBRTC SCRIPT -->
+    <!-- FIREBASE (FIRESTORE + REALTIME DB) & WEBRTC SCRIPT -->
  <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
 import {
@@ -719,11 +719,12 @@ import {
 } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
 
 import {
-    getMessaging,
-    getToken,
-    onMessage,
-    isSupported
-} from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-messaging.js';
+    registerPushServiceWorker,
+    syncFcmToken,
+    listenForegroundMessages,
+    triggerLocalSystemNotification,
+    sendPushNotification
+} from './sitenexs-push-client.js';
 
 /* =====================================================
    FIREBASE
@@ -739,10 +740,6 @@ const firebaseConfig = {
     appId: '1:1060348110644:web:e45af14d5f26a9cf8e6761'
 };
 
-// VAPID Key dari Firebase Console -> Project Settings -> Cloud Messaging -> Web Push certificates
-const FCM_VAPID_KEY = 'BLJA0jutfD7HaJA0E36vDSW8fKy2k0xv1KIgSdxH_luJ-Y8tRp6GvXifKzdWJ_V3vNXkBhe3bbNYmrXd_sCJLhY';
-
-// URL Cloudflare Worker pengirim Push Notification FCM
 const PUSH_WORKER_URL = 'https://sitenexs-push.sitenexs.workers.dev';
 
 const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
@@ -773,7 +770,6 @@ let unsubscribeMessages = null;
 let isInitialMessagesLoad = true;
 let lastNotifiedMessageId = null;
 let lastNotifiedCallRoomId = null;
-let swRegistration = null;
 
 let peerConnection = null;
 let localStream = null;
@@ -809,7 +805,7 @@ let unsubscribeIncomingCalls = null;
 let callDirection = null; // caller / callee
 
 /* =====================================================
-   PUSH NOTIFIKASI HP (WEB PUSH + FCM + SERVICE WORKER)
+   UI & PEMANGGIL MODUL NOTIFIKASI TERPISAH
 ===================================================== */
 
 function updateNotificationUIState() {
@@ -842,89 +838,18 @@ function updateNotificationUIState() {
     }
 }
 
-async function registerPushServiceWorker() {
-    if (!('serviceWorker' in navigator)) return null;
-    try {
-        swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-        return swRegistration;
-    } catch (e) {
-        console.warn('Service Worker FCM belum terdaftar:', e.message);
-        return null;
-    }
-}
-
-async function syncFcmTokenToFirestore() {
-    if (!currentUid) {
-        showToast('Gagal FCM: UID user kosong.');
-        return;
-    }
-    if (!('Notification' in window) || Notification.permission !== 'granted') {
-        showToast('Gagal FCM: Izin notifikasi belum granted.');
-        return;
-    }
-
-    try {
-        const supported = await isSupported();
-        if (!supported) {
-            showToast('Browser HP ini tidak mendukung FCM.');
-            return;
-        }
-
-        const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-        await navigator.serviceWorker.ready;
-
-        const messaging = getMessaging(app);
-        const fcmToken = await getToken(messaging, {
-            vapidKey: FCM_VAPID_KEY,
-            serviceWorkerRegistration: reg
-        });
-
-        if (fcmToken) {
-            await setDoc(doc(db, 'users', currentUid), {
-                fcmToken: fcmToken,
-                fcmUpdatedAt: serverTimestamp()
-            }, { merge: true });
-
-            showToast('FCM Token berhasil disimpan ke Firestore!');
-            console.log('FCM_TOKEN:', fcmToken);
-        } else {
-            showToast('FCM Token kosong dari server Firebase.');
-        }
-    } catch (error) {
-        console.error('Error FCM:', error);
-        alert('Error FCM: ' + (error?.message || error));
-    }
-}
-
-async function sendPushToRecipient(title, body, tag, url) {
-    try {
-        if (!PUSH_WORKER_URL) return;
-
-        let targetToken = otherUserFcmToken;
-        if (!targetToken && activeChatUserId) {
-            const snap = await getDoc(doc(db, 'users', activeChatUserId));
-            if (snap.exists()) {
-                targetToken = snap.data().fcmToken || null;
-                otherUserFcmToken = targetToken;
+async function refreshFcmToken() {
+    await syncFcmToken({
+        app,
+        db,
+        uid: currentUid,
+        onTokenSaved: () => showToast('FCM Token berhasil disimpan ke Firestore!'),
+        onError: (err) => {
+            if (err.message && !err.message.includes('belum granted')) {
+                alert('Error FCM: ' + (err?.message || err));
             }
         }
-        if (!targetToken) return;
-
-        await fetch(PUSH_WORKER_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                token: targetToken,
-                title,
-                body,
-                tag,
-                url,
-                icon: getAvatarUrl(currentUid)
-            })
-        });
-    } catch (e) {
-        console.warn('Push worker request dilewati:', e.message);
-    }
+    });
 }
 
 window.requestPushNotificationPermission = async function () {
@@ -940,7 +865,7 @@ window.requestPushNotificationPermission = async function () {
 
     if (Notification.permission === 'granted') {
         await registerPushServiceWorker();
-        await syncFcmTokenToFirestore();
+        await refreshFcmToken();
         updateNotificationUIState();
         showToast('Notifikasi HP sudah aktif.');
         return;
@@ -952,9 +877,9 @@ window.requestPushNotificationPermission = async function () {
 
         if (permission === 'granted') {
             await registerPushServiceWorker();
-            await syncFcmTokenToFirestore();
+            await refreshFcmToken();
             showToast('Notifikasi HP berhasil diaktifkan.');
-            triggerMobileSystemNotification(
+            triggerLocalSystemNotification(
                 'Notifikasi Sitenexs Aktif',
                 'Anda akan menerima pemberitahuan saat ada pesan atau panggilan masuk.',
                 { tag: 'sitenexs-welcome' }
@@ -989,37 +914,6 @@ function playMessageNotificationSound() {
         osc.start();
         osc.stop(ctx.currentTime + 0.28);
         osc.onended = () => ctx.close().catch(() => {});
-    } catch (e) {}
-}
-
-async function triggerMobileSystemNotification(title, body, options = {}) {
-    if (!('Notification' in window) || Notification.permission !== 'granted') return;
-
-    const notifOptions = {
-        body: body || '',
-        icon: options.icon || 'https://sitenexs.com/assets/logo/logo.png',
-        badge: 'https://sitenexs.com/assets/logo/logo.png',
-        tag: options.tag || 'sitenexs-notif',
-        renotify: true,
-        requireInteraction: Boolean(options.requireInteraction),
-        vibrate: options.vibrate || [200, 100, 200],
-        data: { url: options.url || window.location.href }
-    };
-
-    try {
-        const reg = swRegistration || (await navigator.serviceWorker?.getRegistration());
-        if (reg && reg.showNotification) {
-            await reg.showNotification(title, notifOptions);
-            return;
-        }
-    } catch (e) {}
-
-    try {
-        const notif = new Notification(title, notifOptions);
-        notif.onclick = () => {
-            window.focus();
-            notif.close();
-        };
     } catch (e) {}
 }
 
@@ -2062,14 +1956,19 @@ async function initiateCall(callType) {
         // Kirim notifikasi ke penerima
         await set(ref(rtdb, `incomingCalls/${activeChatUserId}`), callPayload);
 
-        // Kirim Push Notifikasi via Cloudflare Worker agar HP penerima berbunyi walau browser ditutup
         const callTitle = callType === 'audio' ? 'Panggilan Suara Masuk' : 'Panggilan Video Masuk';
-        sendPushToRecipient(
-            `${callTitle} • ${myUserName}`,
-            'Ketuk untuk menjawab panggilan sekarang.',
-            `call-${callId}`,
-            `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(currentUid)}`
-        );
+        const pushRes = await sendPushNotification({
+            db,
+            recipientUid: activeChatUserId,
+            cachedToken: otherUserFcmToken,
+            title: `${callTitle} • ${myUserName}`,
+            body: 'Ketuk untuk menjawab panggilan sekarang.',
+            tag: `call-${callId}`,
+            url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(currentUid)}`,
+            icon: getAvatarUrl(currentUid),
+            workerUrl: PUSH_WORKER_URL
+        });
+        if (pushRes?.token) otherUserFcmToken = pushRes.token;
 
         // Timeout 60 detik hanya jika panggilan belum dijawab
         clearCallTimeout();
@@ -2448,13 +2347,12 @@ function listenIncomingCalls() {
         ) {
             showIncomingCallPopup(data);
 
-            // Kirim Push Notifikasi sistem HP saat ada panggilan masuk
             if (lastNotifiedCallRoomId !== data.roomId) {
                 lastNotifiedCallRoomId = data.roomId;
                 const callLabel = data.callType === 'audio'
                     ? 'Panggilan Suara Masuk'
                     : 'Panggilan Video Masuk';
-                triggerMobileSystemNotification(
+                triggerLocalSystemNotification(
                     `${callLabel} • ${data.callerName || 'Mitra Sitenexs'}`,
                     'Ketuk untuk membuka ruang chat dan menjawab panggilan.',
                     {
@@ -2481,8 +2379,13 @@ async function initChat(user) {
 
     updateNotificationUIState();
     await registerPushServiceWorker();
+    listenForegroundMessages(app, ({ title, body, tag, icon, url }) => {
+        if (document.visibilityState === 'hidden') {
+            triggerLocalSystemNotification(title, body, { tag, icon, url });
+        }
+    });
     if ('Notification' in window && Notification.permission === 'granted') {
-        syncFcmTokenToFirestore();
+        refreshFcmToken();
     }
 
     const participants = [currentUid, activeChatUserId].sort();
@@ -2596,7 +2499,7 @@ async function initChat(user) {
                                 ? 'Mengirim lamaran kerja baru'
                                 : String(msgData.text || 'Pesan baru');
 
-                            triggerMobileSystemNotification(
+                            triggerLocalSystemNotification(
                                 otherUserName,
                                 previewText,
                                 {
@@ -2667,13 +2570,18 @@ window.handleChatFormSubmit = async function (event) {
             isEdited: false
         });
 
-        // Kirim Push Notifikasi via Cloudflare Worker agar HP penerima mendapat notif walau browser ditutup
-        sendPushToRecipient(
-            myUserName,
-            text,
-            `chat-${activeChatId}`,
-            `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(currentUid)}`
-        );
+        const pushRes = await sendPushNotification({
+            db,
+            recipientUid: activeChatUserId,
+            cachedToken: otherUserFcmToken,
+            title: myUserName,
+            body: text,
+            tag: `chat-${activeChatId}`,
+            url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(currentUid)}`,
+            icon: getAvatarUrl(currentUid),
+            workerUrl: PUSH_WORKER_URL
+        });
+        if (pushRes?.token) otherUserFcmToken = pushRes.token;
 
     } catch (error) {
         console.error('Send message error:', error);
