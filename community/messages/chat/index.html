@@ -360,688 +360,1106 @@
     </main>
 
     <!-- FIREBASE (FIRESTORE + REALTIME DB) & WEBRTC SCRIPT -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
-        import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
-        import { getDatabase, ref, set, update, push, onValue, onChildAdded, remove, off } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
+ <script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
+import {
+    getAuth,
+    onAuthStateChanged,
+    setPersistence,
+    browserLocalPersistence
+} from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
 
-        const firebaseConfig = {
-            apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
-            authDomain: 'sitenexs-62919.firebaseapp.com',
-            databaseURL: 'https://sitenexs-62919-default-rtdb.firebaseio.com',
-            projectId: 'sitenexs-62919',
-            storageBucket: 'sitenexs-62919.firebasestorage.app',
-            messagingSenderId: '1060348110644',
-            appId: '1:1060348110644:web:e45af14d5f26a9cf8e6761'
-        };
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc,
+    collection,
+    addDoc,
+    query,
+    orderBy,
+    onSnapshot,
+    serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
-        const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
-        const avatarBucket = 'profile-photos';
+import {
+    getDatabase,
+    ref,
+    set,
+    update,
+    push,
+    onValue,
+    onChildAdded,
+    remove
+} from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const rtdb = getDatabase(app);
-        const auth = getAuth(app);
-        
-        setPersistence(auth, browserLocalPersistence).catch(err => {});
+/* =====================================================
+   FIREBASE
+===================================================== */
 
-        let currentUid = null;
-        let myUserName = "Mitra Sitenexs";
-        let activeChatUserId = null;
-        let activeChatId = null;
-        let otherUserName = "Mitra Sitenexs";
-        let unsubscribeMessages = null;
+const firebaseConfig = {
+    apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E_E',
+    authDomain: 'sitenexs-62919.firebaseapp.com',
+    databaseURL: 'https://sitenexs-62919-default-rtdb.firebaseio.com',
+    projectId: 'sitenexs-62919',
+    storageBucket: 'sitenexs-62919.firebasestorage.app',
+    messagingSenderId: '1060348110644',
+    appId: '1:1060348110644:web:e45af14d5f26a9cf8e6761'
+};
 
-        // --- VARIABEL WEBRTC & POPUP DERING ---
-        let peerConnection = null;
-        let localStream = null;
-        let remoteStream = null;
-        let isMicMuted = false;
-        let isCamOff = false;
-        let currentSessionId = null;
-        let incomingOfferData = null;
-        let incomingCallRoomId = null;
-        let iceCandidateQueue = [];
-        let isInCall = false;
-        let isStartingCall = false;
-        let ringtoneInterval = null;
+const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
+const avatarBucket = 'profile-photos';
 
-        const rtcConfig = {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' },
-                {
-                    urls: 'turn:openrelay.metered.ca:80',
-                    username: 'openrelayproject',
-                    credential: 'openrelayproject'
-                },
-                {
-                    urls: 'turn:openrelay.metered.ca:443',
-                    username: 'openrelayproject',
-                    credential: 'openrelayproject'
-                }
-            ],
-            iceCandidatePoolSize: 10
-        };
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const rtdb = getDatabase(app);
+const auth = getAuth(app);
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const targetUserId = urlParams.get('to');
+setPersistence(auth, browserLocalPersistence).catch(console.error);
 
-        if (!targetUserId) {
-            window.location.replace('https://sitenexs.com/community/messages/');
+/* =====================================================
+   VARIABEL GLOBAL
+===================================================== */
+
+let currentUid = null;
+let myUserName = 'Mitra Sitenexs';
+
+let activeChatUserId = null;
+let activeChatId = null;
+let otherUserName = 'Mitra Sitenexs';
+
+let unsubscribeMessages = null;
+
+let peerConnection = null;
+let localStream = null;
+let remoteStream = null;
+
+let currentCallId = null;
+let currentSessionId = null;
+
+let incomingCallData = null;
+
+let isMicMuted = false;
+let isCamOff = false;
+let isInCall = false;
+let isStartingCall = false;
+
+let ringtoneInterval = null;
+let callTimeout = null;
+
+let remoteCandidateQueue = [];
+
+let unsubscribeCallRoom = null;
+let unsubscribeRemoteCandidates = null;
+let unsubscribeIncomingCalls = null;
+
+let callDirection = null; // caller / callee
+
+/* =====================================================
+   WEBRTC CONFIGURATION
+===================================================== */
+
+const rtcConfig = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+
+        {
+            urls: 'turn:openrelay.metered.ca:80',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+        },
+        {
+            urls: 'turn:openrelay.metered.ca:443',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+        }
+    ],
+    iceCandidatePoolSize: 10
+};
+
+/* =====================================================
+   TARGET USER
+===================================================== */
+
+const urlParams = new URLSearchParams(window.location.search);
+const targetUserId = urlParams.get('to');
+
+if (!targetUserId) {
+    window.location.replace('https://sitenexs.com/community/messages/');
+} else {
+    activeChatUserId = targetUserId;
+}
+
+/* =====================================================
+   TOAST
+===================================================== */
+
+window.showToast = function (msg) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-info-circle';
+    icon.style.color = 'var(--accent)';
+
+    const text = document.createElement('span');
+    text.textContent = msg;
+
+    toast.append(icon, text);
+    container.appendChild(toast);
+
+    setTimeout(() => toast.remove(), 3500);
+};
+
+/* =====================================================
+   HELPER
+===================================================== */
+
+function escapeHtml(text) {
+    return String(text ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    }[char]));
+}
+
+function safeUrl(url) {
+    try {
+        const parsed = new URL(String(url));
+        if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+            return parsed.href;
+        }
+    } catch (e) {}
+
+    return '';
+}
+
+function getAvatarUrl(uid) {
+    return `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo`;
+}
+
+function formatMessageTime(timestamp) {
+    if (!timestamp?.toDate) return 'Baru saja';
+
+    return timestamp.toDate().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+/* =====================================================
+   RENDER MESSAGE
+===================================================== */
+
+function renderMessageBody(text) {
+    if (!text) return '';
+
+    if (text.includes('📋 *LAMARAN KERJA BARU*')) {
+        const getMatch = regex => text.match(regex)?.[1]?.trim() || '-';
+
+        const position = getMatch(/🔹 \*Posisi:\* (.*)/);
+        const name = getMatch(/👤 \*Nama:\* (.*)/);
+        const phone = getMatch(/📞 \*WhatsApp:\* (.*)/);
+        const email = getMatch(/📧 \*Email:\* (.*)/);
+        const city = getMatch(/🏠 \*Domisili:\* (.*)/);
+
+        const photo = getMatch(/🖼️ \*Link Pasfoto \(Bg Merah\):\* (.*)/);
+        const cv = getMatch(/📄 \*Link CV:\* (.*)/);
+        const diploma = getMatch(/🎓 \*Link Ijazah:\* (.*)/);
+
+        let motivation = '-';
+        const motivationMatch = text.match(/💬 \*Motivasi:\*\s*([\s\S]*?)(?:\n|$)/);
+
+        if (motivationMatch) {
+            motivation = motivationMatch[1].trim().replace(/^"|"$/g, '');
         } else {
-            activeChatUserId = targetUserId;
+            const parts = text.split('💬 *Motivasi:*');
+            if (parts.length > 1) {
+                motivation = parts[1].trim().replace(/^"|"$/g, '');
+            }
         }
 
-        window.showToast = function(msg) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerHTML = `<i class="fas fa-info-circle" style="color: var(--accent); font-size: 1rem;"></i> <span>${msg}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3500);
-        }
+        const photoUrl = safeUrl(photo);
+        const cvUrl = safeUrl(cv);
+        const diplomaUrl = safeUrl(diploma);
 
-        function escapeHtml(text) {
-            if (!text) return '';
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        }
+        return `
+            <div style="background:rgba(0,0,0,.03);border:1px solid var(--border-subtle);border-radius:10px;padding:12px;font-size:.82rem;text-align:left;">
+                <div style="font-weight:800;font-size:.95rem;margin-bottom:8px;color:var(--primary);">
+                    <i class="fas fa-briefcase"></i> Lamaran Kerja: ${escapeHtml(position)}
+                </div>
 
-        function renderMessageBody(text) {
-            if (text && text.includes('📋 *LAMARAN KERJA BARU*')) {
-                const posMatch = text.match(/🔹 \*Posisi:\* (.*)/);
-                const nameMatch = text.match(/👤 \*Nama:\* (.*)/);
-                const phoneMatch = text.match(/📞 \*WhatsApp:\* (.*)/);
-                const emailMatch = text.match(/📧 \*Email:\* (.*)/);
-                const cityMatch = text.match(/🏠 \*Domisili:\* (.*)/);
-                const fotoMatch = text.match(/🖼️ \*Link Pasfoto \(Bg Merah\):\* (.*)/);
-                const cvMatch = text.match(/📄 \*Link CV:\* (.*)/);
-                const ijazahMatch = text.match(/🎓 \*Link Ijazah:\* (.*)/);
-                const motivasiMatch = text.match(/💬 \*Motivasi:\*\s*"?([\s\S]*?)"?(?:\n|$)/);
-
-                const position = posMatch ? posMatch[1].trim() : 'Pekerjaan';
-                const name = nameMatch ? nameMatch[1].trim() : '-';
-                const phone = phoneMatch ? phoneMatch[1].trim() : '-';
-                const email = emailMatch ? emailMatch[1].trim() : '-';
-                const city = cityMatch ? cityMatch[1].trim() : '-';
-                const pasfotoUrl = fotoMatch ? fotoMatch[1].trim() : '';
-                const cvUrl = cvMatch ? cvMatch[1].trim() : '-';
-                const ijazahUrl = ijazahMatch ? ijazahMatch[1].trim() : '#';
-                
-                let motivasi = motivasiMatch ? motivasiMatch[1].trim() : '-';
-                if (!motivasi || motivasi === '') {
-                    const parts = text.split('💬 *Motivasi:*');
-                    if (parts.length > 1) {
-                        motivasi = parts[1].trim().replace(/^"/, '').replace(/"$/, '');
-                    }
-                }
-
-                return `
-                    <div style="background: rgba(0,0,0,0.03); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px; font-size: 0.82rem; text-align: left;">
-                        <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 6px;">
-                            <i class="fas fa-briefcase"></i> Lamaran Kerja: ${position}
-                        </div>
-                        ${pasfotoUrl ? `
-                            <div style="margin-bottom: 10px;">
-                                <div style="font-size: 0.72rem; font-weight: 700; margin-bottom: 3px; color: var(--text-muted);">Pasfoto Formal (Bg Merah):</div>
-                                <div class="chat-image-preview"><a href="${pasfotoUrl}" target="_blank"><img src="${pasfotoUrl}" alt="Pasfoto"></a></div>
-                            </div>
-                        ` : ''}
-                        <div style="display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px;">
-                            <div><b>Nama:</b> ${name}</div>
-                            <div><b>WhatsApp:</b> ${phone}</div>
-                            <div><b>Email:</b> ${email}</div>
-                            <div><b>Domisili:</b> ${city}</div>
-                        </div>
-                        ${motivasi && motivasi !== '-' ? `
-                            <div style="background: #fff; border-left: 3px solid var(--primary); padding: 8px; border-radius: 4px; margin-bottom: 10px; font-size: 0.78rem;">
-                                <div style="font-weight: 700; margin-bottom: 2px; color: var(--primary);">Ringkasan & Motivasi:</div>
-                                <div style="font-style: italic; opacity: 0.9; white-space: pre-wrap;">${escapeHtml(motivasi)}</div>
-                            </div>
-                        ` : ''}
-                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                            ${cvUrl !== '-' ? `<a href="${cvUrl}" target="_blank" class="btn" style="padding: 4px 10px; font-size: 0.75rem; background: var(--primary); color: #fff;"><i class="fas fa-file-pdf"></i> CV</a>` : ''}
-                            ${ijazahUrl !== '#' ? `<a href="${ijazahUrl}" target="_blank" class="btn" style="padding: 4px 10px; font-size: 0.75rem; background: var(--accent); color: #fff;"><i class="fas fa-certificate"></i> Ijazah</a>` : ''}
+                ${photoUrl ? `
+                    <div style="margin-bottom:10px;">
+                        <div style="font-size:.72rem;font-weight:700;margin-bottom:3px;color:var(--text-muted);">Pasfoto Formal:</div>
+                        <div class="chat-image-preview">
+                            <a href="${photoUrl}" target="_blank" rel="noopener noreferrer">
+                                <img src="${photoUrl}" alt="Pasfoto">
+                            </a>
                         </div>
                     </div>
-                `;
-            }
-            return escapeHtml(text).replace(/\n/g, '<br>');
+                ` : ''}
+
+                <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:8px;">
+                    <div><b>Nama:</b> ${escapeHtml(name)}</div>
+                    <div><b>WhatsApp:</b> ${escapeHtml(phone)}</div>
+                    <div><b>Email:</b> ${escapeHtml(email)}</div>
+                    <div><b>Domisili:</b> ${escapeHtml(city)}</div>
+                </div>
+
+                ${motivation !== '-' ? `
+                    <div style="background:#fff;border-left:3px solid var(--primary);padding:8px;border-radius:4px;margin-bottom:10px;">
+                        <div style="font-weight:700;margin-bottom:2px;color:var(--primary);">Motivasi:</div>
+                        <div style="font-style:italic;white-space:pre-wrap;">${escapeHtml(motivation)}</div>
+                    </div>
+                ` : ''}
+
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    ${cvUrl ? `<a href="${cvUrl}" target="_blank" rel="noopener noreferrer" class="btn" style="padding:4px 10px;font-size:.75rem;background:var(--primary);color:#fff;"><i class="fas fa-file-pdf"></i> CV</a>` : ''}
+                    ${diplomaUrl ? `<a href="${diplomaUrl}" target="_blank" rel="noopener noreferrer" class="btn" style="padding:4px 10px;font-size:.75rem;background:var(--accent);color:#fff;"><i class="fas fa-certificate"></i> Ijazah</a>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    return escapeHtml(text).replace(/\n/g, '<br>');
+}
+
+/* =====================================================
+   RINGTONE
+===================================================== */
+
+function playRingtoneOnce() {
+    try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+
+        const ctx = new AudioContextClass();
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(523.25, ctx.currentTime);
+        oscillator.frequency.setValueAtTime(659.25, ctx.currentTime + 0.15);
+
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+
+        oscillator.connect(gain);
+        gain.connect(ctx.destination);
+
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.45);
+
+        oscillator.onended = () => ctx.close().catch(() => {});
+    } catch (e) {}
+}
+
+function showIncomingCallPopup(data) {
+    if (!data || isInCall) return;
+
+    incomingCallData = data;
+
+    document.getElementById('callerAvatarDisplay').src =
+        getAvatarUrl(data.callerUid);
+
+    document.getElementById('callerNameDisplay').textContent =
+        data.callerName || 'Mitra Sitenexs';
+
+    document.getElementById('incomingCallBackdrop').classList.add('active');
+
+    if (navigator.vibrate) {
+        navigator.vibrate([300, 200, 300]);
+    }
+
+    playRingtoneOnce();
+
+    if (ringtoneInterval) clearInterval(ringtoneInterval);
+
+    ringtoneInterval = setInterval(() => {
+        if (navigator.vibrate) navigator.vibrate([300, 200, 300]);
+        playRingtoneOnce();
+    }, 2200);
+}
+
+function hideIncomingCallPopup() {
+    document.getElementById('incomingCallBackdrop').classList.remove('active');
+
+    if (ringtoneInterval) {
+        clearInterval(ringtoneInterval);
+        ringtoneInterval = null;
+    }
+
+    if (navigator.vibrate) navigator.vibrate(0);
+}
+
+/* =====================================================
+   LOCAL MEDIA
+===================================================== */
+
+async function setupLocalMedia() {
+    try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+            showToast('Browser tidak mendukung kamera atau mikrofon.');
+            return false;
         }
 
-        // ==========================================
-        // EFEK NADA DERING & POPUP PANGGILAN MASUK
-        // ==========================================
-        function playRingtoneOnce() {
-            try {
-                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (!AudioCtx) return;
-                const ctx = new AudioCtx();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-                osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.15);
-                gain.gain.setValueAtTime(0.15, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.45);
-            } catch (e) {}
-        }
-
-        function showIncomingCallPopup(callerUid, callerName, sessionId, offer, roomId) {
-            currentSessionId = sessionId;
-            incomingOfferData = offer;
-            incomingCallRoomId = roomId;
-
-            const avatarUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(callerUid)}/profile-photo`;
-            document.getElementById('callerAvatarDisplay').src = avatarUrl;
-            document.getElementById('callerNameDisplay').innerText = callerName || otherUserName;
-            document.getElementById('incomingCallBackdrop').classList.add('active');
-
-            if (navigator.vibrate) {
-                navigator.vibrate([300, 200, 300]);
-            }
-            playRingtoneOnce();
-            if (ringtoneInterval) clearInterval(ringtoneInterval);
-            ringtoneInterval = setInterval(() => {
-                if (navigator.vibrate) navigator.vibrate([300, 200, 300]);
-                playRingtoneOnce();
-            }, 2200);
-        }
-
-        function hideIncomingCallPopup() {
-            document.getElementById('incomingCallBackdrop').classList.remove('active');
-            if (ringtoneInterval) {
-                clearInterval(ringtoneInterval);
-                ringtoneInterval = null;
-            }
-        }
-
-        // ==========================================
-        // LOGIKA VIDEO CALL (WEBRTC + REALTIME DB)
-        // ==========================================
-        async function setupLocalMedia() {
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user' },
-                    audio: true
-                });
-                const localVideoEl = document.getElementById('localVideo');
-                localVideoEl.srcObject = localStream;
-                localVideoEl.play().catch(() => {});
-                return true;
-            } catch (err) {
-                showToast("Izin kamera atau mikrofon ditolak: " + err.message);
-                return false;
-            }
-        }
-
-        async function flushIceCandidateQueue() {
-            while (iceCandidateQueue.length > 0 && peerConnection && peerConnection.remoteDescription) {
-                const candidate = iceCandidateQueue.shift();
-                try {
-                    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-                } catch (e) {}
-            }
-        }
-
-        function createPeerConnection(roomId, sessionId, isCaller) {
-            iceCandidateQueue = [];
-            peerConnection = new RTCPeerConnection(rtcConfig);
-            remoteStream = new MediaStream();
-            
-            const remoteVideoEl = document.getElementById('remoteVideo');
-            remoteVideoEl.srcObject = remoteStream;
-
-            localStream.getTracks().forEach(track => {
-                peerConnection.addTrack(track, localStream);
-            });
-
-            peerConnection.ontrack = (event) => {
-                if (event.streams && event.streams[0]) {
-                    event.streams[0].getTracks().forEach(track => {
-                        remoteStream.addTrack(track);
-                    });
-                } else {
-                    remoteStream.addTrack(event.track);
-                }
-                remoteVideoEl.play().catch(() => {});
-                document.getElementById('vcStatusText').innerText = otherUserName;
-            };
-
-            const localCandidatesPath = isCaller ? 'callerCandidates' : 'calleeCandidates';
-            const remoteCandidatesPath = isCaller ? 'calleeCandidates' : 'callerCandidates';
-
-            const localCandidatesRef = ref(rtdb, `calls/${roomId}/${localCandidatesPath}`);
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    push(localCandidatesRef, {
-                        sessionId: sessionId,
-                        candidate: event.candidate.toJSON()
-                    }).catch(() => {});
-                }
-            };
-
-            const remoteCandidatesRef = ref(rtdb, `calls/${roomId}/${remoteCandidatesPath}`);
-            onChildAdded(remoteCandidatesRef, async (snapshot) => {
-                const val = snapshot.val();
-                if (!val || !val.candidate || val.sessionId !== sessionId || !peerConnection) return;
-
-                if (peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
-                    try {
-                        await peerConnection.addIceCandidate(new RTCIceCandidate(val.candidate));
-                    } catch (e) {}
-                } else {
-                    iceCandidateQueue.push(val.candidate);
-                }
-            });
-
-            peerConnection.oniceconnectionstatechange = () => {
-                if (!peerConnection) return;
-                const state = peerConnection.iceConnectionState;
-                if (state === 'connected' || state === 'completed') {
-                    document.getElementById('vcStatusText').innerText = otherUserName;
-                    remoteVideoEl.play().catch(() => {});
-                } else if (state === 'checking') {
-                    document.getElementById('vcStatusText').innerText = "Menyambungkan jaringan...";
-                } else if (state === 'failed') {
-                    showToast("Koneksi jaringan gagal (NAT/Firewall).");
-                    endVideoCall();
-                }
-            };
-        }
-
-        // 1. MEMULAI PANGGILAN (CALLER)
-        window.startVideoCall = async function() {
-            if (!activeChatId || !currentUid) {
-                showToast("Sesi akun belum siap.");
-                return;
-            }
-            if (isStartingCall || isInCall) return;
-
-            isStartingCall = true;
-            const mediaReady = await setupLocalMedia();
-            if (!mediaReady) {
-                isStartingCall = false;
-                return;
-            }
-
-            const newSessionId = `${currentUid}_${Date.now()}`;
-            currentSessionId = newSessionId;
-            incomingCallRoomId = activeChatId;
-            document.getElementById('vcOverlay').classList.add('active');
-            document.getElementById('vcStatusText').innerText = `Memanggil ${otherUserName}...`;
-
-            const roomRef = ref(rtdb, `calls/${activeChatId}`);
-
-            try {
-                createPeerConnection(activeChatId, newSessionId, true);
-
-                const offerDescription = await peerConnection.createOffer({
-                    offerToReceiveAudio: true,
-                    offerToReceiveVideo: true
-                });
-                await peerConnection.setLocalDescription(offerDescription);
-
-                const callPayload = {
-                    roomId: activeChatId,
-                    sessionId: newSessionId,
-                    callerUid: currentUid,
-                    callerName: myUserName,
-                    calleeUid: activeChatUserId,
-                    status: 'ringing',
-                    offer: {
-                        type: offerDescription.type,
-                        sdp: offerDescription.sdp
-                    },
-                    timestamp: Date.now()
-                };
-
-                // Simpan di calls/{activeChatId} & kirim notifikasi popup ke incomingCalls/{calleeUid}
-                await set(roomRef, callPayload);
-                await set(ref(rtdb, `incomingCalls/${activeChatUserId}`), callPayload);
-
-                isInCall = true;
-                isStartingCall = false;
-
-            } catch (err) {
-                isStartingCall = false;
-                showToast("Gagal menelepon (Cek RTDB): " + err.message);
-                cleanupCallUI();
-            }
-        };
-
-        // 2. MENERIMA PANGGILAN (CALLEE)
-        window.acceptVideoCall = async function() {
-            hideIncomingCallPopup();
-            if (!incomingOfferData || !currentSessionId) return;
-
-            const targetRoomId = incomingCallRoomId || activeChatId;
-            const mediaReady = await setupLocalMedia();
-            if (!mediaReady) {
-                rejectVideoCall();
-                return;
-            }
-
-            isInCall = true;
-            document.getElementById('vcOverlay').classList.add('active');
-            document.getElementById('vcStatusText').innerText = "Menghubungkan...";
-
-            // Bersihkan antrean popup dering di incomingCalls/{currentUid}
-            if (currentUid) {
-                remove(ref(rtdb, `incomingCalls/${currentUid}`)).catch(() => {});
-            }
-
-            createPeerConnection(targetRoomId, currentSessionId, false);
-
-            try {
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(incomingOfferData));
-                await flushIceCandidateQueue();
-
-                const answerDescription = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answerDescription);
-
-                await update(ref(rtdb, `calls/${targetRoomId}`), {
-                    status: 'connected',
-                    answer: {
-                        type: answerDescription.type,
-                        sdp: answerDescription.sdp
-                    }
-                });
-
-                // Pantau jika penelepon memutus panggilan saat terhubung di room berbeda
-                if (targetRoomId !== activeChatId) {
-                    onValue(ref(rtdb, `calls/${targetRoomId}`), (snap) => {
-                        if (!snap.exists() && isInCall) {
-                            showToast("Panggilan berakhir.");
-                            cleanupCallUI();
-                        }
-                    });
-                }
-
-            } catch (err) {
-                showToast("Gagal menerima panggilan: " + err.message);
-                cleanupCallUI();
-            }
-        };
-
-        // 3. MENOLAK PANGGILAN
-        window.rejectVideoCall = function() {
-            const targetRoomId = incomingCallRoomId || activeChatId;
-            hideIncomingCallPopup();
-            if (currentUid) {
-                remove(ref(rtdb, `incomingCalls/${currentUid}`)).catch(() => {});
-            }
-            if (targetRoomId) {
-                update(ref(rtdb, `calls/${targetRoomId}`), {
-                    status: 'rejected'
-                }).catch(() => {});
-            }
-            incomingOfferData = null;
-            currentSessionId = null;
-            incomingCallRoomId = null;
-        };
-
-        // 4. MENGAKHIRI PANGGILAN
-        window.endVideoCall = function() {
-            const roomToRemove = incomingCallRoomId || activeChatId;
-            const calleeToRemove = activeChatUserId;
-            const myUidToRemove = currentUid;
-
-            cleanupCallUI();
-
-            if (roomToRemove) {
-                remove(ref(rtdb, `calls/${roomToRemove}`)).catch(() => {});
-            }
-            if (calleeToRemove) {
-                remove(ref(rtdb, `incomingCalls/${calleeToRemove}`)).catch(() => {});
-            }
-            if (myUidToRemove) {
-                remove(ref(rtdb, `incomingCalls/${myUidToRemove}`)).catch(() => {});
-            }
-        };
-
-        function cleanupCallUI() {
-            isInCall = false;
-            isStartingCall = false;
-            hideIncomingCallPopup();
-            document.getElementById('vcOverlay').classList.remove('active');
-
-            if (localStream) {
-                try { localStream.getTracks().forEach(track => track.stop()); } catch (e) {}
-                localStream = null;
-            }
-            if (peerConnection) {
-                try { peerConnection.close(); } catch (e) {}
-                peerConnection = null;
-            }
-            document.getElementById('localVideo').srcObject = null;
-            document.getElementById('remoteVideo').srcObject = null;
-
-            const roomToClean = incomingCallRoomId || activeChatId;
-            if (roomToClean) {
-                off(ref(rtdb, `calls/${roomToClean}/callerCandidates`));
-                off(ref(rtdb, `calls/${roomToClean}/calleeCandidates`));
-            }
-
-            currentSessionId = null;
-            incomingOfferData = null;
-            incomingCallRoomId = null;
-            iceCandidateQueue = [];
-            isMicMuted = false;
-            isCamOff = false;
-            document.getElementById('toggleMicBtn').classList.remove('muted');
-            document.getElementById('toggleMicBtn').innerHTML = '<i class="fas fa-microphone"></i>';
-            document.getElementById('toggleCamBtn').classList.remove('muted');
-            document.getElementById('toggleCamBtn').innerHTML = '<i class="fas fa-video"></i>';
-        }
-
-        window.toggleMic = function() {
-            if (!localStream) return;
-            isMicMuted = !isMicMuted;
-            localStream.getAudioTracks().forEach(track => track.enabled = !isMicMuted);
-            const btn = document.getElementById('toggleMicBtn');
-            btn.classList.toggle('muted', isMicMuted);
-            btn.innerHTML = isMicMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
-        };
-
-        window.toggleCamera = function() {
-            if (!localStream) return;
-            isCamOff = !isCamOff;
-            localStream.getVideoTracks().forEach(track => track.enabled = !isCamOff);
-            const btn = document.getElementById('toggleCamBtn');
-            btn.classList.toggle('muted', isCamOff);
-            btn.innerHTML = isCamOff ? '<i class="fas fa-video-slash"></i>' : '<i class="fas fa-video"></i>';
-        };
-
-        // LISTENER PANGGILAN (MEMANTAU RUANG CHAT AKTIF + KOTAK MASUK USER)
-        function listenToCallRoom() {
-            // 1. Listener ruang chat aktif (untuk status connected/rejected/ended)
-            const roomRef = ref(rtdb, `calls/${activeChatId}`);
-            onValue(roomRef, async (snapshot) => {
-                const data = snapshot.val();
-
-                if (isStartingCall) return;
-
-                if (!data) {
-                    hideIncomingCallPopup();
-                    if (isInCall) {
-                        showToast("Panggilan berakhir.");
-                        cleanupCallUI();
-                    }
-                    return;
-                }
-
-                if (data.status === 'ringing' && data.timestamp && (Date.now() - data.timestamp > 60000)) {
-                    remove(roomRef).catch(() => {});
-                    return;
-                }
-
-                // Tampilkan popup jika kita penerima
-                if (data.calleeUid === currentUid && data.status === 'ringing' && data.offer && !isInCall) {
-                    showIncomingCallPopup(data.callerUid, data.callerName, data.sessionId, data.offer, activeChatId);
-                }
-
-                // Tangani jawaban jika kita penelepon
-                if (data.callerUid === currentUid && isInCall && data.sessionId === currentSessionId) {
-                    if (data.status === 'rejected') {
-                        showToast("Panggilan ditolak.");
-                        cleanupCallUI();
-                        remove(roomRef).catch(() => {});
-                        return;
-                    }
-                    if (data.answer && peerConnection && !peerConnection.currentRemoteDescription) {
-                        try {
-                            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-                            await flushIceCandidateQueue();
-                            document.getElementById('vcStatusText').innerText = otherUserName;
-                        } catch (e) {}
-                    }
-                }
-            }, (error) => {
-                showToast("Koneksi RTDB ditolak: " + error.message);
-            });
-
-            // 2. Listener kotak masuk panggilan user (agar popup muncul walau sedang buka chat user lain)
-            const myIncomingRef = ref(rtdb, `incomingCalls/${currentUid}`);
-            onValue(myIncomingRef, (snapshot) => {
-                const data = snapshot.val();
-                if (!data) {
-                    if (!isInCall) hideIncomingCallPopup();
-                    return;
-                }
-                if (data.timestamp && (Date.now() - data.timestamp > 60000)) {
-                    remove(myIncomingRef).catch(() => {});
-                    return;
-                }
-                if (data.calleeUid === currentUid && data.status === 'ringing' && data.offer && !isInCall) {
-                    showIncomingCallPopup(data.callerUid, data.callerName, data.sessionId, data.offer, data.roomId || activeChatId);
-                }
-            });
-        }
-
-        // ==========================================
-        // INISIALISASI CHAT
-        // ==========================================
-        async function initChat(user) {
-            currentUid = user.uid;
-            const participants = [currentUid, activeChatUserId].sort();
-            activeChatId = `${participants[0]}_${participants[1]}`;
-
-            // Mulai pantau sinyal Video Call
-            listenToCallRoom();
-
-            try {
-                await updateDoc(doc(db, "chats", activeChatId), { [`unread_${currentUid}`]: false });
-            } catch(e) {}
-
-            // Ambil nama kita sendiri
-            try {
-                const mySnap = await getDoc(doc(db, "users", currentUid));
-                if (mySnap.exists()) {
-                    const md = mySnap.data();
-                    myUserName = md.namaLengkap || (md.namaDepan + (md.namaBelakang ? ' ' + md.namaBelakang : '')) || myUserName;
-                }
-            } catch(e) {}
-
-            // Ambil data lawan bicara
-            try {
-                const userSnap = await getDoc(doc(db, "users", activeChatUserId));
-                if (userSnap.exists()) {
-                    const d = userSnap.data();
-                    otherUserName = d.namaLengkap || (d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '')) || otherUserName;
-                    
-                    let badgesHtml = '';
-                    if (d.isVerified) {
-                        badgesHtml += `<img src="https://sitenexs.com/assets/logo/verified.png" class="chat-header-verif" alt="Verified">`;
-                    }
-                    document.getElementById('activeChatBadges').innerHTML = badgesHtml;
-                }
-            } catch(e) {}
-
-            const avatarUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(activeChatUserId)}/profile-photo`;
-            document.getElementById('activeChatName').innerText = otherUserName;
-            document.getElementById('activeChatAvatar').src = avatarUrl;
-
-            const messagesRef = collection(db, "chats", activeChatId, "messages");
-            const qMsgs = query(messagesRef, orderBy("createdAt", "asc"));
-
-            if (unsubscribeMessages) unsubscribeMessages();
-
-            unsubscribeMessages = onSnapshot(qMsgs, (snapshot) => {
-                const messagesContainer = document.getElementById('chatMessages');
-                const loadingState = document.getElementById('loadingState');
-                if (loadingState) loadingState.remove();
-
-                let html = '';
-                snapshot.forEach(docSnap => {
-                    const m = docSnap.data();
-                    const isOutgoing = m.senderUid === currentUid;
-                    const timeStr = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Baru saja';
-
-                    html += `
-                        <div class="message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}">
-                            <div class="message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}">
-                                ${renderMessageBody(m.text || '')}
-                                <div class="message-time">${timeStr}</div>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                messagesContainer.innerHTML = html;
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            });
-        }
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                initChat(user);
-            } else {
-                const savedUid = localStorage.getItem('sitenexs_uid');
-                if (savedUid) {
-                    initChat({ uid: savedUid });
-                } else {
-                    window.location.replace("https://account.sitenexs.com/sign-in/");
-                }
-            }
+        localStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: 'user'
+            },
+            audio: true
         });
 
-        window.handleChatFormSubmit = async function(event) {
-            event.preventDefault();
-            const inputEl = document.getElementById('messageInput');
-            const text = inputEl.value.trim();
-            if (!text || !activeChatId || !currentUid) return;
+        const localVideo = document.getElementById('localVideo');
+        localVideo.srcObject = localStream;
+        localVideo.muted = true;
 
-            inputEl.value = '';
+        await localVideo.play().catch(() => {});
+        return true;
 
-            try {
-                const recipientUid = activeChatUserId;
-                const chatDocRef = doc(db, "chats", activeChatId);
-                
-                await setDoc(chatDocRef, {
-                    participants: [currentUid, activeChatUserId],
-                    lastMessage: text,
-                    lastTimestamp: serverTimestamp(),
-                    [`unread_${recipientUid}`]: true
-                }, { merge: true });
+    } catch (error) {
+        showToast('Kamera/mikrofon tidak dapat diakses: ' + error.message);
+        return false;
+    }
+}
 
-                await addDoc(collection(db, "chats", activeChatId, "messages"), {
-                    senderUid: currentUid,
-                    text: text,
-                    createdAt: serverTimestamp(),
-                    isEdited: false
-                });
+/* =====================================================
+   ICE CANDIDATE QUEUE
+===================================================== */
 
-            } catch (err) {
-                showToast("Gagal mengirim pesan.");
+async function flushRemoteCandidateQueue() {
+    if (!peerConnection?.remoteDescription) return;
+
+    while (remoteCandidateQueue.length > 0) {
+        const candidate = remoteCandidateQueue.shift();
+
+        try {
+            await peerConnection.addIceCandidate(
+                new RTCIceCandidate(candidate)
+            );
+        } catch (error) {
+            console.warn('ICE Candidate gagal:', error);
+        }
+    }
+}
+
+/* =====================================================
+   PEER CONNECTION
+===================================================== */
+
+function createPeerConnection(callId, sessionId, isCaller) {
+    remoteCandidateQueue = [];
+
+    peerConnection = new RTCPeerConnection(rtcConfig);
+    remoteStream = new MediaStream();
+
+    const remoteVideo = document.getElementById('remoteVideo');
+    remoteVideo.srcObject = remoteStream;
+
+    localStream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, localStream);
+    });
+
+    peerConnection.ontrack = event => {
+        const streams = event.streams;
+
+        if (streams && streams[0]) {
+            streams[0].getTracks().forEach(track => {
+                if (!remoteStream.getTracks().some(t => t.id === track.id)) {
+                    remoteStream.addTrack(track);
+                }
+            });
+        } else if (!remoteStream.getTracks().some(t => t.id === event.track.id)) {
+            remoteStream.addTrack(event.track);
+        }
+
+        remoteVideo.play().catch(() => {});
+        document.getElementById('vcStatusText').textContent = otherUserName;
+    };
+
+    const localCandidatePath = isCaller ? 'callerCandidates' : 'calleeCandidates';
+    const remoteCandidatePath = isCaller ? 'calleeCandidates' : 'callerCandidates';
+
+    const localCandidatesRef = ref(rtdb, `calls/${callId}/${localCandidatePath}`);
+    const remoteCandidatesRef = ref(rtdb, `calls/${callId}/${remoteCandidatePath}`);
+
+    peerConnection.onicecandidate = event => {
+        if (!event.candidate) return;
+
+        push(localCandidatesRef, {
+            sessionId,
+            candidate: event.candidate.toJSON()
+        }).catch(error => {
+            console.error('Gagal mengirim ICE:', error);
+        });
+    };
+
+    // Listener remote candidate
+    unsubscribeRemoteCandidates = onChildAdded(
+        remoteCandidatesRef,
+        async snapshot => {
+            const value = snapshot.val();
+
+            if (!value?.candidate || value.sessionId !== sessionId) return;
+            if (!peerConnection) return;
+
+            if (peerConnection.remoteDescription) {
+                try {
+                    await peerConnection.addIceCandidate(
+                        new RTCIceCandidate(value.candidate)
+                    );
+                } catch (error) {
+                    console.warn('Remote ICE gagal:', error);
+                }
+            } else {
+                remoteCandidateQueue.push(value.candidate);
             }
         }
-    </script>
+    );
+
+    peerConnection.oniceconnectionstatechange = () => {
+        if (!peerConnection) return;
+
+        const state = peerConnection.iceConnectionState;
+
+        if (state === 'connected' || state === 'completed') {
+            document.getElementById('vcStatusText').textContent = otherUserName;
+        } else if (state === 'checking') {
+            document.getElementById('vcStatusText').textContent = 'Menyambungkan jaringan...';
+        } else if (state === 'disconnected') {
+            document.getElementById('vcStatusText').textContent = 'Koneksi terputus sementara...';
+        } else if (state === 'failed') {
+            showToast('Koneksi gagal. Jaringan mungkin membatasi WebRTC.');
+            endVideoCall();
+        }
+    };
+
+    peerConnection.onconnectionstatechange = () => {
+        if (!peerConnection) return;
+
+        const state = peerConnection.connectionState;
+
+        if (state === 'connected') {
+            document.getElementById('vcStatusText').textContent = otherUserName;
+        } else if (state === 'failed') {
+            showToast('Koneksi video gagal.');
+            endVideoCall();
+        }
+    };
+}
+
+/* =====================================================
+   LISTEN CALL ROOM
+===================================================== */
+
+function listenToCallRoom(callId, sessionId, isCaller) {
+    if (unsubscribeCallRoom) {
+        unsubscribeCallRoom();
+        unsubscribeCallRoom = null;
+    }
+
+    const callRef = ref(rtdb, `calls/${callId}`);
+
+    unsubscribeCallRoom = onValue(callRef, async snapshot => {
+        const data = snapshot.val();
+
+        if (!data) {
+            if (isInCall) {
+                showToast('Panggilan berakhir.');
+                cleanupCallUI(false);
+            }
+            return;
+        }
+
+        if (data.sessionId !== sessionId) return;
+
+        if (data.status === 'rejected') {
+            showToast('Panggilan ditolak.');
+            cleanupCallUI(false);
+            remove(callRef).catch(() => {});
+            return;
+        }
+
+        if (data.status === 'ended') {
+            showToast('Panggilan berakhir.');
+            cleanupCallUI(false);
+            return;
+        }
+
+        // Caller menerima answer
+        if (
+            isCaller &&
+            data.answer &&
+            peerConnection &&
+            !peerConnection.currentRemoteDescription
+        ) {
+            try {
+                await peerConnection.setRemoteDescription(
+                    new RTCSessionDescription(data.answer)
+                );
+
+                await flushRemoteCandidateQueue();
+
+                document.getElementById('vcStatusText').textContent =
+                    otherUserName;
+
+            } catch (error) {
+                console.error('Set remote answer gagal:', error);
+            }
+        }
+    });
+}
+
+/* =====================================================
+   START VIDEO CALL - CALLER
+===================================================== */
+
+window.startVideoCall = async function () {
+    if (!currentUid || !activeChatUserId || !activeChatId) {
+        showToast('Sesi akun belum siap.');
+        return;
+    }
+
+    if (isStartingCall || isInCall) return;
+
+    isStartingCall = true;
+    callDirection = 'caller';
+
+    const mediaReady = await setupLocalMedia();
+
+    if (!mediaReady) {
+        isStartingCall = false;
+        callDirection = null;
+        return;
+    }
+
+    // ID room unik untuk setiap panggilan
+    const callId = `call_${currentUid}_${Date.now()}`;
+    const sessionId = `${currentUid}_${Date.now()}`;
+
+    currentCallId = callId;
+    currentSessionId = sessionId;
+
+    isInCall = true;
+
+    document.getElementById('vcOverlay').classList.add('active');
+    document.getElementById('vcStatusText').textContent =
+        `Memanggil ${otherUserName}...`;
+
+    const callRef = ref(rtdb, `calls/${callId}`);
+
+    try {
+        createPeerConnection(callId, sessionId, true);
+
+        // Pantau room panggilan ini, bukan room chat
+        listenToCallRoom(callId, sessionId, true);
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+
+        const callPayload = {
+            roomId: callId,
+            chatId: activeChatId,
+            sessionId,
+            callerUid: currentUid,
+            callerName: myUserName,
+            calleeUid: activeChatUserId,
+            status: 'ringing',
+            offer: {
+                type: offer.type,
+                sdp: offer.sdp
+            },
+            timestamp: Date.now()
+        };
+
+        // update tidak menimpa child candidate
+        await update(callRef, callPayload);
+
+        // Kirim notifikasi ke penerima
+        await set(ref(rtdb, `incomingCalls/${activeChatUserId}`), callPayload);
+
+        // Timeout 60 detik
+        callTimeout = setTimeout(() => {
+            if (isInCall && currentCallId === callId) {
+                showToast('Panggilan tidak dijawab.');
+                endVideoCall();
+            }
+        }, 60000);
+
+        isStartingCall = false;
+
+    } catch (error) {
+        console.error('Start call error:', error);
+
+        showToast('Gagal memulai panggilan: ' + error.message);
+
+        cleanupCallUI(true);
+    }
+};
+
+/* =====================================================
+   ACCEPT CALL - CALLEE
+===================================================== */
+
+window.acceptVideoCall = async function () {
+    const data = incomingCallData;
+
+    hideIncomingCallPopup();
+
+    if (!data?.offer || !data?.roomId || !data?.sessionId) {
+        showToast('Data panggilan tidak valid.');
+        return;
+    }
+
+    if (isInCall) return;
+
+    currentCallId = data.roomId;
+    currentSessionId = data.sessionId;
+    callDirection = 'callee';
+
+    otherUserName = data.callerName || otherUserName;
+
+    isStartingCall = true;
+
+    const mediaReady = await setupLocalMedia();
+
+    if (!mediaReady) {
+        isStartingCall = false;
+        rejectVideoCall(data);
+        return;
+    }
+
+    isInCall = true;
+
+    document.getElementById('vcOverlay').classList.add('active');
+    document.getElementById('vcStatusText').textContent = 'Menghubungkan...';
+
+    try {
+        createPeerConnection(data.roomId, data.sessionId, false);
+
+        listenToCallRoom(data.roomId, data.sessionId, false);
+
+        const callRef = ref(rtdb, `calls/${data.roomId}`);
+
+        await peerConnection.setRemoteDescription(
+            new RTCSessionDescription(data.offer)
+        );
+
+        await flushRemoteCandidateQueue();
+
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+
+        await update(callRef, {
+            status: 'connected',
+            answer: {
+                type: answer.type,
+                sdp: answer.sdp
+            },
+            answeredAt: Date.now()
+        });
+
+        // Hapus notifikasi panggilan masuk
+        if (currentUid) {
+            remove(ref(rtdb, `incomingCalls/${currentUid}`)).catch(() => {});
+        }
+
+        isStartingCall = false;
+        incomingCallData = null;
+
+    } catch (error) {
+        console.error('Accept call error:', error);
+
+        showToast('Gagal menerima panggilan: ' + error.message);
+
+        cleanupCallUI(true);
+    }
+};
+
+/* =====================================================
+   REJECT CALL
+===================================================== */
+
+window.rejectVideoCall = function (callData = incomingCallData) {
+    hideIncomingCallPopup();
+
+    if (!callData) {
+        incomingCallData = null;
+        return;
+    }
+
+    const callRef = ref(rtdb, `calls/${callData.roomId}`);
+
+    update(callRef, {
+        status: 'rejected',
+        rejectedAt: Date.now()
+    }).catch(() => {});
+
+    if (currentUid) {
+        remove(ref(rtdb, `incomingCalls/${currentUid}`)).catch(() => {});
+    }
+
+    incomingCallData = null;
+};
+
+/* =====================================================
+   END CALL
+===================================================== */
+
+window.endVideoCall = function () {
+    const callId = currentCallId;
+    const direction = callDirection;
+
+    cleanupCallUI(false);
+
+    if (callId) {
+        const callRef = ref(rtdb, `calls/${callId}`);
+
+        // Caller mengakhiri panggilan, room dihapus.
+        // Callee juga menghapus room agar kedua sisi terdeteksi.
+        remove(callRef).catch(() => {});
+    }
+
+    if (direction === 'caller' && activeChatUserId) {
+        remove(ref(rtdb, `incomingCalls/${activeChatUserId}`)).catch(() => {});
+    }
+
+    if (currentUid) {
+        remove(ref(rtdb, `incomingCalls/${currentUid}`)).catch(() => {});
+    }
+};
+
+/* =====================================================
+   CLEANUP CALL
+===================================================== */
+
+function cleanupCallUI(removeIncoming = true) {
+    isInCall = false;
+    isStartingCall = false;
+
+    hideIncomingCallPopup();
+
+    document.getElementById('vcOverlay').classList.remove('active');
+
+    if (callTimeout) {
+        clearTimeout(callTimeout);
+        callTimeout = null;
+    }
+
+    if (unsubscribeCallRoom) {
+        unsubscribeCallRoom();
+        unsubscribeCallRoom = null;
+    }
+
+    if (unsubscribeRemoteCandidates) {
+        unsubscribeRemoteCandidates();
+        unsubscribeRemoteCandidates = null;
+    }
+
+    if (localStream) {
+        localStream.getTracks().forEach(track => {
+            try {
+                track.stop();
+            } catch (e) {}
+        });
+
+        localStream = null;
+    }
+
+    if (peerConnection) {
+        peerConnection.ontrack = null;
+        peerConnection.onicecandidate = null;
+        peerConnection.oniceconnectionstatechange = null;
+        peerConnection.onconnectionstatechange = null;
+
+        try {
+            peerConnection.close();
+        } catch (e) {}
+
+        peerConnection = null;
+    }
+
+    document.getElementById('localVideo').srcObject = null;
+    document.getElementById('remoteVideo').srcObject = null;
+
+    remoteStream = null;
+    remoteCandidateQueue = [];
+
+    isMicMuted = false;
+    isCamOff = false;
+
+    document.getElementById('toggleMicBtn').classList.remove('muted');
+    document.getElementById('toggleMicBtn').innerHTML =
+        '<i class="fas fa-microphone"></i>';
+
+    document.getElementById('toggleCamBtn').classList.remove('muted');
+    document.getElementById('toggleCamBtn').innerHTML =
+        '<i class="fas fa-video"></i>';
+
+    currentCallId = null;
+    currentSessionId = null;
+    incomingCallData = null;
+    callDirection = null;
+}
+
+/* =====================================================
+   MIC
+===================================================== */
+
+window.toggleMic = function () {
+    if (!localStream) return;
+
+    isMicMuted = !isMicMuted;
+
+    localStream.getAudioTracks().forEach(track => {
+        track.enabled = !isMicMuted;
+    });
+
+    const btn = document.getElementById('toggleMicBtn');
+
+    btn.classList.toggle('muted', isMicMuted);
+
+    btn.innerHTML = isMicMuted
+        ? '<i class="fas fa-microphone-slash"></i>'
+        : '<i class="fas fa-microphone"></i>';
+};
+
+/* =====================================================
+   CAMERA
+===================================================== */
+
+window.toggleCamera = function () {
+    if (!localStream) return;
+
+    isCamOff = !isCamOff;
+
+    localStream.getVideoTracks().forEach(track => {
+        track.enabled = !isCamOff;
+    });
+
+    const btn = document.getElementById('toggleCamBtn');
+
+    btn.classList.toggle('muted', isCamOff);
+
+    btn.innerHTML = isCamOff
+        ? '<i class="fas fa-video-slash"></i>'
+        : '<i class="fas fa-video"></i>';
+};
+
+/* =====================================================
+   LISTEN INCOMING CALLS
+===================================================== */
+
+function listenIncomingCalls() {
+    if (!currentUid) return;
+
+    const incomingRef = ref(rtdb, `incomingCalls/${currentUid}`);
+
+    if (unsubscribeIncomingCalls) {
+        unsubscribeIncomingCalls();
+    }
+
+    unsubscribeIncomingCalls = onValue(incomingRef, snapshot => {
+        const data = snapshot.val();
+
+        if (!data) {
+            if (!isInCall) {
+                hideIncomingCallPopup();
+                incomingCallData = null;
+            }
+            return;
+        }
+
+        // Abaikan panggilan kedaluwarsa
+        if (data.timestamp && Date.now() - data.timestamp > 60000) {
+            remove(incomingRef).catch(() => {});
+            return;
+        }
+
+        // Jangan tampilkan panggilan sendiri
+        if (data.callerUid === currentUid) return;
+
+        if (
+            data.calleeUid === currentUid &&
+            data.status === 'ringing' &&
+            data.offer &&
+            !isInCall
+        ) {
+            showIncomingCallPopup(data);
+        }
+    }, error => {
+        console.error('Incoming call listener error:', error);
+    });
+}
+
+/* =====================================================
+   INITIALIZE CHAT
+===================================================== */
+
+async function initChat(user) {
+    currentUid = user.uid;
+
+    const participants = [currentUid, activeChatUserId].sort();
+    activeChatId = `${participants[0]}_${participants[1]}`;
+
+    // Mulai listener panggilan user
+    listenIncomingCalls();
+
+    // Mark chat read
+    try {
+        await updateDoc(doc(db, 'chats', activeChatId), {
+            [`unread_${currentUid}`]: false
+        });
+    } catch (error) {}
+
+    // Load current user
+    try {
+        const mySnap = await getDoc(doc(db, 'users', currentUid));
+
+        if (mySnap.exists()) {
+            const md = mySnap.data();
+
+            myUserName =
+                md.namaLengkap ||
+                [md.namaDepan, md.namaBelakang].filter(Boolean).join(' ') ||
+                myUserName;
+        }
+    } catch (error) {
+        console.error('Load current user error:', error);
+    }
+
+    // Load recipient
+    try {
+        const userSnap = await getDoc(doc(db, 'users', activeChatUserId));
+
+        if (userSnap.exists()) {
+            const data = userSnap.data();
+
+            otherUserName =
+                data.namaLengkap ||
+                [data.namaDepan, data.namaBelakang].filter(Boolean).join(' ') ||
+                otherUserName;
+
+            let badgesHtml = '';
+
+            if (data.isVerified) {
+                badgesHtml = `
+                    <img src="https://sitenexs.com/assets/logo/verified.png"
+                    class="chat-header-verif" alt="Verified">
+                `;
+            }
+
+            document.getElementById('activeChatBadges').innerHTML = badgesHtml;
+        }
+    } catch (error) {
+        console.error('Load recipient error:', error);
+    }
+
+    document.getElementById('activeChatName').textContent = otherUserName;
+    document.getElementById('activeChatAvatar').src = getAvatarUrl(activeChatUserId);
+
+    // Firestore messages
+    const messagesRef = collection(db, 'chats', activeChatId, 'messages');
+    const qMsgs = query(messagesRef, orderBy('createdAt', 'asc'));
+
+    if (unsubscribeMessages) {
+        unsubscribeMessages();
+    }
+
+    unsubscribeMessages = onSnapshot(qMsgs, snapshot => {
+        const messagesContainer = document.getElementById('chatMessages');
+
+        const loadingState = document.getElementById('loadingState');
+        if (loadingState) loadingState.remove();
+
+        let html = '';
+
+        snapshot.forEach(docSnap => {
+            const message = docSnap.data();
+            const isOutgoing = message.senderUid === currentUid;
+
+            html += `
+                <div class="message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}">
+                    <div class="message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}">
+                        ${renderMessageBody(message.text || '')}
+                        <div class="message-time">${formatMessageTime(message.createdAt)}</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        messagesContainer.innerHTML = html;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }, error => {
+        console.error('Message listener error:', error);
+        showToast('Gagal memuat pesan.');
+    });
+}
+
+/* =====================================================
+   AUTH
+===================================================== */
+
+onAuthStateChanged(auth, user => {
+    if (user) {
+        initChat(user);
+    } else {
+        const savedUid = localStorage.getItem('sitenexs_uid');
+
+        if (savedUid) {
+            initChat({ uid: savedUid });
+        } else {
+            window.location.replace('https://account.sitenexs.com/sign-in/');
+        }
+    }
+});
+
+/* =====================================================
+   SEND MESSAGE
+===================================================== */
+
+window.handleChatFormSubmit = async function (event) {
+    event.preventDefault();
+
+    const inputEl = document.getElementById('messageInput');
+    const text = inputEl.value.trim();
+
+    if (!text || !activeChatId || !currentUid) return;
+
+    inputEl.value = '';
+
+    try {
+        const recipientUid = activeChatUserId;
+        const chatDocRef = doc(db, 'chats', activeChatId);
+
+        await setDoc(chatDocRef, {
+            participants: [currentUid, activeChatUserId],
+            lastMessage: text,
+            lastTimestamp: serverTimestamp(),
+            [`unread_${recipientUid}`]: true
+        }, { merge: true });
+
+        await addDoc(collection(db, 'chats', activeChatId, 'messages'), {
+            senderUid: currentUid,
+            text,
+            createdAt: serverTimestamp(),
+            isEdited: false
+        });
+
+    } catch (error) {
+        console.error('Send message error:', error);
+        showToast('Gagal mengirim pesan.');
+    }
+};
+</script>
 </body>
 </html>
