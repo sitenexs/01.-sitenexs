@@ -80,7 +80,6 @@
             box-shadow: var(--shadow-sm);
         }
         .chat-header-left { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
-        .chat-header-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
         .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); flex-shrink: 0; }
         
         .chat-header-info { min-width: 0; display: flex; flex-direction: column; }
@@ -143,76 +142,6 @@
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); flex-shrink: 0;
         }
 
-        /* OVERLAY & MODAL VIDEO CALL */
-        .vc-overlay {
-            position: fixed; inset: 0; background: #0f172a; z-index: 20000;
-            display: none; flex-direction: column; justify-content: space-between;
-        }
-        .vc-overlay.active { display: flex; }
-
-        .vc-remote-container {
-            position: relative; width: 100%; height: 100%; display: flex;
-            align-items: center; justify-content: center; overflow: hidden;
-        }
-        #remoteVideo {
-            width: 100%; height: 100%; object-fit: cover; background: #1e293b;
-        }
-        .vc-status-banner {
-            position: absolute; top: 24px; left: 50%; transform: translateX(-50%);
-            background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px);
-            color: #fff; padding: 0.5rem 1.25rem; border-radius: var(--radius-full);
-            font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;
-            border: 1px solid rgba(255,255,255,0.15); z-index: 10; white-space: nowrap;
-        }
-        .vc-local-container {
-            position: absolute; bottom: 105px; right: 20px; width: 115px; height: 165px;
-            border-radius: 14px; overflow: hidden; border: 2px solid rgba(255,255,255,0.3);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5); background: #000; z-index: 15;
-        }
-        #localVideo {
-            width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);
-        }
-        .vc-controls {
-            position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
-            display: flex; align-items: center; gap: 1.1rem; z-index: 30;
-            background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px);
-            padding: 0.75rem 1.5rem; border-radius: var(--radius-full);
-            border: 1px solid rgba(255,255,255,0.15);
-        }
-        .vc-btn {
-            width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; font-size: 1.15rem; cursor: pointer; transition: var(--transition);
-            background: rgba(255,255,255,0.18); color: #fff; pointer-events: auto;
-        }
-        .vc-btn:hover { background: rgba(255,255,255,0.28); }
-        .vc-btn.muted { background: #fff; color: #0f172a; }
-        .vc-btn.end-call { background: var(--danger); color: #fff; }
-        .vc-btn.end-call:hover { background: #dc2626; transform: scale(1.05); }
-
-        /* NOTIFIKASI PANGGILAN MASUK */
-        .incoming-call-modal {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            width: calc(100% - 32px); max-width: 400px; background: #0f172a; color: #fff;
-            padding: 1rem 1.25rem; border-radius: var(--radius-xl); z-index: 25000;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);
-            display: none; align-items: center; justify-content: space-between; gap: 1rem;
-            animation: messageSlideIn 0.3s ease forwards;
-        }
-        .incoming-call-modal.active { display: flex; }
-        .incoming-call-actions { display: flex; align-items: center; gap: 0.6rem; }
-        .call-action-btn {
-            width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; color: #fff; cursor: pointer; font-size: 1rem;
-        }
-        .call-accept { background: var(--accent); animation: pulseGreen 1.5s infinite; }
-        .call-reject { background: var(--danger); }
-
-        @keyframes pulseGreen {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-
         #toastContainer { position: fixed; bottom: 24px; right: 24px; z-index: 30000; display: flex; flex-direction: column; gap: 0.5rem; max-width: 340px; }
         .toast { background: #0f172a; color: #fff; padding: 0.85rem 1.15rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 0.75rem; border-left: 4px solid var(--accent); }
 
@@ -229,48 +158,6 @@
 
     <div id="toastContainer"></div>
 
-    <!-- MODAL PANGGILAN MASUK -->
-    <div id="incomingCallModal" class="incoming-call-modal">
-        <div style="display: flex; align-items: center; gap: 0.75rem; min-width: 0;">
-            <div style="width: 42px; height: 42px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <i class="fas fa-video"></i>
-            </div>
-            <div style="min-width: 0;">
-                <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Panggilan Video Masuk...</div>
-                <div id="callerNameDisplay" style="font-weight: 800; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Mitra Sitenexs</div>
-            </div>
-        </div>
-        <div class="incoming-call-actions">
-            <button type="button" class="call-action-btn call-reject" onclick="rejectVideoCall()" title="Tolak"><i class="fas fa-phone-slash"></i></button>
-            <button type="button" class="call-action-btn call-accept" onclick="acceptVideoCall()" title="Terima"><i class="fas fa-video"></i></button>
-        </div>
-    </div>
-
-    <!-- LAYAR UTAMA VIDEO CALL -->
-    <div id="vcOverlay" class="vc-overlay">
-        <div class="vc-remote-container">
-            <div class="vc-status-banner">
-                <i class="fas fa-circle" style="color: var(--accent); font-size: 0.6rem;"></i>
-                <span id="vcStatusText">Menghubungkan...</span>
-            </div>
-            <video id="remoteVideo" autoplay playsinline></video>
-            <div class="vc-local-container">
-                <video id="localVideo" autoplay playsinline muted></video>
-            </div>
-        </div>
-        <div class="vc-controls">
-            <button type="button" id="toggleMicBtn" class="vc-btn" onclick="toggleMic()" title="Matikan/Nyalakan Mikrofon">
-                <i class="fas fa-microphone"></i>
-            </button>
-            <button type="button" id="toggleCamBtn" class="vc-btn" onclick="toggleCamera()" title="Matikan/Nyalakan Kamera">
-                <i class="fas fa-video"></i>
-            </button>
-            <button type="button" id="endCallBtn" class="vc-btn end-call" onclick="endVideoCall()" title="Akhiri Panggilan">
-                <i class="fas fa-phone-slash"></i>
-            </button>
-        </div>
-    </div>
-
     <main class="container">
         <div class="chat-wrapper">
             <!-- HEADER ATAS -->
@@ -284,11 +171,6 @@
                             <div id="activeChatBadges" style="display: inline-flex; align-items: center; gap: 2px;"></div>
                         </div>
                     </div>
-                </div>
-                <div class="chat-header-right">
-                    <button type="button" id="startVcBtn" class="btn btn-secondary btn-icon-only" onclick="startVideoCall()" title="Panggilan Video">
-                        <i class="fas fa-video" style="color: var(--primary);"></i>
-                    </button>
                 </div>
             </div>
 
@@ -308,17 +190,15 @@
         </div>
     </main>
 
-    <!-- FIREBASE (FIRESTORE + REALTIME DB) & WEBRTC SCRIPT -->
+    <!-- FIREBASE & SUPABASE SCRIPT -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
         import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
-        import { getDatabase, ref, set, update, push, onValue, onChildAdded, remove, off } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
 
         const firebaseConfig = {
             apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
             authDomain: 'sitenexs-62919.firebaseapp.com',
-            databaseURL: 'https://sitenexs-62919-default-rtdb.firebaseio.com',
             projectId: 'sitenexs-62919',
             storageBucket: 'sitenexs-62919.firebasestorage.app',
             messagingSenderId: '1060348110644',
@@ -330,48 +210,16 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const rtdb = getDatabase(app);
         const auth = getAuth(app);
         
         setPersistence(auth, browserLocalPersistence).catch(err => {});
 
         let currentUid = null;
-        let myUserName = "Mitra Sitenexs";
         let activeChatUserId = null;
         let activeChatId = null;
         let otherUserName = "Mitra Sitenexs";
         let unsubscribeMessages = null;
-
-        // --- VARIABEL WEBRTC ---
-        let peerConnection = null;
-        let localStream = null;
-        let remoteStream = null;
-        let isMicMuted = false;
-        let isCamOff = false;
-        let currentSessionId = null;
-        let incomingOfferData = null;
-        let iceCandidateQueue = [];
-        let isInCall = false;
-        let isStartingCall = false;
-
-        const rtcConfig = {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' },
-                {
-                    urls: 'turn:openrelay.metered.ca:80',
-                    username: 'openrelayproject',
-                    credential: 'openrelayproject'
-                },
-                {
-                    urls: 'turn:openrelay.metered.ca:443',
-                    username: 'openrelayproject',
-                    credential: 'openrelayproject'
-                }
-            ],
-            iceCandidatePoolSize: 10
-        };
+        let isInitialLoad = true;
 
         const urlParams = new URLSearchParams(window.location.search);
         const targetUserId = urlParams.get('to');
@@ -386,9 +234,9 @@
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = 'toast';
-            toast.innerHTML = `<i class="fas fa-info-circle" style="color: var(--accent); font-size: 1rem;"></i> <span>${msg}</span>`;
+            toast.innerHTML = `<i class="fas fa-check-circle" style="color: var(--accent); font-size: 1rem;"></i> <span>${msg}</span>`;
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3500);
+            setTimeout(() => toast.remove(), 3200);
         }
 
         function escapeHtml(text) {
@@ -396,6 +244,7 @@
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
+        // --- FUNGSI RENDER KARTU LAMARAN KERJA (DENGAN REGEX MOTIVASI YANG DIPERBAIKI) ---
         function renderMessageBody(text) {
             if (text && text.includes('📋 *LAMARAN KERJA BARU*')) {
                 const posMatch = text.match(/🔹 \*Posisi:\* (.*)/);
@@ -406,6 +255,8 @@
                 const fotoMatch = text.match(/🖼️ \*Link Pasfoto \(Bg Merah\):\* (.*)/);
                 const cvMatch = text.match(/📄 \*Link CV:\* (.*)/);
                 const ijazahMatch = text.match(/🎓 \*Link Ijazah:\* (.*)/);
+                
+                // Regex diperbarui agar fleksibel menangkap teks motivasi baik dengan atau tanpa kutipan
                 const motivasiMatch = text.match(/💬 \*Motivasi:\*\s*"?([\s\S]*?)"?(?:\n|$)/);
 
                 const position = posMatch ? posMatch[1].trim() : 'Pekerjaan';
@@ -419,6 +270,7 @@
                 
                 let motivasi = motivasiMatch ? motivasiMatch[1].trim() : '-';
                 if (!motivasi || motivasi === '') {
+                    // Fallback alternatif jika format teks berbeda
                     const parts = text.split('💬 *Motivasi:*');
                     if (parts.length > 1) {
                         motivasi = parts[1].trim().replace(/^"/, '').replace(/"$/, '');
@@ -430,24 +282,28 @@
                         <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 8px; color: var(--primary); display: flex; align-items: center; gap: 6px;">
                             <i class="fas fa-briefcase"></i> Lamaran Kerja: ${position}
                         </div>
+                        
                         ${pasfotoUrl ? `
                             <div style="margin-bottom: 10px;">
                                 <div style="font-size: 0.72rem; font-weight: 700; margin-bottom: 3px; color: var(--text-muted);">Pasfoto Formal (Bg Merah):</div>
                                 <div class="chat-image-preview"><a href="${pasfotoUrl}" target="_blank"><img src="${pasfotoUrl}" alt="Pasfoto"></a></div>
                             </div>
                         ` : ''}
+
                         <div style="display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px;">
                             <div><b>Nama:</b> ${name}</div>
                             <div><b>WhatsApp:</b> ${phone}</div>
                             <div><b>Email:</b> ${email}</div>
                             <div><b>Domisili:</b> ${city}</div>
                         </div>
+
                         ${motivasi && motivasi !== '-' ? `
                             <div style="background: #fff; border-left: 3px solid var(--primary); padding: 8px; border-radius: 4px; margin-bottom: 10px; font-size: 0.78rem;">
                                 <div style="font-weight: 700; margin-bottom: 2px; color: var(--primary);">Ringkasan & Motivasi:</div>
                                 <div style="font-style: italic; opacity: 0.9; white-space: pre-wrap;">${escapeHtml(motivasi)}</div>
                             </div>
                         ` : ''}
+
                         <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                             ${cvUrl !== '-' ? `<a href="${cvUrl}" target="_blank" class="btn" style="padding: 4px 10px; font-size: 0.75rem; background: var(--primary); color: #fff;"><i class="fas fa-file-pdf"></i> CV</a>` : ''}
                             ${ijazahUrl !== '#' ? `<a href="${ijazahUrl}" target="_blank" class="btn" style="padding: 4px 10px; font-size: 0.75rem; background: var(--accent); color: #fff;"><i class="fas fa-certificate"></i> Ijazah</a>` : ''}
@@ -455,348 +311,19 @@
                     </div>
                 `;
             }
+
             return escapeHtml(text).replace(/\n/g, '<br>');
         }
 
-        // ==========================================
-        // LOGIKA VIDEO CALL (WEBRTC + REALTIME DB)
-        // ==========================================
-        async function setupLocalMedia() {
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user' },
-                    audio: true
-                });
-                const localVideoEl = document.getElementById('localVideo');
-                localVideoEl.srcObject = localStream;
-                localVideoEl.play().catch(() => {});
-                return true;
-            } catch (err) {
-                showToast("Izin kamera atau mikrofon ditolak: " + err.message);
-                return false;
-            }
-        }
-
-        async function flushIceCandidateQueue() {
-            while (iceCandidateQueue.length > 0 && peerConnection && peerConnection.remoteDescription) {
-                const candidate = iceCandidateQueue.shift();
-                try {
-                    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-                } catch (e) {}
-            }
-        }
-
-        function createPeerConnection(sessionId, isCaller) {
-            iceCandidateQueue = [];
-            peerConnection = new RTCPeerConnection(rtcConfig);
-            remoteStream = new MediaStream();
-            
-            const remoteVideoEl = document.getElementById('remoteVideo');
-            remoteVideoEl.srcObject = remoteStream;
-
-            localStream.getTracks().forEach(track => {
-                peerConnection.addTrack(track, localStream);
-            });
-
-            peerConnection.ontrack = (event) => {
-                if (event.streams && event.streams[0]) {
-                    event.streams[0].getTracks().forEach(track => {
-                        remoteStream.addTrack(track);
-                    });
-                } else {
-                    remoteStream.addTrack(event.track);
-                }
-                remoteVideoEl.play().catch(() => {});
-                document.getElementById('vcStatusText').innerText = otherUserName;
-            };
-
-            const localCandidatesPath = isCaller ? 'callerCandidates' : 'calleeCandidates';
-            const remoteCandidatesPath = isCaller ? 'calleeCandidates' : 'callerCandidates';
-
-            const localCandidatesRef = ref(rtdb, `calls/${activeChatId}/${localCandidatesPath}`);
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    push(localCandidatesRef, {
-                        sessionId: sessionId,
-                        candidate: event.candidate.toJSON()
-                    }).catch(() => {});
-                }
-            };
-
-            const remoteCandidatesRef = ref(rtdb, `calls/${activeChatId}/${remoteCandidatesPath}`);
-            onChildAdded(remoteCandidatesRef, async (snapshot) => {
-                const val = snapshot.val();
-                if (!val || !val.candidate || val.sessionId !== sessionId || !peerConnection) return;
-
-                if (peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
-                    try {
-                        await peerConnection.addIceCandidate(new RTCIceCandidate(val.candidate));
-                    } catch (e) {}
-                } else {
-                    iceCandidateQueue.push(val.candidate);
-                }
-            });
-
-            peerConnection.oniceconnectionstatechange = () => {
-                if (!peerConnection) return;
-                const state = peerConnection.iceConnectionState;
-                if (state === 'connected' || state === 'completed') {
-                    document.getElementById('vcStatusText').innerText = otherUserName;
-                    remoteVideoEl.play().catch(() => {});
-                } else if (state === 'checking') {
-                    document.getElementById('vcStatusText').innerText = "Menyambungkan jaringan...";
-                } else if (state === 'failed') {
-                    showToast("Koneksi jaringan gagal (NAT/Firewall).");
-                    endVideoCall();
-                }
-            };
-        }
-
-        // 1. MEMULAI PANGGILAN (CALLER)
-        window.startVideoCall = async function() {
-            if (!activeChatId || !currentUid) {
-                showToast("Sesi akun belum siap.");
-                return;
-            }
-            if (isStartingCall || isInCall) return;
-
-            isStartingCall = true;
-            const mediaReady = await setupLocalMedia();
-            if (!mediaReady) {
-                isStartingCall = false;
-                return;
-            }
-
-            const newSessionId = `${currentUid}_${Date.now()}`;
-            currentSessionId = newSessionId;
-            document.getElementById('vcOverlay').classList.add('active');
-            document.getElementById('vcStatusText').innerText = `Memanggil ${otherUserName}...`;
-
-            const roomRef = ref(rtdb, `calls/${activeChatId}`);
-
-            try {
-                createPeerConnection(newSessionId, true);
-
-                const offerDescription = await peerConnection.createOffer({
-                    offerToReceiveAudio: true,
-                    offerToReceiveVideo: true
-                });
-                await peerConnection.setLocalDescription(offerDescription);
-
-                // Langsung timpa node calls/{activeChatId} dengan set() tanpa remove() dulu
-                await set(roomRef, {
-                    sessionId: newSessionId,
-                    callerUid: currentUid,
-                    callerName: myUserName,
-                    calleeUid: activeChatUserId,
-                    status: 'ringing',
-                    offer: {
-                        type: offerDescription.type,
-                        sdp: offerDescription.sdp
-                    },
-                    timestamp: Date.now()
-                });
-
-                // Tandai aktif SETELAH set() berhasil menulis ke RTDB
-                isInCall = true;
-                isStartingCall = false;
-
-            } catch (err) {
-                isStartingCall = false;
-                showToast("Gagal menelepon (Cek RTDB): " + err.message);
-                cleanupCallUI();
-            }
-        };
-
-        // 2. MENERIMA PANGGILAN (CALLEE)
-        window.acceptVideoCall = async function() {
-            document.getElementById('incomingCallModal').classList.remove('active');
-            if (!incomingOfferData || !currentSessionId) return;
-
-            const mediaReady = await setupLocalMedia();
-            if (!mediaReady) {
-                rejectVideoCall();
-                return;
-            }
-
-            isInCall = true;
-            document.getElementById('vcOverlay').classList.add('active');
-            document.getElementById('vcStatusText').innerText = "Menghubungkan...";
-
-            createPeerConnection(currentSessionId, false);
-
-            try {
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(incomingOfferData));
-                await flushIceCandidateQueue();
-
-                const answerDescription = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answerDescription);
-
-                await update(ref(rtdb, `calls/${activeChatId}`), {
-                    status: 'connected',
-                    answer: {
-                        type: answerDescription.type,
-                        sdp: answerDescription.sdp
-                    }
-                });
-
-            } catch (err) {
-                showToast("Gagal menerima panggilan: " + err.message);
-                cleanupCallUI();
-            }
-        };
-
-        // 3. MENOLAK PANGGILAN
-        window.rejectVideoCall = function() {
-            document.getElementById('incomingCallModal').classList.remove('active');
-            if (activeChatId) {
-                update(ref(rtdb, `calls/${activeChatId}`), {
-                    status: 'rejected'
-                }).catch(() => {});
-            }
-            incomingOfferData = null;
-            currentSessionId = null;
-        };
-
-        // 4. MENGAKHIRI PANGGILAN (Tutup UI & kamera dulu secara instan, baru hapus RTDB)
-        window.endVideoCall = function() {
-            const chatIdToRemove = activeChatId;
-            cleanupCallUI();
-            if (chatIdToRemove) {
-                remove(ref(rtdb, `calls/${chatIdToRemove}`)).catch(() => {});
-            }
-        };
-
-        function cleanupCallUI() {
-            isInCall = false;
-            isStartingCall = false;
-            document.getElementById('vcOverlay').classList.remove('active');
-            document.getElementById('incomingCallModal').classList.remove('active');
-
-            if (localStream) {
-                try { localStream.getTracks().forEach(track => track.stop()); } catch (e) {}
-                localStream = null;
-            }
-            if (peerConnection) {
-                try { peerConnection.close(); } catch (e) {}
-                peerConnection = null;
-            }
-            document.getElementById('localVideo').srcObject = null;
-            document.getElementById('remoteVideo').srcObject = null;
-
-            if (activeChatId) {
-                off(ref(rtdb, `calls/${activeChatId}/callerCandidates`));
-                off(ref(rtdb, `calls/${activeChatId}/calleeCandidates`));
-            }
-
-            currentSessionId = null;
-            incomingOfferData = null;
-            iceCandidateQueue = [];
-            isMicMuted = false;
-            isCamOff = false;
-            document.getElementById('toggleMicBtn').classList.remove('muted');
-            document.getElementById('toggleMicBtn').innerHTML = '<i class="fas fa-microphone"></i>';
-            document.getElementById('toggleCamBtn').classList.remove('muted');
-            document.getElementById('toggleCamBtn').innerHTML = '<i class="fas fa-video"></i>';
-        }
-
-        window.toggleMic = function() {
-            if (!localStream) return;
-            isMicMuted = !isMicMuted;
-            localStream.getAudioTracks().forEach(track => track.enabled = !isMicMuted);
-            const btn = document.getElementById('toggleMicBtn');
-            btn.classList.toggle('muted', isMicMuted);
-            btn.innerHTML = isMicMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
-        };
-
-        window.toggleCamera = function() {
-            if (!localStream) return;
-            isCamOff = !isCamOff;
-            localStream.getVideoTracks().forEach(track => track.enabled = !isCamOff);
-            const btn = document.getElementById('toggleCamBtn');
-            btn.classList.toggle('muted', isCamOff);
-            btn.innerHTML = isCamOff ? '<i class="fas fa-video-slash"></i>' : '<i class="fas fa-video"></i>';
-        };
-
-        // LISTENER TUNGGAL UNTUK SINYAL PANGGILAN (CALLER & CALLEE)
-        function listenToCallRoom() {
-            const roomRef = ref(rtdb, `calls/${activeChatId}`);
-            onValue(roomRef, async (snapshot) => {
-                const data = snapshot.val();
-
-                // Abaikan event null saat proses memulai panggilan baru
-                if (isStartingCall) return;
-
-                // Jika node panggilan dihapus saat panggilan sudah aktif
-                if (!data) {
-                    document.getElementById('incomingCallModal').classList.remove('active');
-                    if (isInCall) {
-                        showToast("Panggilan berakhir.");
-                        cleanupCallUI();
-                    }
-                    return;
-                }
-
-                // Abaikan data lama (> 60 detik) jika belum terhubung
-                if (data.status === 'ringing' && data.timestamp && (Date.now() - data.timestamp > 60000)) {
-                    remove(roomRef).catch(() => {});
-                    return;
-                }
-
-                // A. JIKA KITA ADALAH PENERIMA (CALLEE)
-                if (data.calleeUid === currentUid && data.status === 'ringing' && data.offer && !isInCall) {
-                    currentSessionId = data.sessionId;
-                    incomingOfferData = data.offer;
-                    document.getElementById('callerNameDisplay').innerText = data.callerName || otherUserName;
-                    document.getElementById('incomingCallModal').classList.add('active');
-                }
-
-                // B. JIKA KITA ADALAH PENELEPON (CALLER)
-                if (data.callerUid === currentUid && isInCall && data.sessionId === currentSessionId) {
-                    if (data.status === 'rejected') {
-                        showToast("Panggilan ditolak.");
-                        cleanupCallUI();
-                        remove(roomRef).catch(() => {});
-                        return;
-                    }
-                    if (data.answer && peerConnection && !peerConnection.currentRemoteDescription) {
-                        try {
-                            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-                            await flushIceCandidateQueue();
-                            document.getElementById('vcStatusText').innerText = otherUserName;
-                        } catch (e) {}
-                    }
-                }
-            }, (error) => {
-                showToast("Koneksi RTDB ditolak: " + error.message);
-            });
-        }
-
-        // ==========================================
-        // INISIALISASI CHAT
-        // ==========================================
         async function initChat(user) {
             currentUid = user.uid;
             const participants = [currentUid, activeChatUserId].sort();
             activeChatId = `${participants[0]}_${participants[1]}`;
 
-            // Mulai pantau sinyal Video Call di ruang chat ini
-            listenToCallRoom();
-
             try {
                 await updateDoc(doc(db, "chats", activeChatId), { [`unread_${currentUid}`]: false });
             } catch(e) {}
 
-            // Ambil nama kita sendiri
-            try {
-                const mySnap = await getDoc(doc(db, "users", currentUid));
-                if (mySnap.exists()) {
-                    const md = mySnap.data();
-                    myUserName = md.namaLengkap || (md.namaDepan + (md.namaBelakang ? ' ' + md.namaBelakang : '')) || myUserName;
-                }
-            } catch(e) {}
-
-            // Ambil data lawan bicara
             try {
                 const userSnap = await getDoc(doc(db, "users", activeChatUserId));
                 if (userSnap.exists()) {
@@ -843,6 +370,7 @@
 
                 messagesContainer.innerHTML = html;
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                isInitialLoad = false;
             });
         }
 
