@@ -84,15 +84,9 @@
         .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); flex-shrink: 0; }
         
         .chat-header-info { min-width: 0; display: flex; flex-direction: column; }
-        .chat-header-name-row { display: flex; align-items: center; gap: 0.35rem; min-width: 0; }
+        .chat-header-name-row { display: flex; align-items: center; gap: 0.3rem; min-width: 0; }
         .chat-header-name { font-weight: 850; font-size: 0.98rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .chat-header-verif { width: 15px; height: 15px; object-fit: contain; flex-shrink: 0; display: inline-block; }
-        .blue-check-badge {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 16px; height: 16px; border-radius: 50%; background: #1d9bf0;
-            color: #fff; font-size: 0.6rem; flex-shrink: 0;
-            box-shadow: 0 1px 3px rgba(29, 155, 240, 0.35);
-        }
+        .chat-header-verif { width: 14px; height: 14px; object-fit: contain; flex-shrink: 0; display: inline-block; }
 
         /* ISI CHAT */
         .chat-messages {
@@ -180,8 +174,130 @@
         .vc-overlay {
             position: fixed; inset: 0; background: #0f172a; z-index: 20000;
             display: none; flex-direction: column; justify-content: space-between;
+            transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .vc-overlay.active { display: flex; }
+
+        /* MODE FLOATING / MINIMIZE PIP DI ATAS CHAT */
+        .vc-overlay.minimized {
+            inset: auto;
+            top: 74px;
+            right: 16px;
+            width: 156px;
+            height: 224px;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.55);
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            touch-action: none;
+            cursor: grab;
+        }
+        .vc-overlay.minimized:active { cursor: grabbing; }
+        .vc-overlay.minimized.voice-mode {
+            width: 170px;
+            height: 150px;
+        }
+        .vc-overlay.minimized .vc-local-container {
+            display: none !important;
+        }
+        .vc-overlay.minimized .vc-status-banner {
+            top: 8px;
+            padding: 0.22rem 0.55rem;
+            font-size: 0.68rem;
+            max-width: 90%;
+        }
+        .vc-overlay.minimized #vcStatusText,
+        .vc-overlay.minimized #vcBannerBadges {
+            display: none !important;
+        }
+        .vc-overlay.minimized .vc-timer-pill {
+            margin-left: 0;
+            font-size: 0.68rem;
+            padding: 0.08rem 0.45rem;
+        }
+        .vc-overlay.minimized .vc-controls {
+            bottom: 8px;
+            padding: 0.35rem 0.65rem;
+            gap: 0.5rem;
+        }
+        .vc-overlay.minimized .vc-btn {
+            width: 34px;
+            height: 34px;
+            font-size: 0.85rem;
+        }
+        .vc-overlay.minimized #toggleCamBtn {
+            display: none !important;
+        }
+        .vc-overlay.minimized .remote-media-indicators {
+            top: 38px;
+        }
+        .vc-overlay.minimized .remote-indicator-pill {
+            font-size: 0.62rem;
+            padding: 0.2rem 0.5rem;
+        }
+        .vc-overlay.minimized .voice-avatar-ring {
+            width: 56px;
+            height: 56px;
+            margin-bottom: 0.45rem;
+        }
+        .vc-overlay.minimized .voice-avatar-img {
+            width: 52px;
+            height: 52px;
+            border-width: 2px;
+        }
+        .vc-overlay.minimized .voice-peer-name {
+            font-size: 0.8rem;
+            margin-bottom: 0.1rem;
+        }
+        .vc-overlay.minimized .voice-call-timer {
+            font-size: 0.72rem;
+        }
+        .vc-overlay.minimized .voice-call-stage,
+        .vc-overlay.minimized .remote-cam-off-overlay {
+            padding: 0.75rem;
+        }
+
+        /* TOMBOL PERKECIL / PERBESAR FLOATING LAYAR PANGGILAN */
+        .vc-top-actions {
+            position: absolute;
+            top: 22px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 25;
+        }
+        .vc-overlay.minimized .vc-top-actions {
+            top: 8px;
+            left: 8px;
+            gap: 0.3rem;
+        }
+        .vc-top-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(8px);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+        .vc-top-btn:hover {
+            background: rgba(37, 99, 235, 0.85);
+        }
+        .vc-overlay.minimized .vc-top-btn {
+            width: 28px;
+            height: 28px;
+            font-size: 0.72rem;
+        }
+        .vc-overlay.minimized #nativePipBtn {
+            display: none !important;
+        }
 
         .vc-remote-container {
             position: relative; width: 100%; height: 100%; display: flex;
@@ -253,7 +369,7 @@
         }
         .voice-peer-name {
             font-size: 1.4rem; font-weight: 800; color: #ffffff; margin-bottom: 0.35rem;
-            max-width: 90%; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+            max-width: 90%; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
         }
         .voice-call-timer {
             font-size: 0.95rem; font-weight: 600; color: #94a3b8;
@@ -393,9 +509,9 @@
             <div id="incomingCallTypeLabel" style="font-size: 0.8rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">
                 <i class="fas fa-video" style="color: var(--accent); margin-right: 4px;"></i> Panggilan Video Masuk
             </div>
-            <div style="display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; max-width: 100%;">
+            <div style="display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem; max-width: 100%;">
                 <div id="callerNameDisplay" style="font-weight: 800; font-size: 1.25rem; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Mitra Sitenexs</div>
-                <div id="callerBadgesDisplay" style="display: inline-flex; align-items: center; gap: 3px;"></div>
+                <div id="callerBadgesDisplay" style="display: inline-flex; align-items: center; gap: 2px;"></div>
             </div>
             <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 0.2rem;">Mengajak Anda terhubung secara langsung...</div>
 
@@ -419,10 +535,20 @@
     <!-- LAYAR UTAMA VIDEO CALL / VOICE CALL -->
     <div id="vcOverlay" class="vc-overlay">
         <div class="vc-remote-container">
+            <!-- TOMBOL PERKECIL & PICTURE-IN-PICTURE MENGAMBANG -->
+            <div class="vc-top-actions">
+                <button type="button" id="minimizeCallBtn" class="vc-top-btn" onclick="toggleMinimizeCall()" title="Perkecil ke layar mengambang">
+                    <i class="fas fa-compress-alt"></i>
+                </button>
+                <button type="button" id="nativePipBtn" class="vc-top-btn" onclick="enterSystemPiP()" title="Jendela Mengambang Sistem (PiP)">
+                    <i class="fas fa-external-link-alt"></i>
+                </button>
+            </div>
+
             <div class="vc-status-banner">
                 <i class="fas fa-circle" style="color: var(--accent); font-size: 0.6rem;"></i>
                 <span id="vcStatusText">Menghubungkan...</span>
-                <span id="vcBannerBadges" style="display: inline-flex; align-items: center; gap: 3px;"></span>
+                <span id="vcBannerBadges" style="display: inline-flex; align-items: center; gap: 2px;"></span>
                 <span id="vcCallTimer" class="vc-timer-pill">00:00</span>
             </div>
 
@@ -445,7 +571,7 @@
                 </div>
                 <div class="voice-peer-name">
                     <span id="remoteCamOffPeerName">Mitra Sitenexs</span>
-                    <span id="remoteCamOffBadges" style="display: inline-flex; align-items: center; gap: 3px;"></span>
+                    <span id="remoteCamOffBadges" style="display: inline-flex; align-items: center; gap: 2px;"></span>
                 </div>
                 <div style="font-size: 0.88rem; color: #94a3b8; margin-top: 0.25rem;">
                     <i class="fas fa-video-slash" style="margin-right: 4px;"></i> Kamera dimatikan
@@ -459,7 +585,7 @@
                 </div>
                 <div class="voice-peer-name">
                     <span id="voicePeerName">Mitra Sitenexs</span>
-                    <span id="voicePeerBadges" style="display: inline-flex; align-items: center; gap: 3px;"></span>
+                    <span id="voicePeerBadges" style="display: inline-flex; align-items: center; gap: 2px;"></span>
                 </div>
                 <div id="voiceCallTimer" class="voice-call-timer">Menghubungkan...</div>
             </div>
@@ -487,12 +613,12 @@
             <!-- HEADER ATAS -->
             <div class="chat-header">
                 <div class="chat-header-left">
-                    <a href="https://sitenexs.com/community/messages/" class="btn btn-secondary btn-icon-only" title="Kembali"><i class="fas fa-arrow-left"></i></a>
+                    <a href="https://sitenexs.com/community/messages/" onclick="handleBackNavigation(event)" class="btn btn-secondary btn-icon-only" title="Kembali"><i class="fas fa-arrow-left"></i></a>
                     <img id="activeChatAvatar" src="" class="chat-header-avatar" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
                     <div class="chat-header-info">
                         <div class="chat-header-name-row">
                             <div class="chat-header-name" id="activeChatName">Memuat...</div>
-                            <div id="activeChatBadges" style="display: inline-flex; align-items: center; gap: 3px;"></div>
+                            <div id="activeChatBadges" style="display: inline-flex; align-items: center; gap: 2px;"></div>
                         </div>
                     </div>
                 </div>
@@ -612,6 +738,7 @@ let isMicMuted = false;
 let isCamOff = false;
 let isInCall = false;
 let isStartingCall = false;
+let isCallMinimized = false;
 
 let ringtoneInterval = null;
 let callTimeout = null;
@@ -660,7 +787,7 @@ const rtcConfig = {
 };
 
 /* =====================================================
-   WAKE LOCK (MENCEGAH LAYAR HP MATI SAAT PANGGILAN)
+   WAKE LOCK & PICTURE-IN-PICTURE SAAT KELUAR / PINDAH APLIKASI
 ===================================================== */
 
 async function requestWakeLock() {
@@ -683,11 +810,155 @@ async function releaseWakeLock() {
     } catch (e) {}
 }
 
+window.enterSystemPiP = async function () {
+    const remoteVideo = document.getElementById('remoteVideo');
+    if (!remoteVideo || currentCallType !== 'video') return;
+
+    try {
+        if (document.pictureInPictureEnabled && !remoteVideo.disablePictureInPicture) {
+            if (document.pictureInPictureElement !== remoteVideo && remoteVideo.readyState >= 2) {
+                await remoteVideo.requestPictureInPicture();
+            }
+        } else if (typeof remoteVideo.webkitSetPresentationMode === 'function') {
+            remoteVideo.webkitSetPresentationMode('picture-in-picture');
+        }
+    } catch (e) {}
+};
+
+async function exitSystemPiP() {
+    try {
+        if (document.pictureInPictureElement) {
+            await document.exitPictureInPicture();
+        }
+        const remoteVideo = document.getElementById('remoteVideo');
+        if (remoteVideo && typeof remoteVideo.webkitSetPresentationMode === 'function') {
+            remoteVideo.webkitSetPresentationMode('inline');
+        }
+    } catch (e) {}
+}
+
+window.toggleMinimizeCall = function () {
+    if (!isInCall) return;
+    const overlay = document.getElementById('vcOverlay');
+    const minBtn = document.getElementById('minimizeCallBtn');
+
+    isCallMinimized = !isCallMinimized;
+    overlay.classList.toggle('minimized', isCallMinimized);
+
+    if (!isCallMinimized) {
+        overlay.style.left = '';
+        overlay.style.top = '';
+        overlay.style.right = '';
+        overlay.style.bottom = '';
+        if (minBtn) {
+            minBtn.innerHTML = '<i class="fas fa-compress-alt"></i>';
+            minBtn.title = 'Perkecil ke layar mengambang';
+        }
+    } else {
+        if (minBtn) {
+            minBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
+            minBtn.title = 'Perbesar layar panggilan';
+        }
+    }
+};
+
+// Geser (Drag) jendela panggilan saat mode diperkecil
+(function initDraggableCallOverlay() {
+    const overlay = document.getElementById('vcOverlay');
+    if (!overlay) return;
+
+    let isDragging = false;
+    let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
+
+    function onPointerDown(e) {
+        if (!isCallMinimized) return;
+        if (e.target.closest('button')) return;
+
+        const point = e.touches ? e.touches[0] : e;
+        const rect = overlay.getBoundingClientRect();
+
+        isDragging = true;
+        startX = point.clientX;
+        startY = point.clientY;
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        overlay.style.transition = 'none';
+        overlay.style.right = 'auto';
+        overlay.style.bottom = 'auto';
+        overlay.style.left = `${initialLeft}px`;
+        overlay.style.top = `${initialTop}px`;
+    }
+
+    function onPointerMove(e) {
+        if (!isDragging || !isCallMinimized) return;
+        const point = e.touches ? e.touches[0] : e;
+        const dx = point.clientX - startX;
+        const dy = point.clientY - startY;
+
+        const maxLeft = window.innerWidth - overlay.offsetWidth - 8;
+        const maxTop = window.innerHeight - overlay.offsetHeight - 8;
+
+        const nextLeft = Math.max(8, Math.min(maxLeft, initialLeft + dx));
+        const nextTop = Math.max(8, Math.min(maxTop, initialTop + dy));
+
+        overlay.style.left = `${nextLeft}px`;
+        overlay.style.top = `${nextTop}px`;
+    }
+
+    function onPointerUp() {
+        if (!isDragging) return;
+        isDragging = false;
+        overlay.style.transition = '';
+    }
+
+    overlay.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+
+    overlay.addEventListener('touchstart', onPointerDown, { passive: true });
+    window.addEventListener('touchmove', onPointerMove, { passive: true });
+    window.addEventListener('touchend', onPointerUp);
+})();
+
 document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && isInCall) {
+    if (!isInCall) return;
+
+    if (document.visibilityState === 'hidden') {
+        if (currentCallType === 'video') {
+            window.enterSystemPiP();
+        }
+        const remoteVideo = document.getElementById('remoteVideo');
+        if (remoteVideo && remoteVideo.paused) {
+            remoteVideo.play().catch(() => {});
+        }
+    } else if (document.visibilityState === 'visible') {
         requestWakeLock();
+        const remoteVideo = document.getElementById('remoteVideo');
+        if (remoteVideo && remoteVideo.paused) {
+            remoteVideo.play().catch(() => {});
+        }
     }
 });
+
+window.addEventListener('beforeunload', (e) => {
+    if (isInCall) {
+        e.preventDefault();
+        e.returnValue = 'Panggilan sedang berlangsung.';
+    }
+});
+
+window.handleBackNavigation = function (event) {
+    if (isInCall) {
+        event.preventDefault();
+        if (!isCallMinimized) {
+            window.toggleMinimizeCall();
+            showToast('Layar panggilan diperkecil agar tetap terhubung.');
+        } else {
+            showToast('Akhiri panggilan terlebih dahulu sebelum keluar dari ruang chat.');
+        }
+    }
+};
 
 /* =====================================================
    TARGET USER
@@ -727,7 +998,7 @@ window.showToast = function (msg) {
 };
 
 /* =====================================================
-   HELPER & LENCANA VERIFIKASI
+   HELPER & LENCANA VERIFIKASI (LENCANA ASLI verified.png)
 ===================================================== */
 
 function escapeHtml(text) {
@@ -753,10 +1024,7 @@ function safeUrl(url) {
 
 function getVerifiedBadgesHtml(isVerified) {
     if (!isVerified) return '';
-    return `
-        <span class="blue-check-badge" title="Centang Biru Terverifikasi"><i class="fas fa-check"></i></span>
-        <img src="https://sitenexs.com/assets/logo/verified.png" class="chat-header-verif" alt="Lencana Verifikasi" title="Akun Terverifikasi Sitenexs">
-    `;
+    return `<img src="https://sitenexs.com/assets/logo/verified.png" class="chat-header-verif" alt="Verified">`;
 }
 
 function getAvatarUrl(uid) {
@@ -857,6 +1125,7 @@ function updateRemoteMediaIndicators(muted, camOff, peerName) {
 function applyCallOverlayMode(callType, peerUid, peerName, peerVerified = false) {
     const overlay = document.getElementById('vcOverlay');
     const toggleCamBtn = document.getElementById('toggleCamBtn');
+    const nativePipBtn = document.getElementById('nativePipBtn');
     const badgesHtml = getVerifiedBadgesHtml(peerVerified);
 
     document.getElementById('vcBannerBadges').innerHTML = badgesHtml;
@@ -869,6 +1138,7 @@ function applyCallOverlayMode(callType, peerUid, peerName, peerVerified = false)
     if (callType === 'audio') {
         overlay.classList.add('voice-mode');
         if (toggleCamBtn) toggleCamBtn.style.display = 'none';
+        if (nativePipBtn) nativePipBtn.style.display = 'none';
 
         document.getElementById('voicePeerAvatar').src = getAvatarUrl(peerUid);
         document.getElementById('voicePeerName').textContent = peerName || 'Mitra Sitenexs';
@@ -877,6 +1147,7 @@ function applyCallOverlayMode(callType, peerUid, peerName, peerVerified = false)
     } else {
         overlay.classList.remove('voice-mode');
         if (toggleCamBtn) toggleCamBtn.style.display = 'flex';
+        if (nativePipBtn) nativePipBtn.style.display = 'flex';
     }
 }
 
@@ -949,7 +1220,6 @@ async function updateCallLogMessage(docId, callType, status, durationSec = 0) {
 function renderMessageBody(text) {
     if (!text) return '';
 
-    // FORMAT RIWAYAT PANGGILAN
     if (text.startsWith('[CALL_LOG]|')) {
         const [, callType = 'video', status = 'ended', durationStr = '0'] = text.split('|');
         const durationSec = parseInt(durationStr, 10) || 0;
@@ -1721,7 +1991,9 @@ window.endVideoCall = function (forcedStatus = null) {
 function cleanupCallUI(removeIncoming = true) {
     isInCall = false;
     isStartingCall = false;
+    isCallMinimized = false;
 
+    exitSystemPiP();
     releaseWakeLock();
     clearCallTimeout();
     clearDisconnectGrace();
@@ -1729,7 +2001,17 @@ function cleanupCallUI(removeIncoming = true) {
     hideIncomingCallPopup();
 
     const overlay = document.getElementById('vcOverlay');
-    overlay.classList.remove('active', 'voice-mode');
+    overlay.classList.remove('active', 'voice-mode', 'minimized');
+    overlay.style.left = '';
+    overlay.style.top = '';
+    overlay.style.right = '';
+    overlay.style.bottom = '';
+
+    const minBtn = document.getElementById('minimizeCallBtn');
+    if (minBtn) {
+        minBtn.innerHTML = '<i class="fas fa-compress-alt"></i>';
+        minBtn.title = 'Perkecil ke layar mengambang';
+    }
 
     const toggleCamBtn = document.getElementById('toggleCamBtn');
     if (toggleCamBtn) toggleCamBtn.style.display = 'flex';
