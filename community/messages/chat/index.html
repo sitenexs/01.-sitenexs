@@ -983,6 +983,7 @@ window.startVideoCall = async function () {
 
         // update tidak menimpa child candidate
         await update(callRef, callPayload);
+      listenToCallRoom(callId, sessionId, true);
 
         // Kirim notifikasi ke penerima
         await set(ref(rtdb, `incomingCalls/${activeChatUserId}`), callPayload);
