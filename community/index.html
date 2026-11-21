@@ -193,6 +193,7 @@
         }
         .notif-entry-icon.post { background: #dbeafe; color: var(--primary); }
         .notif-entry-icon.like { background: #fee2e2; color: #ef4444; }
+        .notif-entry-icon.comment { background: #d1fae5; color: #059669; }
         .notif-entry-body { flex: 1; min-width: 0; }
         .notif-entry-title { font-size: 0.78rem; font-weight: 700; color: var(--text-main); line-height: 1.35; }
         .notif-entry-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -552,7 +553,7 @@
                             <button type="button" class="notif-mark-read-btn" onclick="markAllCommunityNotifsRead()">Tandai dibaca</button>
                         </div>
                         <div class="notif-panel-list" id="communityNotifList">
-                            <div class="notif-empty-state">Belum ada notifikasi postingan atau suka baru.</div>
+                            <div class="notif-empty-state">Belum ada notifikasi postingan, komentar, atau suka baru.</div>
                         </div>
                     </div>
                 </div>
@@ -666,7 +667,9 @@
         let unsubscribeChatsNotify = null;
         let isRedirectingToCall = false;
         let previousLikesByPost = new Map();
+        let previousCommentsByPost = new Map();
         const notifiedLikeKeys = new Set();
+        const notifiedCommentKeys = new Set();
         const notifiedMessageKeys = new Set();
         let communityNotifications = [];
 
@@ -696,7 +699,7 @@
         };
 
         /* =====================================================
-           PANEL & BADGE NOTIFIKASI KOMUNITAS (POSTINGAN & SUKA)
+           PANEL & BADGE NOTIFIKASI KOMUNITAS (RIWAYAT KEKAL)
         ===================================================== */
         function getNotifStorageKey(uid) {
             return `sitenexs_comm_notifs_${uid || 'guest'}`;
@@ -716,7 +719,7 @@
             const uid = currentUserData?.uid || localStorage.getItem('sitenexs_uid');
             if (!uid) return;
             try {
-                localStorage.setItem(getNotifStorageKey(uid), JSON.stringify(communityNotifications.slice(0, 40)));
+                localStorage.setItem(getNotifStorageKey(uid), JSON.stringify(communityNotifications.slice(0, 60)));
             } catch (e) {}
         }
 
@@ -724,7 +727,7 @@
             if (communityNotifications.some(item => item.id === id)) return;
             communityNotifications.unshift({
                 id,
-                kind, // 'post' | 'like'
+                kind, // 'post' | 'like' | 'comment'
                 title,
                 sub: sub || '',
                 postId: postId || '',
@@ -747,14 +750,20 @@
 
             if (!listEl) return;
             if (communityNotifications.length === 0) {
-                listEl.innerHTML = '<div class="notif-empty-state">Belum ada notifikasi postingan atau suka baru.</div>';
+                listEl.innerHTML = '<div class="notif-empty-state">Belum ada notifikasi postingan, komentar, atau suka baru.</div>';
                 return;
             }
 
             listEl.innerHTML = communityNotifications.map(n => {
-                const isLike = n.kind === 'like';
-                const iconClass = isLike ? 'fas fa-thumbs-up' : 'fas fa-newspaper';
-                const iconKind = isLike ? 'like' : 'post';
+                let iconClass = 'fas fa-newspaper';
+                let iconKind = 'post';
+                if (n.kind === 'like') {
+                    iconClass = 'fas fa-thumbs-up';
+                    iconKind = 'like';
+                } else if (n.kind === 'comment') {
+                    iconClass = 'fas fa-comment-alt';
+                    iconKind = 'comment';
+                }
                 const timeStr = timeAgo(new Date(n.createdAt));
 
                 return `
@@ -1331,7 +1340,7 @@
                         newLikesArr.push(uid);
                         await updateDoc(postRef, { likes: arrayUnion(uid) });
 
-                        // Kirim notifikasi ke pemilik postingan bahwa user menyukai postingannya
+                        // Kirim push notifikasi ke pemilik postingan bahwa user menyukai postingannya
                         if (postAuthorUid && postAuthorUid !== uid) {
                             const likeBody = `${likerName} menyukai postingan Anda`;
                             await sendPushNotification({
@@ -1395,17 +1404,36 @@
 
             const postRef = doc(db, "forum_posts", postId);
             try {
+                const postSnap = await getDoc(postRef);
+                const postAuthorUid = postSnap.exists() ? postSnap.data().authorUid : null;
+                const createdIso = new Date().toISOString();
+
                 const newComment = {
                     authorUid: uidVal,
                     penulis: nameVal,
                     isVerified: verifiedVal,
                     isi: commentText,
-                    createdAt: new Date().toISOString()
+                    createdAt: createdIso
                 };
 
                 await updateDoc(postRef, {
                     comments: arrayUnion(newComment)
                 });
+
+                // Kirim push notifikasi ke pemilik postingan saat ada komentar baru
+                if (postAuthorUid && postAuthorUid !== uidVal) {
+                    const commentNotifText = `${nameVal} mengomentari postingan Anda`;
+                    await sendPushNotification({
+                        db,
+                        recipientUid: postAuthorUid,
+                        title: 'Komentar Baru di Komunitas',
+                        body: `${commentNotifText}: "${commentText.slice(0, 90)}"`,
+                        tag: `comment-${postId}-${createdIso}`,
+                        url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`,
+                        icon: getUserAvatarUrl(uidVal),
+                        workerUrl: PUSH_WORKER_URL
+                    });
+                }
 
                 inputEl.value = '';
                 document.getElementById(`mention-dropdown-${postId}`).classList.remove('active');
@@ -1602,6 +1630,8 @@
                 snapshot.forEach(docSnap => {
                     const d = docSnap.data();
                     previousLikesByPost.set(docSnap.id, new Set(d.likes || []));
+                    const commentKeys = (d.comments || []).map(c => `${c.authorUid || ''}_${c.createdAt || ''}_${c.isi || ''}`);
+                    previousCommentsByPost.set(docSnap.id, new Set(commentKeys));
                 });
                 return;
             }
@@ -1674,8 +1704,51 @@
                         }
                     }
                 }
-
                 previousLikesByPost.set(postId, currLikesSet);
+
+                // 3. Notifikasi komentar baru pada postingan milik user aktif
+                const prevComments = previousCommentsByPost.get(postId) || new Set();
+                const currCommentsArr = data.comments || [];
+                const currCommentsSet = new Set();
+
+                if (data.authorUid && currentActiveUid && data.authorUid === currentActiveUid) {
+                    for (const c of currCommentsArr) {
+                        const cKey = `${c.authorUid || ''}_${c.createdAt || ''}_${c.isi || ''}`;
+                        currCommentsSet.add(cKey);
+                        if (c.authorUid && c.authorUid !== currentActiveUid && !prevComments.has(cKey)) {
+                            if (!notifiedCommentKeys.has(cKey)) {
+                                notifiedCommentKeys.add(cKey);
+                                const commenterName = c.penulis || 'Mitra Sitenexs';
+                                const commentTitle = `${commenterName} mengomentari postingan Anda`;
+                                const commentPreview = String(c.isi || '');
+
+                                pushCommunityNotification({
+                                    id: `comment-${postId}-${c.createdAt || Date.now()}`,
+                                    kind: 'comment',
+                                    title: commentTitle,
+                                    sub: commentPreview.slice(0, 110),
+                                    postId
+                                });
+
+                                showToast(commentTitle);
+                                triggerLocalSystemNotification(
+                                    commentTitle,
+                                    commentPreview.slice(0, 120),
+                                    {
+                                        tag: `comment-${postId}-${c.createdAt || Date.now()}`,
+                                        icon: getUserAvatarUrl(c.authorUid),
+                                        url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`
+                                    }
+                                );
+                            }
+                        }
+                    }
+                } else {
+                    for (const c of currCommentsArr) {
+                        currCommentsSet.add(`${c.authorUid || ''}_${c.createdAt || ''}_${c.isi || ''}`);
+                    }
+                }
+                previousCommentsByPost.set(postId, currCommentsSet);
             }
         }
 
