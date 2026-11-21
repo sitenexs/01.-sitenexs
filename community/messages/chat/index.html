@@ -113,6 +113,13 @@
         .chat-header-name-row { display: flex; align-items: center; gap: 0.3rem; min-width: 0; }
         .chat-header-name { font-weight: 850; font-size: 0.98rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .chat-header-verif { width: 14px; height: 14px; object-fit: contain; flex-shrink: 0; display: inline-block; }
+        .user-role-badge {
+            font-size: 0.62rem; font-weight: 800; padding: 0.08rem 0.42rem;
+            border-radius: var(--radius-full); background: var(--primary-light);
+            color: var(--primary); white-space: nowrap; flex-shrink: 0;
+        }
+        .user-role-badge.founder { background: #fef3c7; color: #92400e; }
+        .user-role-badge.dev { background: #e0e7ff; color: #3730a3; }
 
         /* ISI CHAT */
         .chat-messages {
@@ -696,7 +703,6 @@ import {
 import {
     getFirestore,
     doc,
-    getDoc,
     setDoc,
     updateDoc,
     collection,
@@ -717,6 +723,12 @@ import {
     onChildAdded,
     remove
 } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
+
+import {
+    fetchUserProfile,
+    getUserAvatarUrl,
+    getUserBadgesHtml
+} from './sitenexs-user-data.js';
 
 import {
     registerPushServiceWorker,
@@ -742,9 +754,6 @@ const firebaseConfig = {
 
 const PUSH_WORKER_URL = 'https://sitenexs-push.sitenexs.workers.dev';
 
-const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
-const avatarBucket = 'profile-photos';
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const rtdb = getDatabase(app);
@@ -757,12 +766,16 @@ setPersistence(auth, browserLocalPersistence).catch(console.error);
 ===================================================== */
 
 let currentUid = null;
+let myProfile = null;
 let myUserName = 'Mitra Sitenexs';
+let myUserEmail = '';
 let myIsVerified = false;
 
 let activeChatUserId = null;
 let activeChatId = null;
+let otherProfile = null;
 let otherUserName = 'Mitra Sitenexs';
+let otherUserEmail = '';
 let otherUserVerified = false;
 let otherUserFcmToken = null;
 
@@ -1160,7 +1173,7 @@ window.showToast = function (msg) {
 };
 
 /* =====================================================
-   HELPER & LENCANA VERIFIKASI (LENCANA ASLI verified.png)
+   HELPER & LENCANA VERIFIKASI (VIA MODUL DATA USER)
 ===================================================== */
 
 function escapeHtml(text) {
@@ -1185,12 +1198,11 @@ function safeUrl(url) {
 }
 
 function getVerifiedBadgesHtml(isVerified) {
-    if (!isVerified) return '';
-    return `<img src="https://sitenexs.com/assets/logo/verified.png" class="chat-header-verif" alt="Verified">`;
+    return getUserBadgesHtml(Boolean(isVerified));
 }
 
 function getAvatarUrl(uid) {
-    return `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo`;
+    return getUserAvatarUrl(uid);
 }
 
 function formatMessageTime(timestamp) {
@@ -2399,46 +2411,22 @@ async function initChat(user) {
         });
     } catch (error) {}
 
-    // Load current user
-    try {
-        const mySnap = await getDoc(doc(db, 'users', currentUid));
+    // Load current user via modul data user
+    myProfile = await fetchUserProfile(db, currentUid);
+    myUserName = myProfile.displayName;
+    myUserEmail = myProfile.email;
+    myIsVerified = myProfile.isVerified;
 
-        if (mySnap.exists()) {
-            const md = mySnap.data();
+    // Load recipient via modul data user
+    otherProfile = await fetchUserProfile(db, activeChatUserId);
+    otherUserName = otherProfile.displayName;
+    otherUserEmail = otherProfile.email;
+    otherUserVerified = otherProfile.isVerified;
+    otherUserFcmToken = otherProfile.fcmToken;
 
-            myUserName =
-                md.namaLengkap ||
-                [md.namaDepan, md.namaBelakang].filter(Boolean).join(' ') ||
-                myUserName;
-            myIsVerified = Boolean(md.isVerified);
-        }
-    } catch (error) {
-        console.error('Load current user error:', error);
-    }
-
-    // Load recipient
-    try {
-        const userSnap = await getDoc(doc(db, 'users', activeChatUserId));
-
-        if (userSnap.exists()) {
-            const data = userSnap.data();
-
-            otherUserName =
-                data.namaLengkap ||
-                [data.namaDepan, data.namaBelakang].filter(Boolean).join(' ') ||
-                otherUserName;
-            otherUserVerified = Boolean(data.isVerified);
-            otherUserFcmToken = data.fcmToken || null;
-
-            document.getElementById('activeChatBadges').innerHTML =
-                getVerifiedBadgesHtml(otherUserVerified);
-        }
-    } catch (error) {
-        console.error('Load recipient error:', error);
-    }
-
+    document.getElementById('activeChatBadges').innerHTML = otherProfile.badgesHtml;
     document.getElementById('activeChatName').textContent = otherUserName;
-    document.getElementById('activeChatAvatar').src = getAvatarUrl(activeChatUserId);
+    document.getElementById('activeChatAvatar').src = otherProfile.avatarUrl;
 
     // Firestore messages
     const messagesRef = collection(db, 'chats', activeChatId, 'messages');
@@ -2504,7 +2492,7 @@ async function initChat(user) {
                                 previewText,
                                 {
                                     tag: `chat-${activeChatId}`,
-                                    icon: getAvatarUrl(activeChatUserId),
+                                    icon: otherProfile?.avatarUrl || getAvatarUrl(activeChatUserId),
                                     url: window.location.href
                                 }
                             );
@@ -2578,7 +2566,7 @@ window.handleChatFormSubmit = async function (event) {
             body: text,
             tag: `chat-${activeChatId}`,
             url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(currentUid)}`,
-            icon: getAvatarUrl(currentUid),
+            icon: myProfile?.avatarUrl || getAvatarUrl(currentUid),
             workerUrl: PUSH_WORKER_URL
         });
         if (pushRes?.token) otherUserFcmToken = pushRes.token;
