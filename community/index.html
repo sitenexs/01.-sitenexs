@@ -722,6 +722,16 @@
             showToast("Terima kasih! Notifikasi telah diizinkan.");
         }
 
+        function tryOpenBrowserNotificationSettings() {
+            const ua = navigator.userAgent || '';
+            try {
+                if (/Edg\//i.test(ua)) {
+                    window.open('edge://settings/content/notifications', '_blank');
+                    return;
+                }
+            } catch (e) {}
+        }
+
         window.enforceMandatoryNotificationGate = function() {
             const backdrop = document.getElementById('forceNotifBackdrop');
             const statusText = document.getElementById('forceNotifStatusText');
@@ -763,6 +773,15 @@
                 return;
             }
 
+            if (Notification.permission === 'denied') {
+                tryOpenBrowserNotificationSettings();
+                enforceMandatoryNotificationGate();
+                if (statusText) {
+                    statusText.innerText = 'Izin notifikasi sedang diblokir browser. Ketuk ikon kunci/setelan situs di address bar > Notifikasi > Izinkan, lalu kembali ke tab ini.';
+                }
+                return;
+            }
+
             try {
                 const permPromise = Notification.requestPermission((permissionResult) => {
                     if (permissionResult === 'granted') {
@@ -771,7 +790,7 @@
                         enforceMandatoryNotificationGate();
                         if (statusText) {
                             statusText.innerText = permissionResult === 'denied'
-                                ? 'Izin ditolak di popup browser. Aktifkan di pengaturan situs browser (ikon gembok/setelan situs) lalu klik Cek Ulang.'
+                                ? 'Izin ditolak di popup browser. Ketuk ikon kunci/setelan situs di address bar > Notifikasi > Izinkan, lalu klik Cek Ulang.'
                                 : 'Belum diizinkan! Tekan Izinkan pada popup browser agar notifikasi aktif.';
                         }
                     }
@@ -785,7 +804,7 @@
                             enforceMandatoryNotificationGate();
                             if (statusText) {
                                 statusText.innerText = permissionResult === 'denied'
-                                    ? 'Izin ditolak di popup browser. Aktifkan di pengaturan situs browser (ikon gembok/setelan situs) lalu klik Cek Ulang.'
+                                    ? 'Izin ditolak di popup browser. Ketuk ikon kunci/setelan situs di address bar > Notifikasi > Izinkan, lalu klik Cek Ulang.'
                                     : 'Belum diizinkan! Tekan Izinkan pada popup browser agar notifikasi aktif.';
                             }
                         }
