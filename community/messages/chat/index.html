@@ -850,40 +850,48 @@ async function registerPushServiceWorker() {
 }
 
 async function syncFcmTokenToFirestore() {
-    if (!currentUid || !('Notification' in window) || Notification.permission !== 'granted') return;
+    if (!currentUid) {
+        showToast('Gagal FCM: UID user kosong.');
+        return;
+    }
+    if (!('Notification' in window) || Notification.permission !== 'granted') {
+        showToast('Gagal FCM: Izin notifikasi belum granted.');
+        return;
+    }
 
     try {
         const supported = await isSupported();
-        if (!supported) return;
+        if (!supported) {
+            showToast('Browser HP ini tidak mendukung FCM.');
+            return;
+        }
+
+        const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        await navigator.serviceWorker.ready;
 
         const messaging = getMessaging(app);
-        const tokenOptions = { serviceWorkerRegistration: swRegistration || undefined };
-        if (FCM_VAPID_KEY && !FCM_VAPID_KEY.startsWith('MASUKKAN_')) {
-            tokenOptions.vapidKey = FCM_VAPID_KEY;
-        }
+        const fcmToken = await getToken(messaging, {
+            vapidKey: FCM_VAPID_KEY,
+            serviceWorkerRegistration: reg
+        });
 
-        const fcmToken = await getToken(messaging, tokenOptions);
         if (fcmToken) {
             await setDoc(doc(db, 'users', currentUid), {
-                fcmToken,
+                fcmToken: fcmToken,
                 fcmUpdatedAt: serverTimestamp()
             }, { merge: true });
-        }
 
-        onMessage(messaging, (payload) => {
-            const title = payload?.notification?.title || payload?.data?.title || 'Sitenexs';
-            const body = payload?.notification?.body || payload?.data?.body || '';
-            if (document.visibilityState === 'hidden') {
-                triggerMobileSystemNotification(title, body, {
-                    tag: payload?.data?.tag || 'sitenexs-fcm',
-                    url: window.location.href
-                });
-            }
-        });
+            showToast('FCM Token berhasil disimpan ke Firestore!');
+            console.log('FCM_TOKEN:', fcmToken);
+        } else {
+            showToast('FCM Token kosong dari server Firebase.');
+        }
     } catch (error) {
-        console.warn('Sinkronisasi token FCM dilewati:', error.message);
+        console.error('Error FCM:', error);
+        alert('Error FCM: ' + (error?.message || error));
     }
 }
+
 
 window.requestPushNotificationPermission = async function () {
     if (!('Notification' in window)) {
