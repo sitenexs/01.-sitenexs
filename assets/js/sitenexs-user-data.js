@@ -6,7 +6,7 @@ import {
 import {
     supabaseUrl as CONFIG_SUPABASE_URL,
     avatarBucket as CONFIG_AVATAR_BUCKET
-} from './sitenexs-config.js';
+} from 'https://sitenexs.com/assets/js/sitenexs-config.js';
 
 const DEFAULT_VERIFIED_BADGE_URL = 'https://sitenexs.com/assets/logo/verified.png';
 const DEFAULT_FALLBACK_AVATAR = 'https://ui-avatars.com/api/?name=User&background=2563eb&color=fff';
@@ -32,21 +32,8 @@ export function getUserBadgesHtml(
     } = {}
 ) {
     const isVerified = typeof profile === 'boolean' ? profile : Boolean(profile?.isVerified);
-    let badges = '';
-
-    if (isVerified) {
-        badges += `<img src="${verifiedBadgeUrl}" class="${badgeClass}" alt="Verified" title="Akun Terverifikasi">`;
-    }
-
-    if (typeof profile === 'object' && profile !== null) {
-        if (profile.isFounder) {
-            badges += `<span class="user-role-badge founder" title="Founder">Founder</span>`;
-        } else if (profile.isDeveloper) {
-            badges += `<span class="user-role-badge dev" title="Developer">Dev</span>`;
-        }
-    }
-
-    return badges;
+    if (!isVerified) return '';
+    return `<img src="${verifiedBadgeUrl}" class="${badgeClass}" alt="Verified" title="Akun Terverifikasi">`;
 }
 
 export function normalizeUserProfile(uid, rawData = {}, options = {}) {
@@ -60,7 +47,6 @@ export function normalizeUserProfile(uid, rawData = {}, options = {}) {
     const email = String(rawData.email || rawData.bisnis?.email || '').trim();
     const isVerified = Boolean(rawData.isVerified);
     const isFounder = Boolean(rawData.isFounder);
-    const isDeveloper = Boolean(rawData.isDeveloper);
     const avatarUrl = getUserAvatarUrl(uid, options);
 
     return {
@@ -74,11 +60,7 @@ export function normalizeUserProfile(uid, rawData = {}, options = {}) {
         address: String(rawData.alamat || '').trim(),
         isVerified,
         isFounder,
-        isDeveloper,
-        badgesHtml: getUserBadgesHtml(
-            { isVerified, isFounder, isDeveloper },
-            options
-        ),
+        badgesHtml: getUserBadgesHtml({ isVerified }, options),
         avatarUrl,
         fcmToken: rawData.fcmToken || null,
         packageName: rawData.paketLangganan || rawData.package || 'basic',
