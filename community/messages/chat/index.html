@@ -348,13 +348,27 @@
         let remoteStream = null;
         let isMicMuted = false;
         let isCamOff = false;
-        let activeCallSessionId = null;
-        let incomingCallData = null;
+        let currentSessionId = null;
+        let incomingOfferData = null;
         let iceCandidateQueue = [];
+        let isInCall = false;
 
+        // Server STUN & TURN agar tembus jaringan seluler (4G/5G) dan Wi-Fi
         const rtcConfig = {
             iceServers: [
-                { urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302', 'stun:stun3.l.google.com:19302'] }
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                {
+                    urls: 'turn:openrelay.metered.ca:80',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                },
+                {
+                    urls: 'turn:openrelay.metered.ca:443',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                }
             ],
             iceCandidatePoolSize: 10
         };
@@ -453,7 +467,9 @@
                     video: { facingMode: 'user' },
                     audio: true
                 });
-                document.getElementById('localVideo').srcObject = localStream;
+                const localVideoEl = document.getElementById('localVideo');
+                localVideoEl.srcObject = localStream;
+                localVideoEl.play().catch(() => {});
                 return true;
             } catch (err) {
                 showToast("Izin kamera atau mikrofon ditolak: " + err.message);
@@ -474,48 +490,63 @@
             iceCandidateQueue = [];
             peerConnection = new RTCPeerConnection(rtcConfig);
             remoteStream = new MediaStream();
-            document.getElementById('remoteVideo').srcObject = remoteStream;
+            
+            const remoteVideoEl = document.getElementById('remoteVideo');
+            remoteVideoEl.srcObject = remoteStream;
 
             localStream.getTracks().forEach(track => {
                 peerConnection.addTrack(track, localStream);
             });
 
             peerConnection.ontrack = (event) => {
-                event.streams[0].getTracks().forEach(track => {
-                    remoteStream.addTrack(track);
-                });
+                if (event.streams && event.streams[0]) {
+                    event.streams[0].getTracks().forEach(track => {
+                        remoteStream.addTrack(track);
+                    });
+                } else {
+                    remoteStream.addTrack(event.track);
+                }
+                remoteVideoEl.play().catch(() => {});
                 document.getElementById('vcStatusText').innerText = otherUserName;
             };
 
             const localCandidatesPath = isCaller ? 'callerCandidates' : 'calleeCandidates';
             const remoteCandidatesPath = isCaller ? 'calleeCandidates' : 'callerCandidates';
 
-            const localCandidatesRef = ref(rtdb, `calls/${sessionId}/${localCandidatesPath}`);
+            const localCandidatesRef = ref(rtdb, `calls/${activeChatId}/${localCandidatesPath}`);
             peerConnection.onicecandidate = (event) => {
                 if (event.candidate) {
-                    push(localCandidatesRef, event.candidate.toJSON()).catch(() => {});
+                    push(localCandidatesRef, {
+                        sessionId: sessionId,
+                        candidate: event.candidate.toJSON()
+                    }).catch(() => {});
                 }
             };
 
-            const remoteCandidatesRef = ref(rtdb, `calls/${sessionId}/${remoteCandidatesPath}`);
+            const remoteCandidatesRef = ref(rtdb, `calls/${activeChatId}/${remoteCandidatesPath}`);
             onChildAdded(remoteCandidatesRef, async (snapshot) => {
-                const candidateData = snapshot.val();
-                if (!candidateData || !peerConnection) return;
+                const val = snapshot.val();
+                if (!val || !val.candidate || val.sessionId !== sessionId || !peerConnection) return;
 
                 if (peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
                     try {
-                        await peerConnection.addIceCandidate(new RTCIceCandidate(candidateData));
+                        await peerConnection.addIceCandidate(new RTCIceCandidate(val.candidate));
                     } catch (e) {}
                 } else {
-                    iceCandidateQueue.push(candidateData);
+                    iceCandidateQueue.push(val.candidate);
                 }
             });
 
-            peerConnection.onconnectionstatechange = () => {
+            peerConnection.oniceconnectionstatechange = () => {
                 if (!peerConnection) return;
-                if (peerConnection.connectionState === 'connected') {
+                const state = peerConnection.iceConnectionState;
+                if (state === 'connected' || state === 'completed') {
                     document.getElementById('vcStatusText').innerText = otherUserName;
-                } else if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'failed' || peerConnection.connectionState === 'closed') {
+                    remoteVideoEl.play().catch(() => {});
+                } else if (state === 'checking') {
+                    document.getElementById('vcStatusText').innerText = "Menyambungkan jaringan...";
+                } else if (state === 'failed') {
+                    showToast("Koneksi jaringan gagal (NAT/Firewall).");
                     endVideoCall();
                 }
             };
@@ -531,20 +562,28 @@
             const mediaReady = await setupLocalMedia();
             if (!mediaReady) return;
 
+            isInCall = true;
+            currentSessionId = `${currentUid}_${Date.now()}`;
             document.getElementById('vcOverlay').classList.add('active');
             document.getElementById('vcStatusText').innerText = `Memanggil ${otherUserName}...`;
 
-            // Buat ID sesi panggilan unik agar tidak bentrok dengan panggilan sebelumnya
-            activeCallSessionId = `${activeChatId}_${Date.now()}`;
-            createPeerConnection(activeCallSessionId, true);
+            const roomRef = ref(rtdb, `calls/${activeChatId}`);
 
             try {
-                const offerDescription = await peerConnection.createOffer();
+                // Bersihkan ruang chat call terlebih dahulu
+                await remove(roomRef);
+
+                createPeerConnection(currentSessionId, true);
+
+                const offerDescription = await peerConnection.createOffer({
+                    offerToReceiveAudio: true,
+                    offerToReceiveVideo: true
+                });
                 await peerConnection.setLocalDescription(offerDescription);
 
-                // Simpan detail sesi panggilan
-                await set(ref(rtdb, `calls/${activeCallSessionId}`), {
-                    sessionId: activeCallSessionId,
+                // Simpan seluruh data panggilan dalam satu node tunggal
+                await set(roomRef, {
+                    sessionId: currentSessionId,
                     callerUid: currentUid,
                     callerName: myUserName,
                     calleeUid: activeChatUserId,
@@ -556,38 +595,8 @@
                     timestamp: Date.now()
                 });
 
-                // Kirim sinyal dering langsung ke kotak masuk panggilan penerima
-                await set(ref(rtdb, `incomingCalls/${activeChatUserId}`), {
-                    sessionId: activeCallSessionId,
-                    callerUid: currentUid,
-                    callerName: myUserName,
-                    timestamp: Date.now()
-                });
-
-                // Pantau perubahan pada sesi panggilan (diterima/ditolak/ditutup)
-                const sessionRef = ref(rtdb, `calls/${activeCallSessionId}`);
-                onValue(sessionRef, async (snapshot) => {
-                    const data = snapshot.val();
-                    if (!data) {
-                        cleanupCallUI();
-                        return;
-                    }
-                    if (data.status === 'rejected') {
-                        showToast("Panggilan ditolak oleh " + otherUserName);
-                        cleanupCallUI();
-                        await remove(sessionRef);
-                        return;
-                    }
-                    if (data.answer && peerConnection && !peerConnection.currentRemoteDescription) {
-                        const answerDescription = new RTCSessionDescription(data.answer);
-                        await peerConnection.setRemoteDescription(answerDescription);
-                        await flushIceCandidateQueue();
-                        document.getElementById('vcStatusText').innerText = otherUserName;
-                    }
-                });
-
             } catch (err) {
-                showToast("Gagal menyambungkan RTDB: " + err.message);
+                showToast("Error RTDB: " + err.message);
                 cleanupCallUI();
             }
         };
@@ -595,13 +604,7 @@
         // 2. MENERIMA PANGGILAN (CALLEE)
         window.acceptVideoCall = async function() {
             document.getElementById('incomingCallModal').classList.remove('active');
-            if (!incomingCallData || !incomingCallData.sessionId) return;
-
-            const sessionId = incomingCallData.sessionId;
-            activeCallSessionId = sessionId;
-
-            // Hapus notifikasi dering di kotak masuk
-            await remove(ref(rtdb, `incomingCalls/${currentUid}`)).catch(() => {});
+            if (!incomingOfferData || !currentSessionId) return;
 
             const mediaReady = await setupLocalMedia();
             if (!mediaReady) {
@@ -609,32 +612,24 @@
                 return;
             }
 
+            isInCall = true;
             document.getElementById('vcOverlay').classList.add('active');
             document.getElementById('vcStatusText').innerText = "Menghubungkan...";
 
-            createPeerConnection(sessionId, false);
+            createPeerConnection(currentSessionId, false);
 
             try {
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(incomingCallData.offer));
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(incomingOfferData));
                 await flushIceCandidateQueue();
 
                 const answerDescription = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answerDescription);
 
-                await update(ref(rtdb, `calls/${sessionId}`), {
+                await update(ref(rtdb, `calls/${activeChatId}`), {
                     status: 'connected',
                     answer: {
                         type: answerDescription.type,
                         sdp: answerDescription.sdp
-                    }
-                });
-
-                // Pantau jika penelepon memutus panggilan
-                const sessionRef = ref(rtdb, `calls/${sessionId}`);
-                onValue(sessionRef, (snapshot) => {
-                    if (!snapshot.exists()) {
-                        cleanupCallUI();
-                        showToast("Panggilan berakhir.");
                     }
                 });
 
@@ -647,33 +642,25 @@
         // 3. MENOLAK PANGGILAN
         window.rejectVideoCall = async function() {
             document.getElementById('incomingCallModal').classList.remove('active');
-            if (currentUid) {
-                await remove(ref(rtdb, `incomingCalls/${currentUid}`)).catch(() => {});
-            }
-            if (incomingCallData && incomingCallData.sessionId) {
-                await update(ref(rtdb, `calls/${incomingCallData.sessionId}`), {
+            if (activeChatId) {
+                await update(ref(rtdb, `calls/${activeChatId}`), {
                     status: 'rejected'
                 }).catch(() => {});
             }
-            incomingCallData = null;
-            activeCallSessionId = null;
+            incomingOfferData = null;
+            currentSessionId = null;
         };
 
         // 4. MENGAKHIRI PANGGILAN
         window.endVideoCall = async function() {
-            if (activeCallSessionId) {
-                await remove(ref(rtdb, `calls/${activeCallSessionId}`)).catch(() => {});
-            }
-            if (activeChatUserId) {
-                await remove(ref(rtdb, `incomingCalls/${activeChatUserId}`)).catch(() => {});
-            }
-            if (currentUid) {
-                await remove(ref(rtdb, `incomingCalls/${currentUid}`)).catch(() => {});
+            if (activeChatId) {
+                await remove(ref(rtdb, `calls/${activeChatId}`)).catch(() => {});
             }
             cleanupCallUI();
         };
 
         function cleanupCallUI() {
+            isInCall = false;
             document.getElementById('vcOverlay').classList.remove('active');
             document.getElementById('incomingCallModal').classList.remove('active');
 
@@ -688,14 +675,13 @@
             document.getElementById('localVideo').srcObject = null;
             document.getElementById('remoteVideo').srcObject = null;
 
-            if (activeCallSessionId) {
-                off(ref(rtdb, `calls/${activeCallSessionId}`));
-                off(ref(rtdb, `calls/${activeCallSessionId}/callerCandidates`));
-                off(ref(rtdb, `calls/${activeCallSessionId}/calleeCandidates`));
-                activeCallSessionId = null;
+            if (activeChatId) {
+                off(ref(rtdb, `calls/${activeChatId}/callerCandidates`));
+                off(ref(rtdb, `calls/${activeChatId}/calleeCandidates`));
             }
 
-            incomingCallData = null;
+            currentSessionId = null;
+            incomingOfferData = null;
             iceCandidateQueue = [];
             isMicMuted = false;
             isCamOff = false;
@@ -723,44 +709,54 @@
             btn.innerHTML = isCamOff ? '<i class="fas fa-video-slash"></i>' : '<i class="fas fa-video"></i>';
         };
 
-        // LISTENER PANGGILAN MASUK KHUSUS UNTUK USER INI
-        function listenForIncomingCalls() {
-            const myIncomingRef = ref(rtdb, `incomingCalls/${currentUid}`);
-            onValue(myIncomingRef, (snapshot) => {
-                const ringData = snapshot.val();
-                if (!ringData || !ringData.sessionId) {
+        // LISTENER TUNGGAL UNTUK SINYAL PANGGILAN (CALLER & CALLEE)
+        function listenToCallRoom() {
+            const roomRef = ref(rtdb, `calls/${activeChatId}`);
+            onValue(roomRef, async (snapshot) => {
+                const data = snapshot.val();
+
+                // Jika node panggilan dihapus (panggilan ditutup/dibatalkan)
+                if (!data) {
                     document.getElementById('incomingCallModal').classList.remove('active');
+                    if (isInCall) {
+                        showToast("Panggilan berakhir.");
+                        cleanupCallUI();
+                    }
                     return;
                 }
 
-                // Abaikan panggilan lama yang lebih dari 60 detik
-                if (ringData.timestamp && (Date.now() - ringData.timestamp > 60000)) {
-                    remove(myIncomingRef).catch(() => {});
+                // Abaikan data lama (> 60 detik) jika belum terhubung
+                if (data.status === 'ringing' && data.timestamp && (Date.now() - data.timestamp > 60000)) {
+                    remove(roomRef).catch(() => {});
                     return;
                 }
 
-                // Ambil data SDP Offer dari node sesi panggilan
-                const sessionRef = ref(rtdb, `calls/${ringData.sessionId}`);
-                onValue(sessionRef, (sessionSnap) => {
-                    const sessionData = sessionSnap.val();
-                    if (!sessionData || sessionData.status !== 'ringing' || !sessionData.offer) {
-                        document.getElementById('incomingCallModal').classList.remove('active');
+                // A. JIKA KITA ADALAH PENERIMA (CALLEE)
+                if (data.calleeUid === currentUid && data.status === 'ringing' && data.offer && !isInCall) {
+                    currentSessionId = data.sessionId;
+                    incomingOfferData = data.offer;
+                    document.getElementById('callerNameDisplay').innerText = data.callerName || otherUserName;
+                    document.getElementById('incomingCallModal').classList.add('active');
+                }
+
+                // B. JIKA KITA ADALAH PENELEPON (CALLER)
+                if (data.callerUid === currentUid && isInCall && data.sessionId === currentSessionId) {
+                    if (data.status === 'rejected') {
+                        showToast("Panggilan ditolak.");
+                        await remove(roomRef).catch(() => {});
+                        cleanupCallUI();
                         return;
                     }
-
-                    // Jangan tampilkan modal jika sedang dalam panggilan aktif
-                    if (document.getElementById('vcOverlay').classList.contains('active')) return;
-
-                    incomingCallData = {
-                        sessionId: ringData.sessionId,
-                        callerUid: sessionData.callerUid,
-                        offer: sessionData.offer
-                    };
-                    document.getElementById('callerNameDisplay').innerText = sessionData.callerName || otherUserName;
-                    document.getElementById('incomingCallModal').classList.add('active');
-                }, { onlyOnce: true });
+                    if (data.answer && peerConnection && !peerConnection.currentRemoteDescription) {
+                        try {
+                            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+                            await flushIceCandidateQueue();
+                            document.getElementById('vcStatusText').innerText = otherUserName;
+                        } catch (e) {}
+                    }
+                }
             }, (error) => {
-                console.error("RTDB Listener Error:", error);
+                showToast("Koneksi RTDB ditolak: " + error.message);
             });
         }
 
@@ -772,14 +768,14 @@
             const participants = [currentUid, activeChatUserId].sort();
             activeChatId = `${participants[0]}_${participants[1]}`;
 
-            // Mulai dengarkan sinyal Video Call masuk
-            listenForIncomingCalls();
+            // Mulai pantau sinyal Video Call di ruang chat ini
+            listenToCallRoom();
 
             try {
                 await updateDoc(doc(db, "chats", activeChatId), { [`unread_${currentUid}`]: false });
             } catch(e) {}
 
-            // Ambil nama kita sendiri untuk ditampilkan di layar penerima panggilan
+            // Ambil nama kita sendiri
             try {
                 const mySnap = await getDoc(doc(db, "users", currentUid));
                 if (mySnap.exists()) {
