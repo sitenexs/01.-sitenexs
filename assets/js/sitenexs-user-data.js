@@ -3,8 +3,11 @@ import {
     getDoc
 } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
-const DEFAULT_SUPABASE_URL = 'https://xqcbyamxiekdxytntlno.supabase.co';
-const DEFAULT_AVATAR_BUCKET = 'profile-photos';
+import {
+    supabaseUrl as CONFIG_SUPABASE_URL,
+    avatarBucket as CONFIG_AVATAR_BUCKET
+} from './sitenexs-config.js';
+
 const DEFAULT_VERIFIED_BADGE_URL = 'https://sitenexs.com/assets/logo/verified.png';
 const DEFAULT_FALLBACK_AVATAR = 'https://ui-avatars.com/api/?name=User&background=2563eb&color=fff';
 
@@ -13,8 +16,8 @@ const userProfileCache = new Map();
 export function getUserAvatarUrl(
     uid,
     {
-        supabaseUrl = DEFAULT_SUPABASE_URL,
-        bucket = DEFAULT_AVATAR_BUCKET
+        supabaseUrl = CONFIG_SUPABASE_URL,
+        bucket = CONFIG_AVATAR_BUCKET
     } = {}
 ) {
     if (!uid) return DEFAULT_FALLBACK_AVATAR;
