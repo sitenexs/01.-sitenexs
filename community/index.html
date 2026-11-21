@@ -213,9 +213,10 @@
             font-weight: 700;
             color: #b45309;
             background: #fef3c7;
-            padding: 0.35rem 0.75rem;
-            border-radius: var(--radius-full);
+            padding: 0.45rem 0.75rem;
+            border-radius: var(--radius-md);
             width: 100%;
+            line-height: 1.4;
         }
         .force-notif-allow-btn {
             width: 100%;
@@ -235,6 +236,22 @@
         }
         .force-notif-allow-btn:hover {
             transform: translateY(-2px);
+        }
+        .force-notif-recheck-btn {
+            width: 100%;
+            padding: 0.55rem 1rem;
+            border-radius: var(--radius-full);
+            background: var(--bg-alt);
+            color: var(--text-main);
+            border: 1px solid var(--border-medium);
+            font-size: 0.76rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .force-notif-recheck-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
         /* BUTTONS */
@@ -559,6 +576,9 @@
             <button type="button" class="force-notif-allow-btn" id="forceAllowNotifBtn" onclick="triggerNativeBrowserNotificationPrompt()">
                 <i class="fas fa-bell"></i> Izinkan Notifikasi Sekarang
             </button>
+            <button type="button" class="force-notif-recheck-btn" id="forceRecheckNotifBtn" onclick="enforceMandatoryNotificationGate()">
+                <i class="fas fa-sync-alt"></i> Cek Ulang Status Izin Browser
+            </button>
         </div>
     </div>
 
@@ -692,7 +712,17 @@
         /* =====================================================
            PEMANTAUAN WAJIB IZIN NOTIFIKASI + POPUP ASLI BROWSER
         ===================================================== */
-        function enforceMandatoryNotificationGate() {
+        async function handlePermissionGrantedFlow() {
+            await registerPushServiceWorker();
+            const activeUid = currentUserData?.uid || localStorage.getItem('sitenexs_uid');
+            if (activeUid) {
+                await syncFcmToken({ app: undefined, db, uid: activeUid, onError: () => {} });
+            }
+            enforceMandatoryNotificationGate();
+            showToast("Terima kasih! Notifikasi telah diizinkan.");
+        }
+
+        window.enforceMandatoryNotificationGate = function() {
             const backdrop = document.getElementById('forceNotifBackdrop');
             const statusText = document.getElementById('forceNotifStatusText');
             if (!backdrop) return;
@@ -713,24 +743,13 @@
 
             if (statusText) {
                 if (Notification.permission === 'denied') {
-                    statusText.innerText = 'Notifikasi diblokir di browser. Buka Setelan Situs > Notifikasi > Izinkan.';
+                    statusText.innerText = 'Izin diblokir browser. Buka Setelan Situs / Ikon Gembok di address bar > Notifikasi > Izinkan, lalu klik Cek Ulang.';
                 } else {
-                    statusText.innerText = 'Notifikasi belum diizinkan — tetap terbuka sampai Anda mengizinkannya.';
+                    statusText.innerText = 'Notifikasi belum diizinkan — klik tombol di bawah untuk memunculkan popup izin browser.';
                 }
             }
-        }
+        };
 
-        async function handlePermissionGrantedFlow() {
-            await registerPushServiceWorker();
-            const activeUid = currentUserData?.uid || localStorage.getItem('sitenexs_uid');
-            if (activeUid) {
-                await syncFcmToken({ app: undefined, db, uid: activeUid, onError: () => {} });
-            }
-            enforceMandatoryNotificationGate();
-            showToast("Terima kasih! Notifikasi telah diizinkan.");
-        }
-
-        // Dipanggil langsung sinkron saat klik tombol agar popup asli browser segera muncul
         window.triggerNativeBrowserNotificationPrompt = function() {
             if (!('Notification' in window)) {
                 enforceMandatoryNotificationGate();
@@ -752,7 +771,7 @@
                         enforceMandatoryNotificationGate();
                         if (statusText) {
                             statusText.innerText = permissionResult === 'denied'
-                                ? 'Izin ditolak di popup browser. Aktifkan di pengaturan situs browser lalu tekan tombol ini lagi.'
+                                ? 'Izin ditolak di popup browser. Aktifkan di pengaturan situs browser (ikon gembok/setelan situs) lalu klik Cek Ulang.'
                                 : 'Belum diizinkan! Tekan Izinkan pada popup browser agar notifikasi aktif.';
                         }
                     }
@@ -766,7 +785,7 @@
                             enforceMandatoryNotificationGate();
                             if (statusText) {
                                 statusText.innerText = permissionResult === 'denied'
-                                    ? 'Izin ditolak di popup browser. Aktifkan di pengaturan situs browser lalu tekan tombol ini lagi.'
+                                    ? 'Izin ditolak di popup browser. Aktifkan di pengaturan situs browser (ikon gembok/setelan situs) lalu klik Cek Ulang.'
                                     : 'Belum diizinkan! Tekan Izinkan pada popup browser agar notifikasi aktif.';
                             }
                         }
@@ -780,10 +799,20 @@
         };
 
         enforceMandatoryNotificationGate();
-        window.addEventListener('focus', enforceMandatoryNotificationGate);
+        window.addEventListener('focus', () => {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                handlePermissionGrantedFlow();
+            } else {
+                enforceMandatoryNotificationGate();
+            }
+        });
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
-                enforceMandatoryNotificationGate();
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    handlePermissionGrantedFlow();
+                } else {
+                    enforceMandatoryNotificationGate();
+                }
             }
         });
         document.addEventListener('keydown', (e) => {
