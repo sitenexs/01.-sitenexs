@@ -153,7 +153,6 @@
         .logo-text { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; font-weight: 800; letter-spacing: -0.02em; }
         .nav-actions { display: flex; gap: 0.4rem; align-items: center; }
 
-        /* NAVBAR PROFILE BUTTON / ICON (PERBAIKAN TATA LETAK MUTLAK AGAR TIDAK TUMPANG TINDIH) */
         .nav-profile-link {
             width: 38px; height: 38px; border-radius: 50%; overflow: hidden;
             border: 1px solid var(--border-medium); display: inline-flex; align-items: center; justify-content: center;
@@ -544,37 +543,51 @@
         </div>
     </div>
 
-    <!-- SCRIPT FIREBASE & SUPABASE INTEGRATION -->
+    <!-- MODUL KONFIGURASI, DATA USER & PUSH NOTIFIKASI -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
-        import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, collection, addDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp, query, orderBy, onSnapshot, getDocs } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+        import { doc, getDoc, collection, addDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp, query, orderBy, where, onSnapshot, getDocs } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { ref, onValue, remove } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
 
-        const firebaseConfig = {
-            apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
-            authDomain: 'sitenexs-62919.firebaseapp.com',
-            projectId: 'sitenexs-62919',
-            storageBucket: 'sitenexs-62919.firebasestorage.app',
-            messagingSenderId: '1060348110644',
-            appId: '1:1060348110644:web:e45af14d5f26a9cf8e6761'
-        };
+        import {
+            db,
+            rtdb,
+            auth,
+            supabaseUrl,
+            avatarBucket,
+            PUSH_WORKER_URL
+        } from 'https://sitenexs.com/assets/js/sitenexs-config.js';
 
-        const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
+        import {
+            fetchUserProfile as fetchNormalizedUserProfile,
+            getUserAvatarUrl,
+            getUserBadgesHtml
+        } from 'https://sitenexs.com/assets/js/sitenexs-user-data.js';
+
+        import {
+            registerPushServiceWorker,
+            syncFcmToken,
+            listenForegroundMessages,
+            triggerLocalSystemNotification,
+            sendPushNotification
+        } from 'https://sitenexs.com/assets/js/sitenexs-push-client.js';
+
+        const CALL_PAGE_URL = 'https://sitenexs.com/community/messages/call/';
         const supabaseKey = 'sb_publishable_XKHXYrEw2EDdfYH17Uyx6w_k_BtGLQa';
-        const avatarBucket = 'profile-photos';
         const forumBucket = 'forum-photos';
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        
-        setPersistence(auth, browserLocalPersistence).catch(err => console.log(err));
 
         const forumCollection = collection(db, "forum_posts");
         let allRegisteredUsers = [];
         let currentUserData = null;
         let isInitialLoad = true;
-        
+        let isInitialChatsLoad = true;
+        let unsubscribeIncomingCalls = null;
+        let unsubscribeChatsNotify = null;
+        let isRedirectingToCall = false;
+        let previousLikesByPost = new Map();
+        const notifiedLikeKeys = new Set();
+        const notifiedMessageKeys = new Set();
+
         const postContainer = document.getElementById('postContainer');
         const modal = document.getElementById('postModal');
         const form = document.getElementById('createPostForm');
@@ -600,6 +613,88 @@
             }, 3000);
         };
 
+        /* =====================================================
+           PAKSA MEMBUKA HALAMAN TELEPON SAAT ADA PANGGILAN MASUK
+        ===================================================== */
+        function listenIncomingCallsAndForceRedirect(uid) {
+            if (!uid) return;
+            const incomingRef = ref(rtdb, `incomingCalls/${uid}`);
+            if (unsubscribeIncomingCalls) unsubscribeIncomingCalls();
+
+            unsubscribeIncomingCalls = onValue(incomingRef, (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+
+                if (data.timestamp && Date.now() - data.timestamp > 60000) {
+                    remove(incomingRef).catch(() => {});
+                    return;
+                }
+
+                if (data.callerUid === uid) return;
+
+                if (
+                    data.calleeUid === uid &&
+                    data.status === 'ringing' &&
+                    data.offer &&
+                    !isRedirectingToCall
+                ) {
+                    isRedirectingToCall = true;
+                    const callUrl = new URL(CALL_PAGE_URL);
+                    callUrl.searchParams.set('to', data.callerUid);
+                    callUrl.searchParams.set('mode', 'incoming');
+                    callUrl.searchParams.set('roomId', data.roomId);
+                    callUrl.searchParams.set('type', data.callType === 'audio' ? 'audio' : 'video');
+                    window.location.replace(callUrl.toString());
+                }
+            });
+        }
+
+        /* =====================================================
+           NOTIFIKASI PESAN BARU MASUK KE USER
+        ===================================================== */
+        function listenNewMessagesForUser(uid) {
+            if (!uid) return;
+            if (unsubscribeChatsNotify) unsubscribeChatsNotify();
+            isInitialChatsLoad = true;
+
+            const qChats = query(collection(db, "chats"), where("participants", "array-contains", uid));
+            unsubscribeChatsNotify = onSnapshot(qChats, async (snapshot) => {
+                if (isInitialChatsLoad) {
+                    isInitialChatsLoad = false;
+                    return;
+                }
+
+                for (const change of snapshot.docChanges()) {
+                    if (change.type === 'modified' || change.type === 'added') {
+                        const chatData = change.doc.data();
+                        const isUnread = chatData[`unread_${uid}`] === true;
+                        const lastTs = chatData.lastTimestamp?.toMillis ? chatData.lastTimestamp.toMillis() : 0;
+                        const notifyKey = `${change.doc.id}_${lastTs}`;
+
+                        if (isUnread && lastTs > 0 && !notifiedMessageKeys.has(notifyKey)) {
+                            notifiedMessageKeys.add(notifyKey);
+                            const otherUid = (chatData.participants || []).find(p => String(p).trim() !== String(uid).trim());
+                            const senderProfile = otherUid
+                                ? await fetchNormalizedUserProfile(db, otherUid)
+                                : { displayName: 'Mitra Sitenexs', avatarUrl: 'https://sitenexs.com/assets/logo/logo.png' };
+
+                            const msgPreview = String(chatData.lastMessage || 'Pesan baru');
+                            showToast(`Pesan baru dari ${senderProfile.displayName}: ${msgPreview}`);
+                            triggerLocalSystemNotification(
+                                `Pesan baru dari ${senderProfile.displayName}`,
+                                msgPreview,
+                                {
+                                    tag: `msg-${change.doc.id}`,
+                                    icon: senderProfile.avatarUrl,
+                                    url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(otherUid || '')}`
+                                }
+                            );
+                        }
+                    }
+                }
+            });
+        }
+
         // --- MODE FOKUS KARTU ---
         window.activateFocusMode = function(card) {
             document.querySelectorAll('.post-card').forEach(c => c.classList.remove('focused-card'));
@@ -613,7 +708,7 @@
             document.querySelectorAll('.post-card').forEach(c => c.classList.remove('focused-card'));
         }
 
-        // --- SALIN TAUTAN & AKTIFKAN MODE FOKUS (TANPA GARIS HIJAU) ---
+        // --- SALIN TAUTAN & AKTIFKAN MODE FOKUS ---
         window.copyPermalink = function(postId, event) {
             event.stopPropagation();
             const link = `https://sitenexs.com/community/?post=${postId}`;
@@ -683,7 +778,7 @@
                     allRegisteredUsers.push({
                         uid: dSnap.id,
                         nama: name,
-                        avatar: `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(dSnap.id)}/profile-photo`
+                        avatar: getUserAvatarUrl(dSnap.id)
                     });
                 });
             } catch (err) {
@@ -792,35 +887,27 @@
             return formatted;
         }
 
-        async function applyUserPackageTheme(uid) {
-            try {
-                const userDocRef = doc(db, "users", uid);
-                const userDocSnap = await getDoc(userDocRef);
-                let pkg = 'basic';
-                let paketLanggananName = 'Basic';
+        function applyUserPackageThemeFromProfile(profile) {
+            let pkg = 'basic';
+            const paketLanggananName = profile?.packageName || 'Basic';
+            let rawPkg = String(paketLanggananName).replace(/^(paket\s*)+/i, '').trim().toLowerCase();
 
-                if (userDocSnap.exists()) {
-                    const data = userDocSnap.data();
-                    let rawPkg = data.paketLangganan || data.paket || 'Basic';
-                    paketLanggananName = rawPkg;
-                    rawPkg = rawPkg.replace(/^(paket\s*)+/i, '').trim().toLowerCase();
-                    if (rawPkg.includes('pro')) {
-                        pkg = 'pro';
-                    } else if (rawPkg.includes('vip') || rawPkg.includes('ultimate') || rawPkg.includes('premium')) {
-                        pkg = 'vip';
-                    }
-                }
-                document.body.setAttribute('data-package', pkg);
+            if (rawPkg.includes('pro')) {
+                pkg = 'pro';
+            } else if (rawPkg.includes('vip') || rawPkg.includes('ultimate') || rawPkg.includes('premium')) {
+                pkg = 'vip';
+            }
 
-                const logoTextEl = document.getElementById('navLogoText');
-                if (logoTextEl) {
-                    if (pkg === 'basic' || !paketLanggananName || paketLanggananName.toLowerCase() === 'basic') {
-                        logoTextEl.innerText = 'SITENEXS';
-                    } else {
-                        logoTextEl.innerText = paketLanggananName.toUpperCase();
-                    }
+            document.body.setAttribute('data-package', pkg);
+
+            const logoTextEl = document.getElementById('navLogoText');
+            if (logoTextEl) {
+                if (pkg === 'basic' || !paketLanggananName || String(paketLanggananName).toLowerCase() === 'basic') {
+                    logoTextEl.innerText = 'SITENEXS';
+                } else {
+                    logoTextEl.innerText = String(paketLanggananName).toUpperCase();
                 }
-            } catch (err) {}
+            }
         }
 
         window.deleteComment = async function(postId, commentCreatedAt, commentAuthorUid) {
@@ -874,21 +961,13 @@
 
         async function fetchUserProfile(uid, fallbackName = "Mitra Sitenexs") {
             try {
-                const userDocRef = doc(db, "users", uid);
-                const userDocSnap = await getDoc(userDocRef);
+                const profile = await fetchNormalizedUserProfile(db, uid, { forceRefresh: true });
+                const namaLengkap = profile.displayName || fallbackName;
+                const isVerified = Boolean(profile.isVerified);
 
-                let namaLengkap = fallbackName;
-                let isVerified = false;
+                applyUserPackageThemeFromProfile(profile);
 
-                if (userDocSnap.exists()) {
-                    const d = userDocSnap.data();
-                    namaLengkap = d.namaLengkap || d.namaDepan + (d.namaBelakang ? ' ' + d.namaBelakang : '') || namaLengkap;
-                    isVerified = Boolean(d.isVerified); 
-                }
-
-                await applyUserPackageTheme(uid);
-
-                const photoUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo?t=${Date.now()}`;
+                const photoUrl = `${getUserAvatarUrl(uid)}?t=${Date.now()}`;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(namaLengkap)}&background=2563eb&color=fff`;
 
                 currentUserData = {
@@ -896,11 +975,19 @@
                     nama: namaLengkap,
                     isVerified: isVerified,
                     avatar: photoUrl,
-                    fallbackAvatar: fallbackUrl
+                    fallbackAvatar: fallbackUrl,
+                    fcmToken: profile.fcmToken || null
                 };
 
                 localStorage.setItem('sitenexs_logged_in', 'true');
                 localStorage.setItem('sitenexs_uid', uid);
+
+                listenIncomingCallsAndForceRedirect(uid);
+                listenNewMessagesForUser(uid);
+                await registerPushServiceWorker();
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    await syncFcmToken({ app: undefined, db, uid, onError: () => {} });
+                }
 
                 if (navProfileLink) {
                     navProfileLink.href = `https://sitenexs.com/community/profile?uid=${encodeURIComponent(uid)}`;
@@ -998,9 +1085,10 @@
                 return;
             }
             const uid = currentUserData ? currentUserData.uid : (auth.currentUser ? auth.currentUser.uid : savedUid);
+            const likerProfile = await fetchNormalizedUserProfile(db, uid);
+            const likerName = currentUserData?.nama || likerProfile.displayName || 'Mitra Sitenexs';
 
             const btn = event.currentTarget;
-            const icon = btn.querySelector('i');
             const spanCount = btn.querySelector('span');
             
             const isCurrentlyLiked = btn.classList.contains('liked');
@@ -1015,6 +1103,7 @@
                     const likes = data.likes || [];
                     const boostLikes = data.boostLikes || 0;
                     const hideStats = data.hideStats === true;
+                    const postAuthorUid = data.authorUid;
 
                     let newLikesArr = [...likes];
                     if (isCurrentlyLiked) {
@@ -1023,6 +1112,21 @@
                     } else {
                         newLikesArr.push(uid);
                         await updateDoc(postRef, { likes: arrayUnion(uid) });
+
+                        // Kirim notifikasi ke pemilik postingan bahwa user menyukai postingannya
+                        if (postAuthorUid && postAuthorUid !== uid) {
+                            const likeBody = `${likerName} menyukai postingan Anda`;
+                            await sendPushNotification({
+                                db,
+                                recipientUid: postAuthorUid,
+                                title: 'Suka Baru di Komunitas',
+                                body: likeBody,
+                                tag: `like-${postId}-${uid}`,
+                                url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`,
+                                icon: getUserAvatarUrl(uid),
+                                workerUrl: PUSH_WORKER_URL
+                            });
+                        }
                     }
 
                     let autoLikes = 0;
@@ -1112,7 +1216,7 @@
                 badgesHtml += `<span class="post-badge badge-priority"><i class="fas fa-thumbtack"></i> Unggulan</span>`;
             }
 
-            const authorPhoto = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(authorUid)}/profile-photo`;
+            const authorPhoto = getUserAvatarUrl(authorUid);
             const authorFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.penulis)}&background=2563eb&color=fff`;
             
             const verifiedIcon = `<span class="async-verif-badge" data-uid="${authorUid}"></span>`;
@@ -1152,7 +1256,7 @@
                 comments.forEach(c => {
                     const cDate = c.createdAt ? timeAgo(new Date(c.createdAt)) : 'Baru saja';
                     const cAuthorUid = c.authorUid || 'unknown';
-                    const cAvatar = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(cAuthorUid)}/profile-photo`;
+                    const cAvatar = getUserAvatarUrl(cAuthorUid);
                     const cFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.penulis)}&background=random&color=fff`;
                     
                     const cVerified = `<span class="async-verif-badge" data-uid="${cAuthorUid}"></span>`;
@@ -1257,22 +1361,17 @@
                     const uid = el.getAttribute('data-uid');
                     if (!uid || uid === 'unknown') return;
                     try {
-                        const snap = await getDoc(doc(db, "users", uid));
-                        if (snap.exists()) {
-                            const d = snap.data();
-                            const isVerified = Boolean(d.isVerified);
-                            const isPro = Boolean(d.isPro) || Boolean(d.lencanaKuning) || Boolean(d.isLencanaKuning);
-                            let badgesHtml = '';
-                            if (isVerified) {
-                                badgesHtml += `<img src="https://sitenexs.com/assets/logo/verified.png" class="member-verification-icon" alt="Verified" title="Verified">`;
-                            }
-                            if (isPro) {
-                                badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="member-verification-icon" alt="Pro" title="Lencana Pro" style="margin-left: 2px;">`;
-                            }
-                            el.innerHTML = badgesHtml;
-                        } else {
-                            el.innerHTML = '';
+                        const profile = await fetchNormalizedUserProfile(db, uid, {
+                            badgeClass: 'member-verification-icon'
+                        });
+                        const isPro = Boolean(profile.raw?.isPro) || Boolean(profile.raw?.lencanaKuning) || Boolean(profile.raw?.isLencanaKuning);
+                        let badgesHtml = getUserBadgesHtml(profile.isVerified, {
+                            badgeClass: 'member-verification-icon'
+                        });
+                        if (isPro) {
+                            badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="member-verification-icon" alt="Pro" title="Lencana Pro" style="margin-left: 2px;">`;
                         }
+                        el.innerHTML = badgesHtml;
                     } catch(e) {
                         el.innerHTML = '';
                     }
@@ -1280,9 +1379,73 @@
             }, 100);
         }
 
+        async function handleRealtimePostNotifications(snapshot, currentActiveUid) {
+            if (isInitialLoad) {
+                snapshot.forEach(docSnap => {
+                    const d = docSnap.data();
+                    previousLikesByPost.set(docSnap.id, new Set(d.likes || []));
+                });
+                return;
+            }
+
+            for (const change of snapshot.docChanges()) {
+                const postId = change.doc.id;
+                const data = change.doc.data();
+                if (data.isPrivate) continue;
+
+                // 1. Notifikasi postingan baru dari anggota lain
+                if (change.type === 'added' && data.authorUid && data.authorUid !== currentActiveUid) {
+                    const posterName = data.penulis || 'Mitra Sitenexs';
+                    const headline = data.judul || data.isi || 'Diskusi baru di komunitas';
+                    showToast(`Postingan baru dari ${posterName}`);
+                    triggerLocalSystemNotification(
+                        `Postingan baru dari ${posterName}`,
+                        String(headline).slice(0, 120),
+                        {
+                            tag: `post-${postId}`,
+                            icon: getUserAvatarUrl(data.authorUid),
+                            url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`
+                        }
+                    );
+                }
+
+                // 2. Notifikasi like baru pada postingan milik user aktif
+                const prevLikes = previousLikesByPost.get(postId) || new Set();
+                const currLikesArr = data.likes || [];
+                const currLikesSet = new Set(currLikesArr);
+
+                if (data.authorUid && currentActiveUid && data.authorUid === currentActiveUid) {
+                    for (const likerUid of currLikesArr) {
+                        if (likerUid !== currentActiveUid && !prevLikes.has(likerUid)) {
+                            const likeKey = `${postId}_${likerUid}`;
+                            if (!notifiedLikeKeys.has(likeKey)) {
+                                notifiedLikeKeys.add(likeKey);
+                                const likerProfile = await fetchNormalizedUserProfile(db, likerUid);
+                                const likeMessage = `${likerProfile.displayName} menyukai postingan Anda`;
+                                showToast(likeMessage);
+                                triggerLocalSystemNotification(
+                                    'Suka Baru di Postingan Anda',
+                                    likeMessage,
+                                    {
+                                        tag: `like-${likeKey}`,
+                                        icon: likerProfile.avatarUrl,
+                                        url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`
+                                    }
+                                );
+                            }
+                        }
+                    }
+                }
+
+                previousLikesByPost.set(postId, currLikesSet);
+            }
+        }
+
         const q = query(forumCollection, orderBy("createdAt", "desc"));
-        onSnapshot(q, (snapshot) => {
+        onSnapshot(q, async (snapshot) => {
             const currentActiveUid = currentUserData ? currentUserData.uid : localStorage.getItem('sitenexs_uid');
+
+            await handleRealtimePostNotifications(snapshot, currentActiveUid);
 
             let docsArr = [];
             snapshot.forEach(docSnap => {
