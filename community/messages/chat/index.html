@@ -505,8 +505,10 @@ let isStartingCall = false;
 
 let ringtoneInterval = null;
 let callTimeout = null;
+let disconnectGraceTimeout = null;
 let callDurationInterval = null;
 let callSecondsElapsed = 0;
+let wakeLockSentinel = null;
 
 let remoteCandidateQueue = [];
 
@@ -525,7 +527,9 @@ const rtcConfig = {
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
         { urls: 'stun:stun2.l.google.com:19302' },
-
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' },
+        { urls: 'stun:global.stun.twilio.com:3478' },
         {
             urls: 'turn:openrelay.metered.ca:80',
             username: 'openrelayproject',
@@ -535,10 +539,45 @@ const rtcConfig = {
             urls: 'turn:openrelay.metered.ca:443',
             username: 'openrelayproject',
             credential: 'openrelayproject'
+        },
+        {
+            urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
         }
     ],
     iceCandidatePoolSize: 10
 };
+
+/* =====================================================
+   WAKE LOCK (MENCEGAH LAYAR HP MATI SAAT PANGGILAN)
+===================================================== */
+
+async function requestWakeLock() {
+    try {
+        if ('wakeLock' in navigator && !wakeLockSentinel) {
+            wakeLockSentinel = await navigator.wakeLock.request('screen');
+            wakeLockSentinel.addEventListener('release', () => {
+                wakeLockSentinel = null;
+            });
+        }
+    } catch (e) {}
+}
+
+async function releaseWakeLock() {
+    try {
+        if (wakeLockSentinel) {
+            await wakeLockSentinel.release();
+            wakeLockSentinel = null;
+        }
+    } catch (e) {}
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && isInCall) {
+        requestWakeLock();
+    }
+});
 
 /* =====================================================
    TARGET USER
@@ -619,6 +658,20 @@ function formatDuration(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+function clearCallTimeout() {
+    if (callTimeout) {
+        clearTimeout(callTimeout);
+        callTimeout = null;
+    }
+}
+
+function clearDisconnectGrace() {
+    if (disconnectGraceTimeout) {
+        clearTimeout(disconnectGraceTimeout);
+        disconnectGraceTimeout = null;
+    }
 }
 
 function startCallTimer() {
@@ -833,8 +886,27 @@ async function setupLocalMedia(callType = 'video') {
         }
 
         const constraints = callType === 'audio'
-            ? { video: false, audio: true }
-            : { video: { facingMode: 'user' }, audio: true };
+            ? {
+                video: false,
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            }
+            : {
+                video: {
+                    facingMode: 'user',
+                    width: { ideal: 640, max: 1280 },
+                    height: { ideal: 480, max: 720 },
+                    frameRate: { ideal: 24, max: 30 }
+                },
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            };
 
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
 
@@ -894,6 +966,10 @@ function createPeerConnection(callId, sessionId, isCaller) {
     });
 
     peerConnection.ontrack = event => {
+        // Batalkan timer timeout "tidak dijawab" karena media sudah masuk
+        clearCallTimeout();
+        clearDisconnectGrace();
+
         const streams = event.streams;
 
         if (streams && streams[0]) {
@@ -961,15 +1037,31 @@ function createPeerConnection(callId, sessionId, isCaller) {
         const state = peerConnection.iceConnectionState;
 
         if (state === 'connected' || state === 'completed') {
+            clearCallTimeout();
+            clearDisconnectGrace();
             document.getElementById('vcStatusText').textContent =
                 currentCallType === 'audio' ? 'Panggilan Suara' : otherUserName;
             if (currentCallType === 'audio') startCallTimer();
         } else if (state === 'checking') {
             document.getElementById('vcStatusText').textContent = 'Menyambungkan jaringan...';
         } else if (state === 'disconnected') {
-            document.getElementById('vcStatusText').textContent = 'Koneksi terputus sementara...';
+            document.getElementById('vcStatusText').textContent = 'Menyambung ulang...';
+            // Beri waktu 10 detik untuk pemulihan sinyal sebelum memutus panggilan
+            if (!disconnectGraceTimeout) {
+                disconnectGraceTimeout = setTimeout(() => {
+                    if (
+                        peerConnection &&
+                        (peerConnection.iceConnectionState === 'disconnected' ||
+                         peerConnection.iceConnectionState === 'failed')
+                    ) {
+                        showToast('Koneksi jaringan terputus.');
+                        endVideoCall();
+                    }
+                }, 10000);
+            }
         } else if (state === 'failed') {
-            showToast('Koneksi gagal. Jaringan mungkin membatasi WebRTC.');
+            clearDisconnectGrace();
+            showToast('Koneksi gagal. Jaringan tidak stabil.');
             endVideoCall();
         }
     };
@@ -980,11 +1072,14 @@ function createPeerConnection(callId, sessionId, isCaller) {
         const state = peerConnection.connectionState;
 
         if (state === 'connected') {
+            clearCallTimeout();
+            clearDisconnectGrace();
             document.getElementById('vcStatusText').textContent =
                 currentCallType === 'audio' ? 'Panggilan Suara' : otherUserName;
             if (currentCallType === 'audio') startCallTimer();
         } else if (state === 'failed') {
-            showToast('Koneksi panggilan gagal.');
+            clearDisconnectGrace();
+            showToast('Koneksi panggilan terputus.');
             endVideoCall();
         }
     };
@@ -1028,13 +1123,15 @@ function listenToCallRoom(callId, sessionId, isCaller) {
             return;
         }
 
-        // Caller menerima answer
+        // Caller menerima answer -> wajib batalkan timeout 60 detik!
         if (
             isCaller &&
             data.answer &&
             peerConnection &&
             !peerConnection.currentRemoteDescription
         ) {
+            clearCallTimeout();
+
             try {
                 await peerConnection.setRemoteDescription(
                     new RTCSessionDescription(data.answer)
@@ -1079,6 +1176,8 @@ async function initiateCall(callType) {
         callDirection = null;
         return;
     }
+
+    requestWakeLock();
 
     // ID room unik untuk setiap panggilan
     const callId = `call_${currentUid}_${Date.now()}`;
@@ -1133,9 +1232,15 @@ async function initiateCall(callType) {
         // Kirim notifikasi ke penerima
         await set(ref(rtdb, `incomingCalls/${activeChatUserId}`), callPayload);
 
-        // Timeout 60 detik
+        // Timeout 60 detik hanya jika panggilan belum dijawab
+        clearCallTimeout();
         callTimeout = setTimeout(() => {
-            if (isInCall && currentCallId === callId) {
+            if (
+                isInCall &&
+                currentCallId === callId &&
+                peerConnection &&
+                !peerConnection.currentRemoteDescription
+            ) {
                 showToast('Panggilan tidak dijawab.');
                 endVideoCall();
             }
@@ -1194,6 +1299,8 @@ window.acceptVideoCall = async function () {
         rejectVideoCall(data);
         return;
     }
+
+    requestWakeLock();
 
     isInCall = true;
 
@@ -1303,6 +1410,9 @@ function cleanupCallUI(removeIncoming = true) {
     isInCall = false;
     isStartingCall = false;
 
+    releaseWakeLock();
+    clearCallTimeout();
+    clearDisconnectGrace();
     stopCallTimer();
     hideIncomingCallPopup();
 
@@ -1311,11 +1421,6 @@ function cleanupCallUI(removeIncoming = true) {
 
     const toggleCamBtn = document.getElementById('toggleCamBtn');
     if (toggleCamBtn) toggleCamBtn.style.display = 'flex';
-
-    if (callTimeout) {
-        clearTimeout(callTimeout);
-        callTimeout = null;
-    }
 
     if (unsubscribeCallRoom) {
         unsubscribeCallRoom();
