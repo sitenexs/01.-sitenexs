@@ -742,6 +742,9 @@ const firebaseConfig = {
 // VAPID Key dari Firebase Console -> Project Settings -> Cloud Messaging -> Web Push certificates
 const FCM_VAPID_KEY = 'BLJA0jutfD7HaJA0E36vDSW8fKy2k0xv1KIgSdxH_luJ-Y8tRp6GvXifKzdWJ_V3vNXkBhe3bbNYmrXd_sCJLhY';
 
+// URL Cloudflare Worker pengirim Push Notification FCM
+const PUSH_WORKER_URL = 'https://sitenexs-push.sitenexs.workers.dev';
+
 const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
 const avatarBucket = 'profile-photos';
 
@@ -764,6 +767,7 @@ let activeChatUserId = null;
 let activeChatId = null;
 let otherUserName = 'Mitra Sitenexs';
 let otherUserVerified = false;
+let otherUserFcmToken = null;
 
 let unsubscribeMessages = null;
 let isInitialMessagesLoad = true;
@@ -892,6 +896,36 @@ async function syncFcmTokenToFirestore() {
     }
 }
 
+async function sendPushToRecipient(title, body, tag, url) {
+    try {
+        if (!PUSH_WORKER_URL) return;
+
+        let targetToken = otherUserFcmToken;
+        if (!targetToken && activeChatUserId) {
+            const snap = await getDoc(doc(db, 'users', activeChatUserId));
+            if (snap.exists()) {
+                targetToken = snap.data().fcmToken || null;
+                otherUserFcmToken = targetToken;
+            }
+        }
+        if (!targetToken) return;
+
+        await fetch(PUSH_WORKER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                token: targetToken,
+                title,
+                body,
+                tag,
+                url,
+                icon: getAvatarUrl(currentUid)
+            })
+        });
+    } catch (e) {
+        console.warn('Push worker request dilewati:', e.message);
+    }
+}
 
 window.requestPushNotificationPermission = async function () {
     if (!('Notification' in window)) {
@@ -2028,6 +2062,15 @@ async function initiateCall(callType) {
         // Kirim notifikasi ke penerima
         await set(ref(rtdb, `incomingCalls/${activeChatUserId}`), callPayload);
 
+        // Kirim Push Notifikasi via Cloudflare Worker agar HP penerima berbunyi walau browser ditutup
+        const callTitle = callType === 'audio' ? 'Panggilan Suara Masuk' : 'Panggilan Video Masuk';
+        sendPushToRecipient(
+            `${callTitle} • ${myUserName}`,
+            'Ketuk untuk menjawab panggilan sekarang.',
+            `call-${callId}`,
+            `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(currentUid)}`
+        );
+
         // Timeout 60 detik hanya jika panggilan belum dijawab
         clearCallTimeout();
         callTimeout = setTimeout(() => {
@@ -2482,6 +2525,7 @@ async function initChat(user) {
                 [data.namaDepan, data.namaBelakang].filter(Boolean).join(' ') ||
                 otherUserName;
             otherUserVerified = Boolean(data.isVerified);
+            otherUserFcmToken = data.fcmToken || null;
 
             document.getElementById('activeChatBadges').innerHTML =
                 getVerifiedBadgesHtml(otherUserVerified);
@@ -2622,6 +2666,14 @@ window.handleChatFormSubmit = async function (event) {
             createdAt: serverTimestamp(),
             isEdited: false
         });
+
+        // Kirim Push Notifikasi via Cloudflare Worker agar HP penerima mendapat notif walau browser ditutup
+        sendPushToRecipient(
+            myUserName,
+            text,
+            `chat-${activeChatId}`,
+            `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(currentUid)}`
+        );
 
     } catch (error) {
         console.error('Send message error:', error);
