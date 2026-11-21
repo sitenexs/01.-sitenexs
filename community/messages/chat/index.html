@@ -401,7 +401,7 @@ import {
 const firebaseConfig = {
     apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E_E',
     authDomain: 'sitenexs-62919.firebaseapp.com',
-    databaseURL: 'https://sitenexs-62919-default-rtdb.firebaseio.com',
+    databaseURL: 'https://sitenexs-62919-default-rtdb.asia-southeast1.firebasedatabase.app',
     projectId: 'sitenexs-62919',
     storageBucket: 'sitenexs-62919.firebasestorage.app',
     messagingSenderId: '1060348110644',
@@ -983,7 +983,7 @@ window.startVideoCall = async function () {
 
         // update tidak menimpa child candidate
         await update(callRef, callPayload);
-      listenToCallRoom(callId, sessionId, true);
+    
 
         // Kirim notifikasi ke penerima
         await set(ref(rtdb, `incomingCalls/${activeChatUserId}`), callPayload);
