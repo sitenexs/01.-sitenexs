@@ -125,11 +125,11 @@
         .text-primary { color: var(--primary); }
         .text-muted { color: var(--text-muted); }
 
-        /* OVERLAY WAJIB IZIN NOTIFIKASI (TIDAK BISA DITUTUP SEBELUM DIIZINKAN) */
+        /* MODAL IZIN NOTIFIKASI (BISA DITUTUP) */
         .force-notif-backdrop {
             position: fixed; inset: 0;
-            background: rgba(15, 23, 42, 0.78);
-            backdrop-filter: blur(6px);
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(5px);
             z-index: 30000;
             display: none;
             align-items: center;
@@ -139,17 +139,28 @@
         .force-notif-backdrop.active { display: flex; }
 
         .force-notif-card {
+            position: relative;
             width: 100%; max-width: 390px;
             background: #ffffff;
             border: 2px solid var(--primary);
             border-radius: var(--radius-xl);
-            padding: 1.75rem 1.35rem;
+            padding: 1.75rem 1.35rem 1.35rem;
             box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.45);
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 0.75rem;
+        }
+        .force-notif-close-x {
+            position: absolute; top: 12px; right: 12px;
+            width: 30px; height: 30px; border-radius: 50%;
+            background: var(--bg-alt); color: var(--text-muted);
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 0.85rem; transition: var(--transition);
+        }
+        .force-notif-close-x:hover {
+            background: #fee2e2; color: #ef4444;
         }
 
         /* ANIMASI ORANG MEMOHON */
@@ -237,21 +248,21 @@
         .force-notif-allow-btn:hover {
             transform: translateY(-2px);
         }
-        .force-notif-recheck-btn {
+        .force-notif-dismiss-btn {
             width: 100%;
             padding: 0.55rem 1rem;
             border-radius: var(--radius-full);
             background: var(--bg-alt);
-            color: var(--text-main);
+            color: var(--text-muted);
             border: 1px solid var(--border-medium);
             font-size: 0.76rem;
             font-weight: 700;
             cursor: pointer;
             transition: var(--transition);
         }
-        .force-notif-recheck-btn:hover {
+        .force-notif-dismiss-btn:hover {
             border-color: var(--primary);
-            color: var(--primary);
+            color: var(--text-main);
         }
 
         /* BUTTONS */
@@ -559,25 +570,28 @@
 </head>
 <body data-package="basic">
 
-    <!-- MODAL WAJIB IZIN NOTIFIKASI DENGAN ANIMASI ORANG MEMOHON -->
-    <div class="force-notif-backdrop" id="forceNotifBackdrop" onclick="event.stopPropagation()">
+    <!-- MODAL IZIN NOTIFIKASI DENGAN ANIMASI ORANG MEMOHON (BISA DITUTUP) -->
+    <div class="force-notif-backdrop" id="forceNotifBackdrop" onclick="dismissNotificationPromptModal()">
         <div class="force-notif-card" onclick="event.stopPropagation()">
+            <button type="button" class="force-notif-close-x" onclick="dismissNotificationPromptModal()" title="Tutup">
+                <i class="fas fa-times"></i>
+            </button>
             <div class="pleading-person-stage">
                 <span class="pleading-person-emoji" role="img" aria-label="Orang memohon">🙇‍♂️</span>
                 <span class="pleading-tear-badge">Mohon Izin!</span>
             </div>
             <div class="force-notif-title">Izinkan Notifikasi Dulu Ya!</div>
             <p class="force-notif-desc">
-                Kami sangat memohon izin notifikasi agar Anda tidak ketinggalan balasan komentar, suka, penyebutan @nama, pesan masuk, dan panggilan telepon penting.
+                Kami memohon izin notifikasi agar Anda tidak ketinggalan balasan komentar, suka, penyebutan @nama, pesan masuk, dan panggilan telepon penting. Anda juga bisa mengaturnya kapan saja di sidebar.
             </p>
             <div class="force-notif-status" id="forceNotifStatusText">
-                Status: Notifikasi belum diizinkan (tetap terbuka sampai diizinkan)
+                Status: Notifikasi belum diizinkan
             </div>
             <button type="button" class="force-notif-allow-btn" id="forceAllowNotifBtn" onclick="triggerNativeBrowserNotificationPrompt()">
                 <i class="fas fa-bell"></i> Izinkan Notifikasi Sekarang
             </button>
-            <button type="button" class="force-notif-recheck-btn" id="forceRecheckNotifBtn" onclick="enforceMandatoryNotificationGate()">
-                <i class="fas fa-sync-alt"></i> Cek Ulang Status Izin Browser
+            <button type="button" class="force-notif-dismiss-btn" onclick="dismissNotificationPromptModal()">
+                Tutup & Atur Nanti di Sidebar
             </button>
         </div>
     </div>
@@ -672,7 +686,8 @@
 
         import {
             mountSitenexsNavbar,
-            setNavbarUserProfile
+            setNavbarUserProfile,
+            isNavbarNotificationMuted
         } from 'https://sitenexs.com/assets/js/sitenexs-navbar.js';
 
         import {
@@ -701,6 +716,7 @@
         const notifiedCommentKeys = new Set();
         const notifiedMentionKeys = new Set();
         const notifiedMessageKeys = new Set();
+        let notifModalDismissedByUser = false;
 
         const postContainer = document.getElementById('postContainer');
         const modal = document.getElementById('postModal');
@@ -710,39 +726,34 @@
         const promptText = document.getElementById('createPostPromptText');
 
         /* =====================================================
-           PEMANTAUAN WAJIB IZIN NOTIFIKASI + POPUP ASLI BROWSER
+           MODAL IZIN NOTIFIKASI (BISA DITUTUP + ATUR DI SIDEBAR)
         ===================================================== */
         async function handlePermissionGrantedFlow() {
+            notifModalDismissedByUser = false;
             await registerPushServiceWorker();
             const activeUid = currentUserData?.uid || localStorage.getItem('sitenexs_uid');
             if (activeUid) {
                 await syncFcmToken({ app: undefined, db, uid: activeUid, onError: () => {} });
             }
-            enforceMandatoryNotificationGate();
+            const backdrop = document.getElementById('forceNotifBackdrop');
+            if (backdrop) backdrop.classList.remove('active');
+            document.body.style.overflow = '';
             showToast("Terima kasih! Notifikasi telah diizinkan.");
         }
 
-        function tryOpenBrowserNotificationSettings() {
-            const ua = navigator.userAgent || '';
-            try {
-                if (/Edg\//i.test(ua)) {
-                    window.open('edge://settings/content/notifications', '_blank');
-                    return;
-                }
-            } catch (e) {}
-        }
+        window.dismissNotificationPromptModal = function() {
+            notifModalDismissedByUser = true;
+            const backdrop = document.getElementById('forceNotifBackdrop');
+            if (backdrop) backdrop.classList.remove('active');
+            document.body.style.overflow = '';
+        };
 
-        window.enforceMandatoryNotificationGate = function() {
+        function checkInitialNotificationPrompt() {
             const backdrop = document.getElementById('forceNotifBackdrop');
             const statusText = document.getElementById('forceNotifStatusText');
             if (!backdrop) return;
 
-            if (!('Notification' in window)) {
-                backdrop.classList.remove('active');
-                return;
-            }
-
-            if (Notification.permission === 'granted') {
+            if (!('Notification' in window) || Notification.permission === 'granted' || notifModalDismissedByUser) {
                 backdrop.classList.remove('active');
                 document.body.style.overflow = '';
                 return;
@@ -752,17 +763,15 @@
             document.body.style.overflow = 'hidden';
 
             if (statusText) {
-                if (Notification.permission === 'denied') {
-                    statusText.innerText = 'Izin diblokir browser. Buka Setelan Situs / Ikon Gembok di address bar > Notifikasi > Izinkan, lalu klik Cek Ulang.';
-                } else {
-                    statusText.innerText = 'Notifikasi belum diizinkan — klik tombol di bawah untuk memunculkan popup izin browser.';
-                }
+                statusText.innerText = Notification.permission === 'denied'
+                    ? 'Izin notifikasi diblokir di browser. Anda bisa menutup modal ini atau mengaturnya di sidebar.'
+                    : 'Notifikasi belum diizinkan. Tekan tombol di bawah atau tutup modal ini.';
             }
-        };
+        }
 
         window.triggerNativeBrowserNotificationPrompt = function() {
             if (!('Notification' in window)) {
-                enforceMandatoryNotificationGate();
+                dismissNotificationPromptModal();
                 return;
             }
 
@@ -773,26 +782,14 @@
                 return;
             }
 
-            if (Notification.permission === 'denied') {
-                tryOpenBrowserNotificationSettings();
-                enforceMandatoryNotificationGate();
-                if (statusText) {
-                    statusText.innerText = 'Izin notifikasi sedang diblokir browser. Ketuk ikon kunci/setelan situs di address bar > Notifikasi > Izinkan, lalu kembali ke tab ini.';
-                }
-                return;
-            }
-
             try {
                 const permPromise = Notification.requestPermission((permissionResult) => {
                     if (permissionResult === 'granted') {
                         handlePermissionGrantedFlow();
-                    } else {
-                        enforceMandatoryNotificationGate();
-                        if (statusText) {
-                            statusText.innerText = permissionResult === 'denied'
-                                ? 'Izin ditolak di popup browser. Ketuk ikon kunci/setelan situs di address bar > Notifikasi > Izinkan, lalu klik Cek Ulang.'
-                                : 'Belum diizinkan! Tekan Izinkan pada popup browser agar notifikasi aktif.';
-                        }
+                    } else if (statusText) {
+                        statusText.innerText = permissionResult === 'denied'
+                            ? 'Izin ditolak di popup browser. Ubah di pengaturan situs browser atau atur di sidebar.'
+                            : 'Belum diizinkan. Anda bisa mencoba lagi atau menutup modal ini.';
                     }
                 });
 
@@ -800,44 +797,25 @@
                     permPromise.then((permissionResult) => {
                         if (permissionResult === 'granted') {
                             handlePermissionGrantedFlow();
-                        } else {
-                            enforceMandatoryNotificationGate();
-                            if (statusText) {
-                                statusText.innerText = permissionResult === 'denied'
-                                    ? 'Izin ditolak di popup browser. Ketuk ikon kunci/setelan situs di address bar > Notifikasi > Izinkan, lalu klik Cek Ulang.'
-                                    : 'Belum diizinkan! Tekan Izinkan pada popup browser agar notifikasi aktif.';
-                            }
+                        } else if (statusText) {
+                            statusText.innerText = permissionResult === 'denied'
+                                ? 'Izin ditolak di popup browser. Ubah di pengaturan situs browser atau atur di sidebar.'
+                                : 'Belum diizinkan. Anda bisa mencoba lagi atau menutup modal ini.';
                         }
-                    }).catch(() => {
-                        enforceMandatoryNotificationGate();
-                    });
+                    }).catch(() => {});
                 }
-            } catch (err) {
-                enforceMandatoryNotificationGate();
-            }
+            } catch (err) {}
         };
 
-        enforceMandatoryNotificationGate();
+        checkInitialNotificationPrompt();
         window.addEventListener('focus', () => {
             if ('Notification' in window && Notification.permission === 'granted') {
                 handlePermissionGrantedFlow();
-            } else {
-                enforceMandatoryNotificationGate();
-            }
-        });
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                if ('Notification' in window && Notification.permission === 'granted') {
-                    handlePermissionGrantedFlow();
-                } else {
-                    enforceMandatoryNotificationGate();
-                }
             }
         });
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && 'Notification' in window && Notification.permission !== 'granted') {
-                e.preventDefault();
-                enforceMandatoryNotificationGate();
+            if (e.key === 'Escape') {
+                dismissNotificationPromptModal();
             }
         });
 
@@ -988,6 +966,8 @@
                     isInitialChatsLoad = false;
                     return;
                 }
+
+                if (isNavbarNotificationMuted(uid)) return;
 
                 for (const change of snapshot.docChanges()) {
                     if (change.type === 'modified' || change.type === 'added') {
@@ -1745,16 +1725,18 @@
                         });
                     }
 
-                    showToast(postNotifTitle);
-                    triggerLocalSystemNotification(
-                        postNotifTitle,
-                        String(headline).slice(0, 120),
-                        {
-                            tag: `post-${postId}`,
-                            icon: getUserAvatarUrl(data.authorUid),
-                            url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`
-                        }
-                    );
+                    if (!isNavbarNotificationMuted(currentActiveUid)) {
+                        showToast(postNotifTitle);
+                        triggerLocalSystemNotification(
+                            postNotifTitle,
+                            String(headline).slice(0, 120),
+                            {
+                                tag: `post-${postId}`,
+                                icon: getUserAvatarUrl(data.authorUid),
+                                url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`
+                            }
+                        );
+                    }
 
                     const mentionedInPost = extractMentionedUsers(fullPostText, data.authorUid);
                     if (currentActiveUid && mentionedInPost.some(m => m.uid === currentActiveUid)) {
@@ -1796,16 +1778,18 @@
                                     focusComments: false
                                 });
 
-                                showToast(likeMessage);
-                                triggerLocalSystemNotification(
-                                    'Suka Baru di Postingan Anda',
-                                    likeMessage,
-                                    {
-                                        tag: `like-${likeKey}`,
-                                        icon: likerProfile.avatarUrl,
-                                        url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`
-                                    }
-                                );
+                                if (!isNavbarNotificationMuted(currentActiveUid)) {
+                                    showToast(likeMessage);
+                                    triggerLocalSystemNotification(
+                                        'Suka Baru di Postingan Anda',
+                                        likeMessage,
+                                        {
+                                            tag: `like-${likeKey}`,
+                                            icon: likerProfile.avatarUrl,
+                                            url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`
+                                        }
+                                    );
+                                }
                             }
                         }
                     }
@@ -1835,16 +1819,18 @@
                                 focusComments: true
                             });
 
-                            showToast(commentTitle);
-                            triggerLocalSystemNotification(
-                                commentTitle,
-                                commentPreview.slice(0, 120),
-                                {
-                                    tag: `comment-${postId}-${c.createdAt || Date.now()}`,
-                                    icon: getUserAvatarUrl(c.authorUid),
-                                    url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`
-                                }
-                            );
+                            if (!isNavbarNotificationMuted(currentActiveUid)) {
+                                showToast(commentTitle);
+                                triggerLocalSystemNotification(
+                                    commentTitle,
+                                    commentPreview.slice(0, 120),
+                                    {
+                                        tag: `comment-${postId}-${c.createdAt || Date.now()}`,
+                                        icon: getUserAvatarUrl(c.authorUid),
+                                        url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`
+                                    }
+                                );
+                            }
                         }
 
                         const mentionedInComment = extractMentionedUsers(commentPreview, c.authorUid);
@@ -1862,16 +1848,18 @@
                                     focusComments: true
                                 });
 
-                                showToast(mTitle);
-                                triggerLocalSystemNotification(
-                                    mTitle,
-                                    commentPreview.slice(0, 120),
-                                    {
-                                        tag: `mention-${postId}-${c.createdAt || Date.now()}`,
-                                        icon: getUserAvatarUrl(c.authorUid),
-                                        url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`
-                                    }
-                                );
+                                if (!isNavbarNotificationMuted(currentActiveUid)) {
+                                    showToast(mTitle);
+                                    triggerLocalSystemNotification(
+                                        mTitle,
+                                        commentPreview.slice(0, 120),
+                                        {
+                                            tag: `mention-${postId}-${c.createdAt || Date.now()}`,
+                                            icon: getUserAvatarUrl(c.authorUid),
+                                            url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`
+                                        }
+                                    );
+                                }
                             }
                         }
                     }
