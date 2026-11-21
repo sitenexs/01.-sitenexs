@@ -22,8 +22,45 @@ let navbarState = {
     notifications: [],
     unsubNotifs: null,
     unsubMsgs: null,
-    onSelectNotif: null
+    onSelectNotif: null,
+    muted: false
 };
+
+function getMuteStorageKey(uid) {
+    return `sitenexs_notif_muted_${uid || 'guest'}`;
+}
+
+export function isNavbarNotificationMuted(uid = navbarState.uid) {
+    const key = getMuteStorageKey(uid || localStorage.getItem('sitenexs_uid'));
+    return localStorage.getItem(key) === 'true';
+}
+
+export function setNavbarNotificationMuted(muted, uid = navbarState.uid) {
+    const activeId = uid || localStorage.getItem('sitenexs_uid');
+    navbarState.muted = Boolean(muted);
+    localStorage.setItem(getMuteStorageKey(activeId), String(Boolean(muted)));
+    updateSidebarNotifSettingLabel();
+}
+
+function updateSidebarNotifSettingLabel() {
+    const labelEl = document.getElementById('sidebarNotifSettingLabel');
+    const iconEl = document.getElementById('sidebarNotifSettingIcon');
+    if (!labelEl || !iconEl) return;
+
+    const muted = isNavbarNotificationMuted();
+    const browserGranted = typeof Notification !== 'undefined' && Notification.permission === 'granted';
+
+    if (muted) {
+        labelEl.textContent = 'Izinkan / Bunyikan Notifikasi';
+        iconEl.className = 'fas fa-bell';
+    } else if (!browserGranted) {
+        labelEl.textContent = 'Izinkan Notifikasi Browser';
+        iconEl.className = 'fas fa-bell';
+    } else {
+        labelEl.textContent = 'Bisukan Notifikasi';
+        iconEl.className = 'fas fa-bell-slash';
+    }
+}
 
 function formatRelTime(ms) {
     if (!ms) return 'Baru saja';
@@ -215,17 +252,20 @@ function getNavbarStyles() {
                 font-size: 0.85rem; color: var(--text-muted, #475569); cursor: pointer; border: none;
             }
             .sidebar-menu-list { display: flex; flex-direction: column; gap: 0.35rem; }
-            .sidebar-menu-link {
+            .sidebar-menu-link, .sidebar-setting-btn {
                 display: flex; align-items: center; gap: 0.7rem;
                 padding: 0.7rem 0.85rem; border-radius: 0.625rem;
                 font-size: 0.84rem; font-weight: 700; color: var(--text-main, #0f172a);
-                transition: all 0.2s ease;
+                transition: all 0.2s ease; background: transparent; cursor: pointer;
+                text-align: left; width: 100%;
             }
-            .sidebar-menu-link:hover {
+            .sidebar-menu-link:hover, .sidebar-setting-btn:hover {
                 background: var(--primary-light, #eff6ff);
                 color: var(--primary, #2563eb);
             }
-            .sidebar-menu-link i { width: 18px; text-align: center; color: var(--primary, #2563eb); }
+            .sidebar-menu-link i, .sidebar-setting-btn i {
+                width: 18px; text-align: center; color: var(--primary, #2563eb);
+            }
         </style>
     `;
 }
@@ -242,7 +282,8 @@ function renderNotifsList() {
     const badgeEl = document.getElementById('communityNotifBadge');
     const listEl = document.getElementById('communityNotifList');
 
-    const unreadCount = navbarState.notifications.filter(n => n.unread).length;
+    const muted = isNavbarNotificationMuted();
+    const unreadCount = muted ? 0 : navbarState.notifications.filter(n => n.unread).length;
     if (badgeEl) {
         badgeEl.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
         badgeEl.classList.toggle('active', unreadCount > 0);
@@ -380,8 +421,6 @@ export async function mountSitenexsNavbar({
     navbarState.onSelectNotif = onSelectNotif;
 
     const inCommunity = isCommunityRoute();
-    // Saat di halaman komunitas: tombol tetap ikon rumah (ke beranda).
-    // Saat di halaman lain: tombol berubah menjadi tombol komunitas (ke /community/).
     const homeOrCommHref = inCommunity ? 'https://sitenexs.com/' : 'https://sitenexs.com/community/';
     const homeOrCommTitle = inCommunity ? 'Beranda' : 'Komunitas';
     const homeOrCommIcon = inCommunity ? 'fas fa-home' : 'fas fa-users';
@@ -458,6 +497,10 @@ export async function mountSitenexsNavbar({
                     <a href="https://sitenexs.com/" class="sidebar-menu-link">
                         <i class="fas fa-home"></i> <span>Beranda Sitenexs</span>
                     </a>
+                    <button type="button" class="sidebar-setting-btn" id="sidebarNotifSettingBtn">
+                        <i id="sidebarNotifSettingIcon" class="fas fa-bell-slash"></i>
+                        <span id="sidebarNotifSettingLabel">Bisukan Notifikasi</span>
+                    </button>
                 </nav>
             </aside>
         `);
@@ -468,6 +511,7 @@ export async function mountSitenexsNavbar({
         const backdrop = document.getElementById('sitenexsSidebarBackdrop');
         if (drawer) drawer.classList.toggle('active', open);
         if (backdrop) backdrop.classList.toggle('active', open);
+        if (open) updateSidebarNotifSettingLabel();
     };
 
     document.getElementById('profileBurgerBtn')?.addEventListener('click', (e) => {
@@ -478,6 +522,40 @@ export async function mountSitenexsNavbar({
 
     document.getElementById('sidebarCloseBtn')?.addEventListener('click', () => setDrawerOpen(false));
     document.getElementById('sitenexsSidebarBackdrop')?.addEventListener('click', () => setDrawerOpen(false));
+
+    document.getElementById('sidebarNotifSettingBtn')?.addEventListener('click', async () => {
+        const currentlyMuted = isNavbarNotificationMuted();
+        if (currentlyMuted) {
+            setNavbarNotificationMuted(false);
+            if ('Notification' in window && Notification.permission === 'default') {
+                try {
+                    await Notification.requestPermission();
+                } catch (e) {}
+            }
+            if (typeof window.showToast === 'function') {
+                window.showToast('Notifikasi diizinkan dan diaktifkan.');
+            }
+        } else {
+            if ('Notification' in window && Notification.permission === 'default') {
+                try {
+                    const perm = await Notification.requestPermission();
+                    if (perm === 'granted') {
+                        setNavbarNotificationMuted(false);
+                        if (typeof window.showToast === 'function') {
+                            window.showToast('Notifikasi telah diizinkan.');
+                        }
+                        return;
+                    }
+                } catch (e) {}
+            }
+            setNavbarNotificationMuted(true);
+            if (typeof window.showToast === 'function') {
+                window.showToast('Notifikasi dibisukan.');
+            }
+        }
+        renderNotifsList();
+        updateSidebarNotifSettingLabel();
+    });
 
     document.getElementById('communityNotifBtn')?.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -506,6 +584,8 @@ export async function mountSitenexsNavbar({
         }
     });
 
+    updateSidebarNotifSettingLabel();
+
     const activeUid = uid || localStorage.getItem('sitenexs_uid');
     if (activeUid) {
         await setNavbarUserProfile(activeUid);
@@ -516,6 +596,7 @@ export async function setNavbarUserProfile(uid) {
     if (!uid) return;
     navbarState.uid = uid;
     subscribeUserNavbarRealtime(uid);
+    updateSidebarNotifSettingLabel();
 
     try {
         const profile = await fetchUserProfile(db, uid, { forceRefresh: true });
