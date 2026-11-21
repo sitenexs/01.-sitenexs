@@ -194,6 +194,7 @@
         .notif-entry-icon.post { background: #dbeafe; color: var(--primary); }
         .notif-entry-icon.like { background: #fee2e2; color: #ef4444; }
         .notif-entry-icon.comment { background: #d1fae5; color: #059669; }
+        .notif-entry-icon.mention { background: #fef3c7; color: #d97706; }
         .notif-entry-body { flex: 1; min-width: 0; }
         .notif-entry-title { font-size: 0.78rem; font-weight: 700; color: var(--text-main); line-height: 1.35; }
         .notif-entry-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -629,7 +630,7 @@
     <!-- MODUL KONFIGURASI, DATA USER & PUSH NOTIFIKASI -->
     <script type="module">
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
-        import { doc, getDoc, collection, addDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp, query, orderBy, where, onSnapshot, getDocs } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { doc, getDoc, setDoc, deleteDoc, collection, addDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp, query, orderBy, where, onSnapshot, getDocs } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
         import { ref, onValue, remove } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
 
         import {
@@ -637,7 +638,6 @@
             rtdb,
             auth,
             supabaseUrl,
-            avatarBucket,
             PUSH_WORKER_URL
         } from 'https://sitenexs.com/assets/js/sitenexs-config.js';
 
@@ -657,6 +657,7 @@
         const CALL_PAGE_URL = 'https://sitenexs.com/community/messages/call/';
         const supabaseKey = 'sb_publishable_XKHXYrEw2EDdfYH17Uyx6w_k_BtGLQa';
         const forumBucket = 'forum-photos';
+        const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 
         const forumCollection = collection(db, "forum_posts");
         let allRegisteredUsers = [];
@@ -665,11 +666,13 @@
         let isInitialChatsLoad = true;
         let unsubscribeIncomingCalls = null;
         let unsubscribeChatsNotify = null;
+        let unsubscribeUserNotifs = null;
         let isRedirectingToCall = false;
         let previousLikesByPost = new Map();
         let previousCommentsByPost = new Map();
         const notifiedLikeKeys = new Set();
         const notifiedCommentKeys = new Set();
+        const notifiedMentionKeys = new Set();
         const notifiedMessageKeys = new Set();
         let communityNotifications = [];
 
@@ -699,43 +702,87 @@
         };
 
         /* =====================================================
-           PANEL & BADGE NOTIFIKASI KOMUNITAS (RIWAYAT KEKAL)
+           PENYIMPANAN NOTIFIKASI FIRESTORE + RESET 3 HARI SEKALI
         ===================================================== */
-        function getNotifStorageKey(uid) {
-            return `sitenexs_comm_notifs_${uid || 'guest'}`;
-        }
-
-        function loadSavedCommunityNotifications(uid) {
-            try {
-                const raw = localStorage.getItem(getNotifStorageKey(uid));
-                communityNotifications = raw ? JSON.parse(raw) : [];
-            } catch (e) {
-                communityNotifications = [];
-            }
-            renderCommunityNotifications();
-        }
-
-        function saveCommunityNotifications() {
-            const uid = currentUserData?.uid || localStorage.getItem('sitenexs_uid');
+        async function ensureThreeDayNotificationReset(uid) {
             if (!uid) return;
+            const userRef = doc(db, 'users', uid);
+            const now = Date.now();
+
             try {
-                localStorage.setItem(getNotifStorageKey(uid), JSON.stringify(communityNotifications.slice(0, 60)));
-            } catch (e) {}
+                const snap = await getDoc(userRef);
+                const lastReset = snap.exists() ? Number(snap.data()?.notifLastResetAt || 0) : 0;
+
+                if (!lastReset) {
+                    await setDoc(userRef, { notifLastResetAt: now }, { merge: true });
+                    return;
+                }
+
+                if (now - lastReset >= THREE_DAYS_MS) {
+                    const notifSnap = await getDocs(collection(db, 'users', uid, 'notifications'));
+                    const deletePromises = [];
+                    notifSnap.forEach(nDoc => {
+                        deletePromises.push(deleteDoc(doc(db, 'users', uid, 'notifications', nDoc.id)));
+                    });
+                    await Promise.all(deletePromises);
+                    await setDoc(userRef, { notifLastResetAt: now }, { merge: true });
+                }
+            } catch (err) {
+                console.warn('Reset 3 hari notifikasi dilewati:', err);
+            }
         }
 
-        function pushCommunityNotification({ id, kind, title, sub, postId }) {
-            if (communityNotifications.some(item => item.id === id)) return;
-            communityNotifications.unshift({
-                id,
-                kind, // 'post' | 'like' | 'comment'
-                title,
-                sub: sub || '',
-                postId: postId || '',
-                unread: true,
-                createdAt: Date.now()
+        async function saveNotificationToFirestore(targetUid, { id, kind, title, sub, postId, focusComments = false }) {
+            if (!targetUid) return;
+            try {
+                const notifId = id || `notif_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+                await setDoc(
+                    doc(db, 'users', targetUid, 'notifications', notifId),
+                    {
+                        kind: kind || 'post', // 'post' | 'like' | 'comment' | 'mention'
+                        title: title || 'Notifikasi Komunitas',
+                        sub: sub || '',
+                        postId: postId || '',
+                        focusComments: Boolean(focusComments),
+                        unread: true,
+                        createdAt: Date.now()
+                    },
+                    { merge: true }
+                );
+            } catch (err) {
+                console.warn('Gagal menyimpan notifikasi ke Firestore:', err);
+            }
+        }
+
+        function listenFirestoreUserNotifications(uid) {
+            if (!uid) return;
+            if (unsubscribeUserNotifs) unsubscribeUserNotifs();
+
+            const qNotifs = query(
+                collection(db, 'users', uid, 'notifications'),
+                orderBy('createdAt', 'desc')
+            );
+
+            unsubscribeUserNotifs = onSnapshot(qNotifs, (snapshot) => {
+                const list = [];
+                snapshot.forEach(dSnap => {
+                    const d = dSnap.data();
+                    list.push({
+                        id: dSnap.id,
+                        kind: d.kind || 'post',
+                        title: d.title || 'Notifikasi Komunitas',
+                        sub: d.sub || '',
+                        postId: d.postId || '',
+                        focusComments: Boolean(d.focusComments),
+                        unread: d.unread !== false,
+                        createdAt: Number(d.createdAt || Date.now())
+                    });
+                });
+                communityNotifications = list.slice(0, 60);
+                renderCommunityNotifications();
+            }, (err) => {
+                console.error('Gagal memuat notifikasi Firestore:', err);
             });
-            saveCommunityNotifications();
-            renderCommunityNotifications();
         }
 
         function renderCommunityNotifications() {
@@ -750,7 +797,7 @@
 
             if (!listEl) return;
             if (communityNotifications.length === 0) {
-                listEl.innerHTML = '<div class="notif-empty-state">Belum ada notifikasi postingan, komentar, atau suka baru.</div>';
+                listEl.innerHTML = '<div class="notif-empty-state">Belum ada notifikasi postingan, komentar, penyebutan, atau suka baru.</div>';
                 return;
             }
 
@@ -763,11 +810,14 @@
                 } else if (n.kind === 'comment') {
                     iconClass = 'fas fa-comment-alt';
                     iconKind = 'comment';
+                } else if (n.kind === 'mention') {
+                    iconClass = 'fas fa-at';
+                    iconKind = 'mention';
                 }
                 const timeStr = timeAgo(new Date(n.createdAt));
 
                 return `
-                    <div class="notif-entry ${n.unread ? 'unread' : ''}" onclick="openCommunityNotifItem('${n.id}', '${n.postId}')">
+                    <div class="notif-entry ${n.unread ? 'unread' : ''}" onclick="openCommunityNotifItem('${n.id}', '${n.postId}', ${n.focusComments ? 'true' : 'false'})">
                         <div class="notif-entry-icon ${iconKind}">
                             <i class="${iconClass}"></i>
                         </div>
@@ -788,18 +838,31 @@
             panel.classList.toggle('active');
         };
 
-        window.markAllCommunityNotifsRead = function() {
+        // Riwayat notifikasi TIDAK dihapus saat dibaca; hanya status unread diubah menjadi false
+        window.markAllCommunityNotifsRead = async function() {
+            const uid = currentUserData?.uid || localStorage.getItem('sitenexs_uid');
             communityNotifications = communityNotifications.map(n => ({ ...n, unread: false }));
-            saveCommunityNotifications();
             renderCommunityNotifications();
+
+            if (!uid) return;
+            try {
+                const updates = communityNotifications.map(n =>
+                    setDoc(doc(db, 'users', uid, 'notifications', n.id), { unread: false }, { merge: true })
+                );
+                await Promise.all(updates);
+            } catch (e) {}
         };
 
-        window.openCommunityNotifItem = function(notifId, postId) {
+        window.openCommunityNotifItem = async function(notifId, postId, focusComments = false) {
+            const uid = currentUserData?.uid || localStorage.getItem('sitenexs_uid');
             communityNotifications = communityNotifications.map(n =>
                 n.id === notifId ? { ...n, unread: false } : n
             );
-            saveCommunityNotifications();
             renderCommunityNotifications();
+
+            if (uid && notifId) {
+                setDoc(doc(db, 'users', uid, 'notifications', notifId), { unread: false }, { merge: true }).catch(() => {});
+            }
 
             const panel = document.getElementById('communityNotifPanel');
             if (panel) panel.classList.remove('active');
@@ -807,6 +870,12 @@
             if (postId) {
                 const targetCard = document.getElementById(`post-${postId}`);
                 if (targetCard) {
+                    if (focusComments) {
+                        const commentsSection = document.getElementById(`comments-${postId}`);
+                        if (commentsSection && !commentsSection.classList.contains('active')) {
+                            commentsSection.classList.add('active');
+                        }
+                    }
                     targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     activateFocusMode(targetCard);
                 } else {
@@ -814,6 +883,29 @@
                 }
             }
         };
+
+        /* =====================================================
+           DETEKSI PENYEbutan (@NAMA) PADA POSTINGAN & KOMENTAR
+        ===================================================== */
+        function extractMentionedUsers(text, excludeUid = '') {
+            if (!text || !allRegisteredUsers.length) return [];
+            const matched = [];
+            const seenUids = new Set();
+
+            const sortedUsers = [...allRegisteredUsers].sort((a, b) => b.nama.length - a.nama.length);
+            for (const u of sortedUsers) {
+                if (!u.uid || u.uid === excludeUid || seenUids.has(u.uid)) continue;
+                const cleanName = String(u.nama || '').trim();
+                if (!cleanName) continue;
+                const escaped = cleanName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(`@${escaped}(?=\\s|$|[.,!?;:])`, 'i');
+                if (regex.test(text)) {
+                    seenUids.add(u.uid);
+                    matched.push(u);
+                }
+            }
+            return matched;
+        }
 
         /* =====================================================
            BADGE ANGKA PESAN BELUM DIBACA DI IKON PESAN
@@ -1187,7 +1279,9 @@
 
         async function fetchUserProfile(uid, fallbackName = "Mitra Sitenexs") {
             try {
-                loadSavedCommunityNotifications(uid);
+                await ensureThreeDayNotificationReset(uid);
+                listenFirestoreUserNotifications(uid);
+
                 const profile = await fetchNormalizedUserProfile(db, uid, { forceRefresh: true });
                 const namaLengkap = profile.displayName || fallbackName;
                 const isVerified = Boolean(profile.isVerified);
@@ -1340,9 +1434,17 @@
                         newLikesArr.push(uid);
                         await updateDoc(postRef, { likes: arrayUnion(uid) });
 
-                        // Kirim push notifikasi ke pemilik postingan bahwa user menyukai postingannya
+                        // Catat di Firestore penerima & kirim push notifikasi suka
                         if (postAuthorUid && postAuthorUid !== uid) {
                             const likeBody = `${likerName} menyukai postingan Anda`;
+                            await saveNotificationToFirestore(postAuthorUid, {
+                                id: `like_${postId}_${uid}`,
+                                kind: 'like',
+                                title: likeBody,
+                                sub: String(data.judul || data.isi || '').slice(0, 100),
+                                postId,
+                                focusComments: false
+                            });
                             await sendPushNotification({
                                 db,
                                 recipientUid: postAuthorUid,
@@ -1420,15 +1522,47 @@
                     comments: arrayUnion(newComment)
                 });
 
-                // Kirim push notifikasi ke pemilik postingan saat ada komentar baru
+                // 1. Notifikasi komentar untuk pemilik postingan
                 if (postAuthorUid && postAuthorUid !== uidVal) {
                     const commentNotifText = `${nameVal} mengomentari postingan Anda`;
+                    await saveNotificationToFirestore(postAuthorUid, {
+                        id: `comment_${postId}_${uidVal}_${Date.now()}`,
+                        kind: 'comment',
+                        title: commentNotifText,
+                        sub: commentText.slice(0, 110),
+                        postId,
+                        focusComments: true
+                    });
                     await sendPushNotification({
                         db,
                         recipientUid: postAuthorUid,
                         title: 'Komentar Baru di Komunitas',
                         body: `${commentNotifText}: "${commentText.slice(0, 90)}"`,
                         tag: `comment-${postId}-${createdIso}`,
+                        url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`,
+                        icon: getUserAvatarUrl(uidVal),
+                        workerUrl: PUSH_WORKER_URL
+                    });
+                }
+
+                // 2. Notifikasi penyebutan (@NamaUser) di komentar
+                const mentionedInComment = extractMentionedUsers(commentText, uidVal);
+                for (const mUser of mentionedInComment) {
+                    const mentionTitle = `${nameVal} menyebut Anda dalam komentar`;
+                    await saveNotificationToFirestore(mUser.uid, {
+                        id: `mention_c_${postId}_${mUser.uid}_${Date.now()}`,
+                        kind: 'mention',
+                        title: mentionTitle,
+                        sub: commentText.slice(0, 110),
+                        postId,
+                        focusComments: true
+                    });
+                    await sendPushNotification({
+                        db,
+                        recipientUid: mUser.uid,
+                        title: 'Anda Disebut di Komentar',
+                        body: `${mentionTitle}: "${commentText.slice(0, 90)}"`,
+                        tag: `mention-c-${postId}-${mUser.uid}-${createdIso}`,
                         url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`,
                         icon: getUserAvatarUrl(uidVal),
                         workerUrl: PUSH_WORKER_URL
@@ -1641,19 +1775,23 @@
                 const data = change.doc.data();
                 if (data.isPrivate) continue;
 
-                // 1. Notifikasi postingan baru dari anggota lain
+                // 1. Notifikasi postingan baru + deteksi penyebutan (@Nama) di postingan
                 if (change.type === 'added' && data.authorUid && data.authorUid !== currentActiveUid) {
                     const posterName = data.penulis || 'Mitra Sitenexs';
+                    const fullPostText = `${data.judul || ''} ${data.isi || ''}`.trim();
                     const headline = data.judul || data.isi || 'Diskusi baru di komunitas';
                     const postNotifTitle = `Postingan baru dari ${posterName}`;
 
-                    pushCommunityNotification({
-                        id: `post-${postId}`,
-                        kind: 'post',
-                        title: postNotifTitle,
-                        sub: String(headline).slice(0, 120),
-                        postId
-                    });
+                    if (currentActiveUid) {
+                        await saveNotificationToFirestore(currentActiveUid, {
+                            id: `post_${postId}`,
+                            kind: 'post',
+                            title: postNotifTitle,
+                            sub: String(headline).slice(0, 120),
+                            postId,
+                            focusComments: false
+                        });
+                    }
 
                     showToast(postNotifTitle);
                     triggerLocalSystemNotification(
@@ -1665,6 +1803,23 @@
                             url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`
                         }
                     );
+
+                    // Jika user aktif disebut di postingan baru ini
+                    const mentionedInPost = extractMentionedUsers(fullPostText, data.authorUid);
+                    if (currentActiveUid && mentionedInPost.some(m => m.uid === currentActiveUid)) {
+                        const mentionKey = `post_mention_${postId}_${currentActiveUid}`;
+                        if (!notifiedMentionKeys.has(mentionKey)) {
+                            notifiedMentionKeys.add(mentionKey);
+                            await saveNotificationToFirestore(currentActiveUid, {
+                                id: mentionKey,
+                                kind: 'mention',
+                                title: `${posterName} menyebut Anda dalam postingan`,
+                                sub: String(headline).slice(0, 110),
+                                postId,
+                                focusComments: false
+                            });
+                        }
+                    }
                 }
 
                 // 2. Notifikasi like baru pada postingan milik user aktif
@@ -1682,12 +1837,13 @@
                                 const likeMessage = `${likerProfile.displayName} menyukai postingan Anda`;
                                 const postTitlePreview = data.judul || data.isi || '';
 
-                                pushCommunityNotification({
-                                    id: `like-${likeKey}`,
+                                await saveNotificationToFirestore(currentActiveUid, {
+                                    id: `like_${likeKey}`,
                                     kind: 'like',
                                     title: likeMessage,
                                     sub: String(postTitlePreview).slice(0, 100),
-                                    postId
+                                    postId,
+                                    focusComments: false
                                 });
 
                                 showToast(likeMessage);
@@ -1706,46 +1862,69 @@
                 }
                 previousLikesByPost.set(postId, currLikesSet);
 
-                // 3. Notifikasi komentar baru pada postingan milik user aktif
+                // 3. Notifikasi komentar baru + penyebutan (@Nama) di komentar
                 const prevComments = previousCommentsByPost.get(postId) || new Set();
                 const currCommentsArr = data.comments || [];
                 const currCommentsSet = new Set();
 
-                if (data.authorUid && currentActiveUid && data.authorUid === currentActiveUid) {
-                    for (const c of currCommentsArr) {
-                        const cKey = `${c.authorUid || ''}_${c.createdAt || ''}_${c.isi || ''}`;
-                        currCommentsSet.add(cKey);
-                        if (c.authorUid && c.authorUid !== currentActiveUid && !prevComments.has(cKey)) {
-                            if (!notifiedCommentKeys.has(cKey)) {
-                                notifiedCommentKeys.add(cKey);
-                                const commenterName = c.penulis || 'Mitra Sitenexs';
-                                const commentTitle = `${commenterName} mengomentari postingan Anda`;
-                                const commentPreview = String(c.isi || '');
+                for (const c of currCommentsArr) {
+                    const cKey = `${c.authorUid || ''}_${c.createdAt || ''}_${c.isi || ''}`;
+                    currCommentsSet.add(cKey);
+                    if (c.authorUid && currentActiveUid && c.authorUid !== currentActiveUid && !prevComments.has(cKey)) {
+                        const commenterName = c.penulis || 'Mitra Sitenexs';
+                        const commentPreview = String(c.isi || '');
 
-                                pushCommunityNotification({
-                                    id: `comment-${postId}-${c.createdAt || Date.now()}`,
-                                    kind: 'comment',
-                                    title: commentTitle,
+                        if (data.authorUid === currentActiveUid && !notifiedCommentKeys.has(cKey)) {
+                            notifiedCommentKeys.add(cKey);
+                            const commentTitle = `${commenterName} mengomentari postingan Anda`;
+                            await saveNotificationToFirestore(currentActiveUid, {
+                                id: `comment_${postId}_${c.createdAt || Date.now()}_${c.authorUid}`,
+                                kind: 'comment',
+                                title: commentTitle,
+                                sub: commentPreview.slice(0, 110),
+                                postId,
+                                focusComments: true
+                            });
+
+                            showToast(commentTitle);
+                            triggerLocalSystemNotification(
+                                commentTitle,
+                                commentPreview.slice(0, 120),
+                                {
+                                    tag: `comment-${postId}-${c.createdAt || Date.now()}`,
+                                    icon: getUserAvatarUrl(c.authorUid),
+                                    url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`
+                                }
+                            );
+                        }
+
+                        const mentionedInComment = extractMentionedUsers(commentPreview, c.authorUid);
+                        if (mentionedInComment.some(m => m.uid === currentActiveUid)) {
+                            const mKey = `mention_${cKey}`;
+                            if (!notifiedMentionKeys.has(mKey)) {
+                                notifiedMentionKeys.add(mKey);
+                                const mTitle = `${commenterName} menyebut Anda dalam komentar`;
+                                await saveNotificationToFirestore(currentActiveUid, {
+                                    id: `mention_${postId}_${c.createdAt || Date.now()}_${c.authorUid}`,
+                                    kind: 'mention',
+                                    title: mTitle,
                                     sub: commentPreview.slice(0, 110),
-                                    postId
+                                    postId,
+                                    focusComments: true
                                 });
 
-                                showToast(commentTitle);
+                                showToast(mTitle);
                                 triggerLocalSystemNotification(
-                                    commentTitle,
+                                    mTitle,
                                     commentPreview.slice(0, 120),
                                     {
-                                        tag: `comment-${postId}-${c.createdAt || Date.now()}`,
+                                        tag: `mention-${postId}-${c.createdAt || Date.now()}`,
                                         icon: getUserAvatarUrl(c.authorUid),
                                         url: `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`
                                     }
                                 );
                             }
                         }
-                    }
-                } else {
-                    for (const c of currCommentsArr) {
-                        currCommentsSet.add(`${c.authorUid || ''}_${c.createdAt || ''}_${c.isi || ''}`);
                     }
                 }
                 previousCommentsByPost.set(postId, currCommentsSet);
@@ -1882,7 +2061,7 @@
                 const nameVal = activeUser ? activeUser.nama : "Mitra Sitenexs";
                 const verifiedVal = currentUserData ? Boolean(currentUserData.isVerified) : false;
 
-                await addDoc(forumCollection, {
+                const createdDoc = await addDoc(forumCollection, {
                     authorUid: uidVal,
                     penulis: nameVal,
                     isVerified: verifiedVal,
@@ -1902,6 +2081,30 @@
                     hideStats: false,
                     createdAt: serverTimestamp()
                 });
+
+                // Kirim notifikasi & push notif ke user yang disebut (@Nama) di postingan
+                const mentionedInPost = extractMentionedUsers(`${title} ${content}`, uidVal);
+                for (const mUser of mentionedInPost) {
+                    const mTitle = `${nameVal} menyebut Anda dalam postingan`;
+                    await saveNotificationToFirestore(mUser.uid, {
+                        id: `mention_p_${createdDoc.id}_${mUser.uid}_${Date.now()}`,
+                        kind: 'mention',
+                        title: mTitle,
+                        sub: String(title || content).slice(0, 110),
+                        postId: createdDoc.id,
+                        focusComments: false
+                    });
+                    await sendPushNotification({
+                        db,
+                        recipientUid: mUser.uid,
+                        title: 'Anda Disebut di Postingan',
+                        body: `${mTitle}: "${String(title || content).slice(0, 90)}"`,
+                        tag: `mention-p-${createdDoc.id}-${mUser.uid}`,
+                        url: `https://sitenexs.com/community/?post=${encodeURIComponent(createdDoc.id)}`,
+                        icon: getUserAvatarUrl(uidVal),
+                        workerUrl: PUSH_WORKER_URL
+                    });
+                }
 
                 form.reset();
                 removeImage();
