@@ -84,9 +84,15 @@
         .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); flex-shrink: 0; }
         
         .chat-header-info { min-width: 0; display: flex; flex-direction: column; }
-        .chat-header-name-row { display: flex; align-items: center; gap: 0.3rem; min-width: 0; }
+        .chat-header-name-row { display: flex; align-items: center; gap: 0.35rem; min-width: 0; }
         .chat-header-name { font-weight: 850; font-size: 0.98rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .chat-header-verif { width: 14px; height: 14px; object-fit: contain; flex-shrink: 0; display: inline-block; }
+        .chat-header-verif { width: 15px; height: 15px; object-fit: contain; flex-shrink: 0; display: inline-block; }
+        .blue-check-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 16px; height: 16px; border-radius: 50%; background: #1d9bf0;
+            color: #fff; font-size: 0.6rem; flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(29, 155, 240, 0.35);
+        }
 
         /* ISI CHAT */
         .chat-messages {
@@ -116,6 +122,33 @@
         .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); border-bottom-left-radius: 4px; }
         .message-bubble.outgoing { background: var(--primary); color: #fff; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
         .message-time { font-size: 0.65rem; opacity: 0.75; margin-top: 0.3rem; text-align: right; font-weight: 500; }
+
+        /* KARTU RIWAYAT PANGGILAN DI CHAT */
+        .call-log-card {
+            display: flex; align-items: center; gap: 0.75rem; min-width: 195px;
+        }
+        .call-log-icon {
+            width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 0.95rem; flex-shrink: 0;
+        }
+        .message-bubble.outgoing .call-log-icon {
+            background: rgba(255, 255, 255, 0.2); color: #fff;
+        }
+        .message-bubble.incoming .call-log-icon {
+            background: var(--primary-light); color: var(--primary);
+        }
+        .message-bubble.incoming .call-log-icon.missed {
+            background: #fef2f2; color: var(--danger);
+        }
+        .call-log-info {
+            display: flex; flex-direction: column; text-align: left;
+        }
+        .call-log-title {
+            font-weight: 700; font-size: 0.85rem; line-height: 1.3;
+        }
+        .call-log-sub {
+            font-size: 0.74rem; opacity: 0.82; margin-top: 2px;
+        }
 
         /* PRATINJAU PASFOTO / GAMBAR DI DALAM CHAT */
         .chat-image-preview {
@@ -158,6 +191,32 @@
             width: 100%; height: 100%; object-fit: cover; background: #1e293b;
         }
 
+        /* PLACEHOLDER SAAT KAMERA LAWAN DIMATIKAN DI VIDEO CALL */
+        .remote-cam-off-overlay {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 4; padding: 2rem; text-align: center;
+        }
+        .remote-cam-off-overlay.active { display: flex; }
+        .vc-overlay.voice-mode .remote-cam-off-overlay { display: none !important; }
+
+        /* INDIKATOR STATUS LAWAN (MUTE MIC / MATIKAN KAMERA) */
+        .remote-media-indicators {
+            position: absolute; top: 74px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; gap: 0.45rem;
+            z-index: 16; pointer-events: none; width: max-content; max-width: 90%;
+        }
+        .remote-indicator-pill {
+            background: rgba(239, 68, 68, 0.92); backdrop-filter: blur(8px);
+            color: #fff; padding: 0.4rem 0.95rem; border-radius: var(--radius-full);
+            font-size: 0.78rem; font-weight: 700; display: none; align-items: center; gap: 0.45rem;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: popupScaleIn 0.2s ease forwards;
+        }
+        .remote-indicator-pill.active { display: inline-flex; }
+
         /* TAMPILAN KHUSUS VOICE CALL */
         .voice-call-stage {
             position: absolute; inset: 0;
@@ -194,7 +253,7 @@
         }
         .voice-peer-name {
             font-size: 1.4rem; font-weight: 800; color: #ffffff; margin-bottom: 0.35rem;
-            max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            max-width: 90%; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
         }
         .voice-call-timer {
             font-size: 0.95rem; font-weight: 600; color: #94a3b8;
@@ -203,11 +262,24 @@
 
         .vc-status-banner {
             position: absolute; top: 24px; left: 50%; transform: translateX(-50%);
-            background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px);
+            background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(8px);
             color: #fff; padding: 0.5rem 1.25rem; border-radius: var(--radius-full);
             font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;
             border: 1px solid rgba(255,255,255,0.15); z-index: 10; white-space: nowrap;
         }
+        .vc-timer-pill {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            padding: 0.12rem 0.55rem;
+            border-radius: var(--radius-full);
+            font-size: 0.78rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            margin-left: 0.2rem;
+            display: none;
+        }
+        .vc-timer-pill.active { display: inline-block; }
+
         .vc-local-container {
             position: absolute; bottom: 105px; right: 20px; width: 115px; height: 165px;
             border-radius: 14px; overflow: hidden; border: 2px solid rgba(255,255,255,0.3);
@@ -321,7 +393,10 @@
             <div id="incomingCallTypeLabel" style="font-size: 0.8rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">
                 <i class="fas fa-video" style="color: var(--accent); margin-right: 4px;"></i> Panggilan Video Masuk
             </div>
-            <div id="callerNameDisplay" style="font-weight: 800; font-size: 1.25rem; color: #fff; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Mitra Sitenexs</div>
+            <div style="display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; max-width: 100%;">
+                <div id="callerNameDisplay" style="font-weight: 800; font-size: 1.25rem; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Mitra Sitenexs</div>
+                <div id="callerBadgesDisplay" style="display: inline-flex; align-items: center; gap: 3px;"></div>
+            </div>
             <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 0.2rem;">Mengajak Anda terhubung secara langsung...</div>
 
             <div class="incoming-call-actions">
@@ -347,6 +422,34 @@
             <div class="vc-status-banner">
                 <i class="fas fa-circle" style="color: var(--accent); font-size: 0.6rem;"></i>
                 <span id="vcStatusText">Menghubungkan...</span>
+                <span id="vcBannerBadges" style="display: inline-flex; align-items: center; gap: 3px;"></span>
+                <span id="vcCallTimer" class="vc-timer-pill">00:00</span>
+            </div>
+
+            <!-- INDIKATOR JIKA LAWAN MEMBISUKAN MIKROFON / MEMATIKAN KAMERA -->
+            <div class="remote-media-indicators">
+                <div id="remoteMutedIndicator" class="remote-indicator-pill">
+                    <i class="fas fa-microphone-slash"></i>
+                    <span id="remoteMutedText">Mikrofon dibisukan</span>
+                </div>
+                <div id="remoteCamOffIndicator" class="remote-indicator-pill">
+                    <i class="fas fa-video-slash"></i>
+                    <span id="remoteCamOffText">Kamera dimatikan</span>
+                </div>
+            </div>
+
+            <!-- TAMPILAN SAAT KAMERA LAWAN DIMATIKAN PADA VIDEO CALL -->
+            <div id="remoteCamOffStage" class="remote-cam-off-overlay">
+                <div class="voice-avatar-ring">
+                    <img id="remoteCamOffAvatar" src="" class="voice-avatar-img" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
+                </div>
+                <div class="voice-peer-name">
+                    <span id="remoteCamOffPeerName">Mitra Sitenexs</span>
+                    <span id="remoteCamOffBadges" style="display: inline-flex; align-items: center; gap: 3px;"></span>
+                </div>
+                <div style="font-size: 0.88rem; color: #94a3b8; margin-top: 0.25rem;">
+                    <i class="fas fa-video-slash" style="margin-right: 4px;"></i> Kamera dimatikan
+                </div>
             </div>
 
             <!-- STAGE KHUSUS VOICE CALL -->
@@ -354,7 +457,10 @@
                 <div class="voice-avatar-ring">
                     <img id="voicePeerAvatar" src="" class="voice-avatar-img" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
                 </div>
-                <div id="voicePeerName" class="voice-peer-name">Mitra Sitenexs</div>
+                <div class="voice-peer-name">
+                    <span id="voicePeerName">Mitra Sitenexs</span>
+                    <span id="voicePeerBadges" style="display: inline-flex; align-items: center; gap: 3px;"></span>
+                </div>
                 <div id="voiceCallTimer" class="voice-call-timer">Menghubungkan...</div>
             </div>
 
@@ -386,7 +492,7 @@
                     <div class="chat-header-info">
                         <div class="chat-header-name-row">
                             <div class="chat-header-name" id="activeChatName">Memuat...</div>
-                            <div id="activeChatBadges" style="display: inline-flex; align-items: center; gap: 2px;"></div>
+                            <div id="activeChatBadges" style="display: inline-flex; align-items: center; gap: 3px;"></div>
                         </div>
                     </div>
                 </div>
@@ -481,10 +587,12 @@ setPersistence(auth, browserLocalPersistence).catch(console.error);
 
 let currentUid = null;
 let myUserName = 'Mitra Sitenexs';
+let myIsVerified = false;
 
 let activeChatUserId = null;
 let activeChatId = null;
 let otherUserName = 'Mitra Sitenexs';
+let otherUserVerified = false;
 
 let unsubscribeMessages = null;
 
@@ -495,6 +603,8 @@ let remoteStream = null;
 let currentCallId = null;
 let currentSessionId = null;
 let currentCallType = 'video'; // 'video' | 'audio'
+let currentCallLogDocId = null;
+let wasCallConnected = false;
 
 let incomingCallData = null;
 
@@ -617,7 +727,7 @@ window.showToast = function (msg) {
 };
 
 /* =====================================================
-   HELPER
+   HELPER & LENCANA VERIFIKASI
 ===================================================== */
 
 function escapeHtml(text) {
@@ -641,6 +751,14 @@ function safeUrl(url) {
     return '';
 }
 
+function getVerifiedBadgesHtml(isVerified) {
+    if (!isVerified) return '';
+    return `
+        <span class="blue-check-badge" title="Centang Biru Terverifikasi"><i class="fas fa-check"></i></span>
+        <img src="https://sitenexs.com/assets/logo/verified.png" class="chat-header-verif" alt="Lencana Verifikasi" title="Akun Terverifikasi Sitenexs">
+    `;
+}
+
 function getAvatarUrl(uid) {
     return `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo`;
 }
@@ -655,8 +773,12 @@ function formatMessageTime(timestamp) {
 }
 
 function formatDuration(seconds) {
-    const mins = Math.floor(seconds / 60);
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
+    if (hrs > 0) {
+        return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
@@ -675,15 +797,24 @@ function clearDisconnectGrace() {
 }
 
 function startCallTimer() {
+    wasCallConnected = true;
     if (callDurationInterval) return;
     callSecondsElapsed = 0;
 
-    const timerEl = document.getElementById('voiceCallTimer');
-    if (timerEl) timerEl.textContent = '00:00';
+    const voiceTimerEl = document.getElementById('voiceCallTimer');
+    const bannerTimerEl = document.getElementById('vcCallTimer');
+
+    if (voiceTimerEl) voiceTimerEl.textContent = '00:00';
+    if (bannerTimerEl) {
+        bannerTimerEl.textContent = '00:00';
+        bannerTimerEl.classList.add('active');
+    }
 
     callDurationInterval = setInterval(() => {
         callSecondsElapsed += 1;
-        if (timerEl) timerEl.textContent = formatDuration(callSecondsElapsed);
+        const formatted = formatDuration(callSecondsElapsed);
+        if (voiceTimerEl) voiceTimerEl.textContent = formatted;
+        if (bannerTimerEl) bannerTimerEl.textContent = formatted;
     }, 1000);
 }
 
@@ -692,12 +823,48 @@ function stopCallTimer() {
         clearInterval(callDurationInterval);
         callDurationInterval = null;
     }
-    callSecondsElapsed = 0;
+    const bannerTimerEl = document.getElementById('vcCallTimer');
+    if (bannerTimerEl) {
+        bannerTimerEl.classList.remove('active');
+        bannerTimerEl.textContent = '00:00';
+    }
 }
 
-function applyCallOverlayMode(callType, peerUid, peerName) {
+function updateRemoteMediaIndicators(muted, camOff, peerName) {
+    const mutedEl = document.getElementById('remoteMutedIndicator');
+    const mutedTextEl = document.getElementById('remoteMutedText');
+    const camOffEl = document.getElementById('remoteCamOffIndicator');
+    const camOffTextEl = document.getElementById('remoteCamOffText');
+    const camOffStage = document.getElementById('remoteCamOffStage');
+
+    const displayPeer = peerName || otherUserName || 'Lawan bicara';
+
+    if (mutedEl && mutedTextEl) {
+        mutedTextEl.textContent = `${displayPeer} membisukan mikrofon`;
+        mutedEl.classList.toggle('active', Boolean(muted));
+    }
+
+    if (camOffEl && camOffTextEl) {
+        camOffTextEl.textContent = `${displayPeer} mematikan kamera`;
+        camOffEl.classList.toggle('active', Boolean(camOff) && currentCallType === 'video');
+    }
+
+    if (camOffStage) {
+        camOffStage.classList.toggle('active', Boolean(camOff) && currentCallType === 'video');
+    }
+}
+
+function applyCallOverlayMode(callType, peerUid, peerName, peerVerified = false) {
     const overlay = document.getElementById('vcOverlay');
     const toggleCamBtn = document.getElementById('toggleCamBtn');
+    const badgesHtml = getVerifiedBadgesHtml(peerVerified);
+
+    document.getElementById('vcBannerBadges').innerHTML = badgesHtml;
+    document.getElementById('remoteCamOffAvatar').src = getAvatarUrl(peerUid);
+    document.getElementById('remoteCamOffPeerName').textContent = peerName || 'Mitra Sitenexs';
+    document.getElementById('remoteCamOffBadges').innerHTML = badgesHtml;
+
+    updateRemoteMediaIndicators(false, false, peerName);
 
     if (callType === 'audio') {
         overlay.classList.add('voice-mode');
@@ -705,10 +872,73 @@ function applyCallOverlayMode(callType, peerUid, peerName) {
 
         document.getElementById('voicePeerAvatar').src = getAvatarUrl(peerUid);
         document.getElementById('voicePeerName').textContent = peerName || 'Mitra Sitenexs';
+        document.getElementById('voicePeerBadges').innerHTML = badgesHtml;
         document.getElementById('voiceCallTimer').textContent = 'Menghubungkan...';
     } else {
         overlay.classList.remove('voice-mode');
         if (toggleCamBtn) toggleCamBtn.style.display = 'flex';
+    }
+}
+
+/* =====================================================
+   RIWAYAT PANGGILAN OTOMATIS KE FIRESTORE CHAT
+===================================================== */
+
+async function createCallLogMessage(callType) {
+    if (!activeChatId || !currentUid || !activeChatUserId) return null;
+
+    const isAudio = callType === 'audio';
+    const labelText = isAudio ? '📞 Panggilan Suara' : '📹 Panggilan Video';
+    const rawPayload = `[CALL_LOG]|${callType}|ringing|0`;
+
+    try {
+        const chatDocRef = doc(db, 'chats', activeChatId);
+        await setDoc(chatDocRef, {
+            participants: [currentUid, activeChatUserId],
+            lastMessage: labelText,
+            lastTimestamp: serverTimestamp(),
+            [`unread_${activeChatUserId}`]: true
+        }, { merge: true });
+
+        const msgRef = await addDoc(collection(db, 'chats', activeChatId, 'messages'), {
+            senderUid: currentUid,
+            text: rawPayload,
+            createdAt: serverTimestamp(),
+            isEdited: false
+        });
+
+        return msgRef.id;
+    } catch (error) {
+        console.error('Gagal membuat riwayat panggilan:', error);
+        return null;
+    }
+}
+
+async function updateCallLogMessage(docId, callType, status, durationSec = 0) {
+    if (!activeChatId || !docId) return;
+
+    const isAudio = callType === 'audio';
+    const baseLabel = isAudio ? '📞 Panggilan Suara' : '📹 Panggilan Video';
+    let summary = baseLabel;
+
+    if (status === 'ended') {
+        summary = `${baseLabel} (${formatDuration(durationSec)})`;
+    } else if (status === 'missed') {
+        summary = `${baseLabel} • Tidak dijawab`;
+    } else if (status === 'rejected') {
+        summary = `${baseLabel} • Ditolak`;
+    }
+
+    try {
+        await updateDoc(doc(db, 'chats', activeChatId, 'messages', docId), {
+            text: `[CALL_LOG]|${callType}|${status}|${durationSec}`
+        });
+
+        await updateDoc(doc(db, 'chats', activeChatId), {
+            lastMessage: summary
+        });
+    } catch (error) {
+        console.warn('Gagal memperbarui log panggilan:', error);
     }
 }
 
@@ -718,6 +948,44 @@ function applyCallOverlayMode(callType, peerUid, peerName) {
 
 function renderMessageBody(text) {
     if (!text) return '';
+
+    // FORMAT RIWAYAT PANGGILAN
+    if (text.startsWith('[CALL_LOG]|')) {
+        const [, callType = 'video', status = 'ended', durationStr = '0'] = text.split('|');
+        const durationSec = parseInt(durationStr, 10) || 0;
+        const isAudio = callType === 'audio';
+        const iconClass = isAudio ? 'fas fa-phone' : 'fas fa-video';
+        const title = isAudio ? 'Panggilan Suara' : 'Panggilan Video';
+
+        let statusText = 'Memanggil...';
+        let isMissed = false;
+
+        if (status === 'ringing') {
+            statusText = 'Memanggil...';
+        } else if (status === 'connected') {
+            statusText = 'Sedang berlangsung...';
+        } else if (status === 'ended') {
+            statusText = `Selesai • ${formatDuration(durationSec)}`;
+        } else if (status === 'missed') {
+            statusText = 'Tidak dijawab';
+            isMissed = true;
+        } else if (status === 'rejected') {
+            statusText = 'Panggilan ditolak';
+            isMissed = true;
+        }
+
+        return `
+            <div class="call-log-card">
+                <div class="call-log-icon ${isMissed ? 'missed' : ''}">
+                    <i class="${iconClass}"></i>
+                </div>
+                <div class="call-log-info">
+                    <div class="call-log-title">${title}</div>
+                    <div class="call-log-sub">${escapeHtml(statusText)}</div>
+                </div>
+            </div>
+        `;
+    }
 
     if (text.includes('📋 *LAMARAN KERJA BARU*')) {
         const getMatch = regex => text.match(regex)?.[1]?.trim() || '-';
@@ -847,6 +1115,9 @@ function showIncomingCallPopup(data) {
     document.getElementById('callerNameDisplay').textContent =
         data.callerName || 'Mitra Sitenexs';
 
+    document.getElementById('callerBadgesDisplay').innerHTML =
+        getVerifiedBadgesHtml(Boolean(data.callerVerified));
+
     document.getElementById('incomingCallBackdrop').classList.add('active');
 
     if (navigator.vibrate) {
@@ -966,7 +1237,6 @@ function createPeerConnection(callId, sessionId, isCaller) {
     });
 
     peerConnection.ontrack = event => {
-        // Batalkan timer timeout "tidak dijawab" karena media sudah masuk
         clearCallTimeout();
         clearDisconnectGrace();
 
@@ -986,9 +1256,7 @@ function createPeerConnection(callId, sessionId, isCaller) {
         document.getElementById('vcStatusText').textContent =
             currentCallType === 'audio' ? 'Panggilan Suara' : otherUserName;
 
-        if (currentCallType === 'audio') {
-            startCallTimer();
-        }
+        startCallTimer();
     };
 
     const localCandidatePath = isCaller ? 'callerCandidates' : 'calleeCandidates';
@@ -1008,7 +1276,6 @@ function createPeerConnection(callId, sessionId, isCaller) {
         });
     };
 
-    // Listener remote candidate
     unsubscribeRemoteCandidates = onChildAdded(
         remoteCandidatesRef,
         async snapshot => {
@@ -1041,12 +1308,11 @@ function createPeerConnection(callId, sessionId, isCaller) {
             clearDisconnectGrace();
             document.getElementById('vcStatusText').textContent =
                 currentCallType === 'audio' ? 'Panggilan Suara' : otherUserName;
-            if (currentCallType === 'audio') startCallTimer();
+            startCallTimer();
         } else if (state === 'checking') {
             document.getElementById('vcStatusText').textContent = 'Menyambungkan jaringan...';
         } else if (state === 'disconnected') {
             document.getElementById('vcStatusText').textContent = 'Menyambung ulang...';
-            // Beri waktu 10 detik untuk pemulihan sinyal sebelum memutus panggilan
             if (!disconnectGraceTimeout) {
                 disconnectGraceTimeout = setTimeout(() => {
                     if (
@@ -1076,7 +1342,7 @@ function createPeerConnection(callId, sessionId, isCaller) {
             clearDisconnectGrace();
             document.getElementById('vcStatusText').textContent =
                 currentCallType === 'audio' ? 'Panggilan Suara' : otherUserName;
-            if (currentCallType === 'audio') startCallTimer();
+            startCallTimer();
         } else if (state === 'failed') {
             clearDisconnectGrace();
             showToast('Koneksi panggilan terputus.');
@@ -1102,6 +1368,10 @@ function listenToCallRoom(callId, sessionId, isCaller) {
 
         if (!data) {
             if (isInCall) {
+                if (isCaller && currentCallLogDocId) {
+                    const finalStatus = wasCallConnected ? 'ended' : 'missed';
+                    updateCallLogMessage(currentCallLogDocId, currentCallType, finalStatus, callSecondsElapsed);
+                }
                 showToast('Panggilan berakhir.');
                 cleanupCallUI(false);
             }
@@ -1110,7 +1380,15 @@ function listenToCallRoom(callId, sessionId, isCaller) {
 
         if (data.sessionId !== sessionId) return;
 
+        // Pantau status mute mikrofon & matikan kamera milik lawan bicara
+        const remoteMuted = isCaller ? Boolean(data.calleeMicMuted) : Boolean(data.callerMicMuted);
+        const remoteCamOff = isCaller ? Boolean(data.calleeCamOff) : Boolean(data.callerCamOff);
+        updateRemoteMediaIndicators(remoteMuted, remoteCamOff, otherUserName);
+
         if (data.status === 'rejected') {
+            if (isCaller && currentCallLogDocId) {
+                updateCallLogMessage(currentCallLogDocId, currentCallType, 'rejected', 0);
+            }
             showToast('Panggilan ditolak.');
             cleanupCallUI(false);
             remove(callRef).catch(() => {});
@@ -1118,6 +1396,10 @@ function listenToCallRoom(callId, sessionId, isCaller) {
         }
 
         if (data.status === 'ended') {
+            if (isCaller && currentCallLogDocId) {
+                const finalStatus = wasCallConnected ? 'ended' : 'missed';
+                updateCallLogMessage(currentCallLogDocId, currentCallType, finalStatus, callSecondsElapsed);
+            }
             showToast('Panggilan berakhir.');
             cleanupCallUI(false);
             return;
@@ -1132,6 +1414,10 @@ function listenToCallRoom(callId, sessionId, isCaller) {
         ) {
             clearCallTimeout();
 
+            if (currentCallLogDocId) {
+                updateCallLogMessage(currentCallLogDocId, currentCallType, 'connected', 0);
+            }
+
             try {
                 await peerConnection.setRemoteDescription(
                     new RTCSessionDescription(data.answer)
@@ -1142,9 +1428,7 @@ function listenToCallRoom(callId, sessionId, isCaller) {
                 document.getElementById('vcStatusText').textContent =
                     currentCallType === 'audio' ? 'Panggilan Suara' : otherUserName;
 
-                if (currentCallType === 'audio') {
-                    startCallTimer();
-                }
+                startCallTimer();
 
             } catch (error) {
                 console.error('Set remote answer gagal:', error);
@@ -1168,6 +1452,8 @@ async function initiateCall(callType) {
     isStartingCall = true;
     callDirection = 'caller';
     currentCallType = callType;
+    wasCallConnected = false;
+    callSecondsElapsed = 0;
 
     const mediaReady = await setupLocalMedia(callType);
 
@@ -1179,7 +1465,6 @@ async function initiateCall(callType) {
 
     requestWakeLock();
 
-    // ID room unik untuk setiap panggilan
     const callId = `call_${currentUid}_${Date.now()}`;
     const sessionId = `${currentUid}_${Date.now()}`;
 
@@ -1188,7 +1473,7 @@ async function initiateCall(callType) {
 
     isInCall = true;
 
-    applyCallOverlayMode(callType, activeChatUserId, otherUserName);
+    applyCallOverlayMode(callType, activeChatUserId, otherUserName, otherUserVerified);
 
     document.getElementById('vcOverlay').classList.add('active');
     document.getElementById('vcStatusText').textContent =
@@ -1200,12 +1485,13 @@ async function initiateCall(callType) {
         document.getElementById('voiceCallTimer').textContent = 'Memanggil...';
     }
 
+    // Otomatis kirim riwayat panggilan ke ruang chat
+    currentCallLogDocId = await createCallLogMessage(callType);
+
     const callRef = ref(rtdb, `calls/${callId}`);
 
     try {
         createPeerConnection(callId, sessionId, true);
-
-        // Pantau room panggilan ini
         listenToCallRoom(callId, sessionId, true);
 
         const offer = await peerConnection.createOffer();
@@ -1216,9 +1502,15 @@ async function initiateCall(callType) {
             chatId: activeChatId,
             sessionId,
             callType,
+            callLogDocId: currentCallLogDocId,
             callerUid: currentUid,
             callerName: myUserName,
+            callerVerified: myIsVerified,
             calleeUid: activeChatUserId,
+            callerMicMuted: false,
+            callerCamOff: false,
+            calleeMicMuted: false,
+            calleeCamOff: false,
             status: 'ringing',
             offer: {
                 type: offer.type,
@@ -1242,7 +1534,7 @@ async function initiateCall(callType) {
                 !peerConnection.currentRemoteDescription
             ) {
                 showToast('Panggilan tidak dijawab.');
-                endVideoCall();
+                endVideoCall('missed');
             }
         }, 60000);
 
@@ -1250,9 +1542,7 @@ async function initiateCall(callType) {
 
     } catch (error) {
         console.error('Start call error:', error);
-
         showToast('Gagal memulai panggilan: ' + error.message);
-
         cleanupCallUI(true);
     }
 }
@@ -1286,9 +1576,15 @@ window.acceptVideoCall = async function () {
     currentCallId = data.roomId;
     currentSessionId = data.sessionId;
     currentCallType = callType;
+    currentCallLogDocId = data.callLogDocId || null;
     callDirection = 'callee';
+    wasCallConnected = false;
+    callSecondsElapsed = 0;
 
     otherUserName = data.callerName || otherUserName;
+    if (typeof data.callerVerified === 'boolean') {
+        otherUserVerified = data.callerVerified;
+    }
 
     isStartingCall = true;
 
@@ -1304,7 +1600,7 @@ window.acceptVideoCall = async function () {
 
     isInCall = true;
 
-    applyCallOverlayMode(callType, data.callerUid, otherUserName);
+    applyCallOverlayMode(callType, data.callerUid, otherUserName, otherUserVerified);
 
     document.getElementById('vcOverlay').classList.add('active');
     document.getElementById('vcStatusText').textContent =
@@ -1312,7 +1608,6 @@ window.acceptVideoCall = async function () {
 
     try {
         createPeerConnection(data.roomId, data.sessionId, false);
-
         listenToCallRoom(data.roomId, data.sessionId, false);
 
         const callRef = ref(rtdb, `calls/${data.roomId}`);
@@ -1328,6 +1623,8 @@ window.acceptVideoCall = async function () {
 
         await update(callRef, {
             status: 'connected',
+            calleeMicMuted: false,
+            calleeCamOff: false,
             answer: {
                 type: answer.type,
                 sdp: answer.sdp
@@ -1335,7 +1632,6 @@ window.acceptVideoCall = async function () {
             answeredAt: Date.now()
         });
 
-        // Hapus notifikasi panggilan masuk
         if (currentUid) {
             remove(ref(rtdb, `incomingCalls/${currentUid}`)).catch(() => {});
         }
@@ -1345,9 +1641,7 @@ window.acceptVideoCall = async function () {
 
     } catch (error) {
         console.error('Accept call error:', error);
-
         showToast('Gagal menerima panggilan: ' + error.message);
-
         cleanupCallUI(true);
     }
 };
@@ -1371,6 +1665,15 @@ window.rejectVideoCall = function (callData = incomingCallData) {
         rejectedAt: Date.now()
     }).catch(() => {});
 
+    if (callData.callLogDocId) {
+        updateCallLogMessage(
+            callData.callLogDocId,
+            callData.callType === 'audio' ? 'audio' : 'video',
+            'rejected',
+            0
+        );
+    }
+
     if (currentUid) {
         remove(ref(rtdb, `incomingCalls/${currentUid}`)).catch(() => {});
     }
@@ -1382,11 +1685,20 @@ window.rejectVideoCall = function (callData = incomingCallData) {
    END CALL
 ===================================================== */
 
-window.endVideoCall = function () {
+window.endVideoCall = function (forcedStatus = null) {
     const callId = currentCallId;
     const direction = callDirection;
+    const logDocId = currentCallLogDocId;
+    const callType = currentCallType;
+    const duration = callSecondsElapsed;
+    const connected = wasCallConnected;
 
     cleanupCallUI(false);
+
+    if (logDocId) {
+        const finalStatus = forcedStatus || (connected ? 'ended' : 'missed');
+        updateCallLogMessage(logDocId, callType, finalStatus, duration);
+    }
 
     if (callId) {
         const callRef = ref(rtdb, `calls/${callId}`);
@@ -1421,6 +1733,8 @@ function cleanupCallUI(removeIncoming = true) {
 
     const toggleCamBtn = document.getElementById('toggleCamBtn');
     if (toggleCamBtn) toggleCamBtn.style.display = 'flex';
+
+    updateRemoteMediaIndicators(false, false, '');
 
     if (unsubscribeCallRoom) {
         unsubscribeCallRoom();
@@ -1475,12 +1789,15 @@ function cleanupCallUI(removeIncoming = true) {
     currentCallId = null;
     currentSessionId = null;
     currentCallType = 'video';
+    currentCallLogDocId = null;
+    wasCallConnected = false;
+    callSecondsElapsed = 0;
     incomingCallData = null;
     callDirection = null;
 }
 
 /* =====================================================
-   MIC
+   MIC & SINKRONISASI STATUS MUTE KE LAWAN
 ===================================================== */
 
 window.toggleMic = function () {
@@ -1493,16 +1810,21 @@ window.toggleMic = function () {
     });
 
     const btn = document.getElementById('toggleMicBtn');
-
     btn.classList.toggle('muted', isMicMuted);
-
     btn.innerHTML = isMicMuted
         ? '<i class="fas fa-microphone-slash"></i>'
         : '<i class="fas fa-microphone"></i>';
+
+    if (currentCallId && callDirection) {
+        const field = callDirection === 'caller' ? 'callerMicMuted' : 'calleeMicMuted';
+        update(ref(rtdb, `calls/${currentCallId}`), {
+            [field]: isMicMuted
+        }).catch(() => {});
+    }
 };
 
 /* =====================================================
-   CAMERA
+   CAMERA & SINKRONISASI STATUS KAMERA KE LAWAN
 ===================================================== */
 
 window.toggleCamera = function () {
@@ -1515,12 +1837,17 @@ window.toggleCamera = function () {
     });
 
     const btn = document.getElementById('toggleCamBtn');
-
     btn.classList.toggle('muted', isCamOff);
-
     btn.innerHTML = isCamOff
         ? '<i class="fas fa-video-slash"></i>'
         : '<i class="fas fa-video"></i>';
+
+    if (currentCallId && callDirection) {
+        const field = callDirection === 'caller' ? 'callerCamOff' : 'calleeCamOff';
+        update(ref(rtdb, `calls/${currentCallId}`), {
+            [field]: isCamOff
+        }).catch(() => {});
+    }
 };
 
 /* =====================================================
@@ -1547,13 +1874,11 @@ function listenIncomingCalls() {
             return;
         }
 
-        // Abaikan panggilan kedaluwarsa
         if (data.timestamp && Date.now() - data.timestamp > 60000) {
             remove(incomingRef).catch(() => {});
             return;
         }
 
-        // Jangan tampilkan panggilan sendiri
         if (data.callerUid === currentUid) return;
 
         if (
@@ -1579,10 +1904,8 @@ async function initChat(user) {
     const participants = [currentUid, activeChatUserId].sort();
     activeChatId = `${participants[0]}_${participants[1]}`;
 
-    // Mulai listener panggilan user
     listenIncomingCalls();
 
-    // Mark chat read
     try {
         await updateDoc(doc(db, 'chats', activeChatId), {
             [`unread_${currentUid}`]: false
@@ -1600,6 +1923,7 @@ async function initChat(user) {
                 md.namaLengkap ||
                 [md.namaDepan, md.namaBelakang].filter(Boolean).join(' ') ||
                 myUserName;
+            myIsVerified = Boolean(md.isVerified);
         }
     } catch (error) {
         console.error('Load current user error:', error);
@@ -1616,17 +1940,10 @@ async function initChat(user) {
                 data.namaLengkap ||
                 [data.namaDepan, data.namaBelakang].filter(Boolean).join(' ') ||
                 otherUserName;
+            otherUserVerified = Boolean(data.isVerified);
 
-            let badgesHtml = '';
-
-            if (data.isVerified) {
-                badgesHtml = `
-                    <img src="https://sitenexs.com/assets/logo/verified.png"
-                    class="chat-header-verif" alt="Verified">
-                `;
-            }
-
-            document.getElementById('activeChatBadges').innerHTML = badgesHtml;
+            document.getElementById('activeChatBadges').innerHTML =
+                getVerifiedBadgesHtml(otherUserVerified);
         }
     } catch (error) {
         console.error('Load recipient error:', error);
