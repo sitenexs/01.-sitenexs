@@ -570,7 +570,7 @@
 </head>
 <body data-package="basic">
 
-    <!-- MODAL IZIN NOTIFIKASI DENGAN ANIMASI ORANG MEMOHON (BISA DITUTUP) -->
+    <!-- MODAL IZIN NOTIFIKASI DENGAN ANIMASI ORANG MEMOHON (MUNCUL SEKALI SAJA) -->
     <div class="force-notif-backdrop" id="forceNotifBackdrop" onclick="dismissNotificationPromptModal()">
         <div class="force-notif-card" onclick="event.stopPropagation()">
             <button type="button" class="force-notif-close-x" onclick="dismissNotificationPromptModal()" title="Tutup">
@@ -701,6 +701,7 @@
         const supabaseKey = 'sb_publishable_XKHXYrEw2EDdfYH17Uyx6w_k_BtGLQa';
         const forumBucket = 'forum-photos';
         const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+        const NOTIF_PROMPT_SHOWN_KEY = 'sitenexs_notif_prompt_shown';
 
         const forumCollection = collection(db, "forum_posts");
         let allRegisteredUsers = [];
@@ -716,7 +717,6 @@
         const notifiedCommentKeys = new Set();
         const notifiedMentionKeys = new Set();
         const notifiedMessageKeys = new Set();
-        let notifModalDismissedByUser = false;
 
         const postContainer = document.getElementById('postContainer');
         const modal = document.getElementById('postModal');
@@ -726,10 +726,10 @@
         const promptText = document.getElementById('createPostPromptText');
 
         /* =====================================================
-           MODAL IZIN NOTIFIKASI (BISA DITUTUP + ATUR DI SIDEBAR)
+           MODAL IZIN NOTIFIKASI (MUNCUL SEKALI SAJA)
         ===================================================== */
         async function handlePermissionGrantedFlow() {
-            notifModalDismissedByUser = false;
+            localStorage.setItem(NOTIF_PROMPT_SHOWN_KEY, 'true');
             await registerPushServiceWorker();
             const activeUid = currentUserData?.uid || localStorage.getItem('sitenexs_uid');
             if (activeUid) {
@@ -742,7 +742,7 @@
         }
 
         window.dismissNotificationPromptModal = function() {
-            notifModalDismissedByUser = true;
+            localStorage.setItem(NOTIF_PROMPT_SHOWN_KEY, 'true');
             const backdrop = document.getElementById('forceNotifBackdrop');
             if (backdrop) backdrop.classList.remove('active');
             document.body.style.overflow = '';
@@ -753,12 +753,14 @@
             const statusText = document.getElementById('forceNotifStatusText');
             if (!backdrop) return;
 
-            if (!('Notification' in window) || Notification.permission === 'granted' || notifModalDismissedByUser) {
+            const alreadyShown = localStorage.getItem(NOTIF_PROMPT_SHOWN_KEY) === 'true';
+            if (!('Notification' in window) || Notification.permission === 'granted' || alreadyShown) {
                 backdrop.classList.remove('active');
                 document.body.style.overflow = '';
                 return;
             }
 
+            localStorage.setItem(NOTIF_PROMPT_SHOWN_KEY, 'true');
             backdrop.classList.add('active');
             document.body.style.overflow = 'hidden';
 
@@ -770,6 +772,7 @@
         }
 
         window.triggerNativeBrowserNotificationPrompt = function() {
+            localStorage.setItem(NOTIF_PROMPT_SHOWN_KEY, 'true');
             if (!('Notification' in window)) {
                 dismissNotificationPromptModal();
                 return;
@@ -808,11 +811,6 @@
         };
 
         checkInitialNotificationPrompt();
-        window.addEventListener('focus', () => {
-            if ('Notification' in window && Notification.permission === 'granted') {
-                handlePermissionGrantedFlow();
-            }
-        });
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 dismissNotificationPromptModal();
