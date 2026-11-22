@@ -172,6 +172,19 @@
         .chat-header-name { font-weight: 850; font-size: 0.98rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .chat-header-verif { width: 14px; height: 14px; object-fit: contain; flex-shrink: 0; display: inline-block; }
 
+        /* STATUS SEDANG MENGETIK DI BAWAH NAMA */
+        .header-typing-status {
+            display: none;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1.2;
+            margin-top: 1px;
+        }
+        .header-typing-status.active {
+            display: block;
+        }
+
         /* ISI CHAT */
         .chat-messages {
             flex: 1 1 auto; min-height: 0; padding: 1.25rem; overflow-y: auto; 
@@ -194,7 +207,67 @@
 
         .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); border-bottom-left-radius: 4px; }
         .message-bubble.outgoing { background: var(--primary); color: #fff; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
-        .message-time { font-size: 0.65rem; opacity: 0.75; margin-top: 0.3rem; text-align: right; font-weight: 500; }
+        
+        .message-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.3rem;
+            margin-top: 0.3rem;
+        }
+        .message-time { font-size: 0.65rem; opacity: 0.75; font-weight: 500; }
+
+        /* INDIKATOR CENTANG PESAN KELUAR */
+        .msg-status-icon {
+            font-size: 0.72rem;
+            display: inline-flex;
+            align-items: center;
+            line-height: 1;
+        }
+        .msg-status-icon.sent {
+            color: rgba(255, 255, 255, 0.72);
+        }
+        .msg-status-icon.delivered {
+            color: rgba(255, 255, 255, 0.95);
+        }
+        .msg-status-icon.read {
+            color: #4ade80;
+        }
+
+        /* BUBBLE ANIMASI SEDANG MENGETIK DI AREA PESAN */
+        .typing-bubble-wrapper {
+            display: none;
+            align-items: flex-start;
+            width: 100%;
+            flex-shrink: 0;
+        }
+        .typing-bubble-wrapper.active {
+            display: flex;
+        }
+        .typing-bubble-box {
+            background: #ffffff;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            border-bottom-left-radius: 4px;
+            padding: 0.65rem 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+        }
+        .typing-dot-circle {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #64748b;
+            animation: typingWaveDot 1.3s infinite ease-in-out;
+        }
+        .typing-dot-circle:nth-child(2) { animation-delay: 0.18s; }
+        .typing-dot-circle:nth-child(3) { animation-delay: 0.36s; }
+        @keyframes typingWaveDot {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-4px); opacity: 1; }
+        }
 
         /* KARTU RIWAYAT PANGGILAN DI CHAT */
         .call-log-card {
@@ -283,6 +356,7 @@
                             <div class="chat-header-name" id="activeChatName"></div>
                             <div id="activeChatBadges" style="display: inline-flex; align-items: center; gap: 2px;"></div>
                         </div>
+                        <div id="headerTypingStatus" class="header-typing-status">Sedang mengetik...</div>
                     </div>
                 </div>
                 <div class="chat-header-right">
@@ -314,9 +388,18 @@
             <!-- ISI PESAN -->
             <div class="chat-messages" id="chatMessages"></div>
 
+            <!-- BUBBLE ANIMASI MENGETIK DI AREA CHAT -->
+            <div id="typingBubbleWrapper" class="typing-bubble-wrapper">
+                <div class="typing-bubble-box">
+                    <span class="typing-dot-circle"></span>
+                    <span class="typing-dot-circle"></span>
+                    <span class="typing-dot-circle"></span>
+                </div>
+            </div>
+
             <!-- INPUT PESAN BAWAH -->
             <form class="chat-input-box" id="sendMessageForm" onsubmit="handleChatFormSubmit(event)" autocomplete="off">
-                <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." required autocomplete="off">
+                <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." oninput="handleTypingInputChange(event)" required autocomplete="off">
                 <button type="submit" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane"></i></button>
             </form>
         </div>
@@ -333,6 +416,7 @@ import {
     addDoc,
     query,
     orderBy,
+    onSnapshot,
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
@@ -378,11 +462,14 @@ let otherUserName = 'Mitra Sitenexs';
 let otherUserFcmToken = null;
 
 let cleanupMessagesSync = null;
+let unsubscribeChatMeta = null;
 let cleanupIncomingRedirect = null;
 let cleanupOngoingBanner = null;
 let lastNotifiedMessageId = null;
 let isRedirectingToCall = false;
 let isChatInitialized = false;
+let typingStopTimer = null;
+let lastTypingSoundAt = 0;
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
@@ -415,6 +502,9 @@ function renderCachedMessagesImmediately(chatId, uid) {
                 senderUid: item.senderUid,
                 text: item.text,
                 isEdited: item.isEdited,
+                status: item.status || 'sent',
+                delivered: Boolean(item.delivered),
+                read: Boolean(item.read),
                 createdAt: fakeTimestamp
             }, uid);
             messagesContainer.appendChild(el);
@@ -545,6 +635,63 @@ window.requestPushNotificationPermission = async function () {
     }
 };
 
+/* =====================================================
+   EFEK SUARA: MENGETIK, KIRIM PESAN & TERIMA PESAN
+===================================================== */
+function playTypingSound() {
+    const now = Date.now();
+    if (now - lastTypingSoundAt < 90) return;
+    lastTypingSoundAt = now;
+
+    try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+
+        const ctx = new AudioContextClass();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(340, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(190, ctx.currentTime + 0.045);
+
+        gain.gain.setValueAtTime(0.06, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.045);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.045);
+        osc.onended = () => ctx.close().catch(() => {});
+    } catch (e) {}
+}
+
+function playSentMessageSound() {
+    try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+
+        const ctx = new AudioContextClass();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(660, ctx.currentTime);
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.07);
+
+        gain.gain.setValueAtTime(0.11, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.18);
+        osc.onended = () => ctx.close().catch(() => {});
+    } catch (e) {}
+}
+
 function playMessageNotificationSound() {
     try {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -568,6 +715,75 @@ function playMessageNotificationSound() {
         osc.stop(ctx.currentTime + 0.28);
         osc.onended = () => ctx.close().catch(() => {});
     } catch (e) {}
+}
+
+/* =====================================================
+   STATUS SEDANG MENGETIK REAL-TIME
+===================================================== */
+function setMyTypingState(isTyping) {
+    if (!activeChatId || !currentUid) return;
+    setDoc(doc(db, 'chats', activeChatId), {
+        [`typing_${currentUid}`]: Boolean(isTyping)
+    }, { merge: true }).catch(() => {});
+}
+
+window.handleTypingInputChange = function (event) {
+    playTypingSound();
+
+    if (!activeChatId || !currentUid) return;
+    const hasText = Boolean(event?.target?.value && event.target.value.trim().length > 0);
+
+    setMyTypingState(hasText);
+
+    if (typingStopTimer) {
+        clearTimeout(typingStopTimer);
+        typingStopTimer = null;
+    }
+
+    if (hasText) {
+        typingStopTimer = setTimeout(() => {
+            setMyTypingState(false);
+        }, 1800);
+    }
+};
+
+function renderOtherTypingIndicator(isTyping) {
+    const headerTypingEl = document.getElementById('headerTypingStatus');
+    const bubbleWrapperEl = document.getElementById('typingBubbleWrapper');
+    const messagesContainer = document.getElementById('chatMessages');
+
+    if (headerTypingEl) {
+        headerTypingEl.classList.toggle('active', Boolean(isTyping));
+    }
+    if (bubbleWrapperEl) {
+        bubbleWrapperEl.classList.toggle('active', Boolean(isTyping));
+    }
+    if (isTyping && messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+}
+
+/* =====================================================
+   STATUS CENTANG PESAN (1 CENTANG, 2 CENTANG, 2 CENTANG HIJAU)
+===================================================== */
+function getMessageCheckStatus(message) {
+    if (message?.read === true || message?.status === 'read') {
+        return 'read';
+    }
+    if (message?.delivered === true || message?.status === 'delivered') {
+        return 'delivered';
+    }
+    return 'sent';
+}
+
+function renderCheckmarkHtml(statusKey) {
+    if (statusKey === 'read') {
+        return `<span class="msg-status-icon read" title="Dibaca"><i class="fas fa-check-double"></i></span>`;
+    }
+    if (statusKey === 'delivered') {
+        return `<span class="msg-status-icon delivered" title="Terkirim ke pengguna"><i class="fas fa-check-double"></i></span>`;
+    }
+    return `<span class="msg-status-icon sent" title="Terkirim ke database"><i class="fas fa-check"></i></span>`;
 }
 
 function escapeHtml(text) {
@@ -732,11 +948,23 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
     bodyDiv.className = 'message-body';
     bodyDiv.innerHTML = renderMessageBody(message.text || '');
 
-    const timeDiv = document.createElement('div');
+    const metaRow = document.createElement('div');
+    metaRow.className = 'message-meta-row';
+
+    const timeDiv = document.createElement('span');
     timeDiv.className = 'message-time';
     timeDiv.textContent = formatMessageTime(message.createdAt);
 
-    bubble.append(bodyDiv, timeDiv);
+    metaRow.appendChild(timeDiv);
+
+    if (isOutgoing) {
+        const statusSpan = document.createElement('span');
+        statusSpan.className = 'msg-status-slot';
+        statusSpan.innerHTML = renderCheckmarkHtml(getMessageCheckStatus(message));
+        metaRow.appendChild(statusSpan);
+    }
+
+    bubble.append(bodyDiv, metaRow);
     wrapper.appendChild(bubble);
     return wrapper;
 }
@@ -758,6 +986,21 @@ function updateMessageElement(wrapper, _docId, message, ownerUid = currentUid) {
     const timeDiv = wrapper.querySelector('.message-time');
     if (timeDiv && message.createdAt) {
         timeDiv.textContent = formatMessageTime(message.createdAt);
+    }
+
+    const metaRow = wrapper.querySelector('.message-meta-row');
+    if (metaRow) {
+        let statusSlot = metaRow.querySelector('.msg-status-slot');
+        if (isOutgoing) {
+            if (!statusSlot) {
+                statusSlot = document.createElement('span');
+                statusSlot.className = 'msg-status-slot';
+                metaRow.appendChild(statusSlot);
+            }
+            statusSlot.innerHTML = renderCheckmarkHtml(getMessageCheckStatus(message));
+        } else if (statusSlot) {
+            statusSlot.remove();
+        }
     }
 }
 
@@ -799,6 +1042,20 @@ async function initChat(user) {
         callPageUrl: DEFAULT_CALL_PAGE_URL
     });
 
+    if (unsubscribeChatMeta) unsubscribeChatMeta();
+    unsubscribeChatMeta = onSnapshot(doc(db, 'chats', activeChatId), (chatSnap) => {
+        if (!chatSnap.exists()) return;
+        const cData = chatSnap.data();
+        const isOtherTyping = Boolean(cData[`typing_${activeChatUserId}`]);
+        renderOtherTypingIndicator(isOtherTyping);
+
+        if (cData[`unread_${currentUid}`] === true && document.visibilityState === 'visible') {
+            updateDoc(doc(db, 'chats', activeChatId), {
+                [`unread_${currentUid}`]: false
+            }).catch(() => {});
+        }
+    });
+
     const messagesRef = collection(db, 'chats', activeChatId, 'messages');
     const qMsgs = query(messagesRef, orderBy('createdAt', 'asc'));
     const messagesContainer = document.getElementById('chatMessages');
@@ -815,33 +1072,56 @@ async function initChat(user) {
         autoScroll: true,
         createElement: (msgId, msgData) => buildMessageElement(msgId, msgData, currentUid),
         updateElement: (existingEl, msgId, msgData) => updateMessageElement(existingEl, msgId, msgData, currentUid),
-        onAddedItem: (msgId, msgData) => {
-            if (
-                msgData.senderUid !== currentUid &&
-                lastNotifiedMessageId !== msgId &&
-                !String(msgData.text || '').startsWith('[CALL_LOG]|')
-            ) {
-                lastNotifiedMessageId = msgId;
-
+        onAddedItem: (msgId, msgData, docSnap) => {
+            if (msgData.senderUid !== currentUid) {
+                // Tandai pesan masuk sebagai terkirim ke user (delivered) & dibaca bila halaman terlihat
+                const updates = { delivered: true };
+                if (updates.status !== 'read') updates.status = 'delivered';
                 if (document.visibilityState === 'visible') {
-                    updateDoc(doc(db, 'chats', activeChatId), {
-                        [`unread_${currentUid}`]: false
-                    }).catch(() => {});
-                    playMessageNotificationSound();
-                } else {
-                    const previewText = String(msgData.text || '').includes('📋 *LAMARAN KERJA BARU*')
-                        ? 'Mengirim lamaran kerja baru'
-                        : String(msgData.text || 'Pesan baru');
+                    updates.read = true;
+                    updates.status = 'read';
+                }
+                if (docSnap?.ref) {
+                    updateDoc(docSnap.ref, updates).catch(() => {});
+                }
 
-                    triggerLocalSystemNotification(
-                        otherUserName,
-                        previewText,
-                        {
-                            tag: `chat-${activeChatId}`,
-                            icon: otherProfile?.avatarUrl || getUserAvatarUrl(activeChatUserId),
-                            url: window.location.href
-                        }
-                    );
+                if (
+                    lastNotifiedMessageId !== msgId &&
+                    !String(msgData.text || '').startsWith('[CALL_LOG]|')
+                ) {
+                    lastNotifiedMessageId = msgId;
+
+                    if (document.visibilityState === 'visible') {
+                        updateDoc(doc(db, 'chats', activeChatId), {
+                            [`unread_${currentUid}`]: false
+                        }).catch(() => {});
+                        playMessageNotificationSound();
+                    } else {
+                        const previewText = String(msgData.text || '').includes('📋 *LAMARAN KERJA BARU*')
+                            ? 'Mengirim lamaran kerja baru'
+                            : String(msgData.text || 'Pesan baru');
+
+                        triggerLocalSystemNotification(
+                            otherUserName,
+                            previewText,
+                            {
+                                tag: `chat-${activeChatId}`,
+                                icon: otherProfile?.avatarUrl || getUserAvatarUrl(activeChatUserId),
+                                url: window.location.href
+                            }
+                        );
+                    }
+                }
+            }
+        },
+        onModifiedItem: (msgId, msgData) => {
+            if (msgData.senderUid !== currentUid && !String(msgData.text || '').startsWith('[CALL_LOG]|')) {
+                if (document.visibilityState === 'visible' && msgData.read !== true) {
+                    updateDoc(doc(db, 'chats', activeChatId, 'messages', msgId), {
+                        delivered: true,
+                        read: true,
+                        status: 'read'
+                    }).catch(() => {});
                 }
             }
         },
@@ -880,6 +1160,16 @@ async function initChat(user) {
     }).catch(() => {});
 }
 
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+        setMyTypingState(false);
+    } else if (document.visibilityState === 'visible' && activeChatId && currentUid) {
+        updateDoc(doc(db, 'chats', activeChatId), {
+            [`unread_${currentUid}`]: false
+        }).catch(() => {});
+    }
+});
+
 onAuthStateChanged(auth, user => {
     if (user) {
         initChat(user);
@@ -902,6 +1192,11 @@ window.handleChatFormSubmit = async function (event) {
     if (!text || !activeChatId || !currentUid) return;
 
     inputEl.value = '';
+    if (typingStopTimer) {
+        clearTimeout(typingStopTimer);
+        typingStopTimer = null;
+    }
+    setMyTypingState(false);
 
     try {
         const recipientUid = activeChatUserId;
@@ -911,15 +1206,21 @@ window.handleChatFormSubmit = async function (event) {
             participants: [currentUid, activeChatUserId],
             lastMessage: text,
             lastTimestamp: serverTimestamp(),
-            [`unread_${recipientUid}`]: true
+            [`unread_${recipientUid}`]: true,
+            [`typing_${currentUid}`]: false
         }, { merge: true });
 
         await addDoc(collection(db, 'chats', activeChatId, 'messages'), {
             senderUid: currentUid,
             text,
             createdAt: serverTimestamp(),
-            isEdited: false
+            isEdited: false,
+            status: 'sent',
+            delivered: false,
+            read: false
         });
+
+        playSentMessageSound();
 
         const pushRes = await sendPushNotification({
             db,
