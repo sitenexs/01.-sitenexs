@@ -300,6 +300,7 @@
 
         .video-tile video {
             width: 100%; height: 100%; object-fit: cover; background: #1e293b;
+            display: block;
         }
         .video-tile.local-tile video {
             transform: scaleX(-1);
@@ -735,6 +736,7 @@ let ringtoneInterval = null;
 let callTimeout = null;
 let callDurationInterval = null;
 let callSecondsElapsed = 0;
+let callConnectedTimestamp = 0;
 let wakeLockSentinel = null;
 
 let unsubscribeCallRoom = null;
@@ -770,13 +772,11 @@ function pauseVideoKeepVoiceOnLeave() {
 
     persistOngoingCallState(true);
 
-    // Pastikan mikrofon tetap menyala (voice call tetap lanjut)
     if (localStream) {
         localStream.getAudioTracks().forEach(track => {
             track.enabled = !isMicMuted;
         });
 
-        // Jeda trek video jika panggilan video agar lawan bicara melihat video terjeda
         if (currentCallType === 'video') {
             isVideoPausedInBackground = true;
             localStream.getVideoTracks().forEach(track => {
@@ -785,7 +785,6 @@ function pauseVideoKeepVoiceOnLeave() {
         }
     }
 
-    // Perbarui status peserta di RTDB: video terjeda (camOff: true, videoPaused: true), suara tetap aktif
     update(ref(rtdb, `calls/${currentCallId}/participants/${currentUid}`), {
         camOff: currentCallType === 'video' ? true : isCamOff,
         videoPaused: currentCallType === 'video',
@@ -797,11 +796,19 @@ function pauseVideoKeepVoiceOnLeave() {
 function resumeVideoWhenReturningToCall() {
     if (!isInCall || isExplicitCallEnded || !currentCallId || !currentUid) return;
 
-    if (isVideoPausedInBackground && currentCallType === 'video' && !isCamOff && localStream) {
+    if (currentCallType === 'video' && !isCamOff && localStream) {
         isVideoPausedInBackground = false;
         localStream.getVideoTracks().forEach(track => {
             track.enabled = true;
         });
+        const localCamOffOverlay = document.getElementById('localCamOffOverlay');
+        if (localCamOffOverlay) localCamOffOverlay.classList.remove('active');
+        const localVideo = document.getElementById('localVideo');
+        if (localVideo) {
+            localVideo.srcObject = localStream;
+            localVideo.muted = true;
+            localVideo.play().catch(() => {});
+        }
     }
 
     update(ref(rtdb, `calls/${currentCallId}/participants/${currentUid}`), {
@@ -1148,22 +1155,36 @@ function clearCallTimeout() {
     }
 }
 
-function startCallTimer() {
+function startCallTimer(baseConnectedAt = null) {
     wasCallConnected = true;
-    if (callDurationInterval) return;
-    callSecondsElapsed = 0;
+
+    if (baseConnectedAt && Number.isFinite(baseConnectedAt) && baseConnectedAt > 0) {
+        callConnectedTimestamp = baseConnectedAt;
+    } else if (!callConnectedTimestamp) {
+        callConnectedTimestamp = Date.now();
+        if (currentCallId) {
+            update(ref(rtdb, `calls/${currentCallId}`), {
+                connectedAt: callConnectedTimestamp
+            }).catch(() => {});
+        }
+    }
+
+    callSecondsElapsed = Math.max(0, Math.floor((Date.now() - callConnectedTimestamp) / 1000));
 
     const voiceTimerEl = document.getElementById('voiceCallTimer');
     const bannerTimerEl = document.getElementById('vcCallTimer');
+    const initialFormatted = formatDuration(callSecondsElapsed);
 
-    if (voiceTimerEl) voiceTimerEl.textContent = '00:00';
+    if (voiceTimerEl) voiceTimerEl.textContent = initialFormatted;
     if (bannerTimerEl) {
-        bannerTimerEl.textContent = '00:00';
+        bannerTimerEl.textContent = initialFormatted;
         bannerTimerEl.classList.add('active');
     }
 
+    if (callDurationInterval) return;
+
     callDurationInterval = setInterval(() => {
-        callSecondsElapsed += 1;
+        callSecondsElapsed = Math.max(0, Math.floor((Date.now() - callConnectedTimestamp) / 1000));
         const formatted = formatDuration(callSecondsElapsed);
         if (voiceTimerEl) voiceTimerEl.textContent = formatted;
         if (bannerTimerEl) bannerTimerEl.textContent = formatted;
@@ -1175,6 +1196,7 @@ function stopCallTimer() {
         clearInterval(callDurationInterval);
         callDurationInterval = null;
     }
+    callConnectedTimestamp = 0;
     const bannerTimerEl = document.getElementById('vcCallTimer');
     if (bannerTimerEl) {
         bannerTimerEl.classList.remove('active');
@@ -1417,7 +1439,9 @@ function applyCallOverlayMode(callType, peerUid, peerName, peerVerified = false,
         document.getElementById('voicePeerAvatar').src = avatarSrc;
         document.getElementById('voicePeerName').textContent = peerName || 'Mitra Sitenexs';
         document.getElementById('voicePeerBadges').innerHTML = badgesHtml;
-        document.getElementById('voiceCallTimer').textContent = 'Menghubungkan...';
+        if (!callConnectedTimestamp) {
+            document.getElementById('voiceCallTimer').textContent = 'Menghubungkan...';
+        }
     } else {
         overlay.classList.remove('voice-mode');
         if (toggleCamBtn) toggleCamBtn.style.display = 'flex';
@@ -1565,6 +1589,13 @@ async function setupLocalMedia(callType = 'video') {
             return false;
         }
 
+        if (localStream) {
+            localStream.getTracks().forEach(track => {
+                try { track.stop(); } catch (e) {}
+            });
+            localStream = null;
+        }
+
         const constraints = callType === 'audio'
             ? {
                 video: false,
@@ -1591,7 +1622,14 @@ async function setupLocalMedia(callType = 'video') {
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
 
         const localVideo = document.getElementById('localVideo');
+        const localCamOffOverlay = document.getElementById('localCamOffOverlay');
         if (callType === 'video') {
+            localStream.getVideoTracks().forEach(track => {
+                track.enabled = !isCamOff;
+            });
+            if (localCamOffOverlay) {
+                localCamOffOverlay.classList.toggle('active', isCamOff);
+            }
             localVideo.srcObject = localStream;
             localVideo.muted = true;
             await localVideo.play().catch(() => {});
@@ -1717,7 +1755,7 @@ async function connectToMeshParticipant(callId, remoteUid, peerMeta = {}) {
             updateCallLogMessage(currentCallLogDocId, currentCallType, 'connected', 0);
         }
 
-        startCallTimer();
+        startCallTimer(callConnectedTimestamp || null);
         updateHeaderAndVoiceStageUI();
     };
 
@@ -1752,7 +1790,7 @@ async function connectToMeshParticipant(callId, remoteUid, peerMeta = {}) {
                 clearTimeout(peerObj.disconnectTimer);
                 peerObj.disconnectTimer = null;
             }
-            startCallTimer();
+            startCallTimer(callConnectedTimestamp || null);
             updateHeaderAndVoiceStageUI();
         } else if (state === 'disconnected') {
             if (!peerObj.disconnectTimer) {
@@ -1821,7 +1859,7 @@ async function connectToMeshParticipant(callId, remoteUid, peerMeta = {}) {
 /* =====================================================
    DAFTAR PESERTA REAL-TIME DI RUANG PANGGILAN
 ===================================================== */
-function registerSelfInRoom(callId) {
+function registerSelfInRoom(callId, preserveJoinedAt = null) {
     if (!callId || !currentUid) return;
     const myParticipantRef = ref(rtdb, `calls/${callId}/participants/${currentUid}`);
     set(myParticipantRef, {
@@ -1834,8 +1872,9 @@ function registerSelfInRoom(callId) {
         camOff: isCamOff,
         videoPaused: false,
         voiceOnlyBackground: false,
-        joinedAt: Date.now(),
-        lastActiveAt: Date.now()
+        joinedAt: preserveJoinedAt || Date.now(),
+        lastActiveAt: Date.now(),
+        rejoinedAt: Date.now()
     }).catch(() => {});
 }
 
@@ -1853,11 +1892,17 @@ function listenToRoomParticipants(callId) {
         Object.entries(val).forEach(([uid, pData]) => {
             if (uid === currentUid) return;
 
-            const isNew = !participantsInfoMap.has(uid);
+            const prevMeta = participantsInfoMap.get(uid);
+            const isNew = !prevMeta;
+            const hasRejoined = prevMeta && pData.rejoinedAt && prevMeta.rejoinedAt !== pData.rejoinedAt;
             participantsInfoMap.set(uid, pData);
 
             if (isNew && peersMap.size >= 1) {
                 showToast(`${pData.name || 'Peserta baru'} bergabung ke panggilan!`);
+            }
+
+            if (hasRejoined && peersMap.has(uid)) {
+                closeSinglePeer(uid, false);
             }
 
             if (!peersMap.has(uid)) {
@@ -1922,6 +1967,12 @@ function listenToCallRoom(callId, sessionId, isCaller) {
 
         if (sessionId && data.sessionId && data.sessionId !== sessionId) return;
 
+        // Sinkronkan waktu mulai panggilan jika tersedia di ruang panggilan
+        const roomStartTs = data.connectedAt || data.answeredAt || 0;
+        if (roomStartTs && !callConnectedTimestamp && data.status === 'connected') {
+            startCallTimer(roomStartTs);
+        }
+
         if (data.status === 'rejected' && !isShareLinkEnabled && !data.allowGuestLink && peersMap.size === 0) {
             isExplicitCallEnded = true;
             persistOngoingCallState(false);
@@ -1967,9 +2018,11 @@ async function resumeOngoingCallRoom(roomId) {
 
         isStartingCall = true;
         isExplicitCallEnded = false;
+        isCamOff = false;
+        isVideoPausedInBackground = false;
         currentCallId = roomId;
         currentSessionId = data.sessionId || `${currentUid}_${Date.now()}`;
-        currentCallType = data.callType === 'audio' ? 'audio' : (typeParam || 'video');
+        currentCallType = data.callType === 'audio' ? 'audio' : 'video';
         currentCallLogDocId = data.callLogDocId || null;
         callDirection = data.callerUid === currentUid ? 'caller' : 'callee';
 
@@ -1987,9 +2040,19 @@ async function resumeOngoingCallRoom(roomId) {
             } catch (e) {}
         }
 
+        // Ambil timestamp koneksi awal agar waktu telepon terus berlanjut (tidak mengulang dari 00:00)
+        const existingConnectedAt = data.connectedAt || data.answeredAt || data.timestamp || 0;
+        if (existingConnectedAt > 0) {
+            callConnectedTimestamp = existingConnectedAt;
+        }
+
         applyCallOverlayMode(currentCallType, activeChatUserId, otherUserName, otherUserVerified, otherUserBadgeType);
         document.getElementById('vcOverlay').classList.add('active');
-        document.getElementById('vcStatusText').textContent = 'Melanjutkan panggilan...';
+        document.getElementById('vcStatusText').textContent = otherUserName || 'Melanjutkan panggilan...';
+
+        if (existingConnectedAt > 0) {
+            startCallTimer(existingConnectedAt);
+        }
 
         const mediaReady = await setupLocalMedia(currentCallType);
         if (!mediaReady) {
@@ -1997,9 +2060,18 @@ async function resumeOngoingCallRoom(roomId) {
             return false;
         }
 
+        // Pastikan elemen video lokal tampil normal & berputar
+        const localVideo = document.getElementById('localVideo');
+        const localCamOffOverlay = document.getElementById('localCamOffOverlay');
+        if (localCamOffOverlay) localCamOffOverlay.classList.remove('active');
+        if (localVideo && currentCallType === 'video') {
+            localVideo.srcObject = localStream;
+            localVideo.muted = true;
+            await localVideo.play().catch(() => {});
+        }
+
         requestWakeLock();
         isInCall = true;
-        isVideoPausedInBackground = false;
         persistOngoingCallState(true);
 
         // Bersihkan sinyal negosiasi lama khusus pasangan kita agar WebRTC langsung tersambung ulang
@@ -2013,13 +2085,10 @@ async function resumeOngoingCallRoom(roomId) {
             await Promise.all(resetPromises);
         }
 
-        registerSelfInRoom(roomId);
+        const prevJoinedAt = data.participants?.[currentUid]?.joinedAt || existingConnectedAt || Date.now();
+        registerSelfInRoom(roomId, prevJoinedAt);
         listenToCallRoom(roomId, currentSessionId, callDirection === 'caller');
         listenToRoomParticipants(roomId);
-
-        if (data.status === 'connected') {
-            startCallTimer();
-        }
 
         isStartingCall = false;
         showToast('Panggilan dilanjutkan kembali.');
@@ -2041,6 +2110,7 @@ async function startOutgoingCall(callType) {
     currentCallType = callType;
     wasCallConnected = false;
     callSecondsElapsed = 0;
+    callConnectedTimestamp = 0;
 
     applyCallOverlayMode(callType, activeChatUserId, otherUserName, otherUserVerified, otherUserBadgeType);
     document.getElementById('vcOverlay').classList.add('active');
@@ -2238,13 +2308,17 @@ window.joinCallViaShareLink = async function () {
     document.getElementById('vcStatusText').textContent = 'Menyambungkan ke ruang...';
 
     const callRef = ref(rtdb, `calls/${currentCallId}`);
+    const nowTs = Date.now();
+    const existingStart = sharedRoomData.connectedAt || sharedRoomData.answeredAt || nowTs;
 
     try {
         await update(callRef, {
             allowGuestLink: true,
-            status: 'connected'
+            status: 'connected',
+            connectedAt: existingStart
         });
 
+        startCallTimer(existingStart);
         registerSelfInRoom(currentCallId);
         listenToCallRoom(currentCallId, currentSessionId, false);
         listenToRoomParticipants(currentCallId);
@@ -2309,13 +2383,17 @@ window.acceptIncomingCall = async function () {
     document.getElementById('vcStatusText').textContent =
         callType === 'audio' ? 'Panggilan Suara' : 'Menghubungkan...';
 
+    const answeredNow = Date.now();
+
     try {
         const callRef = ref(rtdb, `calls/${data.roomId}`);
         await update(callRef, {
             status: 'connected',
-            answeredAt: Date.now()
+            answeredAt: answeredNow,
+            connectedAt: answeredNow
         });
 
+        startCallTimer(answeredNow);
         registerSelfInRoom(data.roomId);
         listenToCallRoom(data.roomId, data.sessionId, false);
         listenToRoomParticipants(data.roomId);
@@ -2571,7 +2649,7 @@ async function initCallPage(user, guestFlag = false) {
         otherUserFcmToken = otherProfile.fcmToken;
     }
 
-    // Jika kembali masuk ke ruang panggilan yang sedang berjalan (resume=1 atau roomId aktif)
+    // Jika kembali masuk ke ruang panggilan yang sedang berjalan (baik pemanggil maupun penerima)
     if (roomIdParam && (isResumeParam || modeParam === 'outgoing')) {
         const resumed = await resumeOngoingCallRoom(roomIdParam);
         if (resumed) return;
