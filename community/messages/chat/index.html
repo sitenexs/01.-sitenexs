@@ -375,6 +375,7 @@ import {
 } from 'https://sitenexs.com/assets/js/sitenexs-push-client.js';
 
 const CALL_PAGE_URL = 'https://sitenexs.com/community/messages/call/';
+const ACTIVE_CALL_STORAGE_KEY = 'sitenexs_ongoing_call_room';
 
 let currentUid = null;
 let myProfile = null;
@@ -389,6 +390,7 @@ let otherUserFcmToken = null;
 let unsubscribeMessages = null;
 let unsubscribeIncomingCalls = null;
 let unsubscribeActiveCallRoom = null;
+let unsubscribeAllCallsScan = null;
 let isInitialMessagesLoad = true;
 let lastNotifiedMessageId = null;
 let isRedirectingToCall = false;
@@ -401,6 +403,38 @@ if (!targetUserId) {
     window.location.replace('https://sitenexs.com/community/messages/');
 } else {
     activeChatUserId = targetUserId;
+}
+
+function saveOngoingCallStorage(info) {
+    try {
+        if (!info || !info.roomId) {
+            sessionStorage.removeItem(ACTIVE_CALL_STORAGE_KEY);
+            return;
+        }
+        sessionStorage.setItem(ACTIVE_CALL_STORAGE_KEY, JSON.stringify({
+            roomId: info.roomId,
+            peerUid: info.peerUid || activeChatUserId || '',
+            peerName: info.peerName || otherUserName || 'Mitra Sitenexs',
+            callType: info.callType || 'video',
+            mode: info.mode || 'outgoing',
+            savedAt: Date.now()
+        }));
+    } catch (e) {}
+}
+
+function readOngoingCallStorage() {
+    try {
+        const raw = sessionStorage.getItem(ACTIVE_CALL_STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed?.roomId || (Date.now() - (parsed.savedAt || 0) > 7200000)) {
+            sessionStorage.removeItem(ACTIVE_CALL_STORAGE_KEY);
+            return null;
+        }
+        return parsed;
+    } catch (e) {
+        return null;
+    }
 }
 
 window.showToast = function (msg) {
@@ -425,6 +459,13 @@ window.showToast = function (msg) {
 
 window.openCallPage = function (callType = 'video') {
     if (!activeChatUserId || isRedirectingToCall) return;
+
+    // Jika masih ada panggilan aktif di ruang yang sama, lanjutkan panggilan tersebut
+    if (ongoingCallTarget?.roomId) {
+        window.returnToOngoingCall();
+        return;
+    }
+
     isRedirectingToCall = true;
     const callUrl = new URL(CALL_PAGE_URL);
     callUrl.searchParams.set('to', activeChatUserId);
@@ -439,13 +480,16 @@ function setOngoingCallBanner(show, info = null) {
     const iconEl = document.getElementById('activeCallBannerIcon');
     if (!banner) return;
 
-    if (!show || !info) {
+    if (!show || !info || !info.roomId) {
         ongoingCallTarget = null;
+        saveOngoingCallStorage(null);
         banner.classList.remove('active');
         return;
     }
 
     ongoingCallTarget = info;
+    saveOngoingCallStorage(info);
+
     const isAudio = info.callType === 'audio';
     if (iconEl) {
         iconEl.className = isAudio ? 'fas fa-phone-alt' : 'fas fa-video';
@@ -459,17 +503,20 @@ function setOngoingCallBanner(show, info = null) {
     banner.classList.add('active');
 }
 
+/* =====================================================
+   MELANJUTKAN PANGGILAN SEBELUMNYA (BUKAN MEMBUAT BARU)
+===================================================== */
 window.returnToOngoingCall = function () {
-    if (isRedirectingToCall) return;
-    isRedirectingToCall = true;
+    const target = ongoingCallTarget || readOngoingCallStorage();
+    if (!target || !target.roomId || isRedirectingToCall) return;
 
+    isRedirectingToCall = true;
     const callUrl = new URL(CALL_PAGE_URL);
-    if (ongoingCallTarget?.roomId) {
-        callUrl.searchParams.set('roomId', ongoingCallTarget.roomId);
-    }
-    callUrl.searchParams.set('to', ongoingCallTarget?.peerUid || activeChatUserId || '');
-    callUrl.searchParams.set('mode', ongoingCallTarget?.mode || 'outgoing');
-    callUrl.searchParams.set('type', ongoingCallTarget?.callType === 'audio' ? 'audio' : 'video');
+    callUrl.searchParams.set('roomId', target.roomId);
+    callUrl.searchParams.set('to', target.peerUid || activeChatUserId || '');
+    callUrl.searchParams.set('mode', target.mode || 'outgoing');
+    callUrl.searchParams.set('type', target.callType === 'audio' ? 'audio' : 'video');
+    callUrl.searchParams.set('resume', '1');
     window.location.href = callUrl.toString();
 };
 
@@ -513,8 +560,59 @@ function watchOngoingCallInRoom(callId, fallbackPeerUid, fallbackCallType) {
             peerUid,
             peerName,
             callType: data.callType || fallbackCallType || 'video',
-            mode: 'outgoing'
+            mode: data.callerUid === currentUid ? 'outgoing' : 'incoming'
         });
+    });
+}
+
+function discoverOngoingCallRoom() {
+    if (!currentUid) return;
+
+    const cached = readOngoingCallStorage();
+    if (cached?.roomId && (!cached.peerUid || cached.peerUid === activeChatUserId)) {
+        watchOngoingCallInRoom(cached.roomId, cached.peerUid, cached.callType);
+    }
+
+    if (unsubscribeAllCallsScan) {
+        unsubscribeAllCallsScan();
+        unsubscribeAllCallsScan = null;
+    }
+
+    const callsRootRef = ref(rtdb, 'calls');
+    unsubscribeAllCallsScan = onValue(callsRootRef, snapshot => {
+        const allCalls = snapshot.val() || {};
+        let foundRoom = null;
+
+        for (const [roomKey, roomData] of Object.entries(allCalls)) {
+            if (!roomData || roomData.status === 'ended' || roomData.status === 'rejected') continue;
+
+            const inParticipants = Boolean(roomData.participants && roomData.participants[currentUid]);
+            const involvedInChat =
+                (roomData.callerUid === currentUid && (!activeChatUserId || roomData.calleeUid === activeChatUserId)) ||
+                (roomData.calleeUid === currentUid && (!activeChatUserId || roomData.callerUid === activeChatUserId)) ||
+                (activeChatId && roomData.chatId === activeChatId && (roomData.callerUid === currentUid || roomData.calleeUid === currentUid || inParticipants));
+
+            if (inParticipants || involvedInChat) {
+                foundRoom = {
+                    roomId: roomData.roomId || roomKey,
+                    peerUid: roomData.callerUid === currentUid
+                        ? (roomData.calleeUid || activeChatUserId)
+                        : (roomData.callerUid || activeChatUserId),
+                    peerName: roomData.callerUid === currentUid
+                        ? otherUserName
+                        : (roomData.callerName || otherUserName),
+                    callType: roomData.callType || 'video',
+                    mode: roomData.callerUid === currentUid ? 'outgoing' : 'incoming'
+                };
+                break;
+            }
+        }
+
+        if (foundRoom) {
+            setOngoingCallBanner(true, foundRoom);
+        } else {
+            setOngoingCallBanner(false);
+        }
     });
 }
 
@@ -802,6 +900,15 @@ function listenIncomingCallsAndForceRedirect() {
             !isRedirectingToCall
         ) {
             isRedirectingToCall = true;
+            if (data.roomId) {
+                saveOngoingCallStorage({
+                    roomId: data.roomId,
+                    peerUid: data.callerUid,
+                    peerName: data.callerName || otherUserName,
+                    callType: data.callType === 'audio' ? 'audio' : 'video',
+                    mode: 'incoming'
+                });
+            }
             const callUrl = new URL(CALL_PAGE_URL);
             callUrl.searchParams.set('to', data.callerUid);
             callUrl.searchParams.set('mode', 'incoming');
@@ -855,6 +962,9 @@ async function initChat(user) {
     document.getElementById('activeChatName').textContent = otherUserName;
     document.getElementById('activeChatAvatar').src = otherProfile.avatarUrl;
 
+    // Cari ruang panggilan aktif agar saat menekan "Masuk" langsung melanjutkan panggilan sebelumnya
+    discoverOngoingCallRoom();
+
     const messagesRef = collection(db, 'chats', activeChatId, 'messages');
     const qMsgs = query(messagesRef, orderBy('createdAt', 'asc'));
 
@@ -900,14 +1010,19 @@ async function initChat(user) {
             `;
         });
 
+        const cachedRoom = readOngoingCallStorage();
         if (latestCallLog && (Date.now() - latestCallLog.timestamp < 3600000)) {
+            if (cachedRoom?.roomId) {
+                watchOngoingCallInRoom(cachedRoom.roomId, activeChatUserId, latestCallLog.callType);
+            }
             setOngoingCallBanner(true, {
+                roomId: cachedRoom?.roomId || ongoingCallTarget?.roomId || '',
                 peerUid: activeChatUserId,
                 peerName: otherUserName,
                 callType: latestCallLog.callType,
                 mode: 'outgoing'
             });
-        } else if (!unsubscribeActiveCallRoom) {
+        } else if (!unsubscribeActiveCallRoom && !ongoingCallTarget?.roomId) {
             setOngoingCallBanner(false);
         }
 
