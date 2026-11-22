@@ -562,18 +562,32 @@ function buildCombinedBadgesHtml(profileOrMsg = {}, badgeClass = 'message-bubble
     return html;
 }
 
+function isDefaultFallbackName(val) {
+    const clean = String(val || '').trim().toLowerCase();
+    return !clean || clean === 'mitra sitenexs';
+}
+
 function extractProfileName(profile, fallbackName = '', fallbackEmail = '') {
+    const authName = String(auth.currentUser?.displayName || '').trim();
+    const cleanFallback = String(fallbackName || '').trim();
+
     if (profile) {
         const raw = profile.raw || {};
         const depan = String(raw.namaDepan || profile.firstName || '').trim();
         const belakang = String(raw.namaBelakang || profile.lastName || '').trim();
         const combined = [depan, belakang].filter(Boolean).join(' ').trim();
-        const full = String(raw.namaLengkap || profile.displayName || '').trim();
+        const full = String(raw.namaLengkap || '').trim();
+        const normDisplay = String(profile.displayName || '').trim();
 
-        if (full) return full;
-        if (combined) return combined;
+        if (!isDefaultFallbackName(full)) return full;
+        if (!isDefaultFallbackName(combined)) return combined;
+        if (!isDefaultFallbackName(authName)) return authName;
+        if (!isDefaultFallbackName(cleanFallback)) return cleanFallback;
+        if (normDisplay) return normDisplay;
     }
-    const cleanFallback = String(fallbackName || '').trim();
+
+    if (!isDefaultFallbackName(authName)) return authName;
+    if (!isDefaultFallbackName(cleanFallback)) return cleanFallback;
     if (cleanFallback) return cleanFallback;
 
     const cleanEmail = String(fallbackEmail || '').trim();
@@ -622,8 +636,13 @@ function getEarlyUid() {
 function getSenderDisplayName(message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     if (isOutgoing) {
-        return myUserName || String(message.senderName || '').trim() || String(auth.currentUser?.displayName || '').trim() || '';
+        if (!isDefaultFallbackName(myUserName)) return myUserName;
+        if (!isDefaultFallbackName(auth.currentUser?.displayName)) return auth.currentUser.displayName.trim();
+        if (!isDefaultFallbackName(message.senderName)) return String(message.senderName).trim();
+        return myUserName || String(message.senderName || '').trim() || '';
     }
+    if (!isDefaultFallbackName(otherUserName)) return otherUserName;
+    if (!isDefaultFallbackName(message.senderName)) return String(message.senderName).trim();
     return otherUserName || String(message.senderName || '').trim() || '';
 }
 
@@ -1289,8 +1308,8 @@ function refreshVisibleSenderInfo() {
         const badgesSpan = wrapper.querySelector('.message-sender-badges');
 
         const nextName = isOutgoing
-            ? (myUserName || String(auth.currentUser?.displayName || '').trim())
-            : otherUserName;
+            ? (!isDefaultFallbackName(myUserName) ? myUserName : (!isDefaultFallbackName(auth.currentUser?.displayName) ? auth.currentUser.displayName.trim() : (myUserName || '')))
+            : (!isDefaultFallbackName(otherUserName) ? otherUserName : (otherUserName || ''));
         const nextBadges = isOutgoing ? myBadgesHtml : otherBadgesHtml;
 
         if (senderHeader) {
