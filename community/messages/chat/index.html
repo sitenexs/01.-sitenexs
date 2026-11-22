@@ -308,7 +308,7 @@
                 <div class="active-call-banner-left">
                     <span class="active-call-pulse"></span>
                     <i id="activeCallBannerIcon" class="fas fa-phone-alt"></i>
-                    <span id="activeCallBannerText" class="active-call-banner-text">Sedang ada panggilan berlangsung</span>
+                    <span id="activeCallBannerText" class="active-call-banner-text">Sedang ada panggilan...</span>
                 </div>
                 <span class="active-call-banner-cta">
                     <span>Masuk</span>
@@ -427,7 +427,7 @@ function readOngoingCallStorage() {
         const raw = sessionStorage.getItem(ACTIVE_CALL_STORAGE_KEY);
         if (!raw) return null;
         const parsed = JSON.parse(raw);
-        if (!parsed?.roomId || (Date.now() - (parsed.savedAt || 0) > 1800000)) {
+        if (!parsed?.roomId || (Date.now() - (parsed.savedAt || 0) > 600000)) {
             sessionStorage.removeItem(ACTIVE_CALL_STORAGE_KEY);
             return null;
         }
@@ -494,10 +494,7 @@ function setOngoingCallBanner(show, info = null) {
         iconEl.className = isAudio ? 'fas fa-phone-alt' : 'fas fa-video';
     }
     if (textEl) {
-        const peerLabel = info.peerName || otherUserName || 'Mitra Sitenexs';
-        textEl.textContent = isAudio
-            ? `Sedang ada panggilan suara dengan ${peerLabel}`
-            : `Sedang ada panggilan video dengan ${peerLabel}`;
+        textEl.textContent = 'Sedang ada panggilan...';
     }
     banner.classList.add('active');
 }
@@ -525,13 +522,10 @@ function isRoomActuallyLive(roomData) {
     if (roomData.status !== 'ringing' && roomData.status !== 'connected') return false;
 
     const myParticipant = roomData.participants && roomData.participants[currentUid];
-    const baseTime =
-        (myParticipant && typeof myParticipant === 'object' && myParticipant.joinedAt) ||
-        roomData.answeredAt ||
-        roomData.timestamp ||
-        0;
+    if (!myParticipant || typeof myParticipant !== 'object') return false;
 
-    if (!baseTime || (Date.now() - baseTime > 1800000)) return false;
+    const joinedAt = myParticipant.joinedAt || 0;
+    if (!joinedAt || (Date.now() - joinedAt > 600000)) return false;
 
     return true;
 }
@@ -550,16 +544,6 @@ function watchOngoingCallInRoom(callId, fallbackPeerUid, fallbackCallType) {
     unsubscribeActiveCallRoom = onValue(callRef, snapshot => {
         const data = snapshot.val();
         if (!isRoomActuallyLive(data)) {
-            setOngoingCallBanner(false);
-            return;
-        }
-
-        const isParticipant =
-            (currentUid && data.participants && Boolean(data.participants[currentUid])) ||
-            data.callerUid === currentUid ||
-            data.calleeUid === currentUid;
-
-        if (!isParticipant) {
             setOngoingCallBanner(false);
             return;
         }
@@ -601,14 +585,14 @@ function discoverOngoingCallRoom() {
         for (const [roomKey, roomData] of Object.entries(allCalls)) {
             if (!isRoomActuallyLive(roomData)) continue;
 
-            const inParticipants = Boolean(roomData.participants && roomData.participants[currentUid]);
             const involvedInChat =
-                (roomData.callerUid === currentUid && (!activeChatUserId || roomData.calleeUid === activeChatUserId)) ||
-                (roomData.calleeUid === currentUid && (!activeChatUserId || roomData.callerUid === activeChatUserId)) ||
-                (activeChatId && roomData.chatId === activeChatId && (roomData.callerUid === currentUid || roomData.calleeUid === currentUid || inParticipants)) ||
-                (inParticipants && (!activeChatUserId || Boolean(roomData.participants && roomData.participants[activeChatUserId])));
+                !activeChatUserId ||
+                roomData.callerUid === activeChatUserId ||
+                roomData.calleeUid === activeChatUserId ||
+                (roomData.chatId && roomData.chatId === activeChatId) ||
+                Boolean(roomData.participants && roomData.participants[activeChatUserId]);
 
-            if (inParticipants || involvedInChat) {
+            if (involvedInChat) {
                 foundRoom = {
                     roomId: roomData.roomId || roomKey,
                     peerUid: roomData.callerUid === currentUid
