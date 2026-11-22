@@ -356,7 +356,7 @@
         <div class="conversations-list" id="conversationsList"></div>
     </main>
 
-    <!-- MODUL KONFIGURASI, DATA USER, PANGGILAN MASUK & REALTIME SYNC -->
+    <!-- MODUL KONFIGURASI, DATA USER & PANGGILAN MASUK -->
     <script type="module">
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
         import { doc, updateDoc, deleteDoc, setDoc, collection, query, where, onSnapshot, serverTimestamp as fsServerTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
@@ -378,13 +378,6 @@
             attachForcedIncomingCallRedirect,
             attachOngoingCallBanner
         } from 'https://sitenexs.com/assets/js/sitenexs-call-presence.js';
-
-        import {
-            prepareFlickerFreeContainer,
-            reconcileListElements,
-            readListCache,
-            writeListCache
-        } from 'https://sitenexs.com/assets/js/sitenexs-realtime-sync.js';
 
         let currentUid = null;
         let isInitialized = false;
@@ -412,40 +405,45 @@
 
         function saveInboxCache(uid, items) {
             if (!uid) return;
-            const serializable = items.map(item => ({
-                chatId: item.chatId,
-                otherUid: item.otherUid,
-                otherName: item.otherName,
-                avatarUrl: item.avatarUrl,
-                badgesHtml: item.badgesHtml,
-                lastMessage: item.lastMessage,
-                lastTimestampMs: item.lastTimestamp?.toMillis ? item.lastTimestamp.toMillis() : (item.lastTimestampMs || 0),
-                unread: Boolean(item.unread),
-                pinned: Boolean(item.pinned),
-                muted: Boolean(item.muted),
-                isOnline: Boolean(item.isOnline)
-            }));
-            writeListCache(getInboxCacheKey(uid), serializable, 100);
+            try {
+                const serializable = items.slice(0, 100).map(item => ({
+                    chatId: item.chatId,
+                    otherUid: item.otherUid,
+                    otherName: item.otherName,
+                    avatarUrl: item.avatarUrl,
+                    badgesHtml: item.badgesHtml,
+                    lastMessage: item.lastMessage,
+                    lastTimestampMs: item.lastTimestamp?.toMillis ? item.lastTimestamp.toMillis() : (item.lastTimestampMs || 0),
+                    unread: Boolean(item.unread),
+                    pinned: Boolean(item.pinned),
+                    muted: Boolean(item.muted),
+                    isOnline: Boolean(item.isOnline)
+                }));
+                localStorage.setItem(getInboxCacheKey(uid), JSON.stringify(serializable));
+            } catch (e) {}
         }
 
         function restoreInboxFromCache(uid) {
             if (!uid) return;
-            const cached = readListCache(getInboxCacheKey(uid));
-            if (!cached || cached.length === 0) return;
+            try {
+                const raw = localStorage.getItem(getInboxCacheKey(uid));
+                if (!raw) return;
+                const cached = JSON.parse(raw);
+                if (!Array.isArray(cached) || cached.length === 0) return;
 
-            allConversationsData = cached.map(item => ({
-                ...item,
-                lastTimestamp: item.lastTimestampMs
-                    ? { toDate: () => new Date(item.lastTimestampMs), toMillis: () => item.lastTimestampMs }
-                    : null
-            }));
+                allConversationsData = cached.map(item => ({
+                    ...item,
+                    lastTimestamp: item.lastTimestampMs
+                        ? { toDate: () => new Date(item.lastTimestampMs), toMillis: () => item.lastTimestampMs }
+                        : null
+                }));
 
-            document.getElementById('chatCountBadge').innerText = `${allConversationsData.length} Percakapan`;
-            renderConversationsList(allConversationsData);
-            updateGlobalUnreadCount();
+                document.getElementById('chatCountBadge').innerText = `${allConversationsData.length} Percakapan`;
+                renderConversationsList(allConversationsData);
+                updateGlobalUnreadCount();
+            } catch (e) {}
         }
 
-        // Langsung tampilkan daftar percakapan tersimpan di perangkat sebelum auth selesai
         const earlySavedUid = localStorage.getItem('sitenexs_uid');
         if (earlySavedUid) {
             restoreInboxFromCache(earlySavedUid);
@@ -762,8 +760,6 @@
 
         function loadConversations(uid) {
             const listEl = document.getElementById('conversationsList');
-            prepareFlickerFreeContainer(listEl, false);
-
             const q = query(collection(db, "chats"), where("participants", "array-contains", uid));
 
             if (unsubscribeConversations) {
@@ -944,7 +940,7 @@
                     }
 
                     const isUnread = data[`unread_${uid}`] === true;
-                    const badgeEl = document.getElementById(`badge-${chat.chatId || chat.id}`);
+                    const badgeEl = document.getElementById(`badge-${chat.id}`);
                     const itemEl = document.getElementById(`item-${chat.id}`);
 
                     const targetConv = allConversationsData.find(c => c.chatId === chat.id);
@@ -974,14 +970,39 @@
         ===================================================== */
         window.renderConversationsList = function(chats) {
             const listEl = document.getElementById('conversationsList');
-            reconcileListElements({
-                container: listEl,
-                items: chats,
-                getKey: chat => chat.chatId,
-                keyAttr: 'data-chat-id',
-                createElement: chat => buildConversationElement(chat),
-                updateElement: (itemEl, chat) => updateConversationElement(itemEl, chat),
-                emptyHtml: '<div data-empty-state="true" style="text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.88rem;">Tidak ada percakapan aktif.</div>'
+            const emptyStateEl = listEl.querySelector('[data-empty-state="true"]');
+
+            if (!chats || chats.length === 0) {
+                listEl.querySelectorAll('[data-chat-id]').forEach(el => el.remove());
+                if (!emptyStateEl) {
+                    listEl.innerHTML = '<div data-empty-state="true" style="text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.88rem;">Tidak ada percakapan aktif.</div>';
+                }
+                return;
+            }
+
+            if (emptyStateEl) {
+                emptyStateEl.remove();
+            }
+
+            const validIds = new Set(chats.map(c => c.chatId));
+            listEl.querySelectorAll('[data-chat-id]').forEach(existingEl => {
+                if (!validIds.has(existingEl.dataset.chatId)) {
+                    existingEl.remove();
+                }
+            });
+
+            chats.forEach((chat, index) => {
+                let itemEl = document.getElementById(`item-${chat.chatId}`);
+                if (!itemEl) {
+                    itemEl = buildConversationElement(chat);
+                } else {
+                    updateConversationElement(itemEl, chat);
+                }
+
+                const currentChildAtIdx = listEl.children[index];
+                if (currentChildAtIdx !== itemEl) {
+                    listEl.insertBefore(itemEl, currentChildAtIdx || null);
+                }
             });
         }
 
