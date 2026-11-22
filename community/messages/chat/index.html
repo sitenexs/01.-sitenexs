@@ -208,19 +208,41 @@
             background: #fff;
         }
 
-        /* NAMA PENGIRIM DI DALAM BUBBLE CHAT */
+        /* NAMA PENGIRIM + CENTANG PNG DI DALAM BUBBLE CHAT */
+        .message-sender-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-bottom: 0.22rem;
+            line-height: 1.2;
+            max-width: 100%;
+        }
         .message-sender-name {
             font-size: 0.69rem;
             font-weight: 800;
-            margin-bottom: 0.22rem;
-            line-height: 1.2;
             letter-spacing: 0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .message-bubble.incoming .message-sender-name {
             color: var(--primary);
         }
         .message-bubble.outgoing .message-sender-name {
-            color: rgba(255, 255, 255, 0.92);
+            color: rgba(255, 255, 255, 0.94);
+        }
+        .message-sender-badges {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+        .message-sender-badges img {
+            width: 13px;
+            height: 13px;
+            object-fit: contain;
+            display: inline-block;
+            vertical-align: middle;
         }
 
         .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); border-bottom-left-radius: 4px; }
@@ -442,6 +464,7 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/fi
 
 import {
     doc,
+    getDoc,
     setDoc,
     updateDoc,
     collection,
@@ -485,12 +508,14 @@ import {
 
 let currentUid = null;
 let myProfile = null;
-let myUserName = localStorage.getItem('sitenexs_display_name') || 'Mitra Sitenexs';
+let myUserName = localStorage.getItem('sitenexs_display_name') || auth.currentUser?.displayName || '';
+let myBadgesHtml = localStorage.getItem('sitenexs_badges_html') || '';
 
 let activeChatUserId = null;
 let activeChatId = null;
 let otherProfile = null;
-let otherUserName = 'Mitra Sitenexs';
+let otherUserName = '';
+let otherBadgesHtml = '';
 let otherUserFcmToken = null;
 
 let cleanupMessagesSync = null;
@@ -505,6 +530,34 @@ let lastTypingSoundAt = 0;
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
+
+function resolveRealName(candidates = [], fallbackUid = '') {
+    for (const c of candidates) {
+        if (typeof c === 'string') {
+            const trimmed = c.trim();
+            if (trimmed && trimmed.toLowerCase() !== 'mitra sitenexs' && trimmed.toLowerCase() !== 'user') {
+                return trimmed;
+            }
+        }
+    }
+    return fallbackUid ? `User ${fallbackUid.slice(0, 6)}` : 'Pengguna';
+}
+
+function sanitizeBadgesHtml(rawHtml = '') {
+    if (!rawHtml || typeof rawHtml !== 'string') return '';
+    const temp = document.createElement('div');
+    temp.innerHTML = rawHtml;
+    const imgs = [...temp.querySelectorAll('img')];
+    return imgs
+        .map(img => {
+            const src = safeUrl(img.getAttribute('src') || '');
+            if (!src) return '';
+            const alt = escapeHtml(img.getAttribute('alt') || 'Verified');
+            return `<img src="${escapeHtml(src)}" alt="${alt}" loading="lazy">`;
+        })
+        .filter(Boolean)
+        .join('');
+}
 
 function getChatCacheKey(chatId) {
     return `sitenexs_chat_cache_${chatId}`;
@@ -544,9 +597,16 @@ function getEarlyUid() {
 
 function getSenderDisplayName(senderUid, fallbackName = null) {
     if (senderUid === currentUid) {
-        return myUserName || fallbackName || 'Anda';
+        return resolveRealName([myUserName, fallbackName, auth.currentUser?.displayName], senderUid);
     }
-    return otherUserName || fallbackName || 'Mitra Sitenexs';
+    return resolveRealName([otherUserName, fallbackName], senderUid);
+}
+
+function getSenderBadgesHtml(senderUid, fallbackBadgesHtml = '') {
+    if (senderUid === currentUid) {
+        return myBadgesHtml || sanitizeBadgesHtml(fallbackBadgesHtml);
+    }
+    return otherBadgesHtml || sanitizeBadgesHtml(fallbackBadgesHtml);
 }
 
 function renderCachedMessagesImmediately(chatId, uid) {
@@ -571,6 +631,7 @@ function renderCachedMessagesImmediately(chatId, uid) {
             const el = buildMessageElement(item.id, {
                 senderUid: item.senderUid,
                 senderName: item.senderName,
+                senderBadgesHtml: item.senderBadgesHtml,
                 text: item.text,
                 isEdited: item.isEdited,
                 status: isGreenPersisted ? 'read-green' : (item.status || 'sent'),
@@ -1068,6 +1129,22 @@ function renderMessageBody(text) {
     return escapeHtml(text).replace(/\n/g, '<br>');
 }
 
+function buildSenderHeaderElement(message) {
+    const header = document.createElement('div');
+    header.className = 'message-sender-header';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'message-sender-name';
+    nameSpan.textContent = getSenderDisplayName(message.senderUid, message.senderName);
+
+    const badgesSpan = document.createElement('span');
+    badgesSpan.className = 'message-sender-badges';
+    badgesSpan.innerHTML = getSenderBadgesHtml(message.senderUid, message.senderBadgesHtml);
+
+    header.append(nameSpan, badgesSpan);
+    return header;
+}
+
 function buildMessageElement(docId, message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     const wrapper = document.createElement('div');
@@ -1077,9 +1154,7 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
     const bubble = document.createElement('div');
     bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
 
-    const senderLabel = document.createElement('div');
-    senderLabel.className = 'message-sender-name';
-    senderLabel.textContent = getSenderDisplayName(message.senderUid, message.senderName);
+    const senderHeader = buildSenderHeaderElement(message);
 
     const bodyDiv = document.createElement('div');
     bodyDiv.className = 'message-body';
@@ -1105,7 +1180,7 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
         metaRow.appendChild(statusSpan);
     }
 
-    bubble.append(senderLabel, bodyDiv, metaRow);
+    bubble.append(senderHeader, bodyDiv, metaRow);
     wrapper.appendChild(bubble);
     return wrapper;
 }
@@ -1118,13 +1193,20 @@ function updateMessageElement(wrapper, docId, message, ownerUid = currentUid) {
     if (bubble) {
         bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
 
-        let senderLabel = bubble.querySelector('.message-sender-name');
-        if (!senderLabel) {
-            senderLabel = document.createElement('div');
-            senderLabel.className = 'message-sender-name';
-            bubble.prepend(senderLabel);
+        let senderHeader = bubble.querySelector('.message-sender-header');
+        if (!senderHeader) {
+            senderHeader = buildSenderHeaderElement(message);
+            bubble.prepend(senderHeader);
+        } else {
+            const nameSpan = senderHeader.querySelector('.message-sender-name');
+            if (nameSpan) {
+                nameSpan.textContent = getSenderDisplayName(message.senderUid, message.senderName);
+            }
+            const badgesSpan = senderHeader.querySelector('.message-sender-badges');
+            if (badgesSpan) {
+                badgesSpan.innerHTML = getSenderBadgesHtml(message.senderUid, message.senderBadgesHtml);
+            }
         }
-        senderLabel.textContent = getSenderDisplayName(message.senderUid, message.senderName);
     }
 
     const bodyDiv = wrapper.querySelector('.message-body');
@@ -1157,15 +1239,39 @@ function updateMessageElement(wrapper, docId, message, ownerUid = currentUid) {
     }
 }
 
-function refreshVisibleSenderNames() {
+function refreshVisibleSenderInfo() {
     const messagesContainer = document.getElementById('chatMessages');
     if (!messagesContainer) return;
     messagesContainer.querySelectorAll('.message-wrapper').forEach(wrapper => {
-        const senderLabel = wrapper.querySelector('.message-sender-name');
-        if (!senderLabel) return;
         const isOutgoing = wrapper.classList.contains('outgoing');
-        senderLabel.textContent = isOutgoing ? myUserName : otherUserName;
+        const nameSpan = wrapper.querySelector('.message-sender-name');
+        const badgesSpan = wrapper.querySelector('.message-sender-badges');
+        if (nameSpan) {
+            nameSpan.textContent = isOutgoing
+                ? resolveRealName([myUserName, auth.currentUser?.displayName], currentUid)
+                : resolveRealName([otherUserName], activeChatUserId);
+        }
+        if (badgesSpan) {
+            badgesSpan.innerHTML = isOutgoing ? myBadgesHtml : otherBadgesHtml;
+        }
     });
+}
+
+async function loadDirectUserDocFallback(uid) {
+    if (!uid) return null;
+    try {
+        const snap = await getDoc(doc(db, 'users', uid));
+        if (!snap.exists()) return null;
+        const d = snap.data() || {};
+        return {
+            displayName: resolveRealName([d.displayName, d.fullName, d.name, d.username], uid),
+            badgesHtml: sanitizeBadgesHtml(d.badgesHtml || ''),
+            avatarUrl: d.avatarUrl || d.photoURL || getUserAvatarUrl(uid),
+            fcmToken: d.fcmToken || null
+        };
+    } catch (e) {
+        return null;
+    }
 }
 
 /* =====================================================
@@ -1177,6 +1283,11 @@ async function initChat(user) {
     if (isChatInitialized && currentUid === user.uid) return;
     isChatInitialized = true;
     currentUid = user.uid;
+
+    if (user.displayName) {
+        myUserName = resolveRealName([user.displayName, myUserName], currentUid);
+        localStorage.setItem('sitenexs_display_name', myUserName);
+    }
 
     updateNotificationUIState();
 
@@ -1190,7 +1301,7 @@ async function initChat(user) {
         rtdb,
         currentUid,
         callPageUrl: DEFAULT_CALL_PAGE_URL,
-        fallbackPeerName: otherUserName
+        fallbackPeerName: resolveRealName([otherUserName], activeChatUserId)
     });
 
     if (cleanupOngoingBanner) cleanupOngoingBanner();
@@ -1202,7 +1313,7 @@ async function initChat(user) {
         iconElement: document.getElementById('activeCallBannerIcon'),
         filterPeerUid: activeChatUserId,
         filterChatId: activeChatId,
-        fallbackPeerName: otherUserName,
+        fallbackPeerName: resolveRealName([otherUserName], activeChatUserId),
         callPageUrl: DEFAULT_CALL_PAGE_URL
     });
 
@@ -1285,7 +1396,7 @@ async function initChat(user) {
                             : String(msgData.text || 'Pesan baru');
 
                         triggerLocalSystemNotification(
-                            otherUserName,
+                            resolveRealName([otherUserName, msgData.senderName], activeChatUserId),
                             previewText,
                             {
                                 tag: `chat-${activeChatId}`,
@@ -1359,21 +1470,39 @@ async function initChat(user) {
         [`unread_${currentUid}`]: false
     }).catch(() => {});
 
-    fetchUserProfile(db, currentUid).then(profile => {
-        myProfile = profile;
-        myUserName = profile.displayName || myUserName || 'Mitra Sitenexs';
+    fetchUserProfile(db, currentUid).then(async profile => {
+        const directFallback = await loadDirectUserDocFallback(currentUid);
+        myProfile = { ...directFallback, ...profile };
+        myUserName = resolveRealName([
+            profile?.displayName,
+            profile?.fullName,
+            profile?.name,
+            directFallback?.displayName,
+            user?.displayName,
+            myUserName
+        ], currentUid);
+        myBadgesHtml = sanitizeBadgesHtml(profile?.badgesHtml || directFallback?.badgesHtml || myBadgesHtml);
         localStorage.setItem('sitenexs_display_name', myUserName);
-        refreshVisibleSenderNames();
+        if (myBadgesHtml) localStorage.setItem('sitenexs_badges_html', myBadgesHtml);
+        refreshVisibleSenderInfo();
     }).catch(() => {});
 
-    fetchUserProfile(db, activeChatUserId).then(profile => {
-        otherProfile = profile;
-        otherUserName = profile.displayName || 'Mitra Sitenexs';
-        otherUserFcmToken = profile.fcmToken || null;
-        document.getElementById('activeChatBadges').innerHTML = profile.badgesHtml || '';
+    fetchUserProfile(db, activeChatUserId).then(async profile => {
+        const directFallback = await loadDirectUserDocFallback(activeChatUserId);
+        otherProfile = { ...directFallback, ...profile };
+        otherUserName = resolveRealName([
+            profile?.displayName,
+            profile?.fullName,
+            profile?.name,
+            directFallback?.displayName,
+            otherUserName
+        ], activeChatUserId);
+        otherBadgesHtml = sanitizeBadgesHtml(profile?.badgesHtml || directFallback?.badgesHtml || '');
+        otherUserFcmToken = profile?.fcmToken || directFallback?.fcmToken || null;
+        document.getElementById('activeChatBadges').innerHTML = otherBadgesHtml;
         document.getElementById('activeChatName').textContent = otherUserName;
-        document.getElementById('activeChatAvatar').src = profile.avatarUrl || getUserAvatarUrl(activeChatUserId);
-        refreshVisibleSenderNames();
+        document.getElementById('activeChatAvatar').src = profile?.avatarUrl || directFallback?.avatarUrl || getUserAvatarUrl(activeChatUserId);
+        refreshVisibleSenderInfo();
     }).catch(() => {});
 
     registerPushServiceWorker().then(() => {
@@ -1429,6 +1558,8 @@ window.handleChatFormSubmit = async function (event) {
     try {
         const recipientUid = activeChatUserId;
         const chatDocRef = doc(db, 'chats', activeChatId);
+        const senderNameToSave = resolveRealName([myUserName, auth.currentUser?.displayName], currentUid);
+        const senderBadgesToSave = sanitizeBadgesHtml(myBadgesHtml);
 
         await setDoc(chatDocRef, {
             participants: [currentUid, activeChatUserId],
@@ -1440,7 +1571,8 @@ window.handleChatFormSubmit = async function (event) {
 
         await addDoc(collection(db, 'chats', activeChatId, 'messages'), {
             senderUid: currentUid,
-            senderName: myUserName,
+            senderName: senderNameToSave,
+            senderBadgesHtml: senderBadgesToSave,
             text,
             createdAt: serverTimestamp(),
             isEdited: false,
@@ -1456,7 +1588,7 @@ window.handleChatFormSubmit = async function (event) {
             db,
             recipientUid: activeChatUserId,
             cachedToken: otherUserFcmToken,
-            title: myUserName,
+            title: senderNameToSave,
             body: text,
             tag: `chat-${activeChatId}`,
             url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(currentUid)}`,
