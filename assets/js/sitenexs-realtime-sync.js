@@ -1,6 +1,6 @@
 import { onSnapshot } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
-function readCache(storageKey) {
+export function readListCache(storageKey) {
     if (!storageKey) return [];
     try {
         const raw = localStorage.getItem(storageKey);
@@ -12,10 +12,10 @@ function readCache(storageKey) {
     }
 }
 
-function writeCache(storageKey, items) {
+export function writeListCache(storageKey, items, maxItems = 200) {
     if (!storageKey) return;
     try {
-        localStorage.setItem(storageKey, JSON.stringify(items.slice(-200)));
+        localStorage.setItem(storageKey, JSON.stringify(items.slice(-maxItems)));
     } catch (e) {}
 }
 
@@ -45,9 +45,65 @@ export function prepareFlickerFreeContainer(container, clearExisting = false) {
 }
 
 /**
- * Menyinkronkan snapshot Firestore secara inkremental dengan cache perangkat:
- * - Langsung merender cache perangkat jika ada tanpa loading/render ulang penuh.
- * - Hanya menambah pesan baru, memperbarui pesan yang diedit/berubah, atau menghapus pesan yang dihapus.
+ * Menyinkronkan array item ke DOM secara inkremental (tambah/ubah/hapus/urutkan)
+ * tanpa menghapus tampilan yang sudah ada di layar.
+ */
+export function reconcileListElements({
+    container,
+    items,
+    getKey,
+    keyAttr = 'data-item-id',
+    createElement,
+    updateElement,
+    emptyHtml = ''
+}) {
+    if (!container) return;
+
+    const emptyStateEl = container.querySelector('[data-empty-state="true"]');
+
+    if (!items || items.length === 0) {
+        container.querySelectorAll(`[${keyAttr}]`).forEach(el => el.remove());
+        if (!emptyStateEl && emptyHtml) {
+            container.innerHTML = emptyHtml;
+        }
+        return;
+    }
+
+    if (emptyStateEl) {
+        emptyStateEl.remove();
+    }
+
+    const validKeys = new Set(items.map(item => String(getKey(item))));
+    container.querySelectorAll(`[${keyAttr}]`).forEach(existingEl => {
+        if (!validKeys.has(existingEl.getAttribute(keyAttr))) {
+            existingEl.remove();
+        }
+    });
+
+    items.forEach((item, index) => {
+        const key = String(getKey(item));
+        let itemEl = container.querySelector(`[${keyAttr}="${CSS.escape(key)}"]`);
+
+        if (!itemEl) {
+            itemEl = createElement(item);
+            if (itemEl && !itemEl.hasAttribute(keyAttr)) {
+                itemEl.setAttribute(keyAttr, key);
+            }
+        } else if (typeof updateElement === 'function') {
+            updateElement(itemEl, item);
+        }
+
+        if (itemEl) {
+            const currentChildAtIdx = container.children[index];
+            if (currentChildAtIdx !== itemEl) {
+                container.insertBefore(itemEl, currentChildAtIdx || null);
+            }
+        }
+    });
+}
+
+/**
+ * Menyinkronkan snapshot Firestore secara inkremental dengan cache perangkat.
  */
 export function attachFlickerFreeSnapshot({
     queryRef,
@@ -71,7 +127,7 @@ export function attachFlickerFreeSnapshot({
     prepareFlickerFreeContainer(container, false);
 
     const cacheMap = new Map();
-    const cachedItems = readCache(storageKey);
+    const cachedItems = readListCache(storageKey);
 
     if (cachedItems.length > 0) {
         cachedItems.forEach(item => {
@@ -174,7 +230,7 @@ export function attachFlickerFreeSnapshot({
 
             if (cacheChanged) {
                 const sortedCache = Array.from(cacheMap.values()).sort((a, b) => a.createdAtMs - b.createdAtMs);
-                writeCache(storageKey, sortedCache);
+                writeListCache(storageKey, sortedCache);
             }
 
             if (autoScroll && shouldScroll) {
