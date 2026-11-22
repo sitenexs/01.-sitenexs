@@ -172,7 +172,7 @@
         
         .chat-header-info { min-width: 0; display: flex; flex-direction: column; }
         .chat-header-name-row { display: flex; align-items: center; gap: 0.3rem; min-width: 0; }
-        .chat-header-name { font-weight: 850; font-size: 0.98rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-header-name { font-weight: 850; font-size: 0.98rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.45rem; }
         .chat-header-verif { width: 14px; height: 14px; object-fit: contain; flex-shrink: 0; display: inline-block; }
 
         /* STATUS SEDANG MENGETIK DI BAWAH NAMA */
@@ -529,10 +529,53 @@ let isChatInitialized = false;
 let typingStopTimer = null;
 let lastTypingSoundAt = 0;
 let stickToBottom = true;
+let scrollRafId = null;
 const updatedDocIds = new Set();
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
+
+/* =====================================================
+   CACHE PROFIL AGAR NAMA & LENCANA TIDAK HILANG SAAT MUAT
+===================================================== */
+function getProfileCacheKey(uid) {
+    return `sitenexs_profile_cache_${uid}`;
+}
+
+function loadCachedProfile(uid) {
+    if (!uid) return null;
+    try {
+        const raw = localStorage.getItem(getProfileCacheKey(uid));
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function saveCachedProfile(uid, profileData) {
+    if (!uid || !profileData) return;
+    try {
+        localStorage.setItem(getProfileCacheKey(uid), JSON.stringify(profileData));
+    } catch (e) {}
+}
+
+function applyPeerHeaderImmediate(name, badgesHtml, avatarUrl) {
+    const nameEl = document.getElementById('activeChatName');
+    const badgesEl = document.getElementById('activeChatBadges');
+    const avatarEl = document.getElementById('activeChatAvatar');
+
+    if (nameEl && !isPlaceholderName(name)) {
+        nameEl.textContent = String(name).trim();
+    }
+    if (badgesEl && badgesHtml) {
+        badgesEl.innerHTML = badgesHtml;
+    }
+    if (avatarEl && avatarUrl) {
+        avatarEl.src = avatarUrl;
+    }
+}
 
 /* =====================================================
    MODUL SYNC REALTIME CHAT, CACHE LOKAL & STATUS BACA
@@ -629,21 +672,14 @@ function scrollMessagesToBottom(force = false) {
     const messagesContainer = document.getElementById('chatMessages');
     if (!messagesContainer) return;
     const distanceFromBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight;
-    if (force || stickToBottom || distanceFromBottom < 260) {
-        stickToBottom = true;
-        const applyScroll = () => {
-            messagesContainer.scrollTo({
-                top: messagesContainer.scrollHeight,
-                behavior: 'instant'
-            });
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        };
-        requestAnimationFrame(() => {
-            applyScroll();
-            setTimeout(applyScroll, 40);
-            setTimeout(applyScroll, 140);
-        });
-    }
+    if (!force && !stickToBottom && distanceFromBottom >= 260) return;
+
+    stickToBottom = true;
+    if (scrollRafId) cancelAnimationFrame(scrollRafId);
+    scrollRafId = requestAnimationFrame(() => {
+        scrollRafId = null;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
 }
 
 function hasYellowBadge(profileOrMsg = {}) {
@@ -684,7 +720,7 @@ function extractProfileName(profile, fallbackName = '') {
         const depan = String(raw.namaDepan || profile.firstName || '').trim();
         const belakang = String(raw.namaBelakang || profile.lastName || '').trim();
         const combined = [depan, belakang].filter(Boolean).join(' ').trim();
-        const full = String(raw.namaLengkap || profile.displayName || '').trim();
+        const full = String(raw.namaLengkap || profile.displayName || profile.name || '').trim();
 
         if (!isPlaceholderName(full)) return full;
         if (!isPlaceholderName(combined)) return combined;
@@ -702,11 +738,15 @@ function getSenderDisplayName(message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     if (isOutgoing) {
         if (!isPlaceholderName(myUserName)) return myUserName;
+        const cachedMe = loadCachedProfile(ownerUid);
+        if (cachedMe && !isPlaceholderName(cachedMe.name)) return cachedMe.name;
         if (!isPlaceholderName(auth.currentUser?.displayName)) return auth.currentUser.displayName.trim();
         if (!isPlaceholderName(message.senderName)) return String(message.senderName).trim();
         return '';
     }
     if (!isPlaceholderName(otherUserName)) return otherUserName;
+    const cachedPeer = loadCachedProfile(message.senderUid || activeChatUserId);
+    if (cachedPeer && !isPlaceholderName(cachedPeer.name)) return cachedPeer.name;
     if (!isPlaceholderName(message.senderName)) return String(message.senderName).trim();
     return '';
 }
@@ -714,12 +754,12 @@ function getSenderDisplayName(message, ownerUid = currentUid) {
 function getSenderBadgesHtml(message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     if (isOutgoing) {
-        return myBadgesHtml || buildCombinedBadgesHtml({
+        return myBadgesHtml || loadCachedProfile(ownerUid)?.badgesHtml || buildCombinedBadgesHtml({
             isVerified: message.senderIsVerified,
             isPro: message.senderIsPro
         }, 'message-bubble-verif');
     }
-    return otherBadgesHtml || buildCombinedBadgesHtml({
+    return otherBadgesHtml || loadCachedProfile(message.senderUid || activeChatUserId)?.badgesHtml || buildCombinedBadgesHtml({
         isVerified: message.senderIsVerified,
         isPro: message.senderIsPro
     }, 'message-bubble-verif');
@@ -737,6 +777,9 @@ function renderCachedMessagesImmediately(chatId, uid) {
 
         cachedList.sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
         const greenIds = loadPersistedGreenReadIds(chatId);
+
+        const fragment = document.createDocumentFragment();
+        let hasNew = false;
 
         cachedList.forEach(item => {
             if (!item?.id) return;
@@ -758,13 +801,18 @@ function renderCachedMessagesImmediately(chatId, uid) {
                 read: isGreenPersisted ? true : Boolean(item.read),
                 createdAt: fakeTimestamp
             }, uid);
-            if (typingBubbleWrapper) {
-                messagesContainer.insertBefore(el, typingBubbleWrapper);
-            } else {
-                messagesContainer.appendChild(el);
-            }
+            fragment.appendChild(el);
+            hasNew = true;
         });
-        scrollMessagesToBottom(true);
+
+        if (hasNew) {
+            if (typingBubbleWrapper) {
+                messagesContainer.insertBefore(fragment, typingBubbleWrapper);
+            } else {
+                messagesContainer.appendChild(fragment);
+            }
+            scrollMessagesToBottom(true);
+        }
     } catch (e) {}
 }
 
@@ -772,9 +820,21 @@ if (!targetUserId) {
     window.location.replace('https://sitenexs.com/community/messages/');
 } else {
     activeChatUserId = targetUserId;
-    document.getElementById('activeChatAvatar').src = getUserAvatarUrl(activeChatUserId);
+    const cachedPeer = loadCachedProfile(activeChatUserId);
+    otherUserName = cachedPeer?.name || '';
+    otherBadgesHtml = cachedPeer?.badgesHtml || '';
+    otherUserFcmToken = cachedPeer?.fcmToken || null;
+    applyPeerHeaderImmediate(
+        otherUserName,
+        cachedPeer?.headerBadgesHtml || '',
+        cachedPeer?.avatarUrl || getUserAvatarUrl(activeChatUserId)
+    );
+
     const earlyUid = getEarlyUid();
     if (earlyUid) {
+        const cachedMe = loadCachedProfile(earlyUid);
+        if (cachedMe?.name) myUserName = cachedMe.name;
+        if (cachedMe?.badgesHtml) myBadgesHtml = cachedMe.badgesHtml;
         const earlyChatId = [earlyUid, activeChatUserId].sort().join('_');
         renderCachedMessagesImmediately(earlyChatId, earlyUid);
     }
@@ -1019,7 +1079,9 @@ function renderOtherTypingIndicator(isTyping) {
         headerTypingEl.classList.toggle('active', Boolean(isTyping));
     }
     if (bubbleWrapperEl && messagesContainer) {
-        messagesContainer.appendChild(bubbleWrapperEl);
+        if (messagesContainer.lastElementChild !== bubbleWrapperEl) {
+            messagesContainer.appendChild(bubbleWrapperEl);
+        }
         bubbleWrapperEl.classList.toggle('active', Boolean(isTyping));
     }
     if (isTyping) {
@@ -1334,19 +1396,19 @@ function updateMessageElement(wrapper, docId, message, ownerUid = currentUid) {
             bubble.prepend(senderHeader);
         } else {
             const nameSpan = senderHeader.querySelector('.message-sender-name');
-            if (nameSpan) {
+            if (nameSpan && resolvedName) {
                 nameSpan.textContent = resolvedName;
             }
             const badgesSpan = senderHeader.querySelector('.message-sender-badges');
-            if (badgesSpan) {
+            if (badgesSpan && resolvedBadges) {
                 badgesSpan.innerHTML = resolvedBadges;
             }
-            senderHeader.style.display = (!resolvedName && !resolvedBadges) ? 'none' : 'inline-flex';
+            senderHeader.style.display = (!nameSpan?.textContent && !resolvedBadges) ? 'none' : 'inline-flex';
         }
     }
 
     const bodyDiv = wrapper.querySelector('.message-body');
-    if (bodyDiv) {
+    if (bodyDiv && bodyDiv.innerHTML !== renderMessageBody(message.text || '')) {
         bodyDiv.innerHTML = renderMessageBody(message.text || '');
     }
 
@@ -1368,7 +1430,10 @@ function updateMessageElement(wrapper, docId, message, ownerUid = currentUid) {
                 statusSlot.className = 'msg-status-slot';
                 metaRow.appendChild(statusSlot);
             }
-            statusSlot.innerHTML = renderCheckmarkHtml(checkState);
+            const nextCheckHtml = renderCheckmarkHtml(checkState);
+            if (statusSlot.innerHTML !== nextCheckHtml) {
+                statusSlot.innerHTML = nextCheckHtml;
+            }
         } else if (statusSlot) {
             statusSlot.remove();
         }
@@ -1389,10 +1454,10 @@ function refreshVisibleSenderInfo() {
             : (!isPlaceholderName(otherUserName) ? otherUserName : '');
         const nextBadges = isOutgoing ? myBadgesHtml : otherBadgesHtml;
 
-        if (nameSpan && nextName) {
+        if (nameSpan && nextName && nameSpan.textContent !== nextName) {
             nameSpan.textContent = nextName;
         }
-        if (badgesSpan && nextBadges) {
+        if (badgesSpan && nextBadges && badgesSpan.innerHTML !== nextBadges) {
             badgesSpan.innerHTML = nextBadges;
         }
         if (senderHeader) {
@@ -1412,7 +1477,7 @@ function handleMessageDocChange(change, ctx) {
         const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
         if (existingEl) {
             updateMessageElement(existingEl, msgId, msgData, uid);
-            if (typingBubbleWrapper) {
+            if (typingBubbleWrapper && existingEl.nextElementSibling !== typingBubbleWrapper) {
                 messagesContainer.insertBefore(existingEl, typingBubbleWrapper);
             }
         } else {
@@ -1501,7 +1566,7 @@ function handleMessageDocChange(change, ctx) {
         const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
         if (existingEl) {
             updateMessageElement(existingEl, msgId, msgData, uid);
-            if (typingBubbleWrapper) {
+            if (typingBubbleWrapper && existingEl.nextElementSibling !== typingBubbleWrapper) {
                 messagesContainer.insertBefore(existingEl, typingBubbleWrapper);
             }
         }
@@ -1551,7 +1616,7 @@ function attachChatSyncListeners(chatId, uid, peerUid) {
             if (added) shouldScroll = true;
         });
 
-        if (typingBubbleWrapper && messagesContainer) {
+        if (typingBubbleWrapper && messagesContainer && messagesContainer.lastElementChild !== typingBubbleWrapper) {
             messagesContainer.appendChild(typingBubbleWrapper);
         }
 
@@ -1564,23 +1629,63 @@ function attachChatSyncListeners(chatId, uid, peerUid) {
 }
 
 function syncProfilesAndPush(user, uid, peerUid) {
+    const cachedMe = loadCachedProfile(uid);
+    if (cachedMe) {
+        if (!isPlaceholderName(cachedMe.name)) myUserName = cachedMe.name;
+        if (cachedMe.badgesHtml) myBadgesHtml = cachedMe.badgesHtml;
+        refreshVisibleSenderInfo();
+    }
+
+    const cachedPeer = loadCachedProfile(peerUid);
+    if (cachedPeer) {
+        if (!isPlaceholderName(cachedPeer.name)) otherUserName = cachedPeer.name;
+        if (cachedPeer.badgesHtml) otherBadgesHtml = cachedPeer.badgesHtml;
+        if (cachedPeer.fcmToken) otherUserFcmToken = cachedPeer.fcmToken;
+        applyPeerHeaderImmediate(
+            otherUserName,
+            cachedPeer.headerBadgesHtml || '',
+            cachedPeer.avatarUrl || getUserAvatarUrl(peerUid)
+        );
+        refreshVisibleSenderInfo();
+    }
+
     fetchUserProfile(db, uid, { forceRefresh: true }).then(profile => {
+        if (!profile) return;
         myProfile = profile;
-        myUserName = extractProfileName(profile, user?.displayName);
-        myBadgesHtml = buildCombinedBadgesHtml(profile, 'message-bubble-verif');
+        const resolvedName = extractProfileName(profile, user?.displayName);
+        if (!isPlaceholderName(resolvedName)) myUserName = resolvedName;
+        const resolvedBadges = buildCombinedBadgesHtml(profile, 'message-bubble-verif');
+        if (resolvedBadges) myBadgesHtml = resolvedBadges;
+
+        saveCachedProfile(uid, {
+            ...(cachedMe || {}),
+            name: myUserName || cachedMe?.name || '',
+            badgesHtml: myBadgesHtml || cachedMe?.badgesHtml || '',
+            avatarUrl: profile?.avatarUrl || cachedMe?.avatarUrl || getUserAvatarUrl(uid)
+        });
         refreshVisibleSenderInfo();
     }).catch(() => {});
 
     fetchUserProfile(db, peerUid, { forceRefresh: true }).then(profile => {
+        if (!profile) return;
         otherProfile = profile;
-        otherUserName = extractProfileName(profile);
-        otherBadgesHtml = buildCombinedBadgesHtml(profile, 'message-bubble-verif');
-        otherUserFcmToken = profile?.fcmToken || null;
-        document.getElementById('activeChatBadges').innerHTML = buildCombinedBadgesHtml(profile, 'chat-header-verif');
-        if (otherUserName) {
-            document.getElementById('activeChatName').textContent = otherUserName;
-        }
-        document.getElementById('activeChatAvatar').src = profile?.avatarUrl || getUserAvatarUrl(peerUid);
+        const resolvedName = extractProfileName(profile);
+        if (!isPlaceholderName(resolvedName)) otherUserName = resolvedName;
+        const resolvedBadges = buildCombinedBadgesHtml(profile, 'message-bubble-verif');
+        if (resolvedBadges) otherBadgesHtml = resolvedBadges;
+        const headerBadges = buildCombinedBadgesHtml(profile, 'chat-header-verif');
+        const resolvedAvatar = profile?.avatarUrl || getUserAvatarUrl(peerUid);
+        if (profile?.fcmToken) otherUserFcmToken = profile.fcmToken;
+
+        applyPeerHeaderImmediate(otherUserName, headerBadges, resolvedAvatar);
+        saveCachedProfile(peerUid, {
+            ...(cachedPeer || {}),
+            name: otherUserName || cachedPeer?.name || '',
+            badgesHtml: otherBadgesHtml || cachedPeer?.badgesHtml || '',
+            headerBadgesHtml: headerBadges || cachedPeer?.headerBadgesHtml || '',
+            avatarUrl: resolvedAvatar,
+            fcmToken: otherUserFcmToken
+        });
         refreshVisibleSenderInfo();
     }).catch(() => {});
 
@@ -1682,7 +1787,7 @@ window.handleChatFormSubmit = async function (event) {
 
     try {
         const recipientUid = activeChatUserId;
-        let senderNameToSave = extractProfileName(myProfile, myUserName || auth.currentUser?.displayName);
+        let senderNameToSave = extractProfileName(myProfile, myUserName || auth.currentUser?.displayName || loadCachedProfile(currentUid)?.name);
         if (!senderNameToSave) {
             const freshProfile = await fetchUserProfile(db, currentUid, { forceRefresh: true }).catch(() => null);
             if (freshProfile) {
