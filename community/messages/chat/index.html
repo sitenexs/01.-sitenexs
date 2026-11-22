@@ -461,7 +461,7 @@
         </div>
     </main>
 
- <script type="module">
+<script type="module">
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
 
 import {
@@ -534,25 +534,38 @@ const updatedDocIds = new Set();
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
 
-function scrollMessagesToBottom(force = false) {
-    const messagesContainer = document.getElementById('chatMessages');
-    if (!messagesContainer) return;
-    const distanceFromBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight;
-    if (force || stickToBottom || distanceFromBottom < 260) {
-        stickToBottom = true;
-        const applyScroll = () => {
-            messagesContainer.scrollTo({
-                top: messagesContainer.scrollHeight,
-                behavior: 'instant'
-            });
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        };
-        requestAnimationFrame(() => {
-            applyScroll();
-            setTimeout(applyScroll, 40);
-            setTimeout(applyScroll, 140);
-        });
+/* =====================================================
+   MODUL SYNC REALTIME CHAT, CACHE LOKAL & STATUS BACA
+===================================================== */
+function getChatCacheKey(chatId) {
+    return `sitenexs_chat_cache_${chatId}`;
+}
+
+function getGreenReadStoreKey(chatId) {
+    return `sitenexs_green_read_${chatId}`;
+}
+
+function loadPersistedGreenReadIds(chatId) {
+    if (!chatId) return new Set();
+    try {
+        const raw = localStorage.getItem(getGreenReadStoreKey(chatId));
+        if (!raw) return new Set();
+        const arr = JSON.parse(raw);
+        return new Set(Array.isArray(arr) ? arr : []);
+    } catch (e) {
+        return new Set();
     }
+}
+
+function persistGreenReadId(chatId, msgId) {
+    if (!chatId || !msgId) return;
+    try {
+        const set = loadPersistedGreenReadIds(chatId);
+        if (!set.has(msgId)) {
+            set.add(msgId);
+            localStorage.setItem(getGreenReadStoreKey(chatId), JSON.stringify([...set]));
+        }
+    } catch (e) {}
 }
 
 function upsertMessageToCache(chatId, item) {
@@ -573,6 +586,64 @@ function upsertMessageToCache(chatId, item) {
         list.sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
         localStorage.setItem(getChatCacheKey(chatId), JSON.stringify(list.slice(-120)));
     } catch (e) {}
+}
+
+function syncMessageDocToCache(chatId, msgId, msgData) {
+    if (!chatId || !msgId || !msgData) return;
+    const createdAtMs = msgData?.createdAt?.toDate ? msgData.createdAt.toDate().getTime() : Date.now();
+    upsertMessageToCache(chatId, {
+        id: msgId,
+        senderUid: msgData.senderUid,
+        senderName: msgData.senderName,
+        senderIsVerified: Boolean(msgData.senderIsVerified),
+        senderIsPro: hasYellowBadge(msgData),
+        text: msgData.text || '',
+        isEdited: Boolean(msgData.isEdited),
+        status: msgData.status || 'sent',
+        checkColor: msgData.checkColor || null,
+        delivered: Boolean(msgData.delivered),
+        read: Boolean(msgData.read),
+        createdAtMs
+    });
+}
+
+function syncUnreadReset(chatId, uid) {
+    if (!chatId || !uid) return Promise.resolve();
+    return updateDoc(doc(db, 'chats', chatId), {
+        [`unread_${uid}`]: false
+    }).catch(() => {});
+}
+
+function syncChatSummaryOnSend(chatId, senderUid, recipientUid, text) {
+    if (!chatId || !senderUid || !recipientUid) return Promise.resolve();
+    return setDoc(doc(db, 'chats', chatId), {
+        participants: [senderUid, recipientUid],
+        lastMessage: text,
+        lastTimestamp: serverTimestamp(),
+        [`unread_${recipientUid}`]: true,
+        [`typing_${senderUid}`]: false
+    }, { merge: true });
+}
+
+function scrollMessagesToBottom(force = false) {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (!messagesContainer) return;
+    const distanceFromBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight;
+    if (force || stickToBottom || distanceFromBottom < 260) {
+        stickToBottom = true;
+        const applyScroll = () => {
+            messagesContainer.scrollTo({
+                top: messagesContainer.scrollHeight,
+                behavior: 'instant'
+            });
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        };
+        requestAnimationFrame(() => {
+            applyScroll();
+            setTimeout(applyScroll, 40);
+            setTimeout(applyScroll, 140);
+        });
+    }
 }
 
 function hasYellowBadge(profileOrMsg = {}) {
@@ -620,37 +691,6 @@ function extractProfileName(profile, fallbackName = '') {
     }
     const cleanFallback = String(fallbackName || '').trim();
     return isPlaceholderName(cleanFallback) ? '' : cleanFallback;
-}
-
-function getChatCacheKey(chatId) {
-    return `sitenexs_chat_cache_${chatId}`;
-}
-
-function getGreenReadStoreKey(chatId) {
-    return `sitenexs_green_read_${chatId}`;
-}
-
-function loadPersistedGreenReadIds(chatId) {
-    if (!chatId) return new Set();
-    try {
-        const raw = localStorage.getItem(getGreenReadStoreKey(chatId));
-        if (!raw) return new Set();
-        const arr = JSON.parse(raw);
-        return new Set(Array.isArray(arr) ? arr : []);
-    } catch (e) {
-        return new Set();
-    }
-}
-
-function persistGreenReadId(chatId, msgId) {
-    if (!chatId || !msgId) return;
-    try {
-        const set = loadPersistedGreenReadIds(chatId);
-        if (!set.has(msgId)) {
-            set.add(msgId);
-            localStorage.setItem(getGreenReadStoreKey(chatId), JSON.stringify([...set]));
-        }
-    } catch (e) {}
 }
 
 function getEarlyUid() {
@@ -1361,10 +1401,204 @@ function refreshVisibleSenderInfo() {
     });
 }
 
+function handleMessageDocChange(change, ctx) {
+    const { chatId, uid, messagesContainer, typingBubbleWrapper } = ctx;
+    const msgId = change.doc.id;
+    const msgData = change.doc.data();
+
+    syncMessageDocToCache(chatId, msgId, msgData);
+
+    if (change.type === 'added') {
+        const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
+        if (existingEl) {
+            updateMessageElement(existingEl, msgId, msgData, uid);
+            if (typingBubbleWrapper) {
+                messagesContainer.insertBefore(existingEl, typingBubbleWrapper);
+            }
+        } else {
+            const newEl = buildMessageElement(msgId, msgData, uid);
+            if (typingBubbleWrapper) {
+                messagesContainer.insertBefore(newEl, typingBubbleWrapper);
+            } else {
+                messagesContainer.appendChild(newEl);
+            }
+        }
+
+        if (msgData.senderUid === uid) {
+            if (
+                !updatedDocIds.has(msgId) &&
+                isPlaceholderName(msgData.senderName) &&
+                !isPlaceholderName(myUserName) &&
+                change.doc.ref
+            ) {
+                updatedDocIds.add(msgId);
+                updateDoc(change.doc.ref, {
+                    senderName: myUserName,
+                    senderIsVerified: Boolean(myProfile?.isVerified),
+                    senderIsPro: hasYellowBadge(myProfile)
+                }).catch(() => {});
+            }
+            const checkState = getMessageCheckStatus(msgData, msgId);
+            if (checkState === 'read-green') {
+                persistGreenReadId(chatId, msgId);
+            }
+        } else {
+            const isPageVisible = document.visibilityState === 'visible';
+            const updates = {};
+            const resolvedColor = msgData.checkColor || (msgData.status === 'read-yellow' ? 'yellow' : msgData.status === 'read-blue' ? 'blue' : 'green');
+
+            if (msgData.delivered !== true) {
+                updates.delivered = true;
+                if (msgData.status !== 'read' && msgData.read !== true) {
+                    updates.status = 'delivered';
+                }
+            }
+            if (isPageVisible && msgData.read !== true) {
+                updates.read = true;
+                updates.status = resolvedColor === 'yellow' ? 'read-yellow' : (resolvedColor === 'blue' ? 'read-blue' : 'read-green');
+                updates.checkColor = resolvedColor;
+            }
+
+            if (!updatedDocIds.has(msgId) && Object.keys(updates).length > 0 && change.doc.ref) {
+                updatedDocIds.add(msgId);
+                updateDoc(change.doc.ref, updates).catch(() => {});
+            }
+
+            if (
+                lastNotifiedMessageId !== msgId &&
+                !String(msgData.text || '').startsWith('[CALL_LOG]|')
+            ) {
+                lastNotifiedMessageId = msgId;
+
+                if (isPageVisible) {
+                    syncUnreadReset(chatId, uid);
+                    playMessageNotificationSound();
+                } else {
+                    const previewText = String(msgData.text || '').includes('📋 *LAMARAN KERJA BARU*')
+                        ? 'Mengirim lamaran kerja baru'
+                        : String(msgData.text || 'Pesan baru');
+
+                    const notifTitle = !isPlaceholderName(otherUserName)
+                        ? otherUserName
+                        : (!isPlaceholderName(msgData.senderName) ? String(msgData.senderName).trim() : 'Pesan Baru');
+
+                    triggerLocalSystemNotification(
+                        notifTitle,
+                        previewText,
+                        {
+                            tag: `chat-${chatId}`,
+                            icon: otherProfile?.avatarUrl || getUserAvatarUrl(activeChatUserId),
+                            url: window.location.href
+                        }
+                    );
+                }
+            }
+        }
+        return true;
+    }
+
+    if (change.type === 'modified') {
+        const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
+        if (existingEl) {
+            updateMessageElement(existingEl, msgId, msgData, uid);
+            if (typingBubbleWrapper) {
+                messagesContainer.insertBefore(existingEl, typingBubbleWrapper);
+            }
+        }
+        if (msgData.senderUid === uid) {
+            const checkState = getMessageCheckStatus(msgData, msgId);
+            if (checkState === 'read-green') {
+                persistGreenReadId(chatId, msgId);
+            }
+        }
+    } else if (change.type === 'removed') {
+        const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
+        if (existingEl) existingEl.remove();
+    }
+
+    return false;
+}
+
+function attachChatSyncListeners(chatId, uid, peerUid) {
+    if (unsubscribeChatMeta) unsubscribeChatMeta();
+    unsubscribeChatMeta = onSnapshot(doc(db, 'chats', chatId), (chatSnap) => {
+        if (!chatSnap.exists()) return;
+        const cData = chatSnap.data();
+        const isOtherTyping = Boolean(cData[`typing_${peerUid}`]);
+        renderOtherTypingIndicator(isOtherTyping);
+
+        if (cData[`unread_${uid}`] === true && document.visibilityState === 'visible') {
+            syncUnreadReset(chatId, uid);
+        }
+    });
+
+    const messagesRef = collection(db, 'chats', chatId, 'messages');
+    const qMsgs = query(messagesRef, orderBy('createdAt', 'asc'));
+    const messagesContainer = document.getElementById('chatMessages');
+    const typingBubbleWrapper = document.getElementById('typingBubbleWrapper');
+
+    if (unsubscribeMessages) unsubscribeMessages();
+    unsubscribeMessages = onSnapshot(qMsgs, (snapshot) => {
+        let shouldScroll = stickToBottom;
+
+        snapshot.docChanges().forEach((change) => {
+            const added = handleMessageDocChange(change, {
+                chatId,
+                uid,
+                messagesContainer,
+                typingBubbleWrapper
+            });
+            if (added) shouldScroll = true;
+        });
+
+        if (typingBubbleWrapper && messagesContainer) {
+            messagesContainer.appendChild(typingBubbleWrapper);
+        }
+
+        if (shouldScroll) {
+            scrollMessagesToBottom(true);
+        }
+    }, (error) => {
+        console.error('Message listener error:', error);
+    });
+}
+
+function syncProfilesAndPush(user, uid, peerUid) {
+    fetchUserProfile(db, uid, { forceRefresh: true }).then(profile => {
+        myProfile = profile;
+        myUserName = extractProfileName(profile, user?.displayName);
+        myBadgesHtml = buildCombinedBadgesHtml(profile, 'message-bubble-verif');
+        refreshVisibleSenderInfo();
+    }).catch(() => {});
+
+    fetchUserProfile(db, peerUid, { forceRefresh: true }).then(profile => {
+        otherProfile = profile;
+        otherUserName = extractProfileName(profile);
+        otherBadgesHtml = buildCombinedBadgesHtml(profile, 'message-bubble-verif');
+        otherUserFcmToken = profile?.fcmToken || null;
+        document.getElementById('activeChatBadges').innerHTML = buildCombinedBadgesHtml(profile, 'chat-header-verif');
+        if (otherUserName) {
+            document.getElementById('activeChatName').textContent = otherUserName;
+        }
+        document.getElementById('activeChatAvatar').src = profile?.avatarUrl || getUserAvatarUrl(peerUid);
+        refreshVisibleSenderInfo();
+    }).catch(() => {});
+
+    registerPushServiceWorker().then(() => {
+        listenForegroundMessages(app, ({ title, body, tag, icon, url }) => {
+            if (document.visibilityState === 'hidden') {
+                triggerLocalSystemNotification(title, body, { tag, icon, url });
+            }
+        });
+        if ('Notification' in window && Notification.permission === 'granted') {
+            refreshFcmToken();
+        }
+    }).catch(() => {});
+}
+
 /* =====================================================
    INITIALIZE CHAT (REALTIME SNAPSHOT TERBARU + CACHE)
 ===================================================== */
-
 async function initChat(user) {
     if (!user?.uid) return;
     if (isChatInitialized && currentUid === user.uid) return;
@@ -1403,215 +1637,16 @@ async function initChat(user) {
         callPageUrl: DEFAULT_CALL_PAGE_URL
     });
 
-    if (unsubscribeChatMeta) unsubscribeChatMeta();
-    unsubscribeChatMeta = onSnapshot(doc(db, 'chats', activeChatId), (chatSnap) => {
-        if (!chatSnap.exists()) return;
-        const cData = chatSnap.data();
-        const isOtherTyping = Boolean(cData[`typing_${activeChatUserId}`]);
-        renderOtherTypingIndicator(isOtherTyping);
-
-        if (cData[`unread_${currentUid}`] === true && document.visibilityState === 'visible') {
-            updateDoc(doc(db, 'chats', activeChatId), {
-                [`unread_${currentUid}`]: false
-            }).catch(() => {});
-        }
-    });
-
-    const messagesRef = collection(db, 'chats', activeChatId, 'messages');
-    const qMsgs = query(messagesRef, orderBy('createdAt', 'asc'));
-    const messagesContainer = document.getElementById('chatMessages');
-    const typingBubbleWrapper = document.getElementById('typingBubbleWrapper');
-
-    if (unsubscribeMessages) {
-        unsubscribeMessages();
-    }
-
-    unsubscribeMessages = onSnapshot(qMsgs, (snapshot) => {
-        let shouldScroll = stickToBottom;
-
-        snapshot.docChanges().forEach((change) => {
-            const msgId = change.doc.id;
-            const msgData = change.doc.data();
-            const createdAtMs = msgData?.createdAt?.toDate ? msgData.createdAt.toDate().getTime() : Date.now();
-
-            upsertMessageToCache(activeChatId, {
-                id: msgId,
-                senderUid: msgData.senderUid,
-                senderName: msgData.senderName,
-                senderIsVerified: Boolean(msgData.senderIsVerified),
-                senderIsPro: hasYellowBadge(msgData),
-                text: msgData.text || '',
-                isEdited: Boolean(msgData.isEdited),
-                status: msgData.status || 'sent',
-                checkColor: msgData.checkColor || null,
-                delivered: Boolean(msgData.delivered),
-                read: Boolean(msgData.read),
-                createdAtMs
-            });
-
-            if (change.type === 'added') {
-                shouldScroll = true;
-                const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
-                if (existingEl) {
-                    updateMessageElement(existingEl, msgId, msgData, currentUid);
-                    if (typingBubbleWrapper) {
-                        messagesContainer.insertBefore(existingEl, typingBubbleWrapper);
-                    }
-                } else {
-                    const newEl = buildMessageElement(msgId, msgData, currentUid);
-                    if (typingBubbleWrapper) {
-                        messagesContainer.insertBefore(newEl, typingBubbleWrapper);
-                    } else {
-                        messagesContainer.appendChild(newEl);
-                    }
-                }
-
-                if (msgData.senderUid === currentUid) {
-                    if (
-                        !updatedDocIds.has(msgId) &&
-                        isPlaceholderName(msgData.senderName) &&
-                        !isPlaceholderName(myUserName) &&
-                        change.doc.ref
-                    ) {
-                        updatedDocIds.add(msgId);
-                        updateDoc(change.doc.ref, {
-                            senderName: myUserName,
-                            senderIsVerified: Boolean(myProfile?.isVerified),
-                            senderIsPro: hasYellowBadge(myProfile)
-                        }).catch(() => {});
-                    }
-                    const checkState = getMessageCheckStatus(msgData, msgId);
-                    if (checkState === 'read-green') {
-                        persistGreenReadId(activeChatId, msgId);
-                    }
-                } else {
-                    const isPageVisible = document.visibilityState === 'visible';
-                    const updates = {};
-                    const resolvedColor = msgData.checkColor || (msgData.status === 'read-yellow' ? 'yellow' : msgData.status === 'read-blue' ? 'blue' : 'green');
-
-                    if (msgData.delivered !== true) {
-                        updates.delivered = true;
-                        if (msgData.status !== 'read' && msgData.read !== true) {
-                            updates.status = 'delivered';
-                        }
-                    }
-                    if (isPageVisible && msgData.read !== true) {
-                        updates.read = true;
-                        updates.status = resolvedColor === 'yellow' ? 'read-yellow' : (resolvedColor === 'blue' ? 'read-blue' : 'read-green');
-                        updates.checkColor = resolvedColor;
-                    }
-
-                    if (!updatedDocIds.has(msgId) && Object.keys(updates).length > 0 && change.doc.ref) {
-                        updatedDocIds.add(msgId);
-                        updateDoc(change.doc.ref, updates).catch(() => {});
-                    }
-
-                    if (
-                        lastNotifiedMessageId !== msgId &&
-                        !String(msgData.text || '').startsWith('[CALL_LOG]|')
-                    ) {
-                        lastNotifiedMessageId = msgId;
-
-                        if (isPageVisible) {
-                            updateDoc(doc(db, 'chats', activeChatId), {
-                                [`unread_${currentUid}`]: false
-                            }).catch(() => {});
-                            playMessageNotificationSound();
-                        } else {
-                            const previewText = String(msgData.text || '').includes('📋 *LAMARAN KERJA BARU*')
-                                ? 'Mengirim lamaran kerja baru'
-                                : String(msgData.text || 'Pesan baru');
-
-                            const notifTitle = !isPlaceholderName(otherUserName)
-                                ? otherUserName
-                                : (!isPlaceholderName(msgData.senderName) ? String(msgData.senderName).trim() : 'Pesan Baru');
-
-                            triggerLocalSystemNotification(
-                                notifTitle,
-                                previewText,
-                                {
-                                    tag: `chat-${activeChatId}`,
-                                    icon: otherProfile?.avatarUrl || getUserAvatarUrl(activeChatUserId),
-                                    url: window.location.href
-                                }
-                            );
-                        }
-                    }
-                }
-            } else if (change.type === 'modified') {
-                const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
-                if (existingEl) {
-                    updateMessageElement(existingEl, msgId, msgData, currentUid);
-                    if (typingBubbleWrapper) {
-                        messagesContainer.insertBefore(existingEl, typingBubbleWrapper);
-                    }
-                }
-                if (msgData.senderUid === currentUid) {
-                    const checkState = getMessageCheckStatus(msgData, msgId);
-                    if (checkState === 'read-green') {
-                        persistGreenReadId(activeChatId, msgId);
-                    }
-                }
-            } else if (change.type === 'removed') {
-                const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
-                if (existingEl) existingEl.remove();
-            }
-        });
-
-        if (typingBubbleWrapper && messagesContainer) {
-            messagesContainer.appendChild(typingBubbleWrapper);
-        }
-
-        if (shouldScroll) {
-            scrollMessagesToBottom(true);
-        }
-    }, (error) => {
-        console.error('Message listener error:', error);
-    });
-
-    updateDoc(doc(db, 'chats', activeChatId), {
-        [`unread_${currentUid}`]: false
-    }).catch(() => {});
-
-    fetchUserProfile(db, currentUid, { forceRefresh: true }).then(profile => {
-        myProfile = profile;
-        myUserName = extractProfileName(profile, user.displayName);
-        myBadgesHtml = buildCombinedBadgesHtml(profile, 'message-bubble-verif');
-        refreshVisibleSenderInfo();
-    }).catch(() => {});
-
-    fetchUserProfile(db, activeChatUserId, { forceRefresh: true }).then(profile => {
-        otherProfile = profile;
-        otherUserName = extractProfileName(profile);
-        otherBadgesHtml = buildCombinedBadgesHtml(profile, 'message-bubble-verif');
-        otherUserFcmToken = profile?.fcmToken || null;
-        document.getElementById('activeChatBadges').innerHTML = buildCombinedBadgesHtml(profile, 'chat-header-verif');
-        if (otherUserName) {
-            document.getElementById('activeChatName').textContent = otherUserName;
-        }
-        document.getElementById('activeChatAvatar').src = profile?.avatarUrl || getUserAvatarUrl(activeChatUserId);
-        refreshVisibleSenderInfo();
-    }).catch(() => {});
-
-    registerPushServiceWorker().then(() => {
-        listenForegroundMessages(app, ({ title, body, tag, icon, url }) => {
-            if (document.visibilityState === 'hidden') {
-                triggerLocalSystemNotification(title, body, { tag, icon, url });
-            }
-        });
-        if ('Notification' in window && Notification.permission === 'granted') {
-            refreshFcmToken();
-        }
-    }).catch(() => {});
+    attachChatSyncListeners(activeChatId, currentUid, activeChatUserId);
+    syncUnreadReset(activeChatId, currentUid);
+    syncProfilesAndPush(user, currentUid, activeChatUserId);
 }
 
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
         setMyTypingState(false);
     } else if (document.visibilityState === 'visible' && activeChatId && currentUid) {
-        updateDoc(doc(db, 'chats', activeChatId), {
-            [`unread_${currentUid}`]: false
-        }).catch(() => {});
+        syncUnreadReset(activeChatId, currentUid);
         scrollMessagesToBottom(false);
     }
 });
@@ -1647,7 +1682,6 @@ window.handleChatFormSubmit = async function (event) {
 
     try {
         const recipientUid = activeChatUserId;
-        const chatDocRef = doc(db, 'chats', activeChatId);
         let senderNameToSave = extractProfileName(myProfile, myUserName || auth.currentUser?.displayName);
         if (!senderNameToSave) {
             const freshProfile = await fetchUserProfile(db, currentUid, { forceRefresh: true }).catch(() => null);
@@ -1661,13 +1695,7 @@ window.handleChatFormSubmit = async function (event) {
         const senderVerifiedToSave = Boolean(myProfile?.isVerified);
         const senderProToSave = hasYellowBadge(myProfile);
 
-        await setDoc(chatDocRef, {
-            participants: [currentUid, activeChatUserId],
-            lastMessage: text,
-            lastTimestamp: serverTimestamp(),
-            [`unread_${recipientUid}`]: true,
-            [`typing_${currentUid}`]: false
-        }, { merge: true });
+        await syncChatSummaryOnSend(activeChatId, currentUid, recipientUid, text);
 
         await addDoc(collection(db, 'chats', activeChatId, 'messages'), {
             senderUid: currentUid,
