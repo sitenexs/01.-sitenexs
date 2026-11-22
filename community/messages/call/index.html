@@ -32,7 +32,7 @@
             user-select: none; -webkit-user-select: none;
         }
 
-        button { font-family: inherit; outline: none; border: none; }
+        button, input { font-family: inherit; outline: none; border: none; }
 
         .chat-header-verif { width: 15px; height: 15px; object-fit: contain; flex-shrink: 0; display: inline-block; }
 
@@ -90,6 +90,44 @@
             100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
+        /* LAYAR GABUNG VIA LINK TAMU (TANPA LOGIN) */
+        .guest-join-screen {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
+            z-index: 26000;
+            display: none; flex-direction: column; align-items: center; justify-content: space-between;
+            padding: 3rem 1.5rem 2.75rem; text-align: center;
+        }
+        .guest-join-screen.active { display: flex; }
+
+        .guest-name-box {
+            width: 100%; max-width: 320px; margin-top: 1.25rem;
+            display: flex; flex-direction: column; gap: 0.5rem; text-align: left;
+        }
+        .guest-name-box label {
+            font-size: 0.78rem; font-weight: 700; color: #94a3b8; padding-left: 0.25rem;
+        }
+        .guest-name-input {
+            width: 100%; padding: 0.8rem 1.1rem; border-radius: var(--radius-full);
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.22);
+            color: #fff; font-size: 0.95rem; font-weight: 600;
+            user-select: text; -webkit-user-select: text;
+        }
+        .guest-name-input::placeholder { color: #64748b; }
+        .guest-name-input:focus {
+            border-color: var(--accent); background: rgba(255, 255, 255, 0.14);
+        }
+
+        .guest-join-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.65rem;
+            padding: 0.95rem 2.1rem; border-radius: var(--radius-full);
+            background: var(--accent); color: #fff; font-size: 1rem; font-weight: 800;
+            cursor: pointer; transition: var(--transition);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.38);
+        }
+        .guest-join-btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+        .guest-join-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
         /* LAYAR UTAMA VIDEO CALL / VOICE CALL */
         .vc-overlay {
             position: fixed; inset: 0; background: #0f172a; z-index: 20000;
@@ -109,6 +147,10 @@
             cursor: pointer; font-size: 0.95rem; transition: var(--transition);
         }
         .vc-top-btn:hover { background: rgba(37, 99, 235, 0.85); }
+        .vc-top-btn.share-active {
+            background: rgba(16, 185, 129, 0.88);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
 
         .vc-remote-container {
             position: relative; width: 100%; height: 100%; display: flex;
@@ -187,6 +229,7 @@
             color: #fff; padding: 0.5rem 1.25rem; border-radius: var(--radius-full);
             font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;
             border: 1px solid rgba(255,255,255,0.15); z-index: 10; white-space: nowrap;
+            max-width: calc(100vw - 210px); overflow: hidden; text-overflow: ellipsis;
         }
         .vc-timer-pill {
             background: rgba(16, 185, 129, 0.2);
@@ -234,7 +277,7 @@
 
     <div id="toastContainer"></div>
 
-    <!-- LAYAR PANGGILAN MASUK -->
+    <!-- LAYAR PANGGILAN MASUK (USER TERDAFTAR) -->
     <div id="incomingCallScreen" class="incoming-screen">
         <div class="incoming-top">
             <div class="caller-avatar-ring">
@@ -266,12 +309,46 @@
         </div>
     </div>
 
+    <!-- LAYAR GABUNG PANGGILAN VIA LINK (TANPA LOGIN) -->
+    <div id="guestJoinScreen" class="guest-join-screen">
+        <div class="incoming-top">
+            <div class="caller-avatar-ring">
+                <img id="guestHostAvatar" src="https://sitenexs.com/assets/logo/logo.png" class="caller-avatar-img" alt="Host" onerror="this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff'">
+            </div>
+            <div id="guestCallTypeLabel" style="font-size: 0.82rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem;">
+                <i class="fas fa-link" style="color: var(--accent); margin-right: 4px;"></i> Undangan Panggilan Sitenexs
+            </div>
+            <div style="display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; max-width: 90vw;">
+                <div id="guestHostName" style="font-weight: 800; font-size: 1.4rem; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Memuat ruang panggilan...</div>
+                <div id="guestHostBadges" style="display: inline-flex; align-items: center; gap: 2px;"></div>
+            </div>
+            <div id="guestStatusSubText" style="font-size: 0.86rem; color: #cbd5e1; margin-top: 0.35rem;">Masuk langsung tanpa perlu login akun.</div>
+
+            <div class="guest-name-box">
+                <label for="guestDisplayNameInput">Nama Tampilan Anda (Opsional)</label>
+                <input type="text" id="guestDisplayNameInput" class="guest-name-input" placeholder="Contoh: Budi (Tamu)" maxlength="32">
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 0.85rem; width: 100%; max-width: 320px;">
+            <button type="button" id="guestJoinCallBtn" class="guest-join-btn" onclick="joinCallViaShareLink()" disabled>
+                <i class="fas fa-phone-alt"></i> <span id="guestJoinBtnText">Menyiapkan Ruang...</span>
+            </button>
+            <button type="button" onclick="window.location.replace('https://sitenexs.com/')" style="background: transparent; color: #94a3b8; font-size: 0.82rem; font-weight: 600; cursor: pointer; padding: 0.4rem 1rem;">
+                Batal &amp; Ke Beranda
+            </button>
+        </div>
+    </div>
+
     <!-- LAYAR PANGGILAN AKTIF (VIDEO / SUARA) -->
     <div id="vcOverlay" class="vc-overlay">
         <div class="vc-remote-container">
             <div class="vc-top-actions">
                 <button type="button" id="nativePipBtn" class="vc-top-btn" onclick="enterSystemPiP()" title="Jendela Mengambang (PiP)">
                     <i class="fas fa-external-link-alt"></i>
+                </button>
+                <button type="button" id="shareCallLinkBtn" class="vc-top-btn" onclick="shareCallLink()" title="Bagikan Link Panggilan (Tanpa Login)">
+                    <i class="fas fa-link"></i>
                 </button>
             </div>
 
@@ -336,7 +413,7 @@
     </div>
 
  <script type="module">
-import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+import { onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
 
 import {
     doc,
@@ -376,22 +453,26 @@ import {
 
 const CHAT_BASE_URL = 'https://sitenexs.com/community/messages/chat/';
 const CALL_BASE_URL = 'https://sitenexs.com/community/messages/call/';
+const HOME_BASE_URL = 'https://sitenexs.com/';
 
 const urlParams = new URLSearchParams(window.location.search);
 const peerUidParam = urlParams.get('to');
-const modeParam = urlParams.get('mode') || 'outgoing'; // 'outgoing' | 'incoming'
+const roomIdParam = urlParams.get('roomId');
+const isGuestLinkMode = Boolean(roomIdParam && (urlParams.get('guest') === '1' || !peerUidParam));
+const modeParam = isGuestLinkMode ? 'guest_link' : (urlParams.get('mode') || 'outgoing');
 const typeParam = urlParams.get('type') === 'audio' ? 'audio' : 'video';
 
-if (!peerUidParam) {
+if (!peerUidParam && !roomIdParam) {
     window.location.replace('https://sitenexs.com/community/messages/');
 }
 
 let currentUid = null;
+let isGuestUser = false;
 let myProfile = null;
 let myUserName = 'Mitra Sitenexs';
 let myIsVerified = false;
 
-let activeChatUserId = peerUidParam;
+let activeChatUserId = peerUidParam || null;
 let activeChatId = null;
 let otherProfile = null;
 let otherUserName = 'Mitra Sitenexs';
@@ -402,13 +483,16 @@ let peerConnection = null;
 let localStream = null;
 let remoteStream = null;
 
-let currentCallId = null;
+let currentCallId = roomIdParam || null;
 let currentSessionId = null;
 let currentCallType = typeParam;
 let currentCallLogDocId = null;
 let wasCallConnected = false;
+let isShareLinkEnabled = false;
+let activeGuestJoinToken = null;
 
 let incomingCallData = null;
+let sharedRoomData = null;
 
 let isMicMuted = false;
 let isCamOff = false;
@@ -428,12 +512,17 @@ let remoteCandidateQueue = [];
 let unsubscribeCallRoom = null;
 let unsubscribeRemoteCandidates = null;
 let unsubscribeIncomingCalls = null;
+let unsubscribeGuestRoomWatch = null;
 
-function returnToChat(delayMs = 600) {
+function returnAfterCall(delayMs = 600) {
     setTimeout(() => {
-        const chatUrl = new URL(CHAT_BASE_URL);
-        chatUrl.searchParams.set('to', activeChatUserId);
-        window.location.replace(chatUrl.toString());
+        if (isGuestUser || !activeChatUserId) {
+            window.location.replace(HOME_BASE_URL);
+        } else {
+            const chatUrl = new URL(CHAT_BASE_URL);
+            chatUrl.searchParams.set('to', activeChatUserId);
+            window.location.replace(chatUrl.toString());
+        }
     }, delayMs);
 }
 
@@ -455,6 +544,56 @@ window.showToast = function (msg) {
     container.appendChild(toast);
 
     setTimeout(() => toast.remove(), 3500);
+};
+
+/* =====================================================
+   BAGIKAN LINK PANGGILAN (TANPA LOGIN)
+===================================================== */
+window.shareCallLink = async function () {
+    if (!currentCallId) {
+        showToast('Ruang panggilan belum siap.');
+        return;
+    }
+
+    isShareLinkEnabled = true;
+
+    const shareUrlObj = new URL(CALL_BASE_URL);
+    shareUrlObj.searchParams.set('roomId', currentCallId);
+    shareUrlObj.searchParams.set('type', currentCallType);
+    shareUrlObj.searchParams.set('guest', '1');
+    const shareUrl = shareUrlObj.toString();
+
+    const shareBtn = document.getElementById('shareCallLinkBtn');
+    if (shareBtn) shareBtn.classList.add('share-active');
+
+    // Tandai di RTDB agar ruang terbuka untuk peserta via link
+    update(ref(rtdb, `calls/${currentCallId}`), {
+        allowGuestLink: true,
+        shareLinkCreatedAt: Date.now()
+    }).catch(() => {});
+
+    // Salin ke clipboard terlebih dahulu sebagai cadangan
+    try {
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(shareUrl);
+        }
+    } catch (e) {}
+
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: `Panggilan ${currentCallType === 'audio' ? 'Suara' : 'Video'} Sitenexs`,
+                text: `${myUserName} mengundang Anda bergabung ke panggilan Sitenexs (klik langsung tanpa login):`,
+                url: shareUrl
+            });
+            showToast('Link panggilan dibagikan!');
+            return;
+        } catch (err) {
+            if (err?.name === 'AbortError') return;
+        }
+    }
+
+    showToast('Link panggilan disalin! Tempel & kirim ke peserta.');
 };
 
 const rtcConfig = {
@@ -622,16 +761,29 @@ function updateRemoteMediaIndicators(muted, camOff, peerName) {
     }
 }
 
+function getSafePeerAvatar(peerUid, peerName) {
+    if (peerUid && !String(peerUid).startsWith('guest_')) {
+        return getUserAvatarUrl(peerUid);
+    }
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(peerName || 'Tamu')}&background=2563eb&color=fff`;
+}
+
 function applyCallOverlayMode(callType, peerUid, peerName, peerVerified = false) {
     const overlay = document.getElementById('vcOverlay');
     const toggleCamBtn = document.getElementById('toggleCamBtn');
     const nativePipBtn = document.getElementById('nativePipBtn');
+    const shareLinkBtn = document.getElementById('shareCallLinkBtn');
     const badgesHtml = getUserBadgesHtml(Boolean(peerVerified));
+    const avatarSrc = getSafePeerAvatar(peerUid, peerName);
 
     document.getElementById('vcBannerBadges').innerHTML = badgesHtml;
-    document.getElementById('remoteCamOffAvatar').src = getUserAvatarUrl(peerUid);
+    document.getElementById('remoteCamOffAvatar').src = avatarSrc;
     document.getElementById('remoteCamOffPeerName').textContent = peerName || 'Mitra Sitenexs';
     document.getElementById('remoteCamOffBadges').innerHTML = badgesHtml;
+
+    if (shareLinkBtn) {
+        shareLinkBtn.style.display = callDirection === 'caller' ? 'flex' : 'none';
+    }
 
     updateRemoteMediaIndicators(false, false, peerName);
 
@@ -640,7 +792,7 @@ function applyCallOverlayMode(callType, peerUid, peerName, peerVerified = false)
         if (toggleCamBtn) toggleCamBtn.style.display = 'none';
         if (nativePipBtn) nativePipBtn.style.display = 'none';
 
-        document.getElementById('voicePeerAvatar').src = getUserAvatarUrl(peerUid);
+        document.getElementById('voicePeerAvatar').src = avatarSrc;
         document.getElementById('voicePeerName').textContent = peerName || 'Mitra Sitenexs';
         document.getElementById('voicePeerBadges').innerHTML = badgesHtml;
         document.getElementById('voiceCallTimer').textContent = 'Menghubungkan...';
@@ -652,7 +804,7 @@ function applyCallOverlayMode(callType, peerUid, peerName, peerVerified = false)
 }
 
 async function createCallLogMessage(callType) {
-    if (!activeChatId || !currentUid || !activeChatUserId) return null;
+    if (!activeChatId || !currentUid || !activeChatUserId || isGuestUser) return null;
 
     const isAudio = callType === 'audio';
     const labelText = isAudio ? '📞 Panggilan Suara' : '📹 Panggilan Video';
@@ -682,7 +834,7 @@ async function createCallLogMessage(callType) {
 }
 
 async function updateCallLogMessage(docId, callType, status, durationSec = 0) {
-    if (!activeChatId || !docId) return;
+    if (!activeChatId || !docId || isGuestUser) return;
 
     const isAudio = callType === 'audio';
     const baseLabel = isAudio ? '📞 Panggilan Suara' : '📹 Panggilan Video';
@@ -842,6 +994,22 @@ async function flushRemoteCandidateQueue() {
     }
 }
 
+function resetPeerConnectionForRenegotiation() {
+    if (unsubscribeRemoteCandidates) {
+        unsubscribeRemoteCandidates();
+        unsubscribeRemoteCandidates = null;
+    }
+    if (peerConnection) {
+        peerConnection.ontrack = null;
+        peerConnection.onicecandidate = null;
+        peerConnection.oniceconnectionstatechange = null;
+        peerConnection.onconnectionstatechange = null;
+        try { peerConnection.close(); } catch (e) {}
+        peerConnection = null;
+    }
+    remoteCandidateQueue = [];
+}
+
 function createPeerConnection(callId, sessionId, isCaller) {
     remoteCandidateQueue = [];
 
@@ -977,7 +1145,7 @@ function listenToCallRoom(callId, sessionId, isCaller) {
                 }
                 showToast('Panggilan berakhir.');
                 cleanupCallResources();
-                returnToChat(700);
+                returnAfterCall(700);
             }
             return;
         }
@@ -988,14 +1156,14 @@ function listenToCallRoom(callId, sessionId, isCaller) {
         const remoteCamOff = isCaller ? Boolean(data.calleeCamOff) : Boolean(data.callerCamOff);
         updateRemoteMediaIndicators(remoteMuted, remoteCamOff, otherUserName);
 
-        if (data.status === 'rejected') {
+        if (data.status === 'rejected' && !isShareLinkEnabled && !data.allowGuestLink) {
             if (isCaller && currentCallLogDocId) {
                 updateCallLogMessage(currentCallLogDocId, currentCallType, 'rejected', 0);
             }
             showToast('Panggilan ditolak.');
             cleanupCallResources();
             remove(callRef).catch(() => {});
-            returnToChat(700);
+            returnAfterCall(700);
             return;
         }
 
@@ -1006,7 +1174,51 @@ function listenToCallRoom(callId, sessionId, isCaller) {
             }
             showToast('Panggilan berakhir.');
             cleanupCallResources();
-            returnToChat(700);
+            returnAfterCall(700);
+            return;
+        }
+
+        // Jika ada tamu yang bergabung melalui link panggilan
+        if (
+            isCaller &&
+            data.guestJoinRequest &&
+            data.guestJoinRequest.token &&
+            data.guestJoinRequest.token !== activeGuestJoinToken &&
+            localStream
+        ) {
+            activeGuestJoinToken = data.guestJoinRequest.token;
+            otherUserName = data.guestJoinRequest.guestName || 'Tamu Sitenexs';
+            otherUserVerified = Boolean(data.guestJoinRequest.guestVerified);
+
+            applyCallOverlayMode(currentCallType, data.guestJoinRequest.guestUid, otherUserName, otherUserVerified);
+            document.getElementById('vcStatusText').textContent = `Menghubungkan ${otherUserName}...`;
+            showToast(`${otherUserName} bergabung melalui link!`);
+
+            try {
+                resetPeerConnectionForRenegotiation();
+                await remove(ref(rtdb, `calls/${callId}/callerCandidates`)).catch(() => {});
+                await remove(ref(rtdb, `calls/${callId}/calleeCandidates`)).catch(() => {});
+
+                createPeerConnection(callId, sessionId, true);
+                const freshOffer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(freshOffer);
+
+                await update(callRef, {
+                    status: 'ringing',
+                    calleeUid: data.guestJoinRequest.guestUid,
+                    calleeName: otherUserName,
+                    calleeMicMuted: false,
+                    calleeCamOff: false,
+                    answer: null,
+                    offer: {
+                        type: freshOffer.type,
+                        sdp: freshOffer.sdp
+                    },
+                    offerForGuestToken: activeGuestJoinToken
+                });
+            } catch (err) {
+                console.error('Gagal membuat offer baru untuk tamu:', err);
+            }
             return;
         }
 
@@ -1059,7 +1271,7 @@ async function startOutgoingCall(callType) {
     if (!mediaReady) {
         isStartingCall = false;
         callDirection = null;
-        returnToChat(1200);
+        returnAfterCall(1200);
         return;
     }
 
@@ -1096,6 +1308,7 @@ async function startOutgoingCall(callType) {
             callerCamOff: false,
             calleeMicMuted: false,
             calleeCamOff: false,
+            allowGuestLink: false,
             status: 'ringing',
             offer: {
                 type: offer.type,
@@ -1133,7 +1346,8 @@ async function startOutgoingCall(callType) {
                 isInCall &&
                 currentCallId === callId &&
                 peerConnection &&
-                !peerConnection.currentRemoteDescription
+                !peerConnection.currentRemoteDescription &&
+                !isShareLinkEnabled
             ) {
                 showToast('Panggilan tidak dijawab.');
                 endActiveCall('missed');
@@ -1145,9 +1359,172 @@ async function startOutgoingCall(callType) {
         console.error('Start call error:', error);
         showToast('Gagal memulai panggilan: ' + error.message);
         cleanupCallResources();
-        returnToChat(1200);
+        returnAfterCall(1200);
     }
 }
+
+/* =====================================================
+   GABUNG PANGGILAN MELALUI LINK (TANPA LOGIN)
+===================================================== */
+function initGuestShareLinkRoom(roomId) {
+    const joinScreen = document.getElementById('guestJoinScreen');
+    const joinBtn = document.getElementById('guestJoinCallBtn');
+    const joinBtnText = document.getElementById('guestJoinBtnText');
+    const typeLabel = document.getElementById('guestCallTypeLabel');
+    const hostNameEl = document.getElementById('guestHostName');
+    const hostAvatarEl = document.getElementById('guestHostAvatar');
+    const hostBadgesEl = document.getElementById('guestHostBadges');
+    const subTextEl = document.getElementById('guestStatusSubText');
+    const nameInput = document.getElementById('guestDisplayNameInput');
+
+    if (!isGuestUser && myUserName && myUserName !== 'Mitra Sitenexs') {
+        nameInput.value = myUserName;
+    }
+
+    joinScreen.classList.add('active');
+
+    const callRef = ref(rtdb, `calls/${roomId}`);
+    if (unsubscribeGuestRoomWatch) unsubscribeGuestRoomWatch();
+
+    unsubscribeGuestRoomWatch = onValue(callRef, (snapshot) => {
+        const data = snapshot.val();
+        if (!data || data.status === 'ended') {
+            sharedRoomData = null;
+            hostNameEl.textContent = 'Panggilan Telah Berakhir';
+            subTextEl.textContent = 'Link panggilan ini sudah tidak aktif.';
+            joinBtn.disabled = true;
+            joinBtnText.textContent = 'Tidak Tersedia';
+            return;
+        }
+
+        sharedRoomData = data;
+        currentCallType = data.callType === 'audio' ? 'audio' : typeParam;
+
+        hostNameEl.textContent = data.callerName || 'Mitra Sitenexs';
+        hostAvatarEl.src = getSafePeerAvatar(data.callerUid, data.callerName);
+        hostBadgesEl.innerHTML = getUserBadgesHtml(Boolean(data.callerVerified));
+
+        typeLabel.innerHTML = currentCallType === 'audio'
+            ? '<i class="fas fa-phone" style="color: var(--accent); margin-right: 4px;"></i> Undangan Panggilan Suara'
+            : '<i class="fas fa-video" style="color: var(--accent); margin-right: 4px;"></i> Undangan Panggilan Video';
+
+        subTextEl.textContent = 'Klik tombol di bawah untuk langsung masuk tanpa login.';
+        joinBtn.disabled = false;
+        joinBtnText.textContent = currentCallType === 'audio' ? 'Gabung Panggilan Suara' : 'Gabung Panggilan Video';
+    });
+}
+
+window.joinCallViaShareLink = async function () {
+    if (!roomIdParam || !sharedRoomData || isInCall || isStartingCall) return;
+
+    const customName = document.getElementById('guestDisplayNameInput')?.value.trim();
+    if (customName) {
+        myUserName = customName;
+    } else if (isGuestUser) {
+        myUserName = 'Tamu Sitenexs';
+    }
+
+    const joinBtn = document.getElementById('guestJoinCallBtn');
+    const joinBtnText = document.getElementById('guestJoinBtnText');
+    joinBtn.disabled = true;
+    joinBtnText.textContent = 'Menghubungkan...';
+
+    isStartingCall = true;
+    callDirection = 'callee';
+    currentCallId = roomIdParam;
+    currentSessionId = sharedRoomData.sessionId;
+    currentCallType = sharedRoomData.callType === 'audio' ? 'audio' : 'video';
+    otherUserName = sharedRoomData.callerName || 'Mitra Sitenexs';
+    otherUserVerified = Boolean(sharedRoomData.callerVerified);
+
+    const mediaReady = await setupLocalMedia(currentCallType);
+    if (!mediaReady) {
+        isStartingCall = false;
+        joinBtn.disabled = false;
+        joinBtnText.textContent = 'Coba Lagi';
+        return;
+    }
+
+    if (unsubscribeGuestRoomWatch) {
+        unsubscribeGuestRoomWatch();
+        unsubscribeGuestRoomWatch = null;
+    }
+
+    requestWakeLock();
+    isInCall = true;
+
+    document.getElementById('guestJoinScreen').classList.remove('active');
+    applyCallOverlayMode(currentCallType, sharedRoomData.callerUid, otherUserName, otherUserVerified);
+    document.getElementById('vcOverlay').classList.add('active');
+    document.getElementById('vcStatusText').textContent = 'Menyambungkan ke ruang...';
+
+    const joinToken = `${currentUid}_${Date.now()}`;
+    const callRef = ref(rtdb, `calls/${currentCallId}`);
+
+    try {
+        // Minta host mengirim offer WebRTC baru khusus untuk sesi tamu ini
+        await update(callRef, {
+            allowGuestLink: true,
+            guestJoinRequest: {
+                token: joinToken,
+                guestUid: currentUid,
+                guestName: myUserName,
+                guestVerified: myIsVerified,
+                requestedAt: Date.now()
+            }
+        });
+
+        let answeredForGuest = false;
+        if (unsubscribeCallRoom) unsubscribeCallRoom();
+
+        unsubscribeCallRoom = onValue(callRef, async (snapshot) => {
+            const data = snapshot.val();
+            if (!data || data.status === 'ended') {
+                if (isInCall) {
+                    showToast('Panggilan berakhir.');
+                    cleanupCallResources();
+                    returnAfterCall(700);
+                }
+                return;
+            }
+
+            updateRemoteMediaIndicators(Boolean(data.callerMicMuted), Boolean(data.callerCamOff), otherUserName);
+
+            if (
+                !answeredForGuest &&
+                data.offer &&
+                data.offerForGuestToken === joinToken
+            ) {
+                answeredForGuest = true;
+                createPeerConnection(currentCallId, data.sessionId, false);
+
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+                await flushRemoteCandidateQueue();
+
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+
+                await update(callRef, {
+                    status: 'connected',
+                    calleeMicMuted: false,
+                    calleeCamOff: false,
+                    answer: {
+                        type: answer.type,
+                        sdp: answer.sdp
+                    },
+                    answeredAt: Date.now()
+                });
+
+                isStartingCall = false;
+            }
+        });
+    } catch (error) {
+        console.error('Guest join error:', error);
+        showToast('Gagal terhubung ke panggilan: ' + error.message);
+        cleanupCallResources();
+        returnAfterCall(1000);
+    }
+};
 
 window.acceptIncomingCall = async function () {
     const data = incomingCallData;
@@ -1155,7 +1532,7 @@ window.acceptIncomingCall = async function () {
 
     if (!data?.offer || !data?.roomId || !data?.sessionId) {
         showToast('Panggilan sudah berakhir.');
-        returnToChat(700);
+        returnAfterCall(700);
         return;
     }
 
@@ -1217,7 +1594,7 @@ window.acceptIncomingCall = async function () {
             answeredAt: Date.now()
         });
 
-        if (currentUid) {
+        if (currentUid && !isGuestUser) {
             remove(ref(rtdb, `incomingCalls/${currentUid}`)).catch(() => {});
         }
 
@@ -1227,7 +1604,7 @@ window.acceptIncomingCall = async function () {
         console.error('Accept call error:', error);
         showToast('Gagal menerima panggilan: ' + error.message);
         cleanupCallResources();
-        returnToChat(1000);
+        returnAfterCall(1000);
     }
 };
 
@@ -1251,12 +1628,12 @@ window.rejectIncomingCall = function (callData = incomingCallData) {
         }
     }
 
-    if (currentUid) {
+    if (currentUid && !isGuestUser) {
         remove(ref(rtdb, `incomingCalls/${currentUid}`)).catch(() => {});
     }
 
     incomingCallData = null;
-    returnToChat(500);
+    returnAfterCall(500);
 };
 
 window.endActiveCall = function (forcedStatus = null) {
@@ -1269,24 +1646,30 @@ window.endActiveCall = function (forcedStatus = null) {
 
     cleanupCallResources();
 
-    if (logDocId) {
+    if (logDocId && !isGuestUser) {
         const finalStatus = forcedStatus || (connected ? 'ended' : 'missed');
         updateCallLogMessage(logDocId, callType, finalStatus, duration);
     }
 
     if (callId) {
-        remove(ref(rtdb, `calls/${callId}`)).catch(() => {});
+        update(ref(rtdb, `calls/${callId}`), {
+            status: 'ended',
+            endedAt: Date.now()
+        }).catch(() => {});
+        setTimeout(() => {
+            remove(ref(rtdb, `calls/${callId}`)).catch(() => {});
+        }, 1200);
     }
 
     if (direction === 'caller' && activeChatUserId) {
         remove(ref(rtdb, `incomingCalls/${activeChatUserId}`)).catch(() => {});
     }
 
-    if (currentUid) {
+    if (currentUid && !isGuestUser) {
         remove(ref(rtdb, `incomingCalls/${currentUid}`)).catch(() => {});
     }
 
-    returnToChat(500);
+    returnAfterCall(500);
 };
 
 function cleanupCallResources() {
@@ -1303,6 +1686,11 @@ function cleanupCallResources() {
     if (unsubscribeCallRoom) {
         unsubscribeCallRoom();
         unsubscribeCallRoom = null;
+    }
+
+    if (unsubscribeGuestRoomWatch) {
+        unsubscribeGuestRoomWatch();
+        unsubscribeGuestRoomWatch = null;
     }
 
     if (unsubscribeRemoteCandidates) {
@@ -1373,7 +1761,7 @@ window.toggleCamera = function () {
 };
 
 function listenIncomingCallForPage() {
-    if (!currentUid) return;
+    if (!currentUid || isGuestUser) return;
     const incomingRef = ref(rtdb, `incomingCalls/${currentUid}`);
 
     if (unsubscribeIncomingCalls) unsubscribeIncomingCalls();
@@ -1385,14 +1773,14 @@ function listenIncomingCallForPage() {
             if (!isInCall) {
                 stopIncomingRingtone();
                 showToast('Panggilan dibatalkan atau sudah berakhir.');
-                returnToChat(800);
+                returnAfterCall(800);
             }
             return;
         }
 
         if (data.timestamp && Date.now() - data.timestamp > 60000) {
             remove(incomingRef).catch(() => {});
-            if (!isInCall) returnToChat(700);
+            if (!isInCall) returnAfterCall(700);
             return;
         }
 
@@ -1410,15 +1798,29 @@ function listenIncomingCallForPage() {
     });
 }
 
-async function initCallPage(user) {
+async function initCallPage(user, guestFlag = false) {
     currentUid = user.uid;
+    isGuestUser = guestFlag;
+
+    if (!isGuestUser) {
+        try {
+            myProfile = await fetchUserProfile(db, currentUid);
+            myUserName = myProfile.displayName || 'Mitra Sitenexs';
+            myIsVerified = Boolean(myProfile.isVerified);
+        } catch (e) {}
+    } else {
+        myUserName = 'Tamu Sitenexs';
+        myIsVerified = false;
+    }
+
+    // Jika dibuka melalui link panggilan (?roomId=...&guest=1)
+    if (modeParam === 'guest_link' && roomIdParam) {
+        initGuestShareLinkRoom(roomIdParam);
+        return;
+    }
 
     const participants = [currentUid, activeChatUserId].sort();
     activeChatId = `${participants[0]}_${participants[1]}`;
-
-    myProfile = await fetchUserProfile(db, currentUid);
-    myUserName = myProfile.displayName;
-    myIsVerified = myProfile.isVerified;
 
     otherProfile = await fetchUserProfile(db, activeChatUserId);
     otherUserName = otherProfile.displayName;
@@ -1436,13 +1838,26 @@ async function initCallPage(user) {
     }
 }
 
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async user => {
     if (user) {
-        initCallPage(user);
+        initCallPage(user, Boolean(user.isAnonymous));
     } else {
         const savedUid = localStorage.getItem('sitenexs_uid');
         if (savedUid) {
-            initCallPage({ uid: savedUid });
+            initCallPage({ uid: savedUid }, false);
+        } else if (isGuestLinkMode && roomIdParam) {
+            // Masuk langsung sebagai tamu tanpa perlu halaman sign-in
+            try {
+                const anonCred = await signInAnonymously(auth);
+                initCallPage(anonCred.user, true);
+            } catch (err) {
+                let guestId = sessionStorage.getItem('sitenexs_guest_uid');
+                if (!guestId) {
+                    guestId = `guest_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+                    sessionStorage.setItem('sitenexs_guest_uid', guestId);
+                }
+                initCallPage({ uid: guestId }, true);
+            }
         } else {
             window.location.replace('https://account.sitenexs.com/sign-in/');
         }
