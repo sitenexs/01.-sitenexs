@@ -208,19 +208,42 @@
             background: #fff;
         }
 
-        /* NAMA PENGIRIM DI DALAM BUBBLE CHAT */
+        /* NAMA PENGIRIM + CENTANG PNG DI DALAM BUBBLE CHAT */
+        .message-sender-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-bottom: 0.22rem;
+            line-height: 1.2;
+            max-width: 100%;
+        }
         .message-sender-name {
             font-size: 0.69rem;
             font-weight: 800;
-            margin-bottom: 0.22rem;
-            line-height: 1.2;
             letter-spacing: 0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .message-bubble.incoming .message-sender-name {
             color: var(--primary);
         }
         .message-bubble.outgoing .message-sender-name {
-            color: rgba(255, 255, 255, 0.92);
+            color: rgba(255, 255, 255, 0.94);
+        }
+        .message-sender-badges {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+        .message-sender-badges img,
+        .message-bubble-verif {
+            width: 13px;
+            height: 13px;
+            object-fit: contain;
+            display: inline-block;
+            vertical-align: middle;
         }
 
         .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); border-bottom-left-radius: 4px; }
@@ -462,7 +485,8 @@ import {
 
 import {
     fetchUserProfile,
-    getUserAvatarUrl
+    getUserAvatarUrl,
+    getUserBadgesHtml
 } from 'https://sitenexs.com/assets/js/sitenexs-user-data.js';
 
 import {
@@ -485,12 +509,14 @@ import {
 
 let currentUid = null;
 let myProfile = null;
-let myUserName = localStorage.getItem('sitenexs_display_name') || 'Mitra Sitenexs';
+let myUserName = '';
+let myBadgesHtml = '';
 
 let activeChatUserId = null;
 let activeChatId = null;
 let otherProfile = null;
-let otherUserName = 'Mitra Sitenexs';
+let otherUserName = '';
+let otherBadgesHtml = '';
 let otherUserFcmToken = null;
 
 let cleanupMessagesSync = null;
@@ -505,6 +531,18 @@ let lastTypingSoundAt = 0;
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
+
+function extractProfileName(profile, fallbackName = '') {
+    if (profile) {
+        const full = String(profile.namaLengkap || profile.displayName || '').trim();
+        const combined = [String(profile.firstName || '').trim(), String(profile.lastName || '').trim()]
+            .filter(Boolean)
+            .join(' ');
+        if (full) return full;
+        if (combined) return combined;
+    }
+    return String(fallbackName || '').trim();
+}
 
 function getChatCacheKey(chatId) {
     return `sitenexs_chat_cache_${chatId}`;
@@ -542,17 +580,26 @@ function getEarlyUid() {
     return localStorage.getItem('sitenexs_uid') || null;
 }
 
-function getSenderDisplayName(senderUid, fallbackName = null) {
-    if (senderUid === currentUid) {
-        return myUserName || fallbackName || 'Anda';
+function getSenderDisplayName(message, ownerUid = currentUid) {
+    const isOutgoing = message.senderUid === ownerUid;
+    if (isOutgoing) {
+        return myUserName || String(message.senderName || '').trim() || '';
     }
-    return otherUserName || fallbackName || 'Mitra Sitenexs';
+    return otherUserName || String(message.senderName || '').trim() || '';
+}
+
+function getSenderBadgesHtml(message, ownerUid = currentUid) {
+    const isOutgoing = message.senderUid === ownerUid;
+    if (isOutgoing) {
+        return myBadgesHtml || (message.senderIsVerified ? getUserBadgesHtml(true, { badgeClass: 'message-bubble-verif' }) : '');
+    }
+    return otherBadgesHtml || (message.senderIsVerified ? getUserBadgesHtml(true, { badgeClass: 'message-bubble-verif' }) : '');
 }
 
 function renderCachedMessagesImmediately(chatId, uid) {
     const messagesContainer = document.getElementById('chatMessages');
     const typingBubbleWrapper = document.getElementById('typingBubbleWrapper');
-    if (!messagesContainer || !chatId) return;
+    if (!messagesContainer || !chatId || !uid) return;
     try {
         const raw = localStorage.getItem(getChatCacheKey(chatId));
         if (!raw) return;
@@ -571,6 +618,7 @@ function renderCachedMessagesImmediately(chatId, uid) {
             const el = buildMessageElement(item.id, {
                 senderUid: item.senderUid,
                 senderName: item.senderName,
+                senderIsVerified: item.senderIsVerified,
                 text: item.text,
                 isEdited: item.isEdited,
                 status: isGreenPersisted ? 'read-green' : (item.status || 'sent'),
@@ -1068,6 +1116,28 @@ function renderMessageBody(text) {
     return escapeHtml(text).replace(/\n/g, '<br>');
 }
 
+function buildSenderHeaderElement(message, ownerUid = currentUid) {
+    const header = document.createElement('div');
+    header.className = 'message-sender-header';
+
+    const resolvedName = getSenderDisplayName(message, ownerUid);
+    const resolvedBadges = getSenderBadgesHtml(message, ownerUid);
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'message-sender-name';
+    nameSpan.textContent = resolvedName;
+
+    const badgesSpan = document.createElement('span');
+    badgesSpan.className = 'message-sender-badges';
+    badgesSpan.innerHTML = resolvedBadges;
+
+    header.append(nameSpan, badgesSpan);
+    if (!resolvedName && !resolvedBadges) {
+        header.style.display = 'none';
+    }
+    return header;
+}
+
 function buildMessageElement(docId, message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     const wrapper = document.createElement('div');
@@ -1077,9 +1147,7 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
     const bubble = document.createElement('div');
     bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
 
-    const senderLabel = document.createElement('div');
-    senderLabel.className = 'message-sender-name';
-    senderLabel.textContent = getSenderDisplayName(message.senderUid, message.senderName);
+    const senderHeader = buildSenderHeaderElement(message, ownerUid);
 
     const bodyDiv = document.createElement('div');
     bodyDiv.className = 'message-body';
@@ -1105,7 +1173,7 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
         metaRow.appendChild(statusSpan);
     }
 
-    bubble.append(senderLabel, bodyDiv, metaRow);
+    bubble.append(senderHeader, bodyDiv, metaRow);
     wrapper.appendChild(bubble);
     return wrapper;
 }
@@ -1118,13 +1186,24 @@ function updateMessageElement(wrapper, docId, message, ownerUid = currentUid) {
     if (bubble) {
         bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
 
-        let senderLabel = bubble.querySelector('.message-sender-name');
-        if (!senderLabel) {
-            senderLabel = document.createElement('div');
-            senderLabel.className = 'message-sender-name';
-            bubble.prepend(senderLabel);
+        const resolvedName = getSenderDisplayName(message, ownerUid);
+        const resolvedBadges = getSenderBadgesHtml(message, ownerUid);
+
+        let senderHeader = bubble.querySelector('.message-sender-header');
+        if (!senderHeader) {
+            senderHeader = buildSenderHeaderElement(message, ownerUid);
+            bubble.prepend(senderHeader);
+        } else {
+            const nameSpan = senderHeader.querySelector('.message-sender-name');
+            if (nameSpan) {
+                nameSpan.textContent = resolvedName;
+            }
+            const badgesSpan = senderHeader.querySelector('.message-sender-badges');
+            if (badgesSpan) {
+                badgesSpan.innerHTML = resolvedBadges;
+            }
+            senderHeader.style.display = (!resolvedName && !resolvedBadges) ? 'none' : 'inline-flex';
         }
-        senderLabel.textContent = getSenderDisplayName(message.senderUid, message.senderName);
     }
 
     const bodyDiv = wrapper.querySelector('.message-body');
@@ -1157,14 +1236,27 @@ function updateMessageElement(wrapper, docId, message, ownerUid = currentUid) {
     }
 }
 
-function refreshVisibleSenderNames() {
+function refreshVisibleSenderInfo() {
     const messagesContainer = document.getElementById('chatMessages');
     if (!messagesContainer) return;
     messagesContainer.querySelectorAll('.message-wrapper').forEach(wrapper => {
-        const senderLabel = wrapper.querySelector('.message-sender-name');
-        if (!senderLabel) return;
         const isOutgoing = wrapper.classList.contains('outgoing');
-        senderLabel.textContent = isOutgoing ? myUserName : otherUserName;
+        const senderHeader = wrapper.querySelector('.message-sender-header');
+        const nameSpan = wrapper.querySelector('.message-sender-name');
+        const badgesSpan = wrapper.querySelector('.message-sender-badges');
+
+        const nextName = isOutgoing ? myUserName : otherUserName;
+        const nextBadges = isOutgoing ? myBadgesHtml : otherBadgesHtml;
+
+        if (nameSpan && nextName) {
+            nameSpan.textContent = nextName;
+        }
+        if (badgesSpan) {
+            badgesSpan.innerHTML = nextBadges;
+        }
+        if (senderHeader) {
+            senderHeader.style.display = (!nameSpan?.textContent && !nextBadges) ? 'none' : 'inline-flex';
+        }
     });
 }
 
@@ -1190,7 +1282,7 @@ async function initChat(user) {
         rtdb,
         currentUid,
         callPageUrl: DEFAULT_CALL_PAGE_URL,
-        fallbackPeerName: otherUserName
+        fallbackPeerName: otherUserName || 'Mitra Sitenexs'
     });
 
     if (cleanupOngoingBanner) cleanupOngoingBanner();
@@ -1202,7 +1294,7 @@ async function initChat(user) {
         iconElement: document.getElementById('activeCallBannerIcon'),
         filterPeerUid: activeChatUserId,
         filterChatId: activeChatId,
-        fallbackPeerName: otherUserName,
+        fallbackPeerName: otherUserName || 'Mitra Sitenexs',
         callPageUrl: DEFAULT_CALL_PAGE_URL
     });
 
@@ -1285,7 +1377,7 @@ async function initChat(user) {
                             : String(msgData.text || 'Pesan baru');
 
                         triggerLocalSystemNotification(
-                            otherUserName,
+                            otherUserName || String(msgData.senderName || 'Pesan Baru'),
                             previewText,
                             {
                                 tag: `chat-${activeChatId}`,
@@ -1361,19 +1453,24 @@ async function initChat(user) {
 
     fetchUserProfile(db, currentUid).then(profile => {
         myProfile = profile;
-        myUserName = profile.displayName || myUserName || 'Mitra Sitenexs';
-        localStorage.setItem('sitenexs_display_name', myUserName);
-        refreshVisibleSenderNames();
+        myUserName = extractProfileName(profile, user.displayName);
+        myBadgesHtml = profile?.isVerified
+            ? getUserBadgesHtml(profile, { badgeClass: 'message-bubble-verif' })
+            : '';
+        refreshVisibleSenderInfo();
     }).catch(() => {});
 
     fetchUserProfile(db, activeChatUserId).then(profile => {
         otherProfile = profile;
-        otherUserName = profile.displayName || 'Mitra Sitenexs';
-        otherUserFcmToken = profile.fcmToken || null;
-        document.getElementById('activeChatBadges').innerHTML = profile.badgesHtml || '';
+        otherUserName = extractProfileName(profile);
+        otherBadgesHtml = profile?.isVerified
+            ? getUserBadgesHtml(profile, { badgeClass: 'message-bubble-verif' })
+            : '';
+        otherUserFcmToken = profile?.fcmToken || null;
+        document.getElementById('activeChatBadges').innerHTML = profile?.badgesHtml || '';
         document.getElementById('activeChatName').textContent = otherUserName;
-        document.getElementById('activeChatAvatar').src = profile.avatarUrl || getUserAvatarUrl(activeChatUserId);
-        refreshVisibleSenderNames();
+        document.getElementById('activeChatAvatar').src = profile?.avatarUrl || getUserAvatarUrl(activeChatUserId);
+        refreshVisibleSenderInfo();
     }).catch(() => {});
 
     registerPushServiceWorker().then(() => {
@@ -1429,6 +1526,8 @@ window.handleChatFormSubmit = async function (event) {
     try {
         const recipientUid = activeChatUserId;
         const chatDocRef = doc(db, 'chats', activeChatId);
+        const senderNameToSave = myUserName || extractProfileName(myProfile, auth.currentUser?.displayName);
+        const senderVerifiedToSave = Boolean(myProfile?.isVerified);
 
         await setDoc(chatDocRef, {
             participants: [currentUid, activeChatUserId],
@@ -1440,7 +1539,8 @@ window.handleChatFormSubmit = async function (event) {
 
         await addDoc(collection(db, 'chats', activeChatId, 'messages'), {
             senderUid: currentUid,
-            senderName: myUserName,
+            senderName: senderNameToSave,
+            senderIsVerified: senderVerifiedToSave,
             text,
             createdAt: serverTimestamp(),
             isEdited: false,
@@ -1456,7 +1556,7 @@ window.handleChatFormSubmit = async function (event) {
             db,
             recipientUid: activeChatUserId,
             cachedToken: otherUserFcmToken,
-            title: myUserName,
+            title: senderNameToSave || 'Pesan Baru',
             body: text,
             tag: `chat-${activeChatId}`,
             url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(currentUid)}`,
