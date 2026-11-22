@@ -306,8 +306,8 @@
         const CALL_PAGE_URL = 'https://sitenexs.com/community/messages/call/';
 
         let currentUid = null;
+        let isInitialized = false;
         let allConversationsData = [];
-        let activeChatIds = [];
         let unsubscribesMap = {};
         let presenceUnsubsMap = {};
         let fsPresenceUnsubsMap = {};
@@ -315,6 +315,7 @@
         let fsUserOnlineMap = {};
         let chatDocOnlineMap = {};
         let onlineStatusMap = {};
+        let unsubscribeConversations = null;
         let unsubscribeIncomingCalls = null;
         let unsubscribeMyPresence = null;
         let presenceHeartbeatInterval = null;
@@ -344,9 +345,9 @@
         }
 
         /* =====================================================
-           SISTEM KEHADIRAN REAL-TIME (MULTI-JALUR: RTDB + CHATS + USERS)
+           SISTEM KEHADIRAN REAL-TIME (RTDB + USERS TANPA LOOP CHATS)
         ===================================================== */
-        async function broadcastPresenceToAllChannels(uid, isOnline) {
+        function broadcastPresence(uid, isOnline) {
             if (!uid) return;
 
             const myStatusRef = ref(rtdb, `presence/${uid}`);
@@ -354,20 +355,13 @@
                 online: isOnline,
                 lastActive: serverTimestamp(),
                 page: 'messages'
-            }).catch((e) => console.warn('[Sitenexs Presence] RTDB write skipped:', e?.code || e));
+            }).catch(() => {});
 
             setDoc(doc(db, 'users', uid), {
                 isOnline: isOnline,
                 online: isOnline,
                 lastActive: fsServerTimestamp()
             }, { merge: true }).catch(() => {});
-
-            for (const chatId of activeChatIds) {
-                updateDoc(doc(db, 'chats', chatId), {
-                    [`online_${uid}`]: isOnline,
-                    [`lastActive_${uid}`]: fsServerTimestamp()
-                }).catch(() => {});
-            }
         }
 
         function setupMyPresence(uid) {
@@ -381,11 +375,11 @@
 
             const markOnline = () => {
                 if (document.visibilityState === 'hidden') return;
-                broadcastPresenceToAllChannels(uid, true);
+                broadcastPresence(uid, true);
             };
 
             const markOffline = () => {
-                broadcastPresenceToAllChannels(uid, false);
+                broadcastPresence(uid, false);
             };
 
             unsubscribeMyPresence = onValue(connectedRef, (snap) => {
@@ -395,7 +389,7 @@
                         lastActive: serverTimestamp()
                     }).then(markOnline).catch(markOnline);
                 }
-            });
+            }, () => {});
 
             markOnline();
 
@@ -414,7 +408,7 @@
                 if (document.visibilityState === 'visible') {
                     markOnline();
                 }
-            }, 25000);
+            }, 30000);
         }
 
         function syncCombinedOnlineState(otherUid) {
@@ -531,13 +525,20 @@
         }
 
         async function initInbox(uid) {
+            if (isInitialized && currentUid === uid) return;
+            isInitialized = true;
             currentUid = uid;
+
             setupMyPresence(uid);
             listenIncomingCallsAndForceRedirect(uid);
 
-            const myProfile = await fetchUserProfile(db, uid);
-            if (myProfile?.packageName) {
-                document.body.setAttribute('data-package', String(myProfile.packageName).toLowerCase());
+            try {
+                const myProfile = await fetchUserProfile(db, uid);
+                if (myProfile?.packageName) {
+                    document.body.setAttribute('data-package', String(myProfile.packageName).toLowerCase());
+                }
+            } catch (err) {
+                console.warn('Gagal memuat profil paket user:', err);
             }
 
             loadConversations(uid);
@@ -556,85 +557,93 @@
             }
         });
 
-        async function loadConversations(uid) {
+        function loadConversations(uid) {
             const listEl = document.getElementById('conversationsList');
             const q = query(collection(db, "chats"), where("participants", "array-contains", uid));
 
-            onSnapshot(q, async (snapshot) => {
-                if (snapshot.empty) {
-                    listEl.innerHTML = `
-                        <div style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted); font-size: 0.88rem;">
-                            <i class="far fa-comments fa-3x" style="color: var(--border-medium); margin-bottom: 1rem;"></i>
-                            <div style="font-weight: 750; color: var(--text-main); margin-bottom: 0.35rem; font-size: 1rem;">Belum ada percakapan</div>
-                            <div>Mulai kirim pesan dari profil anggota komunitas Sitenexs!</div>
-                        </div>`;
-                    document.getElementById('chatCountBadge').innerText = '0 Percakapan';
-                    updateGlobalUnreadBadge(0);
-                    return;
-                }
+            if (unsubscribeConversations) {
+                unsubscribeConversations();
+            }
 
-                const chatsMap = new Map();
-                const foundChatIds = [];
-                snapshot.forEach(docSnap => {
-                    foundChatIds.push(docSnap.id);
-                    const chatData = docSnap.data();
-                    if (!chatData.participants || !Array.isArray(chatData.participants)) return;
-
-                    const rawOtherUid = chatData.participants.find(p => String(p).trim() !== String(uid).trim());
-                    if (!rawOtherUid) return;
-                    const otherUid = String(rawOtherUid).trim();
-
-                    const currentMillis = chatData.lastTimestamp?.toMillis() || 0;
-                    const existing = chatsMap.get(otherUid);
-                    const existingMillis = existing?.lastTimestamp?.toMillis() || 0;
-
-                    if (!existing || currentMillis >= existingMillis) {
-                        chatsMap.set(otherUid, { id: docSnap.id, otherUid, ...chatData });
+            unsubscribeConversations = onSnapshot(q, async (snapshot) => {
+                try {
+                    if (snapshot.empty) {
+                        listEl.innerHTML = `
+                            <div style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted); font-size: 0.88rem;">
+                                <i class="far fa-comments fa-3x" style="color: var(--border-medium); margin-bottom: 1rem;"></i>
+                                <div style="font-weight: 750; color: var(--text-main); margin-bottom: 0.35rem; font-size: 1rem;">Belum ada percakapan</div>
+                                <div>Mulai kirim pesan dari profil anggota komunitas Sitenexs!</div>
+                            </div>`;
+                        document.getElementById('chatCountBadge').innerText = '0 Percakapan';
+                        updateGlobalUnreadBadge(0);
+                        return;
                     }
-                });
 
-                activeChatIds = foundChatIds;
-                if (document.visibilityState === 'visible') {
-                    broadcastPresenceToAllChannels(uid, true);
-                }
+                    const chatsMap = new Map();
+                    snapshot.forEach(docSnap => {
+                        const chatData = docSnap.data();
+                        if (!chatData.participants || !Array.isArray(chatData.participants)) return;
 
-                const chats = Array.from(chatsMap.values());
-                
-                allConversationsData = [];
-                for (const chat of chats) {
-                    const userProfile = await fetchUserProfile(db, chat.otherUid, {
-                        badgeClass: 'conv-verif'
+                        const rawOtherUid = chatData.participants.find(p => String(p).trim() !== String(uid).trim());
+                        if (!rawOtherUid) return;
+                        const otherUid = String(rawOtherUid).trim();
+
+                        const currentMillis = chatData.lastTimestamp?.toMillis?.() || 0;
+                        const existing = chatsMap.get(otherUid);
+                        const existingMillis = existing?.lastTimestamp?.toMillis?.() || 0;
+
+                        if (!existing || currentMillis >= existingMillis) {
+                            chatsMap.set(otherUid, { id: docSnap.id, otherUid, ...chatData });
+                        }
                     });
 
-                    const isPro = Boolean(userProfile.raw?.isPro) || Boolean(userProfile.raw?.lencanaKuning) || Boolean(userProfile.raw?.isLencanaKuning);
-                    let badgesHtml = userProfile.badgesHtml || '';
-                    if (isPro) {
-                        badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="conv-verif" alt="Pro" title="Lencana Pro" style="margin-left: 2px;">`;
-                    }
+                    const chats = Array.from(chatsMap.values());
 
-                    const isUnread = chat[`unread_${uid}`] === true;
-                    const isPinned = chat[`pinned_${uid}`] === true;
-                    const isArchived = chat[`archived_${uid}`] === true;
-                    const isMuted = chat[`muted_${uid}`] === true;
+                    const resolvedItems = await Promise.all(chats.map(async (chat) => {
+                        let userProfile = null;
+                        try {
+                            userProfile = await fetchUserProfile(db, chat.otherUid, {
+                                badgeClass: 'conv-verif'
+                            });
+                        } catch (e) {
+                            userProfile = {
+                                displayName: 'Mitra Sitenexs',
+                                avatarUrl: `https://ui-avatars.com/api/?name=Mitra&background=2563eb&color=fff`,
+                                badgesHtml: '',
+                                raw: {}
+                            };
+                        }
 
-                    if (userProfile.raw?.isOnline === true || userProfile.raw?.online === true) {
-                        fsUserOnlineMap[chat.otherUid] = true;
-                    }
-                    if (chat[`online_${chat.otherUid}`] === true) {
-                        chatDocOnlineMap[chat.otherUid] = true;
-                    }
+                        const isPro = Boolean(userProfile.raw?.isPro) || Boolean(userProfile.raw?.lencanaKuning) || Boolean(userProfile.raw?.isLencanaKuning);
+                        let badgesHtml = userProfile.badgesHtml || '';
+                        if (isPro) {
+                            badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="conv-verif" alt="Pro" title="Lencana Pro" style="margin-left: 2px;">`;
+                        }
 
-                    const combinedOnline = Boolean(rtdbOnlineMap[chat.otherUid]) ||
-                                           Boolean(fsUserOnlineMap[chat.otherUid]) ||
-                                           Boolean(chatDocOnlineMap[chat.otherUid]);
-                    onlineStatusMap[chat.otherUid] = combinedOnline;
+                        const isUnread = chat[`unread_${uid}`] === true;
+                        const isPinned = chat[`pinned_${uid}`] === true;
+                        const isArchived = chat[`archived_${uid}`] === true;
+                        const isMuted = chat[`muted_${uid}`] === true;
 
-                    if (!isArchived) {
-                        allConversationsData.push({
+                        if (userProfile.raw?.isOnline === true || userProfile.raw?.online === true) {
+                            fsUserOnlineMap[chat.otherUid] = true;
+                        }
+                        if (chat[`online_${chat.otherUid}`] === true) {
+                            chatDocOnlineMap[chat.otherUid] = true;
+                        }
+
+                        const combinedOnline = Boolean(rtdbOnlineMap[chat.otherUid]) ||
+                                               Boolean(fsUserOnlineMap[chat.otherUid]) ||
+                                               Boolean(chatDocOnlineMap[chat.otherUid]);
+                        onlineStatusMap[chat.otherUid] = combinedOnline;
+
+                        if (isArchived) return null;
+
+                        return {
                             chatId: chat.id,
                             otherUid: chat.otherUid,
-                            otherName: userProfile.displayName,
-                            avatarUrl: userProfile.avatarUrl,
+                            otherName: userProfile.displayName || 'Mitra Sitenexs',
+                            avatarUrl: userProfile.avatarUrl || `https://ui-avatars.com/api/?name=Mitra&background=2563eb&color=fff`,
                             badgesHtml: badgesHtml,
                             lastMessage: chat.lastMessage || 'Mulai percakapan...',
                             lastTimestamp: chat.lastTimestamp,
@@ -642,20 +651,41 @@
                             pinned: isPinned,
                             muted: isMuted,
                             isOnline: combinedOnline
-                        });
+                        };
+                    }));
+
+                    allConversationsData = resolvedItems.filter(Boolean);
+
+                    allConversationsData.sort((a, b) => {
+                        if (a.pinned !== b.pinned) return b.pinned - a.pinned;
+                        return (b.lastTimestamp?.toMillis?.() || 0) - (a.lastTimestamp?.toMillis?.() || 0);
+                    });
+
+                    document.getElementById('chatCountBadge').innerText = `${allConversationsData.length} Percakapan`;
+                    
+                    const keyword = document.getElementById('searchConversationInput')?.value.toLowerCase() || '';
+                    if (keyword) {
+                        filterConversations();
+                    } else {
+                        renderConversationsList(allConversationsData);
                     }
+
+                    updateGlobalUnreadCount();
+                    setupRealtimeSublisteners(chats, uid);
+                    listenOtherUsersPresence(allConversationsData.map(c => c.otherUid));
+                } catch (err) {
+                    console.error('Error memproses daftar percakapan:', err);
+                    listEl.innerHTML = `
+                        <div style="text-align: center; padding: 3rem 1rem; color: var(--danger); font-size: 0.88rem;">
+                            Gagal memuat daftar percakapan. Silakan muat ulang halaman.
+                        </div>`;
                 }
-
-                allConversationsData.sort((a, b) => {
-                    if (a.pinned !== b.pinned) return b.pinned - a.pinned;
-                    return (b.lastTimestamp?.toMillis() || 0) - (a.lastTimestamp?.toMillis() || 0);
-                });
-
-                document.getElementById('chatCountBadge').innerText = `${allConversationsData.length} Percakapan`;
-                renderConversationsList(allConversationsData);
-                updateGlobalUnreadCount();
-                setupRealtimeSublisteners(chats, uid);
-                listenOtherUsersPresence(allConversationsData.map(c => c.otherUid));
+            }, (error) => {
+                console.error('Firestore chats listener error:', error);
+                listEl.innerHTML = `
+                    <div style="text-align: center; padding: 3rem 1rem; color: var(--danger); font-size: 0.88rem;">
+                        Terjadi gangguan koneksi database.
+                    </div>`;
             });
         }
 
