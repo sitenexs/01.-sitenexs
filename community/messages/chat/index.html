@@ -208,19 +208,41 @@
             background: #fff;
         }
 
-        /* NAMA PENGIRIM DI DALAM BUBBLE CHAT */
+        /* NAMA PENGIRIM + CENTANG PNG DI DALAM BUBBLE CHAT */
+        .message-sender-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-bottom: 0.22rem;
+            line-height: 1.2;
+            max-width: 100%;
+        }
         .message-sender-name {
             font-size: 0.69rem;
             font-weight: 800;
-            margin-bottom: 0.22rem;
-            line-height: 1.2;
             letter-spacing: 0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .message-bubble.incoming .message-sender-name {
             color: var(--primary);
         }
         .message-bubble.outgoing .message-sender-name {
-            color: rgba(255, 255, 255, 0.92);
+            color: rgba(255, 255, 255, 0.94);
+        }
+        .message-sender-badges {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+        .message-sender-badges img {
+            width: 13px;
+            height: 13px;
+            object-fit: contain;
+            display: inline-block;
+            vertical-align: middle;
         }
 
         .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); border-bottom-left-radius: 4px; }
@@ -442,6 +464,7 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/fi
 
 import {
     doc,
+    getDoc,
     setDoc,
     updateDoc,
     collection,
@@ -485,12 +508,14 @@ import {
 
 let currentUid = null;
 let myProfile = null;
-let myUserName = localStorage.getItem('sitenexs_display_name') || 'Mitra Sitenexs';
+let myUserName = '';
+let myBadgesHtml = '';
 
 let activeChatUserId = null;
 let activeChatId = null;
 let otherProfile = null;
-let otherUserName = 'Mitra Sitenexs';
+let otherUserName = '';
+let otherBadgesHtml = '';
 let otherUserFcmToken = null;
 
 let cleanupMessagesSync = null;
@@ -505,6 +530,42 @@ let lastTypingSoundAt = 0;
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
+
+function isValidRealName(val) {
+    if (typeof val !== 'string') return false;
+    const t = val.trim();
+    if (!t) return false;
+    const lower = t.toLowerCase();
+    if (lower === 'mitra sitenexs' || lower === 'user' || lower === 'pengguna') return false;
+    // Hindari nilai yang hanya berupa UID acak panjang tanpa spasi jika ada nama asli
+    if (/^[A-Za-z0-9_-]{20,}$/.test(t)) return false;
+    return true;
+}
+
+function resolveRealName(candidates = []) {
+    for (const c of candidates) {
+        if (isValidRealName(c)) {
+            return c.trim();
+        }
+    }
+    return '';
+}
+
+function sanitizeBadgesHtml(rawHtml = '') {
+    if (!rawHtml || typeof rawHtml !== 'string') return '';
+    const temp = document.createElement('div');
+    temp.innerHTML = rawHtml;
+    const imgs = [...temp.querySelectorAll('img')];
+    return imgs
+        .map(img => {
+            const src = safeUrl(img.getAttribute('src') || '');
+            if (!src) return '';
+            const alt = escapeHtml(img.getAttribute('alt') || 'Verified');
+            return `<img src="${escapeHtml(src)}" alt="${alt}" loading="lazy">`;
+        })
+        .filter(Boolean)
+        .join('');
+}
 
 function getChatCacheKey(chatId) {
     return `sitenexs_chat_cache_${chatId}`;
@@ -542,27 +603,42 @@ function getEarlyUid() {
     return localStorage.getItem('sitenexs_uid') || null;
 }
 
-function getSenderDisplayName(senderUid, fallbackName = null) {
-    if (senderUid === currentUid) {
-        return myUserName || fallbackName || 'Anda';
+function getSenderDisplayName(message, ownerUid = currentUid) {
+    const isOutgoing = message.senderUid === ownerUid;
+    if (isOutgoing) {
+        return resolveRealName([myUserName, message.senderName, auth.currentUser?.displayName]);
     }
-    return otherUserName || fallbackName || 'Mitra Sitenexs';
+    return resolveRealName([otherUserName, message.senderName]);
+}
+
+function getSenderBadgesHtml(message, ownerUid = currentUid) {
+    const isOutgoing = message.senderUid === ownerUid;
+    if (isOutgoing) {
+        return myBadgesHtml || sanitizeBadgesHtml(message.senderBadgesHtml || '');
+    }
+    return otherBadgesHtml || sanitizeBadgesHtml(message.senderBadgesHtml || '');
 }
 
 function renderCachedMessagesImmediately(chatId, uid) {
     const messagesContainer = document.getElementById('chatMessages');
     const typingBubbleWrapper = document.getElementById('typingBubbleWrapper');
-    if (!messagesContainer || !chatId) return;
+    if (!messagesContainer || !chatId || !uid) return;
     try {
         const raw = localStorage.getItem(getChatCacheKey(chatId));
         if (!raw) return;
         const cachedList = JSON.parse(raw);
         if (!Array.isArray(cachedList) || cachedList.length === 0) return;
 
+        // Pastikan hanya pesan milik partisipan chat ini yang dirender dari cache
+        const validList = cachedList.filter(item =>
+            item &&
+            item.id &&
+            (item.senderUid === uid || item.senderUid === activeChatUserId)
+        );
+
         const greenIds = loadPersistedGreenReadIds(chatId);
 
-        cachedList.forEach(item => {
-            if (!item?.id) return;
+        validList.forEach(item => {
             if (messagesContainer.querySelector(`[data-msg-id="${CSS.escape(item.id)}"]`)) return;
             const fakeTimestamp = item.createdAtMs
                 ? { toDate: () => new Date(item.createdAtMs) }
@@ -571,6 +647,7 @@ function renderCachedMessagesImmediately(chatId, uid) {
             const el = buildMessageElement(item.id, {
                 senderUid: item.senderUid,
                 senderName: item.senderName,
+                senderBadgesHtml: item.senderBadgesHtml,
                 text: item.text,
                 isEdited: item.isEdited,
                 status: isGreenPersisted ? 'read-green' : (item.status || 'sent'),
@@ -594,11 +671,6 @@ if (!targetUserId) {
 } else {
     activeChatUserId = targetUserId;
     document.getElementById('activeChatAvatar').src = getUserAvatarUrl(activeChatUserId);
-    const earlyUid = getEarlyUid();
-    if (earlyUid) {
-        const earlyChatId = [earlyUid, activeChatUserId].sort().join('_');
-        renderCachedMessagesImmediately(earlyChatId, earlyUid);
-    }
 }
 
 window.showToast = function (msg) {
@@ -1068,6 +1140,28 @@ function renderMessageBody(text) {
     return escapeHtml(text).replace(/\n/g, '<br>');
 }
 
+function buildSenderHeaderElement(message, ownerUid = currentUid) {
+    const header = document.createElement('div');
+    header.className = 'message-sender-header';
+
+    const resolvedName = getSenderDisplayName(message, ownerUid);
+    const resolvedBadges = getSenderBadgesHtml(message, ownerUid);
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'message-sender-name';
+    nameSpan.textContent = resolvedName;
+
+    const badgesSpan = document.createElement('span');
+    badgesSpan.className = 'message-sender-badges';
+    badgesSpan.innerHTML = resolvedBadges;
+
+    header.append(nameSpan, badgesSpan);
+    if (!resolvedName && !resolvedBadges) {
+        header.style.display = 'none';
+    }
+    return header;
+}
+
 function buildMessageElement(docId, message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     const wrapper = document.createElement('div');
@@ -1077,9 +1171,7 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
     const bubble = document.createElement('div');
     bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
 
-    const senderLabel = document.createElement('div');
-    senderLabel.className = 'message-sender-name';
-    senderLabel.textContent = getSenderDisplayName(message.senderUid, message.senderName);
+    const senderHeader = buildSenderHeaderElement(message, ownerUid);
 
     const bodyDiv = document.createElement('div');
     bodyDiv.className = 'message-body';
@@ -1105,7 +1197,7 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
         metaRow.appendChild(statusSpan);
     }
 
-    bubble.append(senderLabel, bodyDiv, metaRow);
+    bubble.append(senderHeader, bodyDiv, metaRow);
     wrapper.appendChild(bubble);
     return wrapper;
 }
@@ -1118,13 +1210,24 @@ function updateMessageElement(wrapper, docId, message, ownerUid = currentUid) {
     if (bubble) {
         bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
 
-        let senderLabel = bubble.querySelector('.message-sender-name');
-        if (!senderLabel) {
-            senderLabel = document.createElement('div');
-            senderLabel.className = 'message-sender-name';
-            bubble.prepend(senderLabel);
+        const resolvedName = getSenderDisplayName(message, ownerUid);
+        const resolvedBadges = getSenderBadgesHtml(message, ownerUid);
+
+        let senderHeader = bubble.querySelector('.message-sender-header');
+        if (!senderHeader) {
+            senderHeader = buildSenderHeaderElement(message, ownerUid);
+            bubble.prepend(senderHeader);
+        } else {
+            const nameSpan = senderHeader.querySelector('.message-sender-name');
+            if (nameSpan) {
+                nameSpan.textContent = resolvedName;
+            }
+            const badgesSpan = senderHeader.querySelector('.message-sender-badges');
+            if (badgesSpan) {
+                badgesSpan.innerHTML = resolvedBadges;
+            }
+            senderHeader.style.display = (!resolvedName && !resolvedBadges) ? 'none' : 'inline-flex';
         }
-        senderLabel.textContent = getSenderDisplayName(message.senderUid, message.senderName);
     }
 
     const bodyDiv = wrapper.querySelector('.message-body');
@@ -1157,15 +1260,47 @@ function updateMessageElement(wrapper, docId, message, ownerUid = currentUid) {
     }
 }
 
-function refreshVisibleSenderNames() {
+function refreshVisibleSenderInfo() {
     const messagesContainer = document.getElementById('chatMessages');
     if (!messagesContainer) return;
     messagesContainer.querySelectorAll('.message-wrapper').forEach(wrapper => {
-        const senderLabel = wrapper.querySelector('.message-sender-name');
-        if (!senderLabel) return;
         const isOutgoing = wrapper.classList.contains('outgoing');
-        senderLabel.textContent = isOutgoing ? myUserName : otherUserName;
+        const senderHeader = wrapper.querySelector('.message-sender-header');
+        const nameSpan = wrapper.querySelector('.message-sender-name');
+        const badgesSpan = wrapper.querySelector('.message-sender-badges');
+
+        const nextName = isOutgoing
+            ? resolveRealName([myUserName, auth.currentUser?.displayName])
+            : resolveRealName([otherUserName]);
+        const nextBadges = isOutgoing ? myBadgesHtml : otherBadgesHtml;
+
+        if (nameSpan && nextName) {
+            nameSpan.textContent = nextName;
+        }
+        if (badgesSpan) {
+            badgesSpan.innerHTML = nextBadges;
+        }
+        if (senderHeader) {
+            senderHeader.style.display = (!nameSpan?.textContent && !nextBadges) ? 'none' : 'inline-flex';
+        }
     });
+}
+
+async function loadDirectUserDocFallback(uid) {
+    if (!uid) return null;
+    try {
+        const snap = await getDoc(doc(db, 'users', uid));
+        if (!snap.exists()) return null;
+        const d = snap.data() || {};
+        return {
+            displayName: resolveRealName([d.displayName, d.fullName, d.name, d.username]),
+            badgesHtml: sanitizeBadgesHtml(d.badgesHtml || ''),
+            avatarUrl: d.avatarUrl || d.photoURL || getUserAvatarUrl(uid),
+            fcmToken: d.fcmToken || null
+        };
+    } catch (e) {
+        return null;
+    }
 }
 
 /* =====================================================
@@ -1177,6 +1312,24 @@ async function initChat(user) {
     if (isChatInitialized && currentUid === user.uid) return;
     isChatInitialized = true;
     currentUid = user.uid;
+
+    const cachedOwnName = resolveRealName([
+        user.displayName,
+        localStorage.getItem(`sitenexs_name_${currentUid}`),
+        localStorage.getItem('sitenexs_display_name')
+    ]);
+    if (cachedOwnName) {
+        myUserName = cachedOwnName;
+        localStorage.setItem(`sitenexs_name_${currentUid}`, myUserName);
+    }
+
+    const cachedPeerName = resolveRealName([
+        localStorage.getItem(`sitenexs_name_${activeChatUserId}`)
+    ]);
+    if (cachedPeerName) {
+        otherUserName = cachedPeerName;
+        document.getElementById('activeChatName').textContent = otherUserName;
+    }
 
     updateNotificationUIState();
 
@@ -1190,7 +1343,7 @@ async function initChat(user) {
         rtdb,
         currentUid,
         callPageUrl: DEFAULT_CALL_PAGE_URL,
-        fallbackPeerName: otherUserName
+        fallbackPeerName: otherUserName || ''
     });
 
     if (cleanupOngoingBanner) cleanupOngoingBanner();
@@ -1202,7 +1355,7 @@ async function initChat(user) {
         iconElement: document.getElementById('activeCallBannerIcon'),
         filterPeerUid: activeChatUserId,
         filterChatId: activeChatId,
-        fallbackPeerName: otherUserName,
+        fallbackPeerName: otherUserName || '',
         callPageUrl: DEFAULT_CALL_PAGE_URL
     });
 
@@ -1240,6 +1393,11 @@ async function initChat(user) {
         onAddedItem: (msgId, msgData, docSnap) => {
             if (typingBubbleWrapper && messagesContainer) {
                 messagesContainer.appendChild(typingBubbleWrapper);
+            }
+
+            if (msgData.senderUid !== currentUid && isValidRealName(msgData.senderName) && !otherUserName) {
+                otherUserName = msgData.senderName.trim();
+                document.getElementById('activeChatName').textContent = otherUserName;
             }
 
             if (msgData.senderUid === currentUid) {
@@ -1284,8 +1442,9 @@ async function initChat(user) {
                             ? 'Mengirim lamaran kerja baru'
                             : String(msgData.text || 'Pesan baru');
 
+                        const notifTitle = resolveRealName([otherUserName, msgData.senderName]) || 'Pesan Masuk';
                         triggerLocalSystemNotification(
-                            otherUserName,
+                            notifTitle,
                             previewText,
                             {
                                 tag: `chat-${activeChatId}`,
@@ -1359,22 +1518,69 @@ async function initChat(user) {
         [`unread_${currentUid}`]: false
     }).catch(() => {});
 
-    fetchUserProfile(db, currentUid).then(profile => {
-        myProfile = profile;
-        myUserName = profile.displayName || myUserName || 'Mitra Sitenexs';
-        localStorage.setItem('sitenexs_display_name', myUserName);
-        refreshVisibleSenderNames();
-    }).catch(() => {});
+    fetchUserProfile(db, currentUid).then(async profile => {
+        const directFallback = await loadDirectUserDocFallback(currentUid);
+        myProfile = { ...directFallback, ...profile };
+        const resolvedMine = resolveRealName([
+            profile?.displayName,
+            profile?.fullName,
+            profile?.name,
+            directFallback?.displayName,
+            user?.displayName,
+            myUserName
+        ]);
+        if (resolvedMine) {
+            myUserName = resolvedMine;
+            localStorage.setItem(`sitenexs_name_${currentUid}`, myUserName);
+        }
+        myBadgesHtml = sanitizeBadgesHtml(profile?.badgesHtml || directFallback?.badgesHtml || myBadgesHtml);
+        if (myBadgesHtml) localStorage.setItem('sitenexs_badges_html', myBadgesHtml);
+        refreshVisibleSenderInfo();
+    }).catch(async () => {
+        const directFallback = await loadDirectUserDocFallback(currentUid);
+        if (directFallback?.displayName) {
+            myUserName = directFallback.displayName;
+            localStorage.setItem(`sitenexs_name_${currentUid}`, myUserName);
+        }
+        if (directFallback?.badgesHtml) {
+            myBadgesHtml = directFallback.badgesHtml;
+        }
+        refreshVisibleSenderInfo();
+    });
 
-    fetchUserProfile(db, activeChatUserId).then(profile => {
-        otherProfile = profile;
-        otherUserName = profile.displayName || 'Mitra Sitenexs';
-        otherUserFcmToken = profile.fcmToken || null;
-        document.getElementById('activeChatBadges').innerHTML = profile.badgesHtml || '';
-        document.getElementById('activeChatName').textContent = otherUserName;
-        document.getElementById('activeChatAvatar').src = profile.avatarUrl || getUserAvatarUrl(activeChatUserId);
-        refreshVisibleSenderNames();
-    }).catch(() => {});
+    fetchUserProfile(db, activeChatUserId).then(async profile => {
+        const directFallback = await loadDirectUserDocFallback(activeChatUserId);
+        otherProfile = { ...directFallback, ...profile };
+        const resolvedOther = resolveRealName([
+            profile?.displayName,
+            profile?.fullName,
+            profile?.name,
+            directFallback?.displayName,
+            otherUserName
+        ]);
+        if (resolvedOther) {
+            otherUserName = resolvedOther;
+            localStorage.setItem(`sitenexs_name_${activeChatUserId}`, otherUserName);
+            document.getElementById('activeChatName').textContent = otherUserName;
+        }
+        otherBadgesHtml = sanitizeBadgesHtml(profile?.badgesHtml || directFallback?.badgesHtml || '');
+        otherUserFcmToken = profile?.fcmToken || directFallback?.fcmToken || null;
+        document.getElementById('activeChatBadges').innerHTML = otherBadgesHtml;
+        document.getElementById('activeChatAvatar').src = profile?.avatarUrl || directFallback?.avatarUrl || getUserAvatarUrl(activeChatUserId);
+        refreshVisibleSenderInfo();
+    }).catch(async () => {
+        const directFallback = await loadDirectUserDocFallback(activeChatUserId);
+        if (directFallback?.displayName) {
+            otherUserName = directFallback.displayName;
+            localStorage.setItem(`sitenexs_name_${activeChatUserId}`, otherUserName);
+            document.getElementById('activeChatName').textContent = otherUserName;
+        }
+        if (directFallback?.badgesHtml) {
+            otherBadgesHtml = directFallback.badgesHtml;
+            document.getElementById('activeChatBadges').innerHTML = otherBadgesHtml;
+        }
+        refreshVisibleSenderInfo();
+    });
 
     registerPushServiceWorker().then(() => {
         listenForegroundMessages(app, ({ title, body, tag, icon, url }) => {
@@ -1429,6 +1635,8 @@ window.handleChatFormSubmit = async function (event) {
     try {
         const recipientUid = activeChatUserId;
         const chatDocRef = doc(db, 'chats', activeChatId);
+        const senderNameToSave = resolveRealName([myUserName, auth.currentUser?.displayName]);
+        const senderBadgesToSave = sanitizeBadgesHtml(myBadgesHtml);
 
         await setDoc(chatDocRef, {
             participants: [currentUid, activeChatUserId],
@@ -1440,7 +1648,8 @@ window.handleChatFormSubmit = async function (event) {
 
         await addDoc(collection(db, 'chats', activeChatId, 'messages'), {
             senderUid: currentUid,
-            senderName: myUserName,
+            senderName: senderNameToSave,
+            senderBadgesHtml: senderBadgesToSave,
             text,
             createdAt: serverTimestamp(),
             isEdited: false,
@@ -1456,7 +1665,7 @@ window.handleChatFormSubmit = async function (event) {
             db,
             recipientUid: activeChatUserId,
             cachedToken: otherUserFcmToken,
-            title: myUserName,
+            title: senderNameToSave || 'Pesan Baru',
             body: text,
             tag: `chat-${activeChatId}`,
             url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(currentUid)}`,
