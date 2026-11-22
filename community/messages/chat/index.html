@@ -24,6 +24,8 @@
             --primary-light: #eff6ff;
             --accent: #10b981;
             --danger: #ef4444;
+            --check-blue: #38bdf8;
+            --check-yellow: #facc15;
             --bg-body: #f8fafc;
             --bg-card: #ffffff;
             --text-main: #0f172a;
@@ -199,6 +201,23 @@
         .message-wrapper.incoming { align-items: flex-start; }
         .message-wrapper.outgoing { align-items: flex-end; }
 
+        /* NAMA KECIL DI ATAS CHAT */
+        .message-sender-name {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 0.2rem;
+            padding: 0 0.25rem;
+            max-width: 82%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+        .message-wrapper.outgoing .message-sender-name {
+            text-align: right;
+        }
+
         .message-bubble {
             max-width: 82%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
             line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
@@ -212,12 +231,12 @@
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 0.35rem;
+            gap: 0.3rem;
             margin-top: 0.32rem;
         }
         .message-time { font-size: 0.65rem; opacity: 0.78; font-weight: 500; }
 
-        /* INDIKATOR CENTANG PANJANG & RAPI */
+        /* INDIKATOR CENTANG KECIL & RAPI (1 CENTANG, 2 CENTANG, 2 CENTANG BIRU / KUNING) */
         .msg-check-svg {
             display: inline-flex;
             align-items: center;
@@ -228,11 +247,16 @@
             color: rgba(255, 255, 255, 0.72);
         }
         .msg-check-svg.delivered {
-            color: rgba(255, 255, 255, 0.96);
+            color: rgba(255, 255, 255, 0.94);
         }
-        .msg-check-svg.read {
-            color: #4ade80;
-            filter: drop-shadow(0 0 3px rgba(74, 222, 128, 0.45));
+        .msg-check-svg.read,
+        .msg-check-svg.read-blue {
+            color: var(--check-blue);
+            filter: drop-shadow(0 0 2px rgba(56, 189, 248, 0.35));
+        }
+        .msg-check-svg.read-yellow {
+            color: var(--check-yellow);
+            filter: drop-shadow(0 0 2px rgba(250, 204, 21, 0.35));
         }
 
         /* BUBBLE ANIMASI MENGETIK DI BAWAH CHAT TERAKHIR */
@@ -337,6 +361,7 @@
             .container { max-width: 100%; height: 100svh; max-height: none; }
             .chat-wrapper { border: none; border-radius: 0; height: 100%; }
             .message-bubble { max-width: 88%; }
+            .message-sender-name { max-width: 88%; }
         }
     </style>
 </head>
@@ -488,6 +513,12 @@ function getEarlyUid() {
     return localStorage.getItem('sitenexs_uid') || null;
 }
 
+function getSenderDisplayName(senderUid, fallbackName = null) {
+    if (fallbackName) return fallbackName;
+    if (senderUid === currentUid) return myUserName || 'Anda';
+    return otherUserName || 'Mitra Sitenexs';
+}
+
 function renderCachedMessagesImmediately(chatId, uid) {
     const messagesContainer = document.getElementById('chatMessages');
     const typingBubbleWrapper = document.getElementById('typingBubbleWrapper');
@@ -506,9 +537,11 @@ function renderCachedMessagesImmediately(chatId, uid) {
                 : null;
             const el = buildMessageElement(item.id, {
                 senderUid: item.senderUid,
+                senderName: item.senderName,
                 text: item.text,
                 isEdited: item.isEdited,
                 status: item.status || 'sent',
+                checkColor: item.checkColor || 'blue',
                 delivered: Boolean(item.delivered),
                 read: Boolean(item.read),
                 createdAt: fakeTimestamp
@@ -775,11 +808,15 @@ function renderOtherTypingIndicator(isTyping) {
 }
 
 /* =====================================================
-   STATUS CENTANG PESAN (1 CENTANG, 2 CENTANG, 2 CENTANG HIJAU)
+   STATUS CENTANG PESAN (KECIL & RAPI: 1 CENTANG, 2 CENTANG, 2 CENTANG BIRU / KUNING)
 ===================================================== */
 function getMessageCheckStatus(message) {
-    if (message?.read === true || message?.status === 'read') {
-        return 'read';
+    const isRead = message?.read === true || message?.status === 'read' || message?.status === 'read-blue' || message?.status === 'read-yellow';
+    if (isRead) {
+        if (message?.checkColor === 'yellow' || message?.status === 'read-yellow') {
+            return 'read-yellow';
+        }
+        return 'read-blue';
     }
     if (message?.delivered === true || message?.status === 'delivered') {
         return 'delivered';
@@ -788,12 +825,22 @@ function getMessageCheckStatus(message) {
 }
 
 function renderCheckmarkHtml(statusKey) {
-    if (statusKey === 'read') {
+    if (statusKey === 'read-yellow') {
         return `
-            <span class="msg-check-svg read" title="Dibaca">
-                <svg width="22" height="14" viewBox="0 0 24 14" fill="none">
-                    <path d="M1.5 7.5L5.8 11.8L13.5 2.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M8.5 7.5L12.8 11.8L22.2 2.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+            <span class="msg-check-svg read-yellow" title="Dibaca (Centang Kuning)">
+                <svg width="15" height="10" viewBox="0 0 20 12" fill="none">
+                    <path d="M1.5 6.2L5.2 9.9L11.5 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M7.5 6.2L11.2 9.9L18.5 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+        `;
+    }
+    if (statusKey === 'read-blue' || statusKey === 'read') {
+        return `
+            <span class="msg-check-svg read-blue" title="Dibaca (Centang Biru)">
+                <svg width="15" height="10" viewBox="0 0 20 12" fill="none">
+                    <path d="M1.5 6.2L5.2 9.9L11.5 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M7.5 6.2L11.2 9.9L18.5 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </span>
         `;
@@ -801,17 +848,17 @@ function renderCheckmarkHtml(statusKey) {
     if (statusKey === 'delivered') {
         return `
             <span class="msg-check-svg delivered" title="Terkirim ke pengguna">
-                <svg width="22" height="14" viewBox="0 0 24 14" fill="none">
-                    <path d="M1.5 7.5L5.8 11.8L13.5 2.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M8.5 7.5L12.8 11.8L22.2 2.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+                <svg width="15" height="10" viewBox="0 0 20 12" fill="none">
+                    <path d="M1.5 6.2L5.2 9.9L11.5 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M7.5 6.2L11.2 9.9L18.5 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </span>
         `;
     }
     return `
-        <span class="msg-check-svg sent" title="Terkirim ke database">
-            <svg width="16" height="14" viewBox="0 0 18 14" fill="none">
-                <path d="M2 7.5L6.8 11.8L16 2.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+        <span class="msg-check-svg sent" title="Terkirim">
+            <svg width="12" height="10" viewBox="0 0 15 12" fill="none">
+                <path d="M1.8 6.2L5.8 9.9L13.2 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </span>
     `;
@@ -972,6 +1019,10 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
     wrapper.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
     wrapper.dataset.msgId = docId;
 
+    const senderLabel = document.createElement('div');
+    senderLabel.className = 'message-sender-name';
+    senderLabel.textContent = getSenderDisplayName(message.senderUid, message.senderName);
+
     const bubble = document.createElement('div');
     bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
 
@@ -996,13 +1047,21 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
     }
 
     bubble.append(bodyDiv, metaRow);
-    wrapper.appendChild(bubble);
+    wrapper.append(senderLabel, bubble);
     return wrapper;
 }
 
 function updateMessageElement(wrapper, _docId, message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     wrapper.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
+
+    let senderLabel = wrapper.querySelector('.message-sender-name');
+    if (!senderLabel) {
+        senderLabel = document.createElement('div');
+        senderLabel.className = 'message-sender-name';
+        wrapper.prepend(senderLabel);
+    }
+    senderLabel.textContent = getSenderDisplayName(message.senderUid, message.senderName);
 
     const bubble = wrapper.querySelector('.message-bubble');
     if (bubble) {
@@ -1033,6 +1092,17 @@ function updateMessageElement(wrapper, _docId, message, ownerUid = currentUid) {
             statusSlot.remove();
         }
     }
+}
+
+function refreshVisibleSenderNames() {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (!messagesContainer) return;
+    messagesContainer.querySelectorAll('.message-wrapper').forEach(wrapper => {
+        const senderLabel = wrapper.querySelector('.message-sender-name');
+        if (!senderLabel) return;
+        const isOutgoing = wrapper.classList.contains('outgoing');
+        senderLabel.textContent = isOutgoing ? myUserName : otherUserName;
+    });
 }
 
 /* =====================================================
@@ -1122,6 +1192,9 @@ async function initChat(user) {
                 if (isPageVisible && msgData.read !== true) {
                     updates.read = true;
                     updates.status = 'read';
+                    if (!updates.checkColor && !msgData.checkColor) {
+                        updates.checkColor = 'blue';
+                    }
                 }
 
                 if (Object.keys(updates).length > 0 && docSnap?.ref) {
@@ -1170,6 +1243,9 @@ async function initChat(user) {
                 if (isPageVisible && msgData.read !== true) {
                     updates.read = true;
                     updates.status = 'read';
+                    if (!updates.checkColor && !msgData.checkColor) {
+                        updates.checkColor = 'blue';
+                    }
                 }
                 if (Object.keys(updates).length > 0 && docSnap?.ref) {
                     updateDoc(docSnap.ref, updates).catch(() => {});
@@ -1188,7 +1264,8 @@ async function initChat(user) {
                             updateDoc(docSnap.ref, {
                                 delivered: true,
                                 read: true,
-                                status: 'read'
+                                status: 'read',
+                                checkColor: m.checkColor || 'blue'
                             }).catch(() => {});
                         }
                     }
@@ -1207,6 +1284,7 @@ async function initChat(user) {
     fetchUserProfile(db, currentUid).then(profile => {
         myProfile = profile;
         myUserName = profile.displayName || 'Mitra Sitenexs';
+        refreshVisibleSenderNames();
     }).catch(() => {});
 
     fetchUserProfile(db, activeChatUserId).then(profile => {
@@ -1216,6 +1294,7 @@ async function initChat(user) {
         document.getElementById('activeChatBadges').innerHTML = profile.badgesHtml || '';
         document.getElementById('activeChatName').textContent = otherUserName;
         document.getElementById('activeChatAvatar').src = profile.avatarUrl || getUserAvatarUrl(activeChatUserId);
+        refreshVisibleSenderNames();
     }).catch(() => {});
 
     registerPushServiceWorker().then(() => {
@@ -1282,10 +1361,12 @@ window.handleChatFormSubmit = async function (event) {
 
         await addDoc(collection(db, 'chats', activeChatId, 'messages'), {
             senderUid: currentUid,
+            senderName: myUserName,
             text,
             createdAt: serverTimestamp(),
             isEdited: false,
             status: 'sent',
+            checkColor: 'blue',
             delivered: false,
             read: false
         });
