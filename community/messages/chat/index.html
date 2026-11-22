@@ -186,15 +186,10 @@
         .message-wrapper.incoming { align-items: flex-start; }
         .message-wrapper.outgoing { align-items: flex-end; }
 
-        @keyframes messageSlideIn {
-            from { opacity: 0; transform: translateY(14px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
         .message-bubble {
             max-width: 82%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
             line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-            animation: messageSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; background: #fff;
+            background: #fff;
         }
 
         .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); border-bottom-left-radius: 4px; }
@@ -285,7 +280,7 @@
                     <img id="activeChatAvatar" src="" class="chat-header-avatar" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
                     <div class="chat-header-info">
                         <div class="chat-header-name-row">
-                            <div class="chat-header-name" id="activeChatName">Memuat...</div>
+                            <div class="chat-header-name" id="activeChatName"></div>
                             <div id="activeChatBadges" style="display: inline-flex; align-items: center; gap: 2px;"></div>
                         </div>
                     </div>
@@ -317,12 +312,7 @@
             </div>
 
             <!-- ISI PESAN -->
-            <div class="chat-messages" id="chatMessages">
-                <div id="loadingState" style="text-align: center; margin: auto; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
-                    <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom: 0.75rem;"></i>
-                    <div>Memuat pesan...</div>
-                </div>
-            </div>
+            <div class="chat-messages" id="chatMessages"></div>
 
             <!-- INPUT PESAN BAWAH -->
             <form class="chat-input-box" id="sendMessageForm" onsubmit="handleChatFormSubmit(event)" autocomplete="off">
@@ -390,6 +380,7 @@ let cleanupOngoingBanner = null;
 let isInitialMessagesLoad = true;
 let lastNotifiedMessageId = null;
 let isRedirectingToCall = false;
+let isChatInitialized = false;
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
@@ -398,6 +389,7 @@ if (!targetUserId) {
     window.location.replace('https://sitenexs.com/community/messages/');
 } else {
     activeChatUserId = targetUserId;
+    document.getElementById('activeChatAvatar').src = getUserAvatarUrl(activeChatUserId);
 }
 
 window.showToast = function (msg) {
@@ -684,23 +676,59 @@ function renderMessageBody(text) {
     return escapeHtml(text).replace(/\n/g, '<br>');
 }
 
+function buildMessageElement(docId, message) {
+    const isOutgoing = message.senderUid === currentUid;
+    const wrapper = document.createElement('div');
+    wrapper.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
+    wrapper.dataset.msgId = docId;
+
+    const bubble = document.createElement('div');
+    bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
+
+    const bodyDiv = document.createElement('div');
+    bodyDiv.className = 'message-body';
+    bodyDiv.innerHTML = renderMessageBody(message.text || '');
+
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'message-time';
+    timeDiv.textContent = formatMessageTime(message.createdAt);
+
+    bubble.append(bodyDiv, timeDiv);
+    wrapper.appendChild(bubble);
+    return wrapper;
+}
+
+function updateMessageElement(wrapper, message) {
+    const isOutgoing = message.senderUid === currentUid;
+    wrapper.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
+
+    const bubble = wrapper.querySelector('.message-bubble');
+    if (bubble) {
+        bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
+    }
+
+    const bodyDiv = wrapper.querySelector('.message-body');
+    if (bodyDiv) {
+        bodyDiv.innerHTML = renderMessageBody(message.text || '');
+    }
+
+    const timeDiv = wrapper.querySelector('.message-time');
+    if (timeDiv) {
+        timeDiv.textContent = formatMessageTime(message.createdAt);
+    }
+}
+
 /* =====================================================
-   INITIALIZE CHAT
+   INITIALIZE CHAT (TANPA LOADING / KEDIP)
 ===================================================== */
 
 async function initChat(user) {
+    if (!user?.uid) return;
+    if (isChatInitialized && currentUid === user.uid) return;
+    isChatInitialized = true;
     currentUid = user.uid;
 
     updateNotificationUIState();
-    await registerPushServiceWorker();
-    listenForegroundMessages(app, ({ title, body, tag, icon, url }) => {
-        if (document.visibilityState === 'hidden') {
-            triggerLocalSystemNotification(title, body, { tag, icon, url });
-        }
-    });
-    if ('Notification' in window && Notification.permission === 'granted') {
-        refreshFcmToken();
-    }
 
     const participants = [currentUid, activeChatUserId].sort();
     activeChatId = `${participants[0]}_${participants[1]}`;
@@ -712,23 +740,6 @@ async function initChat(user) {
         callPageUrl: DEFAULT_CALL_PAGE_URL,
         fallbackPeerName: otherUserName
     });
-
-    try {
-        await updateDoc(doc(db, 'chats', activeChatId), {
-            [`unread_${currentUid}`]: false
-        });
-    } catch (error) {}
-
-    myProfile = await fetchUserProfile(db, currentUid);
-    myUserName = myProfile.displayName;
-
-    otherProfile = await fetchUserProfile(db, activeChatUserId);
-    otherUserName = otherProfile.displayName;
-    otherUserFcmToken = otherProfile.fcmToken;
-
-    document.getElementById('activeChatBadges').innerHTML = otherProfile.badgesHtml;
-    document.getElementById('activeChatName').textContent = otherUserName;
-    document.getElementById('activeChatAvatar').src = otherProfile.avatarUrl;
 
     if (cleanupOngoingBanner) cleanupOngoingBanner();
     cleanupOngoingBanner = attachOngoingCallBanner({
@@ -751,73 +762,105 @@ async function initChat(user) {
     }
 
     isInitialMessagesLoad = true;
+    const messagesContainer = document.getElementById('chatMessages');
+    messagesContainer.innerHTML = '';
 
     unsubscribeMessages = onSnapshot(qMsgs, snapshot => {
-        const messagesContainer = document.getElementById('chatMessages');
+        let shouldScrollBottom = false;
+        const nearBottom = (messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight) < 120;
 
-        const loadingState = document.getElementById('loadingState');
-        if (loadingState) loadingState.remove();
+        snapshot.docChanges().forEach(change => {
+            const msgId = change.doc.id;
+            const msgData = change.doc.data();
+            const existingEl = messagesContainer.querySelector(`[data-msg-id="${msgId}"]`);
 
-        let html = '';
-
-        snapshot.forEach(docSnap => {
-            const message = docSnap.data();
-            const isOutgoing = message.senderUid === currentUid;
-
-            html += `
-                <div class="message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}">
-                    <div class="message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}">
-                        ${renderMessageBody(message.text || '')}
-                        <div class="message-time">${formatMessageTime(message.createdAt)}</div>
-                    </div>
-                </div>
-            `;
-        });
-
-        messagesContainer.innerHTML = html;
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-        if (!isInitialMessagesLoad) {
-            snapshot.docChanges().forEach(change => {
-                if (change.type === 'added') {
-                    const msgData = change.doc.data();
-                    const msgId = change.doc.id;
-                    if (
-                        msgData.senderUid !== currentUid &&
-                        lastNotifiedMessageId !== msgId &&
-                        !String(msgData.text || '').startsWith('[CALL_LOG]|')
-                    ) {
-                        lastNotifiedMessageId = msgId;
-
-                        if (document.visibilityState === 'visible') {
-                            updateDoc(doc(db, 'chats', activeChatId), {
-                                [`unread_${currentUid}`]: false
-                            }).catch(() => {});
-                            playMessageNotificationSound();
-                        } else {
-                            const previewText = String(msgData.text || '').includes('📋 *LAMARAN KERJA BARU*')
-                                ? 'Mengirim lamaran kerja baru'
-                                : String(msgData.text || 'Pesan baru');
-
-                            triggerLocalSystemNotification(
-                                otherUserName,
-                                previewText,
-                                {
-                                    tag: `chat-${activeChatId}`,
-                                    icon: otherProfile?.avatarUrl || getUserAvatarUrl(activeChatUserId),
-                                    url: window.location.href
-                                }
-                            );
-                        }
+            if (change.type === 'added') {
+                if (!existingEl) {
+                    const el = buildMessageElement(msgId, msgData);
+                    messagesContainer.appendChild(el);
+                    if (msgData.senderUid === currentUid || isInitialMessagesLoad || nearBottom) {
+                        shouldScrollBottom = true;
                     }
                 }
-            });
+            } else if (change.type === 'modified') {
+                if (existingEl) {
+                    updateMessageElement(existingEl, msgData);
+                }
+            } else if (change.type === 'removed') {
+                if (existingEl) {
+                    existingEl.remove();
+                }
+            }
+
+            if (!isInitialMessagesLoad && change.type === 'added') {
+                if (
+                    msgData.senderUid !== currentUid &&
+                    lastNotifiedMessageId !== msgId &&
+                    !String(msgData.text || '').startsWith('[CALL_LOG]|')
+                ) {
+                    lastNotifiedMessageId = msgId;
+
+                    if (document.visibilityState === 'visible') {
+                        updateDoc(doc(db, 'chats', activeChatId), {
+                            [`unread_${currentUid}`]: false
+                        }).catch(() => {});
+                        playMessageNotificationSound();
+                    } else {
+                        const previewText = String(msgData.text || '').includes('📋 *LAMARAN KERJA BARU*')
+                            ? 'Mengirim lamaran kerja baru'
+                            : String(msgData.text || 'Pesan baru');
+
+                        triggerLocalSystemNotification(
+                            otherUserName,
+                            previewText,
+                            {
+                                tag: `chat-${activeChatId}`,
+                                icon: otherProfile?.avatarUrl || getUserAvatarUrl(activeChatUserId),
+                                url: window.location.href
+                            }
+                        );
+                    }
+                }
+            }
+        });
+
+        if (shouldScrollBottom) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
+
         isInitialMessagesLoad = false;
     }, error => {
         console.error('Message listener error:', error);
-        showToast('Gagal memuat pesan.');
     });
+
+    updateDoc(doc(db, 'chats', activeChatId), {
+        [`unread_${currentUid}`]: false
+    }).catch(() => {});
+
+    fetchUserProfile(db, currentUid).then(profile => {
+        myProfile = profile;
+        myUserName = profile.displayName || 'Mitra Sitenexs';
+    }).catch(() => {});
+
+    fetchUserProfile(db, activeChatUserId).then(profile => {
+        otherProfile = profile;
+        otherUserName = profile.displayName || 'Mitra Sitenexs';
+        otherUserFcmToken = profile.fcmToken || null;
+        document.getElementById('activeChatBadges').innerHTML = profile.badgesHtml || '';
+        document.getElementById('activeChatName').textContent = otherUserName;
+        document.getElementById('activeChatAvatar').src = profile.avatarUrl || getUserAvatarUrl(activeChatUserId);
+    }).catch(() => {});
+
+    registerPushServiceWorker().then(() => {
+        listenForegroundMessages(app, ({ title, body, tag, icon, url }) => {
+            if (document.visibilityState === 'hidden') {
+                triggerLocalSystemNotification(title, body, { tag, icon, url });
+            }
+        });
+        if ('Notification' in window && Notification.permission === 'granted') {
+            refreshFcmToken();
+        }
+    }).catch(() => {});
 }
 
 onAuthStateChanged(auth, user => {
