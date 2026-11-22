@@ -380,7 +380,10 @@
         } from 'https://sitenexs.com/assets/js/sitenexs-call-presence.js';
 
         import {
-            prepareFlickerFreeContainer
+            prepareFlickerFreeContainer,
+            reconcileListElements,
+            readListCache,
+            writeListCache
         } from 'https://sitenexs.com/assets/js/sitenexs-realtime-sync.js';
 
         let currentUid = null;
@@ -402,6 +405,51 @@
         let selectedChatId = null;
         let selectedChatName = "";
         let pressTimer = null;
+
+        function getInboxCacheKey(uid) {
+            return `sitenexs_inbox_cache_${uid}`;
+        }
+
+        function saveInboxCache(uid, items) {
+            if (!uid) return;
+            const serializable = items.map(item => ({
+                chatId: item.chatId,
+                otherUid: item.otherUid,
+                otherName: item.otherName,
+                avatarUrl: item.avatarUrl,
+                badgesHtml: item.badgesHtml,
+                lastMessage: item.lastMessage,
+                lastTimestampMs: item.lastTimestamp?.toMillis ? item.lastTimestamp.toMillis() : (item.lastTimestampMs || 0),
+                unread: Boolean(item.unread),
+                pinned: Boolean(item.pinned),
+                muted: Boolean(item.muted),
+                isOnline: Boolean(item.isOnline)
+            }));
+            writeListCache(getInboxCacheKey(uid), serializable, 100);
+        }
+
+        function restoreInboxFromCache(uid) {
+            if (!uid) return;
+            const cached = readListCache(getInboxCacheKey(uid));
+            if (!cached || cached.length === 0) return;
+
+            allConversationsData = cached.map(item => ({
+                ...item,
+                lastTimestamp: item.lastTimestampMs
+                    ? { toDate: () => new Date(item.lastTimestampMs), toMillis: () => item.lastTimestampMs }
+                    : null
+            }));
+
+            document.getElementById('chatCountBadge').innerText = `${allConversationsData.length} Percakapan`;
+            renderConversationsList(allConversationsData);
+            updateGlobalUnreadCount();
+        }
+
+        // Langsung tampilkan daftar percakapan tersimpan di perangkat sebelum auth selesai
+        const earlySavedUid = localStorage.getItem('sitenexs_uid');
+        if (earlySavedUid) {
+            restoreInboxFromCache(earlySavedUid);
+        }
 
         window.showToast = function(msg) {
             const container = document.getElementById('toastContainer');
@@ -576,6 +624,10 @@
             isInitialized = true;
             currentUid = uid;
 
+            if (allConversationsData.length === 0) {
+                restoreInboxFromCache(uid);
+            }
+
             setupMyPresence(uid);
 
             if (cleanupIncomingRedirect) cleanupIncomingRedirect();
@@ -710,7 +762,7 @@
 
         function loadConversations(uid) {
             const listEl = document.getElementById('conversationsList');
-            prepareFlickerFreeContainer(listEl, true);
+            prepareFlickerFreeContainer(listEl, false);
 
             const q = query(collection(db, "chats"), where("participants", "array-contains", uid));
 
@@ -722,8 +774,9 @@
                 try {
                     if (snapshot.empty) {
                         allConversationsData = [];
+                        saveInboxCache(uid, []);
                         listEl.innerHTML = `
-                            <div id="emptyInboxState" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted); font-size: 0.88rem;">
+                            <div data-empty-state="true" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted); font-size: 0.88rem;">
                                 <i class="far fa-comments fa-3x" style="color: var(--border-medium); margin-bottom: 1rem;"></i>
                                 <div style="font-weight: 750; color: var(--text-main); margin-bottom: 0.35rem; font-size: 1rem;">Belum ada percakapan</div>
                                 <div>Mulai kirim pesan dari profil anggota komunitas Sitenexs!</div>
@@ -804,6 +857,7 @@
                             badgesHtml,
                             lastMessage: chat.lastMessage || 'Mulai percakapan...',
                             lastTimestamp: chat.lastTimestamp,
+                            lastTimestampMs: chat.lastTimestamp?.toMillis?.() || cachedItem?.lastTimestampMs || 0,
                             unread: isUnread,
                             pinned: isPinned,
                             muted: isMuted,
@@ -815,8 +869,10 @@
 
                     allConversationsData.sort((a, b) => {
                         if (a.pinned !== b.pinned) return b.pinned - a.pinned;
-                        return (b.lastTimestamp?.toMillis?.() || 0) - (a.lastTimestamp?.toMillis?.() || 0);
+                        return (b.lastTimestamp?.toMillis?.() || b.lastTimestampMs || 0) - (a.lastTimestamp?.toMillis?.() || a.lastTimestampMs || 0);
                     });
+
+                    saveInboxCache(uid, allConversationsData);
 
                     document.getElementById('chatCountBadge').innerText = `${allConversationsData.length} Percakapan`;
                     
@@ -888,12 +944,13 @@
                     }
 
                     const isUnread = data[`unread_${uid}`] === true;
-                    const badgeEl = document.getElementById(`badge-${chat.id}`);
+                    const badgeEl = document.getElementById(`badge-${chat.chatId || chat.id}`);
                     const itemEl = document.getElementById(`item-${chat.id}`);
 
                     const targetConv = allConversationsData.find(c => c.chatId === chat.id);
                     if (targetConv) {
                         targetConv.unread = isUnread;
+                        saveInboxCache(uid, allConversationsData);
                         updateGlobalUnreadCount();
                     }
 
@@ -913,37 +970,18 @@
         }
 
         /* =====================================================
-           RENDER INREMENTAL TANPA KEDIP (DOM RECONCILIATION)
+           RENDER INKREMENTAL TANPA KEDIP (DOM RECONCILIATION)
         ===================================================== */
         window.renderConversationsList = function(chats) {
             const listEl = document.getElementById('conversationsList');
-            const emptyStateEl = document.getElementById('emptyInboxState');
-            if (emptyStateEl) emptyStateEl.remove();
-
-            if (chats.length === 0) {
-                listEl.innerHTML = '<div id="emptyInboxState" style="text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.88rem;">Tidak ada percakapan aktif.</div>';
-                return;
-            }
-
-            const validIds = new Set(chats.map(c => c.chatId));
-            listEl.querySelectorAll('.conversation-item').forEach(existingEl => {
-                if (!validIds.has(existingEl.dataset.chatId)) {
-                    existingEl.remove();
-                }
-            });
-
-            chats.forEach((chat, index) => {
-                let itemEl = document.getElementById(`item-${chat.chatId}`);
-                if (!itemEl) {
-                    itemEl = buildConversationElement(chat);
-                } else {
-                    updateConversationElement(itemEl, chat);
-                }
-
-                const currentChildAtIdx = listEl.children[index];
-                if (currentChildAtIdx !== itemEl) {
-                    listEl.insertBefore(itemEl, currentChildAtIdx || null);
-                }
+            reconcileListElements({
+                container: listEl,
+                items: chats,
+                getKey: chat => chat.chatId,
+                keyAttr: 'data-chat-id',
+                createElement: chat => buildConversationElement(chat),
+                updateElement: (itemEl, chat) => updateConversationElement(itemEl, chat),
+                emptyHtml: '<div data-empty-state="true" style="text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.88rem;">Tidak ada percakapan aktif.</div>'
             });
         }
 
