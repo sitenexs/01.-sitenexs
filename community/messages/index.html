@@ -144,10 +144,12 @@
         
         .conv-avatar-wrap { position: relative; flex-shrink: 0; width: 46px; height: 46px; }
         .conv-avatar { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); display: block; }
+        
+        /* TITIK HIJAU AKTIF */
         .status-dot {
-            position: absolute; bottom: 0px; right: 0px; width: 12px; height: 12px;
-            background: #22c55e; border: 2px solid #ffffff; border-radius: 50%;
-            display: none; z-index: 5; box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35);
+            position: absolute; bottom: 0px; right: 0px; width: 13px; height: 13px;
+            background: #22c55e; border: 2.5px solid #ffffff; border-radius: 50%;
+            display: none; z-index: 10; box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.4);
         }
         .status-dot.active {
             display: block !important;
@@ -307,11 +309,13 @@
 
         let currentUid = null;
         let allConversationsData = [];
+        let activeChatIds = [];
         let unsubscribesMap = {};
         let presenceUnsubsMap = {};
         let fsPresenceUnsubsMap = {};
         let rtdbOnlineMap = {};
-        let fsOnlineMap = {};
+        let fsUserOnlineMap = {};
+        let chatDocOnlineMap = {};
         let onlineStatusMap = {};
         let unsubscribeIncomingCalls = null;
         let unsubscribeMyPresence = null;
@@ -342,46 +346,51 @@
         }
 
         /* =====================================================
-           SISTEM KEHADIRAN REAL-TIME (RTDB + FALLBACK FIRESTORE)
+           SISTEM KEHADIRAN REAL-TIME (MULTI-JALUR: RTDB + CHATS + USERS)
         ===================================================== */
+        async function broadcastPresenceToAllChannels(uid, isOnline) {
+            if (!uid) return;
+
+            // 1. Jalur RTDB presence/{uid}
+            const myStatusRef = ref(rtdb, `presence/${uid}`);
+            set(myStatusRef, {
+                online: isOnline,
+                lastActive: serverTimestamp(),
+                page: 'messages'
+            }).catch((e) => console.warn('[Sitenexs Presence] RTDB write skipped:', e?.code || e));
+
+            // 2. Jalur Firestore users/{uid}
+            setDoc(doc(db, 'users', uid), {
+                isOnline: isOnline,
+                online: isOnline,
+                lastActive: fsServerTimestamp()
+            }, { merge: true }).catch(() => {});
+
+            // 3. Jalur Firestore chats/{chatId} (Pasti punya izin write!)
+            for (const chatId of activeChatIds) {
+                updateDoc(doc(db, 'chats', chatId), {
+                    [`online_${uid}`]: isOnline,
+                    [`lastActive_${uid}`]: fsServerTimestamp()
+                }).catch(() => {});
+            }
+        }
+
         function setupMyPresence(uid) {
             if (!uid) return;
 
             const connectedRef = ref(rtdb, '.info/connected');
             const myStatusRef = ref(rtdb, `presence/${uid}`);
-            const myUserDocRef = doc(db, 'users', uid);
 
-            if (unsubscribeMyPresence) {
-                unsubscribeMyPresence();
-            }
-            if (presenceHeartbeatInterval) {
-                clearInterval(presenceHeartbeatInterval);
-            }
+            if (unsubscribeMyPresence) unsubscribeMyPresence();
+            if (presenceHeartbeatInterval) clearInterval(presenceHeartbeatInterval);
 
             const markOnline = () => {
                 if (document.visibilityState === 'hidden') return;
-                set(myStatusRef, {
-                    online: true,
-                    lastActive: serverTimestamp(),
-                    page: 'messages'
-                }).catch(() => {});
-
-                setDoc(myUserDocRef, {
-                    isOnline: true,
-                    lastActive: fsServerTimestamp()
-                }, { merge: true }).catch(() => {});
+                broadcastPresenceToAllChannels(uid, true);
             };
 
             const markOffline = () => {
-                set(myStatusRef, {
-                    online: false,
-                    lastActive: serverTimestamp()
-                }).catch(() => {});
-
-                setDoc(myUserDocRef, {
-                    isOnline: false,
-                    lastActive: fsServerTimestamp()
-                }, { merge: true }).catch(() => {});
+                broadcastPresenceToAllChannels(uid, false);
             };
 
             unsubscribeMyPresence = onValue(connectedRef, (snap) => {
@@ -389,11 +398,7 @@
                     onDisconnect(myStatusRef).set({
                         online: false,
                         lastActive: serverTimestamp()
-                    }).then(() => {
-                        markOnline();
-                    }).catch(() => {
-                        markOnline();
-                    });
+                    }).then(markOnline).catch(markOnline);
                 }
             });
 
@@ -414,11 +419,13 @@
                 if (document.visibilityState === 'visible') {
                     markOnline();
                 }
-            }, 30000);
+            }, 25000);
         }
 
         function syncCombinedOnlineState(otherUid) {
-            const isOnline = Boolean(rtdbOnlineMap[otherUid]) || Boolean(fsOnlineMap[otherUid]);
+            const isOnline = Boolean(rtdbOnlineMap[otherUid]) ||
+                             Boolean(fsUserOnlineMap[otherUid]) ||
+                             Boolean(chatDocOnlineMap[otherUid]);
             onlineStatusMap[otherUid] = isOnline;
 
             const convObj = allConversationsData.find(c => c.otherUid === otherUid);
@@ -451,7 +458,7 @@
                 if (!activeSet.has(uid)) {
                     fsPresenceUnsubsMap[uid]();
                     delete fsPresenceUnsubsMap[uid];
-                    delete fsOnlineMap[uid];
+                    delete fsUserOnlineMap[uid];
                     delete onlineStatusMap[uid];
                 }
             });
@@ -461,7 +468,7 @@
                     const userPresenceRef = ref(rtdb, `presence/${otherUid}`);
                     presenceUnsubsMap[otherUid] = onValue(userPresenceRef, (snap) => {
                         const data = snap.val();
-                        rtdbOnlineMap[otherUid] = Boolean(data && data.online === true);
+                        rtdbOnlineMap[otherUid] = Boolean(data && (data.online === true || data === true));
                         syncCombinedOnlineState(otherUid);
                     }, () => {
                         rtdbOnlineMap[otherUid] = false;
@@ -473,14 +480,14 @@
                     const userDocRef = doc(db, 'users', otherUid);
                     fsPresenceUnsubsMap[otherUid] = onSnapshot(userDocRef, (docSnap) => {
                         if (!docSnap.exists()) {
-                            fsOnlineMap[otherUid] = false;
+                            fsUserOnlineMap[otherUid] = false;
                         } else {
                             const uData = docSnap.data();
-                            fsOnlineMap[otherUid] = uData.isOnline === true;
+                            fsUserOnlineMap[otherUid] = (uData.isOnline === true || uData.online === true);
                         }
                         syncCombinedOnlineState(otherUid);
                     }, () => {
-                        fsOnlineMap[otherUid] = false;
+                        fsUserOnlineMap[otherUid] = false;
                         syncCombinedOnlineState(otherUid);
                     });
                 }
@@ -574,7 +581,9 @@
                 }
 
                 const chatsMap = new Map();
+                const foundChatIds = [];
                 snapshot.forEach(docSnap => {
+                    foundChatIds.push(docSnap.id);
                     const chatData = docSnap.data();
                     if (!chatData.participants || !Array.isArray(chatData.participants)) return;
 
@@ -590,6 +599,11 @@
                         chatsMap.set(otherUid, { id: docSnap.id, otherUid, ...chatData });
                     }
                 });
+
+                activeChatIds = foundChatIds;
+                if (document.visibilityState === 'visible') {
+                    broadcastPresenceToAllChannels(uid, true);
+                }
 
                 const chats = Array.from(chatsMap.values());
                 
@@ -611,10 +625,17 @@
                     const isArchived = chat[`archived_${uid}`] === true;
                     const isMuted = chat[`muted_${uid}`] === true;
 
-                    if (userProfile.raw?.isOnline === true) {
-                        fsOnlineMap[chat.otherUid] = true;
-                        onlineStatusMap[chat.otherUid] = true;
+                    if (userProfile.raw?.isOnline === true || userProfile.raw?.online === true) {
+                        fsUserOnlineMap[chat.otherUid] = true;
                     }
+                    if (chat[`online_${chat.otherUid}`] === true) {
+                        chatDocOnlineMap[chat.otherUid] = true;
+                    }
+
+                    const combinedOnline = Boolean(rtdbOnlineMap[chat.otherUid]) ||
+                                           Boolean(fsUserOnlineMap[chat.otherUid]) ||
+                                           Boolean(chatDocOnlineMap[chat.otherUid]);
+                    onlineStatusMap[chat.otherUid] = combinedOnline;
 
                     if (!isArchived) {
                         allConversationsData.push({
@@ -628,7 +649,7 @@
                             unread: isUnread,
                             pinned: isPinned,
                             muted: isMuted,
-                            isOnline: Boolean(onlineStatusMap[chat.otherUid])
+                            isOnline: combinedOnline
                         });
                     }
                 }
@@ -676,6 +697,11 @@
                 unsubscribesMap[chat.id] = onSnapshot(doc(db, "chats", chat.id), (docSnap) => {
                     if (!docSnap.exists()) return;
                     const data = docSnap.data();
+
+                    // Cek status online lawan bicara dari dokumen chat
+                    const otherChatOnline = data[`online_${otherUid}`] === true || Boolean(data[`typing_${otherUid}`]);
+                    chatDocOnlineMap[otherUid] = otherChatOnline;
+                    syncCombinedOnlineState(otherUid);
                     
                     const isTyping = data[`typing_${otherUid}`];
                     const typingEl = document.getElementById(`typing-${chat.id}`);
