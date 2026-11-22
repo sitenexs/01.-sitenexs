@@ -208,7 +208,7 @@
             background: #fff;
         }
 
-        /* NAMA PENGIRIM + CENTANG PNG DI DALAM BUBBLE CHAT */
+        /* NAMA PENGIRIM + CENTANG BIRU / LENCANA KUNING DI DALAM BUBBLE CHAT */
         .message-sender-header {
             display: inline-flex;
             align-items: center;
@@ -507,6 +507,9 @@ import {
     attachFlickerFreeSnapshot
 } from 'https://sitenexs.com/assets/js/sitenexs-realtime-sync.js';
 
+const VERIFIED_BADGE_URL = 'https://sitenexs.com/assets/logo/verified.png';
+const PRO_BADGE_URL = 'https://sitenexs.com/assets/logo/lencana.png';
+
 let currentUid = null;
 let myProfile = null;
 let myUserName = '';
@@ -532,12 +535,40 @@ let lastTypingSoundAt = 0;
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
 
+function hasYellowBadge(profileOrMsg = {}) {
+    const raw = profileOrMsg?.raw || profileOrMsg || {};
+    return Boolean(
+        profileOrMsg?.isPro ||
+        raw?.isPro ||
+        raw?.lencanaKuning ||
+        raw?.isLencanaKuning
+    );
+}
+
+function buildCombinedBadgesHtml(profileOrMsg = {}, badgeClass = 'message-bubble-verif') {
+    const isVerified = Boolean(profileOrMsg?.isVerified || profileOrMsg?.senderIsVerified);
+    const isPro = hasYellowBadge(profileOrMsg);
+    let html = '';
+
+    if (isVerified) {
+        html += `<img src="${VERIFIED_BADGE_URL}" class="${badgeClass}" alt="Verified" title="Verified">`;
+    }
+    if (isPro) {
+        html += `<img src="${PRO_BADGE_URL}" class="${badgeClass}" alt="Pro Badge" title="Lencana Pro" style="margin-left: 2px;">`;
+    }
+    if (!html && profileOrMsg?.badgesHtml) {
+        html = getUserBadgesHtml(profileOrMsg, { badgeClass });
+    }
+    return html;
+}
+
 function extractProfileName(profile, fallbackName = '') {
     if (profile) {
-        const full = String(profile.namaLengkap || profile.displayName || '').trim();
-        const combined = [String(profile.firstName || '').trim(), String(profile.lastName || '').trim()]
-            .filter(Boolean)
-            .join(' ');
+        const raw = profile.raw || {};
+        const depan = String(raw.namaDepan || profile.firstName || '').trim();
+        const belakang = String(raw.namaBelakang || profile.lastName || '').trim();
+        const combined = [depan, belakang].filter(Boolean).join(' ').trim();
+        const full = String(raw.namaLengkap || profile.displayName || '').trim();
         if (full) return full;
         if (combined) return combined;
     }
@@ -583,7 +614,7 @@ function getEarlyUid() {
 function getSenderDisplayName(message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     if (isOutgoing) {
-        return myUserName || String(message.senderName || '').trim() || '';
+        return myUserName || String(message.senderName || '').trim() || String(auth.currentUser?.displayName || '').trim() || '';
     }
     return otherUserName || String(message.senderName || '').trim() || '';
 }
@@ -591,9 +622,15 @@ function getSenderDisplayName(message, ownerUid = currentUid) {
 function getSenderBadgesHtml(message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     if (isOutgoing) {
-        return myBadgesHtml || (message.senderIsVerified ? getUserBadgesHtml(true, { badgeClass: 'message-bubble-verif' }) : '');
+        return myBadgesHtml || buildCombinedBadgesHtml({
+            isVerified: message.senderIsVerified,
+            isPro: message.senderIsPro
+        }, 'message-bubble-verif');
     }
-    return otherBadgesHtml || (message.senderIsVerified ? getUserBadgesHtml(true, { badgeClass: 'message-bubble-verif' }) : '');
+    return otherBadgesHtml || buildCombinedBadgesHtml({
+        isVerified: message.senderIsVerified,
+        isPro: message.senderIsPro
+    }, 'message-bubble-verif');
 }
 
 function renderCachedMessagesImmediately(chatId, uid) {
@@ -619,6 +656,7 @@ function renderCachedMessagesImmediately(chatId, uid) {
                 senderUid: item.senderUid,
                 senderName: item.senderName,
                 senderIsVerified: item.senderIsVerified,
+                senderIsPro: item.senderIsPro,
                 text: item.text,
                 isEdited: item.isEdited,
                 status: isGreenPersisted ? 'read-green' : (item.status || 'sent'),
@@ -1454,20 +1492,16 @@ async function initChat(user) {
     fetchUserProfile(db, currentUid).then(profile => {
         myProfile = profile;
         myUserName = extractProfileName(profile, user.displayName);
-        myBadgesHtml = profile?.isVerified
-            ? getUserBadgesHtml(profile, { badgeClass: 'message-bubble-verif' })
-            : '';
+        myBadgesHtml = buildCombinedBadgesHtml(profile, 'message-bubble-verif');
         refreshVisibleSenderInfo();
     }).catch(() => {});
 
     fetchUserProfile(db, activeChatUserId).then(profile => {
         otherProfile = profile;
         otherUserName = extractProfileName(profile);
-        otherBadgesHtml = profile?.isVerified
-            ? getUserBadgesHtml(profile, { badgeClass: 'message-bubble-verif' })
-            : '';
+        otherBadgesHtml = buildCombinedBadgesHtml(profile, 'message-bubble-verif');
         otherUserFcmToken = profile?.fcmToken || null;
-        document.getElementById('activeChatBadges').innerHTML = profile?.badgesHtml || '';
+        document.getElementById('activeChatBadges').innerHTML = buildCombinedBadgesHtml(profile, 'chat-header-verif');
         document.getElementById('activeChatName').textContent = otherUserName;
         document.getElementById('activeChatAvatar').src = profile?.avatarUrl || getUserAvatarUrl(activeChatUserId);
         refreshVisibleSenderInfo();
@@ -1528,6 +1562,7 @@ window.handleChatFormSubmit = async function (event) {
         const chatDocRef = doc(db, 'chats', activeChatId);
         const senderNameToSave = myUserName || extractProfileName(myProfile, auth.currentUser?.displayName);
         const senderVerifiedToSave = Boolean(myProfile?.isVerified);
+        const senderProToSave = hasYellowBadge(myProfile);
 
         await setDoc(chatDocRef, {
             participants: [currentUid, activeChatUserId],
@@ -1541,6 +1576,7 @@ window.handleChatFormSubmit = async function (event) {
             senderUid: currentUid,
             senderName: senderNameToSave,
             senderIsVerified: senderVerifiedToSave,
+            senderIsPro: senderProToSave,
             text,
             createdAt: serverTimestamp(),
             isEdited: false,
