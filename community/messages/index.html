@@ -246,6 +246,8 @@
             cursor: pointer; transition: var(--transition); border: 1px solid var(--border-subtle);
         }
         .action-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--border-medium); }
+        .action-btn.warning { color: #d97706; background: #fffbeb; border-color: #fef3c7; }
+        .action-btn.warning:hover { background: #fef3c7; color: #b45309; }
         .action-btn.danger { color: var(--danger); background: #fef2f2; border-color: #fee2e2; }
         .action-btn.danger:hover { background: #fee2e2; color: #dc2626; }
 
@@ -276,6 +278,9 @@
             </button>
             <button class="action-btn" onclick="handleMuteChat()">
                 <i class="fas fa-bell-slash" style="color: var(--primary);"></i> <span id="muteActionText">Bisukan Notifikasi</span>
+            </button>
+            <button class="action-btn warning" onclick="handleClearChatHistory()">
+                <i class="fas fa-broom"></i> Bersihkan Chat
             </button>
             <button class="action-btn danger" onclick="handleDeleteChat()">
                 <i class="fas fa-trash-alt"></i> Hapus Percakapan
@@ -321,7 +326,19 @@
     <!-- MODUL KONFIGURASI, DATA USER, NAVBAR COMMUNITY & PANGGILAN MASUK -->
     <script type="module">
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
-        import { doc, updateDoc, deleteDoc, setDoc, collection, query, where, onSnapshot, serverTimestamp as fsServerTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import {
+            doc,
+            updateDoc,
+            deleteDoc,
+            setDoc,
+            collection,
+            query,
+            where,
+            getDocs,
+            writeBatch,
+            onSnapshot,
+            serverTimestamp as fsServerTimestamp
+        } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
         import { ref, onValue, set, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
 
         import {
@@ -925,8 +942,15 @@
                     const targetConv = allConversationsData.find(c => c.chatId === chat.id);
                     if (targetConv) {
                         targetConv.unread = isUnread;
+                        if (typeof data.lastMessage === 'string') {
+                            targetConv.lastMessage = data.lastMessage || 'Mulai percakapan...';
+                        }
                         saveInboxCache(uid, allConversationsData);
                         updateGlobalUnreadCount();
+                    }
+
+                    if (msgEl && typeof data.lastMessage === 'string') {
+                        msgEl.textContent = data.lastMessage || 'Mulai percakapan...';
                     }
 
                     if (badgeEl && msgEl && itemEl) {
@@ -1073,6 +1097,65 @@
             }
         }
 
+        window.handleClearChatHistory = async function() {
+            closeActionModal();
+            const targetChatId = selectedChatId;
+            const targetName = selectedChatName;
+            if (!targetChatId || !currentUid) return;
+            if (!confirm(`Bersihkan semua riwayat chat dengan ${targetName}? Semua pesan di percakapan ini akan dihapus dari Firestore.`)) return;
+
+            try {
+                const messagesRef = collection(db, "chats", targetChatId, "messages");
+                const messagesSnap = await getDocs(messagesRef);
+
+                if (!messagesSnap.empty) {
+                    const docsList = messagesSnap.docs;
+                    const BATCH_LIMIT = 450;
+                    for (let i = 0; i < docsList.length; i += BATCH_LIMIT) {
+                        const batch = writeBatch(db);
+                        docsList.slice(i, i + BATCH_LIMIT).forEach(msgDoc => {
+                            batch.delete(msgDoc.ref);
+                        });
+                        await batch.commit();
+                    }
+                }
+
+                const chatObj = allConversationsData.find(c => c.chatId === targetChatId);
+                const chatResetPayload = {
+                    lastMessage: '',
+                    [`unread_${currentUid}`]: false
+                };
+                if (chatObj?.otherUid) {
+                    chatResetPayload[`unread_${chatObj.otherUid}`] = false;
+                }
+
+                await updateDoc(doc(db, "chats", targetChatId), chatResetPayload);
+
+                try {
+                    localStorage.removeItem(`sitenexs_chat_cache_${targetChatId}`);
+                    localStorage.removeItem(`sitenexs_green_read_${targetChatId}`);
+                } catch (e) {}
+
+                if (chatObj) {
+                    chatObj.lastMessage = 'Mulai percakapan...';
+                    chatObj.unread = false;
+                    saveInboxCache(currentUid, allConversationsData);
+                    updateGlobalUnreadCount();
+                }
+
+                const msgEl = document.getElementById(`msg-${targetChatId}`);
+                if (msgEl) {
+                    msgEl.textContent = 'Mulai percakapan...';
+                    msgEl.classList.remove('unread');
+                }
+
+                showToast(`Riwayat chat dengan ${targetName} berhasil dibersihkan.`);
+            } catch (err) {
+                console.error('Gagal membersihkan riwayat chat:', err);
+                showToast("Gagal membersihkan riwayat chat.");
+            }
+        }
+
         window.handleDeleteChat = async function() {
             closeActionModal();
             if (!selectedChatId) return;
@@ -1084,6 +1167,10 @@
                     delete unsubscribesMap[selectedChatId];
                 }
                 await deleteDoc(doc(db, "chats", selectedChatId));
+                try {
+                    localStorage.removeItem(`sitenexs_chat_cache_${selectedChatId}`);
+                    localStorage.removeItem(`sitenexs_green_read_${selectedChatId}`);
+                } catch (e) {}
                 showToast("Percakapan berhasil dihapus.");
             } catch (err) {
                 showToast("Gagal menghapus percakapan.");
