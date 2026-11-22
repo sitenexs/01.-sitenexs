@@ -142,15 +142,15 @@
         .conversation-item.unread-chat-item { background: #f0f7ff; border-left: 4px solid var(--primary); }
         .conversation-item.pinned-chat-item { background: #fafafa; }
         
-        .conv-avatar-wrap { position: relative; flex-shrink: 0; }
-        .conv-avatar { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); }
+        .conv-avatar-wrap { position: relative; flex-shrink: 0; width: 46px; height: 46px; }
+        .conv-avatar { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); display: block; }
         .status-dot {
-            position: absolute; bottom: 2px; right: 2px; width: 11px; height: 11px;
-            background: #10b981; border: 2px solid #fff; border-radius: 50%;
-            display: none; box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2);
+            position: absolute; bottom: 0px; right: 0px; width: 12px; height: 12px;
+            background: #22c55e; border: 2px solid #ffffff; border-radius: 50%;
+            display: none; z-index: 5; box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35);
         }
         .status-dot.active {
-            display: block;
+            display: block !important;
         }
 
         .conv-info { flex: 1; min-width: 0; }
@@ -290,7 +290,7 @@
     <!-- MODUL KONFIGURASI, DATA USER & PANGGILAN MASUK -->
     <script type="module">
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
-        import { doc, updateDoc, deleteDoc, collection, query, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { doc, updateDoc, deleteDoc, setDoc, collection, query, where, onSnapshot, serverTimestamp as fsServerTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
         import { ref, onValue, remove, set, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
 
         import {
@@ -304,12 +304,14 @@
         } from 'https://sitenexs.com/assets/js/sitenexs-user-data.js';
 
         const CALL_PAGE_URL = 'https://sitenexs.com/community/messages/call/';
-        const ONLINE_TIMEOUT_MS = 120000; // 2 menit batas aktif
 
         let currentUid = null;
         let allConversationsData = [];
         let unsubscribesMap = {};
         let presenceUnsubsMap = {};
+        let fsPresenceUnsubsMap = {};
+        let rtdbOnlineMap = {};
+        let fsOnlineMap = {};
         let onlineStatusMap = {};
         let unsubscribeIncomingCalls = null;
         let unsubscribeMyPresence = null;
@@ -340,13 +342,14 @@
         }
 
         /* =====================================================
-           SISTEM KEHADIRAN REAL-TIME (ONLINE / AKTIF DI SITENEXS)
+           SISTEM KEHADIRAN REAL-TIME (RTDB + FALLBACK FIRESTORE)
         ===================================================== */
         function setupMyPresence(uid) {
             if (!uid) return;
 
             const connectedRef = ref(rtdb, '.info/connected');
             const myStatusRef = ref(rtdb, `presence/${uid}`);
+            const myUserDocRef = doc(db, 'users', uid);
 
             if (unsubscribeMyPresence) {
                 unsubscribeMyPresence();
@@ -360,17 +363,25 @@
                 set(myStatusRef, {
                     online: true,
                     lastActive: serverTimestamp(),
-                    clientTime: Date.now(),
                     page: 'messages'
                 }).catch(() => {});
+
+                setDoc(myUserDocRef, {
+                    isOnline: true,
+                    lastActive: fsServerTimestamp()
+                }, { merge: true }).catch(() => {});
             };
 
             const markOffline = () => {
                 set(myStatusRef, {
                     online: false,
-                    lastActive: serverTimestamp(),
-                    clientTime: Date.now()
+                    lastActive: serverTimestamp()
                 }).catch(() => {});
+
+                setDoc(myUserDocRef, {
+                    isOnline: false,
+                    lastActive: fsServerTimestamp()
+                }, { merge: true }).catch(() => {});
             };
 
             unsubscribeMyPresence = onValue(connectedRef, (snap) => {
@@ -380,9 +391,13 @@
                         lastActive: serverTimestamp()
                     }).then(() => {
                         markOnline();
-                    }).catch(() => {});
+                    }).catch(() => {
+                        markOnline();
+                    });
                 }
             });
+
+            markOnline();
 
             document.addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'visible') {
@@ -395,28 +410,22 @@
             window.addEventListener('beforeunload', markOffline);
             window.addEventListener('pagehide', markOffline);
 
-            // Heartbeat tiap 45 detik agar status tetap segar selama halaman dibuka
             presenceHeartbeatInterval = setInterval(() => {
                 if (document.visibilityState === 'visible') {
                     markOnline();
                 }
-            }, 45000);
+            }, 30000);
         }
 
-        function isUserActivelyOnline(presenceData) {
-            if (!presenceData || presenceData.online !== true) return false;
-            const lastSeen = typeof presenceData.lastActive === 'number'
-                ? presenceData.lastActive
-                : (typeof presenceData.clientTime === 'number' ? presenceData.clientTime : Date.now());
-            return (Date.now() - lastSeen) < ONLINE_TIMEOUT_MS;
-        }
-
-        function updateStatusDotUI(otherUid, isOnline) {
+        function syncCombinedOnlineState(otherUid) {
+            const isOnline = Boolean(rtdbOnlineMap[otherUid]) || Boolean(fsOnlineMap[otherUid]);
             onlineStatusMap[otherUid] = isOnline;
+
             const convObj = allConversationsData.find(c => c.otherUid === otherUid);
             if (convObj) {
                 convObj.isOnline = isOnline;
             }
+
             const dotEls = document.querySelectorAll(`.status-dot[data-uid="${otherUid}"]`);
             dotEls.forEach(el => {
                 if (isOnline) {
@@ -430,27 +439,51 @@
         function listenOtherUsersPresence(otherUids) {
             const activeSet = new Set(otherUids);
 
-            // Bersihkan listener untuk user yang sudah tidak ada di daftar
             Object.keys(presenceUnsubsMap).forEach(uid => {
                 if (!activeSet.has(uid)) {
                     presenceUnsubsMap[uid]();
                     delete presenceUnsubsMap[uid];
+                    delete rtdbOnlineMap[uid];
+                }
+            });
+
+            Object.keys(fsPresenceUnsubsMap).forEach(uid => {
+                if (!activeSet.has(uid)) {
+                    fsPresenceUnsubsMap[uid]();
+                    delete fsPresenceUnsubsMap[uid];
+                    delete fsOnlineMap[uid];
                     delete onlineStatusMap[uid];
                 }
             });
 
-            // Pasang listener baru untuk setiap lawan bicara
             otherUids.forEach(otherUid => {
-                if (presenceUnsubsMap[otherUid]) return;
+                if (!presenceUnsubsMap[otherUid]) {
+                    const userPresenceRef = ref(rtdb, `presence/${otherUid}`);
+                    presenceUnsubsMap[otherUid] = onValue(userPresenceRef, (snap) => {
+                        const data = snap.val();
+                        rtdbOnlineMap[otherUid] = Boolean(data && data.online === true);
+                        syncCombinedOnlineState(otherUid);
+                    }, () => {
+                        rtdbOnlineMap[otherUid] = false;
+                        syncCombinedOnlineState(otherUid);
+                    });
+                }
 
-                const userPresenceRef = ref(rtdb, `presence/${otherUid}`);
-                presenceUnsubsMap[otherUid] = onValue(userPresenceRef, (snap) => {
-                    const data = snap.val();
-                    const active = isUserActivelyOnline(data);
-                    updateStatusDotUI(otherUid, active);
-                }, () => {
-                    updateStatusDotUI(otherUid, false);
-                });
+                if (!fsPresenceUnsubsMap[otherUid]) {
+                    const userDocRef = doc(db, 'users', otherUid);
+                    fsPresenceUnsubsMap[otherUid] = onSnapshot(userDocRef, (docSnap) => {
+                        if (!docSnap.exists()) {
+                            fsOnlineMap[otherUid] = false;
+                        } else {
+                            const uData = docSnap.data();
+                            fsOnlineMap[otherUid] = uData.isOnline === true;
+                        }
+                        syncCombinedOnlineState(otherUid);
+                    }, () => {
+                        fsOnlineMap[otherUid] = false;
+                        syncCombinedOnlineState(otherUid);
+                    });
+                }
             });
         }
 
@@ -577,6 +610,11 @@
                     const isPinned = chat[`pinned_${uid}`] === true;
                     const isArchived = chat[`archived_${uid}`] === true;
                     const isMuted = chat[`muted_${uid}`] === true;
+
+                    if (userProfile.raw?.isOnline === true) {
+                        fsOnlineMap[chat.otherUid] = true;
+                        onlineStatusMap[chat.otherUid] = true;
+                    }
 
                     if (!isArchived) {
                         allConversationsData.push({
