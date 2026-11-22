@@ -19,17 +19,100 @@ export function writeListCache(storageKey, items, maxItems = 200) {
     } catch (e) {}
 }
 
-function normalizeForCache(docId, data) {
-    const ms = data?.createdAt?.toMillis
-        ? data.createdAt.toMillis()
-        : (typeof data?.createdAtMs === 'number' ? data.createdAtMs : Date.now());
+function extractCreatedAtMs(data, fallbackMs = Date.now()) {
+    if (data?.createdAt?.toMillis) {
+        return data.createdAt.toMillis();
+    }
+    if (data?.createdAt?.toDate) {
+        return data.createdAt.toDate().getTime();
+    }
+    if (typeof data?.createdAtMs === 'number' && !Number.isNaN(data.createdAtMs)) {
+        return data.createdAtMs;
+    }
+    return fallbackMs;
+}
+
+function normalizeForCache(docId, data, existingCached = null) {
+    const ms = extractCreatedAtMs(
+        data,
+        typeof existingCached?.createdAtMs === 'number' ? existingCached.createdAtMs : Date.now()
+    );
     return {
         id: docId,
-        senderUid: data?.senderUid || '',
-        text: data?.text || '',
-        isEdited: Boolean(data?.isEdited),
+        senderUid: data?.senderUid ?? existingCached?.senderUid ?? '',
+        senderName: data?.senderName ?? existingCached?.senderName ?? '',
+        senderIsVerified: data?.senderIsVerified !== undefined
+            ? Boolean(data.senderIsVerified)
+            : Boolean(existingCached?.senderIsVerified),
+        senderIsPro: data?.senderIsPro !== undefined
+            ? Boolean(data.senderIsPro)
+            : Boolean(existingCached?.senderIsPro),
+        text: data?.text ?? existingCached?.text ?? '',
+        isEdited: data?.isEdited !== undefined
+            ? Boolean(data.isEdited)
+            : Boolean(existingCached?.isEdited),
+        status: data?.status ?? existingCached?.status ?? 'sent',
+        checkColor: data?.checkColor ?? existingCached?.checkColor ?? null,
+        delivered: data?.delivered !== undefined
+            ? Boolean(data.delivered)
+            : Boolean(existingCached?.delivered),
+        read: data?.read !== undefined
+            ? Boolean(data.read)
+            : Boolean(existingCached?.read),
         createdAtMs: ms
     };
+}
+
+function scrollContainerToBottom(container) {
+    if (!container) return;
+    const scrollNow = () => {
+        container.scrollTop = container.scrollHeight;
+    };
+    scrollNow();
+    requestAnimationFrame(() => {
+        scrollNow();
+        setTimeout(scrollNow, 50);
+    });
+}
+
+function insertItemInOrder(container, itemEl, keyAttr, createdAtMs, sortedItemsList) {
+    if (!container || !itemEl) return;
+
+    const typingEl = container.querySelector('#typingBubbleWrapper');
+
+    // Cari elemen tetangga setelah posisi item ini berdasarkan urutan waktu
+    let nextSiblingEl = null;
+    if (Array.isArray(sortedItemsList) && sortedItemsList.length > 0) {
+        const myKey = itemEl.getAttribute(keyAttr);
+        const myIdx = sortedItemsList.findIndex(x => String(x.id) === String(myKey));
+        if (myIdx >= 0) {
+            for (let i = myIdx + 1; i < sortedItemsList.length; i++) {
+                const candidate = container.querySelector(
+                    `[${keyAttr}="${CSS.escape(String(sortedItemsList[i].id))}"]`
+                );
+                if (candidate && candidate !== itemEl) {
+                    nextSiblingEl = candidate;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (nextSiblingEl) {
+        if (itemEl.nextElementSibling !== nextSiblingEl) {
+            container.insertBefore(itemEl, nextSiblingEl);
+        }
+    } else if (typingEl) {
+        if (itemEl.nextElementSibling !== typingEl) {
+            container.insertBefore(itemEl, typingEl);
+        }
+    } else if (container.lastElementChild !== itemEl) {
+        container.appendChild(itemEl);
+    }
+
+    if (typingEl && container.lastElementChild !== typingEl) {
+        container.appendChild(typingEl);
+    }
 }
 
 /**
@@ -118,7 +201,7 @@ export function attachFlickerFreeSnapshot({
     onSnapshotDone,
     onError,
     autoScroll = false,
-    scrollThreshold = 120
+    scrollThreshold = 180
 }) {
     if (!queryRef || !container || typeof createElement !== 'function') {
         return () => {};
@@ -127,7 +210,9 @@ export function attachFlickerFreeSnapshot({
     prepareFlickerFreeContainer(container, false);
 
     const cacheMap = new Map();
-    const cachedItems = readListCache(storageKey);
+    const cachedItems = readListCache(storageKey).slice().sort(
+        (a, b) => (a?.createdAtMs || 0) - (b?.createdAtMs || 0)
+    );
 
     if (cachedItems.length > 0) {
         cachedItems.forEach(item => {
@@ -140,12 +225,12 @@ export function attachFlickerFreeSnapshot({
                     if (!el.hasAttribute(keyAttr)) {
                         el.setAttribute(keyAttr, item.id);
                     }
-                    container.appendChild(el);
+                    insertItemInOrder(container, el, keyAttr, item.createdAtMs || 0, cachedItems);
                 }
             }
         });
         if (autoScroll) {
-            container.scrollTop = container.scrollHeight;
+            scrollContainerToBottom(container);
         }
     }
 
@@ -160,14 +245,22 @@ export function attachFlickerFreeSnapshot({
             let shouldScroll = false;
             let cacheChanged = false;
 
+            // Bangun daftar urutan lengkap dari snapshot saat ini
+            const orderedSnapshotItems = [];
+            snapshot.forEach(docSnap => {
+                const prev = cacheMap.get(docSnap.id);
+                orderedSnapshotItems.push(normalizeForCache(docSnap.id, docSnap.data(), prev));
+            });
+            orderedSnapshotItems.sort((a, b) => a.createdAtMs - b.createdAtMs);
+
             snapshot.docChanges().forEach(change => {
                 const docId = change.doc.id;
                 const docData = change.doc.data();
                 const existingEl = container.querySelector(`[${keyAttr}="${CSS.escape(docId)}"]`);
+                const prevCached = cacheMap.get(docId);
 
                 if (change.type === 'added') {
-                    const normalized = normalizeForCache(docId, docData);
-                    const prevCached = cacheMap.get(docId);
+                    const normalized = normalizeForCache(docId, docData, prevCached);
 
                     if (!existingEl) {
                         const newEl = createElement(docId, docData, change.doc);
@@ -175,40 +268,71 @@ export function attachFlickerFreeSnapshot({
                             if (!newEl.hasAttribute(keyAttr)) {
                                 newEl.setAttribute(keyAttr, docId);
                             }
-                            container.appendChild(newEl);
-                            if (autoScroll && (isInitial || nearBottom)) {
+                            insertItemInOrder(
+                                container,
+                                newEl,
+                                keyAttr,
+                                normalized.createdAtMs,
+                                orderedSnapshotItems
+                            );
+                            if (autoScroll && (isInitial || nearBottom || change.doc.metadata?.hasPendingWrites)) {
                                 shouldScroll = true;
                             }
                         }
-                    } else if (
-                        typeof updateElement === 'function' &&
-                        prevCached &&
-                        (prevCached.text !== normalized.text || prevCached.isEdited !== normalized.isEdited)
-                    ) {
-                        updateElement(existingEl, docId, docData, change.doc);
+                    } else {
+                        if (typeof updateElement === 'function') {
+                            updateElement(existingEl, docId, docData, change.doc);
+                        }
+                        insertItemInOrder(
+                            container,
+                            existingEl,
+                            keyAttr,
+                            normalized.createdAtMs,
+                            orderedSnapshotItems
+                        );
+                        if (autoScroll && (isInitial || nearBottom)) {
+                            shouldScroll = true;
+                        }
                     }
 
                     cacheMap.set(docId, normalized);
                     cacheChanged = true;
 
-                    if (!isInitial && typeof onAddedItem === 'function') {
-                        onAddedItem(docId, docData, change.doc);
+                    if (typeof onAddedItem === 'function') {
+                        onAddedItem(docId, docData, change.doc, isInitial);
                     }
                 } else if (change.type === 'modified') {
-                    const normalized = normalizeForCache(docId, docData);
+                    const normalized = normalizeForCache(docId, docData, prevCached);
                     cacheMap.set(docId, normalized);
                     cacheChanged = true;
 
                     if (existingEl && typeof updateElement === 'function') {
                         updateElement(existingEl, docId, docData, change.doc);
+                        insertItemInOrder(
+                            container,
+                            existingEl,
+                            keyAttr,
+                            normalized.createdAtMs,
+                            orderedSnapshotItems
+                        );
                     } else if (!existingEl) {
                         const newEl = createElement(docId, docData, change.doc);
                         if (newEl) {
                             if (!newEl.hasAttribute(keyAttr)) {
                                 newEl.setAttribute(keyAttr, docId);
                             }
-                            container.appendChild(newEl);
+                            insertItemInOrder(
+                                container,
+                                newEl,
+                                keyAttr,
+                                normalized.createdAtMs,
+                                orderedSnapshotItems
+                            );
                         }
+                    }
+
+                    if (autoScroll && (nearBottom || change.doc.metadata?.hasPendingWrites)) {
+                        shouldScroll = true;
                     }
 
                     if (typeof onModifiedItem === 'function') {
@@ -234,7 +358,7 @@ export function attachFlickerFreeSnapshot({
             }
 
             if (autoScroll && shouldScroll) {
-                container.scrollTop = container.scrollHeight;
+                scrollContainerToBottom(container);
             }
 
             if (typeof onSnapshotDone === 'function') {
