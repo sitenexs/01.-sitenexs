@@ -105,6 +105,67 @@
             border: 2px solid #fff; display: none; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.3);
         }
 
+        /* BANNER DALAM PANGGILAN (DI BAWAH NAVBAR) */
+        .active-call-banner {
+            display: none;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.6rem 1.15rem;
+            background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            z-index: 999;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+            transition: var(--transition);
+        }
+        .active-call-banner:hover {
+            filter: brightness(1.04);
+        }
+        .active-call-banner.active {
+            display: flex;
+        }
+        .active-call-banner-left {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            min-width: 0;
+        }
+        .active-call-pulse {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #ffffff;
+            flex-shrink: 0;
+            animation: callBannerPulse 1.3s infinite ease-in-out;
+        }
+        @keyframes callBannerPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.45); opacity: 0.55; }
+        }
+        .active-call-banner-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .active-call-banner-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(255, 255, 255, 0.22);
+            padding: 0.28rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: 0.74rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
         /* INBOX LAYOUT */
         .inbox-wrapper {
             width: 100%; max-width: 800px; margin: 0 auto; background: #fff;
@@ -266,6 +327,19 @@
         </div>
     </header>
 
+    <!-- BANNER DI BAWAH NAVBAR SAAT SEDANG BERADA DI DALAM PANGGILAN -->
+    <div id="activeCallBanner" class="active-call-banner" role="button" tabindex="0">
+        <div class="active-call-banner-left">
+            <span class="active-call-pulse"></span>
+            <i id="activeCallBannerIcon" class="fas fa-phone-alt"></i>
+            <span id="activeCallBannerText" class="active-call-banner-text">Dalam panggilan...</span>
+        </div>
+        <span class="active-call-banner-cta">
+            <span>Masuk</span>
+            <i class="fas fa-chevron-right"></i>
+        </span>
+    </div>
+
     <!-- KONTEN INBOX -->
     <main class="inbox-wrapper">
         <div class="inbox-header">
@@ -291,7 +365,7 @@
     <script type="module">
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
         import { doc, updateDoc, deleteDoc, setDoc, collection, query, where, onSnapshot, serverTimestamp as fsServerTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
-        import { ref, onValue, remove, set, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
+        import { ref, onValue, set, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
 
         import {
             db,
@@ -303,7 +377,11 @@
             fetchUserProfile
         } from 'https://sitenexs.com/assets/js/sitenexs-user-data.js';
 
-        const CALL_PAGE_URL = 'https://sitenexs.com/community/messages/call/';
+        import {
+            DEFAULT_CALL_PAGE_URL,
+            attachForcedIncomingCallRedirect,
+            attachOngoingCallBanner
+        } from 'https://sitenexs.com/assets/js/sitenexs-call-presence.js';
 
         let currentUid = null;
         let isInitialized = false;
@@ -316,10 +394,10 @@
         let chatDocOnlineMap = {};
         let onlineStatusMap = {};
         let unsubscribeConversations = null;
-        let unsubscribeIncomingCalls = null;
         let unsubscribeMyPresence = null;
         let presenceHeartbeatInterval = null;
-        let isRedirectingToCall = false;
+        let cleanupIncomingRedirect = null;
+        let cleanupOngoingBanner = null;
         
         let selectedChatId = null;
         let selectedChatName = "";
@@ -483,54 +561,31 @@
             });
         }
 
-        /* =====================================================
-           PAKSA MEMBUKA HALAMAN TELEPON SAAT ADA PANGGILAN MASUK
-        ===================================================== */
-        function listenIncomingCallsAndForceRedirect(uid) {
-            if (!uid) return;
-
-            const incomingRef = ref(rtdb, `incomingCalls/${uid}`);
-
-            if (unsubscribeIncomingCalls) {
-                unsubscribeIncomingCalls();
-            }
-
-            unsubscribeIncomingCalls = onValue(incomingRef, (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return;
-
-                if (data.timestamp && Date.now() - data.timestamp > 60000) {
-                    remove(incomingRef).catch(() => {});
-                    return;
-                }
-
-                if (data.callerUid === uid) return;
-
-                if (
-                    data.calleeUid === uid &&
-                    data.status === 'ringing' &&
-                    !isRedirectingToCall
-                ) {
-                    isRedirectingToCall = true;
-                    const callUrl = new URL(CALL_PAGE_URL);
-                    callUrl.searchParams.set('to', data.callerUid);
-                    callUrl.searchParams.set('mode', 'incoming');
-                    callUrl.searchParams.set('roomId', data.roomId);
-                    callUrl.searchParams.set('type', data.callType === 'audio' ? 'audio' : 'video');
-                    window.location.replace(callUrl.toString());
-                }
-            }, (error) => {
-                console.error('Incoming call listener error:', error);
-            });
-        }
-
         async function initInbox(uid) {
             if (isInitialized && currentUid === uid) return;
             isInitialized = true;
             currentUid = uid;
 
             setupMyPresence(uid);
-            listenIncomingCallsAndForceRedirect(uid);
+
+            // 1. Paksa masuk ke halaman panggilan saat ada panggilan masuk
+            if (cleanupIncomingRedirect) cleanupIncomingRedirect();
+            cleanupIncomingRedirect = attachForcedIncomingCallRedirect({
+                rtdb,
+                currentUid: uid,
+                callPageUrl: DEFAULT_CALL_PAGE_URL
+            });
+
+            // 2. Tampilkan banner "Dalam panggilan..." di bawah navbar saat panggilan sedang berlangsung
+            if (cleanupOngoingBanner) cleanupOngoingBanner();
+            cleanupOngoingBanner = attachOngoingCallBanner({
+                rtdb,
+                currentUid: uid,
+                bannerElement: document.getElementById('activeCallBanner'),
+                textElement: document.getElementById('activeCallBannerText'),
+                iconElement: document.getElementById('activeCallBannerIcon'),
+                callPageUrl: DEFAULT_CALL_PAGE_URL
+            });
 
             try {
                 const myProfile = await fetchUserProfile(db, uid);
