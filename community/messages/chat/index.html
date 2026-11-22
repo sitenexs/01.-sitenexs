@@ -212,61 +212,67 @@
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 0.3rem;
-            margin-top: 0.3rem;
+            gap: 0.35rem;
+            margin-top: 0.32rem;
         }
-        .message-time { font-size: 0.65rem; opacity: 0.75; font-weight: 500; }
+        .message-time { font-size: 0.65rem; opacity: 0.78; font-weight: 500; }
 
-        /* INDIKATOR CENTANG PESAN KELUAR */
-        .msg-status-icon {
-            font-size: 0.72rem;
+        /* INDIKATOR CENTANG PANJANG & RAPI */
+        .msg-check-svg {
             display: inline-flex;
             align-items: center;
-            line-height: 1;
+            vertical-align: middle;
+            transition: all 0.2s ease;
         }
-        .msg-status-icon.sent {
+        .msg-check-svg.sent {
             color: rgba(255, 255, 255, 0.72);
         }
-        .msg-status-icon.delivered {
-            color: rgba(255, 255, 255, 0.95);
+        .msg-check-svg.delivered {
+            color: rgba(255, 255, 255, 0.96);
         }
-        .msg-status-icon.read {
+        .msg-check-svg.read {
             color: #4ade80;
+            filter: drop-shadow(0 0 3px rgba(74, 222, 128, 0.45));
         }
 
-        /* BUBBLE ANIMASI SEDANG MENGETIK DI AREA PESAN */
+        /* BUBBLE ANIMASI MENGETIK DI BAWAH CHAT TERAKHIR */
         .typing-bubble-wrapper {
             display: none;
             align-items: flex-start;
             width: 100%;
             flex-shrink: 0;
+            animation: typingBubbleFadeIn 0.2s ease;
         }
         .typing-bubble-wrapper.active {
             display: flex;
+        }
+        @keyframes typingBubbleFadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .typing-bubble-box {
             background: #ffffff;
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
             border-bottom-left-radius: 4px;
-            padding: 0.65rem 0.9rem;
+            padding: 0.65rem 0.95rem;
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+            gap: 0.4rem;
+            box-shadow: 0 3px 10px rgba(15, 23, 42, 0.06);
         }
         .typing-dot-circle {
             width: 7px;
             height: 7px;
             border-radius: 50%;
-            background: #64748b;
-            animation: typingWaveDot 1.3s infinite ease-in-out;
+            background: var(--primary);
+            animation: typingWaveDot 1.25s infinite ease-in-out;
         }
-        .typing-dot-circle:nth-child(2) { animation-delay: 0.18s; }
-        .typing-dot-circle:nth-child(3) { animation-delay: 0.36s; }
+        .typing-dot-circle:nth-child(2) { animation-delay: 0.16s; background: #3b82f6; }
+        .typing-dot-circle:nth-child(3) { animation-delay: 0.32s; background: var(--accent); }
         @keyframes typingWaveDot {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-            30% { transform: translateY(-4px); opacity: 1; }
+            0%, 60%, 100% { transform: translateY(0) scale(0.92); opacity: 0.45; }
+            30% { transform: translateY(-5px) scale(1.12); opacity: 1; }
         }
 
         /* KARTU RIWAYAT PANGGILAN DI CHAT */
@@ -386,14 +392,13 @@
             </div>
 
             <!-- ISI PESAN -->
-            <div class="chat-messages" id="chatMessages"></div>
-
-            <!-- BUBBLE ANIMASI MENGETIK DI AREA CHAT -->
-            <div id="typingBubbleWrapper" class="typing-bubble-wrapper">
-                <div class="typing-bubble-box">
-                    <span class="typing-dot-circle"></span>
-                    <span class="typing-dot-circle"></span>
-                    <span class="typing-dot-circle"></span>
+            <div class="chat-messages" id="chatMessages">
+                <div id="typingBubbleWrapper" class="typing-bubble-wrapper">
+                    <div class="typing-bubble-box">
+                        <span class="typing-dot-circle"></span>
+                        <span class="typing-dot-circle"></span>
+                        <span class="typing-dot-circle"></span>
+                    </div>
                 </div>
             </div>
 
@@ -485,6 +490,7 @@ function getEarlyUid() {
 
 function renderCachedMessagesImmediately(chatId, uid) {
     const messagesContainer = document.getElementById('chatMessages');
+    const typingBubbleWrapper = document.getElementById('typingBubbleWrapper');
     if (!messagesContainer || !chatId) return;
     try {
         const raw = localStorage.getItem(getChatCacheKey(chatId));
@@ -507,7 +513,11 @@ function renderCachedMessagesImmediately(chatId, uid) {
                 read: Boolean(item.read),
                 createdAt: fakeTimestamp
             }, uid);
-            messagesContainer.appendChild(el);
+            if (typingBubbleWrapper) {
+                messagesContainer.insertBefore(el, typingBubbleWrapper);
+            } else {
+                messagesContainer.appendChild(el);
+            }
         });
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     } catch (e) {}
@@ -755,7 +765,8 @@ function renderOtherTypingIndicator(isTyping) {
     if (headerTypingEl) {
         headerTypingEl.classList.toggle('active', Boolean(isTyping));
     }
-    if (bubbleWrapperEl) {
+    if (bubbleWrapperEl && messagesContainer) {
+        messagesContainer.appendChild(bubbleWrapperEl);
         bubbleWrapperEl.classList.toggle('active', Boolean(isTyping));
     }
     if (isTyping && messagesContainer) {
@@ -778,12 +789,32 @@ function getMessageCheckStatus(message) {
 
 function renderCheckmarkHtml(statusKey) {
     if (statusKey === 'read') {
-        return `<span class="msg-status-icon read" title="Dibaca"><i class="fas fa-check-double"></i></span>`;
+        return `
+            <span class="msg-check-svg read" title="Dibaca">
+                <svg width="22" height="14" viewBox="0 0 24 14" fill="none">
+                    <path d="M1.5 7.5L5.8 11.8L13.5 2.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8.5 7.5L12.8 11.8L22.2 2.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+        `;
     }
     if (statusKey === 'delivered') {
-        return `<span class="msg-status-icon delivered" title="Terkirim ke pengguna"><i class="fas fa-check-double"></i></span>`;
+        return `
+            <span class="msg-check-svg delivered" title="Terkirim ke pengguna">
+                <svg width="22" height="14" viewBox="0 0 24 14" fill="none">
+                    <path d="M1.5 7.5L5.8 11.8L13.5 2.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8.5 7.5L12.8 11.8L22.2 2.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+        `;
     }
-    return `<span class="msg-status-icon sent" title="Terkirim ke database"><i class="fas fa-check"></i></span>`;
+    return `
+        <span class="msg-check-svg sent" title="Terkirim ke database">
+            <svg width="16" height="14" viewBox="0 0 18 14" fill="none">
+                <path d="M2 7.5L6.8 11.8L16 2.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </span>
+    `;
 }
 
 function escapeHtml(text) {
@@ -1059,6 +1090,7 @@ async function initChat(user) {
     const messagesRef = collection(db, 'chats', activeChatId, 'messages');
     const qMsgs = query(messagesRef, orderBy('createdAt', 'asc'));
     const messagesContainer = document.getElementById('chatMessages');
+    const typingBubbleWrapper = document.getElementById('typingBubbleWrapper');
 
     if (cleanupMessagesSync) {
         cleanupMessagesSync();
@@ -1073,15 +1105,26 @@ async function initChat(user) {
         createElement: (msgId, msgData) => buildMessageElement(msgId, msgData, currentUid),
         updateElement: (existingEl, msgId, msgData) => updateMessageElement(existingEl, msgId, msgData, currentUid),
         onAddedItem: (msgId, msgData, docSnap) => {
+            if (typingBubbleWrapper && messagesContainer) {
+                messagesContainer.appendChild(typingBubbleWrapper);
+            }
+
             if (msgData.senderUid !== currentUid) {
-                // Tandai pesan masuk sebagai terkirim ke user (delivered) & dibaca bila halaman terlihat
-                const updates = { delivered: true };
-                if (updates.status !== 'read') updates.status = 'delivered';
-                if (document.visibilityState === 'visible') {
+                const isPageVisible = document.visibilityState === 'visible';
+                const updates = {};
+
+                if (msgData.delivered !== true) {
+                    updates.delivered = true;
+                    if (msgData.status !== 'read' && msgData.read !== true) {
+                        updates.status = 'delivered';
+                    }
+                }
+                if (isPageVisible && msgData.read !== true) {
                     updates.read = true;
                     updates.status = 'read';
                 }
-                if (docSnap?.ref) {
+
+                if (Object.keys(updates).length > 0 && docSnap?.ref) {
                     updateDoc(docSnap.ref, updates).catch(() => {});
                 }
 
@@ -1091,7 +1134,7 @@ async function initChat(user) {
                 ) {
                     lastNotifiedMessageId = msgId;
 
-                    if (document.visibilityState === 'visible') {
+                    if (isPageVisible) {
                         updateDoc(doc(db, 'chats', activeChatId), {
                             [`unread_${currentUid}`]: false
                         }).catch(() => {});
@@ -1114,15 +1157,42 @@ async function initChat(user) {
                 }
             }
         },
-        onModifiedItem: (msgId, msgData) => {
+        onModifiedItem: (msgId, msgData, docSnap) => {
             if (msgData.senderUid !== currentUid && !String(msgData.text || '').startsWith('[CALL_LOG]|')) {
-                if (document.visibilityState === 'visible' && msgData.read !== true) {
-                    updateDoc(doc(db, 'chats', activeChatId, 'messages', msgId), {
-                        delivered: true,
-                        read: true,
-                        status: 'read'
-                    }).catch(() => {});
+                const isPageVisible = document.visibilityState === 'visible';
+                const updates = {};
+                if (msgData.delivered !== true) {
+                    updates.delivered = true;
+                    if (!msgData.read && msgData.status !== 'read') {
+                        updates.status = 'delivered';
+                    }
                 }
+                if (isPageVisible && msgData.read !== true) {
+                    updates.read = true;
+                    updates.status = 'read';
+                }
+                if (Object.keys(updates).length > 0 && docSnap?.ref) {
+                    updateDoc(docSnap.ref, updates).catch(() => {});
+                }
+            }
+        },
+        onSnapshotDone: (snapshot) => {
+            if (typingBubbleWrapper && messagesContainer) {
+                messagesContainer.appendChild(typingBubbleWrapper);
+            }
+            if (document.visibilityState === 'visible' && currentUid) {
+                snapshot.forEach(docSnap => {
+                    const m = docSnap.data();
+                    if (m.senderUid && m.senderUid !== currentUid) {
+                        if (m.delivered !== true || m.read !== true) {
+                            updateDoc(docSnap.ref, {
+                                delivered: true,
+                                read: true,
+                                status: 'read'
+                            }).catch(() => {});
+                        }
+                    }
+                });
             }
         },
         onError: error => {
