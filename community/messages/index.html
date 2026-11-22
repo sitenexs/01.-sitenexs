@@ -72,14 +72,6 @@
             position: sticky; top: 0; z-index: 1000; background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-subtle); flex-shrink: 0;
         }
-        .nav-container { 
-            display: flex; align-items: center; justify-content: space-between; 
-            height: 56px; width: 100%; max-width: 800px; margin: 0 auto; padding: 0 1rem; 
-        }
-        .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 0.95rem; color: var(--text-main); white-space: nowrap; }
-        .logo img { height: 28px; width: 28px; border-radius: 50%; object-fit: cover; }
-        .logo-text { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; font-weight: 800; letter-spacing: -0.5px; font-size: 0.9rem; }
-        .nav-actions { display: flex; gap: 0.5rem; align-items: center; }
 
         .btn {
             display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
@@ -91,19 +83,6 @@
         .btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
         .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2); }
         .btn-primary:hover { background: var(--primary-dark); }
-
-        /* IKON NOTIFIKASI LONCENG */
-        .notification-bell-btn {
-            position: relative; width: 36px; height: 36px; border-radius: 50%; background: var(--bg-alt);
-            border: 1px solid var(--border-subtle); display: inline-flex; align-items: center; justify-content: center;
-            color: var(--text-main); cursor: pointer; transition: var(--transition);
-        }
-        .notification-bell-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--border-medium); }
-        .global-unread-badge {
-            position: absolute; top: -3px; right: -3px; background: #ef4444; color: #fff;
-            font-size: 0.62rem; font-weight: 800; padding: 0.1rem 0.35rem; border-radius: var(--radius-full);
-            border: 2px solid #fff; display: none; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.3);
-        }
 
         /* BANNER DALAM PANGGILAN (DI BAWAH NAVBAR) */
         .active-call-banner {
@@ -275,8 +254,6 @@
         .toast { background: #0f172a; color: #fff; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.82rem; font-weight: 600; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1); display: flex; align-items: center; gap: 0.6rem; border-left: 4px solid var(--accent); }
 
         @media (max-width: 576px) {
-            .nav-container { padding: 0 0.75rem; }
-            .logo-text { display: none; }
             .conversation-item { padding: 0.75rem 1rem; }
         }
     </style>
@@ -309,23 +286,8 @@
         </div>
     </div>
 
-    <!-- NAVBAR -->
-    <header id="navbar">
-        <div class="nav-container">
-            <a href="https://sitenexs.com/" class="logo">
-                <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff'">
-                <span class="logo-text">Sitenexs Chat</span>
-            </a>
-            <div class="nav-actions">
-                <div class="notification-bell-btn" title="Notifikasi Pesan Belum Dibaca">
-                    <i class="fas fa-bell"></i>
-                    <span class="global-unread-badge" id="globalUnreadBadge">0</span>
-                </div>
-                <a href="https://sitenexs.com/community/" class="btn btn-secondary" title="Komunitas"><i class="fas fa-users"></i></a>
-                <a href="https://account.sitenexs.com/profile" class="btn btn-primary"><i class="fas fa-user-circle"></i> Profil</a>
-            </div>
-        </div>
-    </header>
+    <!-- NAVBAR DINAMIS DARI MODUL COMMUNITY -->
+    <header id="navbar"></header>
 
     <!-- BANNER DI BAWAH NAVBAR SAAT SEDANG BERADA DI DALAM PANGGILAN -->
     <div id="activeCallBanner" class="active-call-banner" role="button" tabindex="0">
@@ -356,7 +318,7 @@
         <div class="conversations-list" id="conversationsList"></div>
     </main>
 
-    <!-- MODUL KONFIGURASI, DATA USER & PANGGILAN MASUK -->
+    <!-- MODUL KONFIGURASI, DATA USER, NAVBAR COMMUNITY & PANGGILAN MASUK -->
     <script type="module">
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
         import { doc, updateDoc, deleteDoc, setDoc, collection, query, where, onSnapshot, serverTimestamp as fsServerTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
@@ -374,10 +336,26 @@
         } from 'https://sitenexs.com/assets/js/sitenexs-user-data.js';
 
         import {
+            mountSitenexsNavbar,
+            setNavbarUserProfile
+        } from 'https://sitenexs.com/assets/js/sitenexs-navbar.js';
+
+        import {
             DEFAULT_CALL_PAGE_URL,
             attachForcedIncomingCallRedirect,
             attachOngoingCallBanner
         } from 'https://sitenexs.com/assets/js/sitenexs-call-presence.js';
+
+        mountSitenexsNavbar({
+            targetSelector: '#navbar',
+            onSelectNotif: ({ postId, focusComments }) => {
+                if (!postId) return;
+                const url = new URL('https://sitenexs.com/community/');
+                url.searchParams.set('post', postId);
+                if (focusComments) url.searchParams.set('comments', '1');
+                window.location.href = url.toString();
+            }
+        });
 
         let currentUid = null;
         let isInitialized = false;
@@ -626,6 +604,7 @@
                 restoreInboxFromCache(uid);
             }
 
+            setNavbarUserProfile(uid).catch(() => {});
             setupMyPresence(uid);
 
             if (cleanupIncomingRedirect) cleanupIncomingRedirect();
