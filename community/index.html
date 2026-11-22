@@ -125,6 +125,66 @@
         .text-primary { color: var(--primary); }
         .text-muted { color: var(--text-muted); }
 
+        /* BANNER DALAM PANGGILAN (DI BAWAH NAVBAR) */
+        .active-call-banner {
+            display: none;
+            width: 100%;
+            max-width: 680px;
+            margin: 0.5rem auto 0;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.55rem 1rem;
+            background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+            color: #ffffff;
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+            transition: var(--transition);
+        }
+        .active-call-banner:hover {
+            filter: brightness(1.04);
+        }
+        .active-call-banner.active {
+            display: flex;
+        }
+        .active-call-banner-left {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-width: 0;
+        }
+        .active-call-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ffffff;
+            flex-shrink: 0;
+            animation: callBannerPulse 1.3s infinite ease-in-out;
+        }
+        @keyframes callBannerPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.45); opacity: 0.55; }
+        }
+        .active-call-banner-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .active-call-banner-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: rgba(255, 255, 255, 0.22);
+            padding: 0.24rem 0.65rem;
+            border-radius: var(--radius-full);
+            font-size: 0.72rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
         /* MODAL IZIN NOTIFIKASI (BISA DITUTUP) */
         .force-notif-backdrop {
             position: fixed; inset: 0;
@@ -323,6 +383,7 @@
         
         /* MODE FOKUS & BLUR */
         body.forum-focus-mode header,
+        body.forum-focus-mode .active-call-banner,
         body.forum-focus-mode .forum-header,
         body.forum-focus-mode .create-post-box,
         body.forum-focus-mode .post-card:not(.focused-card) {
@@ -605,6 +666,19 @@
     <!-- NAVBAR DINAMIS DARI MODUL TERPISAH -->
     <header id="navbar"></header>
 
+    <!-- BANNER DI BAWAH NAVBAR SAAT SEDANG BERADA DI DALAM PANGGILAN -->
+    <div id="activeCallBanner" class="active-call-banner" role="button" tabindex="0">
+        <div class="active-call-banner-left">
+            <span class="active-call-pulse"></span>
+            <i id="activeCallBannerIcon" class="fas fa-phone-alt"></i>
+            <span id="activeCallBannerText" class="active-call-banner-text">Dalam panggilan...</span>
+        </div>
+        <span class="active-call-banner-cta">
+            <span>Masuk</span>
+            <i class="fas fa-chevron-right"></i>
+        </span>
+    </div>
+
     <!-- HEADER FORUM -->
     <div class="forum-header">
         <div class="forum-header-content">
@@ -668,7 +742,6 @@
     <script type="module">
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
         import { doc, getDoc, setDoc, deleteDoc, collection, addDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp, query, orderBy, where, onSnapshot, getDocs } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
-        import { ref, onValue, remove } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
 
         import {
             db,
@@ -697,7 +770,12 @@
             sendPushNotification
         } from 'https://sitenexs.com/assets/js/sitenexs-push-client.js';
 
-        const CALL_PAGE_URL = 'https://sitenexs.com/community/messages/call/';
+        import {
+            DEFAULT_CALL_PAGE_URL,
+            attachForcedIncomingCallRedirect,
+            attachOngoingCallBanner
+        } from 'https://sitenexs.com/assets/js/sitenexs-call-presence.js';
+
         const supabaseKey = 'sb_publishable_XKHXYrEw2EDdfYH17Uyx6w_k_BtGLQa';
         const forumBucket = 'forum-photos';
         const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
@@ -708,9 +786,9 @@
         let currentUserData = null;
         let isInitialLoad = true;
         let isInitialChatsLoad = true;
-        let unsubscribeIncomingCalls = null;
+        let cleanupIncomingRedirect = null;
+        let cleanupOngoingBanner = null;
         let unsubscribeChatsNotify = null;
-        let isRedirectingToCall = false;
         let previousLikesByPost = new Map();
         let previousCommentsByPost = new Map();
         const notifiedLikeKeys = new Set();
@@ -918,39 +996,6 @@
                 }
             }
             return matched;
-        }
-
-        function listenIncomingCallsAndForceRedirect(uid) {
-            if (!uid) return;
-            const incomingRef = ref(rtdb, `incomingCalls/${uid}`);
-            if (unsubscribeIncomingCalls) unsubscribeIncomingCalls();
-
-            unsubscribeIncomingCalls = onValue(incomingRef, (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return;
-
-                if (data.timestamp && Date.now() - data.timestamp > 60000) {
-                    remove(incomingRef).catch(() => {});
-                    return;
-                }
-
-                if (data.callerUid === uid) return;
-
-                if (
-                    data.calleeUid === uid &&
-                    data.status === 'ringing' &&
-                    data.offer &&
-                    !isRedirectingToCall
-                ) {
-                    isRedirectingToCall = true;
-                    const callUrl = new URL(CALL_PAGE_URL);
-                    callUrl.searchParams.set('to', data.callerUid);
-                    callUrl.searchParams.set('mode', 'incoming');
-                    callUrl.searchParams.set('roomId', data.roomId);
-                    callUrl.searchParams.set('type', data.callType === 'audio' ? 'audio' : 'video');
-                    window.location.replace(callUrl.toString());
-                }
-            });
         }
 
         function listenNewMessagesForUser(uid) {
@@ -1260,7 +1305,25 @@
                 localStorage.setItem('sitenexs_logged_in', 'true');
                 localStorage.setItem('sitenexs_uid', uid);
 
-                listenIncomingCallsAndForceRedirect(uid);
+                if (cleanupIncomingRedirect) cleanupIncomingRedirect();
+                cleanupIncomingRedirect = attachForcedIncomingCallRedirect({
+                    rtdb,
+                    currentUid: uid,
+                    callPageUrl: DEFAULT_CALL_PAGE_URL,
+                    fallbackPeerName: namaLengkap
+                });
+
+                if (cleanupOngoingBanner) cleanupOngoingBanner();
+                cleanupOngoingBanner = attachOngoingCallBanner({
+                    rtdb,
+                    currentUid: uid,
+                    bannerElement: document.getElementById('activeCallBanner'),
+                    textElement: document.getElementById('activeCallBannerText'),
+                    iconElement: document.getElementById('activeCallBannerIcon'),
+                    fallbackPeerName: namaLengkap,
+                    callPageUrl: DEFAULT_CALL_PAGE_URL
+                });
+
                 listenNewMessagesForUser(uid);
                 await registerPushServiceWorker();
                 if ('Notification' in window && Notification.permission === 'granted') {
