@@ -333,7 +333,6 @@ import {
     addDoc,
     query,
     orderBy,
-    onSnapshot,
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
@@ -364,6 +363,10 @@ import {
     attachOngoingCallBanner
 } from 'https://sitenexs.com/assets/js/sitenexs-call-presence.js';
 
+import {
+    attachFlickerFreeSnapshot
+} from 'https://sitenexs.com/assets/js/sitenexs-realtime-sync.js';
+
 let currentUid = null;
 let myProfile = null;
 let myUserName = 'Mitra Sitenexs';
@@ -374,10 +377,9 @@ let otherProfile = null;
 let otherUserName = 'Mitra Sitenexs';
 let otherUserFcmToken = null;
 
-let unsubscribeMessages = null;
+let cleanupMessagesSync = null;
 let cleanupIncomingRedirect = null;
 let cleanupOngoingBanner = null;
-let isInitialMessagesLoad = true;
 let lastNotifiedMessageId = null;
 let isRedirectingToCall = false;
 let isChatInitialized = false;
@@ -698,7 +700,7 @@ function buildMessageElement(docId, message) {
     return wrapper;
 }
 
-function updateMessageElement(wrapper, message) {
+function updateMessageElement(wrapper, _docId, message) {
     const isOutgoing = message.senderUid === currentUid;
     wrapper.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
 
@@ -756,81 +758,52 @@ async function initChat(user) {
 
     const messagesRef = collection(db, 'chats', activeChatId, 'messages');
     const qMsgs = query(messagesRef, orderBy('createdAt', 'asc'));
+    const messagesContainer = document.getElementById('chatMessages');
 
-    if (unsubscribeMessages) {
-        unsubscribeMessages();
+    if (cleanupMessagesSync) {
+        cleanupMessagesSync();
     }
 
-    isInitialMessagesLoad = true;
-    const messagesContainer = document.getElementById('chatMessages');
-    messagesContainer.innerHTML = '';
+    cleanupMessagesSync = attachFlickerFreeSnapshot({
+        queryRef: qMsgs,
+        container: messagesContainer,
+        keyAttr: 'data-msg-id',
+        autoScroll: true,
+        createElement: (msgId, msgData) => buildMessageElement(msgId, msgData),
+        updateElement: (existingEl, msgId, msgData) => updateMessageElement(existingEl, msgId, msgData),
+        onAddedItem: (msgId, msgData) => {
+            if (
+                msgData.senderUid !== currentUid &&
+                lastNotifiedMessageId !== msgId &&
+                !String(msgData.text || '').startsWith('[CALL_LOG]|')
+            ) {
+                lastNotifiedMessageId = msgId;
 
-    unsubscribeMessages = onSnapshot(qMsgs, snapshot => {
-        let shouldScrollBottom = false;
-        const nearBottom = (messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight) < 120;
+                if (document.visibilityState === 'visible') {
+                    updateDoc(doc(db, 'chats', activeChatId), {
+                        [`unread_${currentUid}`]: false
+                    }).catch(() => {});
+                    playMessageNotificationSound();
+                } else {
+                    const previewText = String(msgData.text || '').includes('📋 *LAMARAN KERJA BARU*')
+                        ? 'Mengirim lamaran kerja baru'
+                        : String(msgData.text || 'Pesan baru');
 
-        snapshot.docChanges().forEach(change => {
-            const msgId = change.doc.id;
-            const msgData = change.doc.data();
-            const existingEl = messagesContainer.querySelector(`[data-msg-id="${msgId}"]`);
-
-            if (change.type === 'added') {
-                if (!existingEl) {
-                    const el = buildMessageElement(msgId, msgData);
-                    messagesContainer.appendChild(el);
-                    if (msgData.senderUid === currentUid || isInitialMessagesLoad || nearBottom) {
-                        shouldScrollBottom = true;
-                    }
-                }
-            } else if (change.type === 'modified') {
-                if (existingEl) {
-                    updateMessageElement(existingEl, msgData);
-                }
-            } else if (change.type === 'removed') {
-                if (existingEl) {
-                    existingEl.remove();
-                }
-            }
-
-            if (!isInitialMessagesLoad && change.type === 'added') {
-                if (
-                    msgData.senderUid !== currentUid &&
-                    lastNotifiedMessageId !== msgId &&
-                    !String(msgData.text || '').startsWith('[CALL_LOG]|')
-                ) {
-                    lastNotifiedMessageId = msgId;
-
-                    if (document.visibilityState === 'visible') {
-                        updateDoc(doc(db, 'chats', activeChatId), {
-                            [`unread_${currentUid}`]: false
-                        }).catch(() => {});
-                        playMessageNotificationSound();
-                    } else {
-                        const previewText = String(msgData.text || '').includes('📋 *LAMARAN KERJA BARU*')
-                            ? 'Mengirim lamaran kerja baru'
-                            : String(msgData.text || 'Pesan baru');
-
-                        triggerLocalSystemNotification(
-                            otherUserName,
-                            previewText,
-                            {
-                                tag: `chat-${activeChatId}`,
-                                icon: otherProfile?.avatarUrl || getUserAvatarUrl(activeChatUserId),
-                                url: window.location.href
-                            }
-                        );
-                    }
+                    triggerLocalSystemNotification(
+                        otherUserName,
+                        previewText,
+                        {
+                            tag: `chat-${activeChatId}`,
+                            icon: otherProfile?.avatarUrl || getUserAvatarUrl(activeChatUserId),
+                            url: window.location.href
+                        }
+                    );
                 }
             }
-        });
-
-        if (shouldScrollBottom) {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        },
+        onError: error => {
+            console.error('Message listener error:', error);
         }
-
-        isInitialMessagesLoad = false;
-    }, error => {
-        console.error('Message listener error:', error);
     });
 
     updateDoc(doc(db, 'chats', activeChatId), {
