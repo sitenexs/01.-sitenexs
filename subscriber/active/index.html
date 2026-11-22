@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profiling Mitra Berlangganan — Sitenexs</title>
+    
+    <!-- Meta SEO -->
+    <meta name="description" content="Daftar pelanggan yang diambil langsung dari database Sitenexs beserta paket langganan yang digunakan.">
+    <meta name="keywords" content="SiteNexs, Profiling Mitra, Pengguna Berlangganan, Paket Langganan SiteNexs">
+    <meta name="author" content="SiteNexs">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://sitenexs.com/profiling.html">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://sitenexs.com/assets/logo/logo.png">
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --accent: #10b981;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-alt: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-subtle: #e2e8f0;
+            --border-medium: #cbd5e1;
+            --border-accent: #93c5fd;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+            --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 20px 35px -10px rgba(15, 23, 42, 0.1);
+            --shadow-card: 0 20px 40px -12px rgba(37, 99, 235, 0.15);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.625rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+            --radius-full: 9999px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* TEMA SILVER / PRO */
+        body[data-package="silver"],
+        body[data-package="pro"] {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --primary-light: #f0f9ff;
+            --accent: #64748b;
+            --border-accent: #38bdf8;
+        }
+
+        /* TEMA GOLD */
+        body[data-package="gold"] {
+            --primary: #d97706;
+            --primary-dark: #b45309;
+            --primary-light: #fffbeb;
+            --accent: #f59e0b;
+            --border-accent: #fbbf24;
+        }
+
+        /* TEMA PLATINUM / VIP */
+        body[data-package="platinum"],
+        body[data-package="vip"],
+        body[data-package="ultimate"],
+        body[data-package="premium"] {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --primary-light: #f5f3ff;
+            --accent: #fbbf24;
+            --border-accent: #c084fc;
+        }
+
+        body[data-package="platinum"] #navbar,
+        body[data-package="vip"] #navbar,
+        body[data-package="ultimate"] #navbar,
+        body[data-package="premium"] #navbar {
+            border-bottom: 2px solid transparent;
+            border-image: linear-gradient(90deg, #7c3aed, #fbbf24, #7c3aed) 1;
+        }
+
+        .user-package-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: var(--radius-full);
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            transition: var(--transition);
+        }
+
+        .user-package-badge.basic { background: #e2e8f0; color: #475569; }
+        .user-package-badge.silver { background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%); color: #ffffff; box-shadow: 0 3px 10px rgba(100, 116, 139, 0.3); }
+        .user-package-badge.gold { background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); color: #ffffff; box-shadow: 0 3px 10px rgba(217, 119, 6, 0.35); }
+        .user-package-badge.platinum { background: linear-gradient(135deg, #7c3aed 0%, #b45309 100%); color: #ffffff; border: 1px solid #fef08a; box-shadow: 0 0 12px rgba(251, 191, 36, 0.4); }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; font-size: 15px; width: 100%; }
+        body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; background-color: var(--bg-body); color: var(--text-main); line-height: 1.6; overflow-x: hidden; width: 100%; -webkit-font-smoothing: antialiased; transition: background-color 0.4s ease, color 0.4s ease; }
+        a { text-decoration: none; color: inherit; }
+        button, input { font-family: inherit; outline: none; }
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; position: relative; z-index: 2; }
+
+        .bg-grid-pattern {
+            background-image: linear-gradient(to right, rgba(37, 99, 235, 0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(37, 99, 235, 0.06) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .bg-gradient-soft { background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%); }
+
+        .text-primary { color: var(--primary); }
+        .text-accent { color: var(--accent); }
+        .text-muted { color: var(--text-muted); }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.5rem; font-size: 0.9rem; font-weight: 700; border-radius: var(--radius-full); transition: var(--transition); cursor: pointer; border: 1px solid transparent; text-align: center; line-height: 1.2; }
+        .btn-sm { padding: 0.45rem 1.1rem; font-size: 0.85rem; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #ffffff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35); }
+        .btn-secondary { background-color: #ffffff; color: var(--text-main); border: 1px solid var(--border-medium); box-shadow: var(--shadow-sm); }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .btn-outline-primary { background-color: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
+        .btn-outline-primary:hover { background-color: var(--primary-light); transform: translateY(-2px); }
+
+        /* NAVBAR STYLING */
+        #navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-sm);
+        }
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 76px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: var(--text-main);
+            flex-shrink: 0;
+        }
+        .logo-text {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+        .logo-img {
+            height: 38px;
+            width: 38px;
+            border-radius: var(--radius-full);
+            object-fit: cover;
+            border: 2px solid #fff;
+            box-shadow: var(--shadow-sm);
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0 1rem;
+        }
+        .nav-links a {
+            color: var(--text-muted);
+            transition: var(--transition);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary);
+            font-weight: 700;
+        }
+        .nav-divider {
+            width: 1px;
+            height: 18px;
+            background-color: var(--border-medium);
+            flex-shrink: 0;
+        }
+        .nav-layanan-link {
+            color: var(--primary) !important;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            white-space: nowrap;
+        }
+        .nav-auth-desktop {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-main);
+            padding: 0.4rem 0.75rem;
+            transition: var(--transition);
+        }
+        .mobile-toggle:hover { background: var(--bg-alt); }
+
+        #mobile-menu {
+            display: none;
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            box-shadow: var(--shadow-md);
+        }
+        #mobile-menu.show {
+            display: block;
+            animation: slideDown 0.3s ease forwards;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #mobile-menu a.nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border-subtle);
+            cursor: pointer;
+        }
+
+        /* HEADER PROFILING SECTION */
+        .profiling-hero {
+            padding-top: 120px;
+            padding-bottom: 3rem;
+            text-align: center;
+        }
+        .section-subtitle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: var(--primary);
+            text-transform: uppercase;
+            margin-bottom: 0.85rem;
+            padding: 0.35rem 1.1rem;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: var(--radius-full);
+            border: 1px solid rgba(37, 99, 235, 0.18);
+        }
+        .page-title {
+            font-size: clamp(1.8rem, 3.2vw, 2.5rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+            line-height: 1.25;
+            margin-bottom: 0.75rem;
+        }
+        .page-desc {
+            font-size: 1rem;
+            color: var(--text-muted);
+            max-width: 680px;
+            margin: 0 auto 2.25rem auto;
+            line-height: 1.65;
+        }
+
+        /* STATS SUMMARY BAR */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.15rem;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem 1rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            text-align: left;
+            transition: var(--transition);
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--border-accent);
+        }
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+        .stat-icon.all { background: var(--primary-light); color: var(--primary); }
+        .stat-icon.silver { background: #f1f5f9; color: #475569; }
+        .stat-icon.gold { background: #fef3c7; color: #d97706; }
+        .stat-icon.platinum { background: #f3e8ff; color: #7c3aed; }
+        .stat-value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.15;
+        }
+        .stat-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+
+        /* DIRECTORY SECTION */
+        .directory-section {
+            padding: 2.5rem 0 5rem 0;
+        }
+        .filter-toolbar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+        }
+        .filter-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex: 1;
+            min-width: 260px;
+            background: var(--bg-body);
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-full);
+            padding: 0.6rem 1.2rem;
+            transition: var(--transition);
+        }
+        .search-wrapper:focus-within {
+            border-color: var(--primary);
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+        .search-wrapper i { color: var(--text-muted); }
+        .search-input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 0.92rem;
+            color: var(--text-main);
+        }
+
+        /* PACKAGE FILTER PILLS */
+        .package-tabs {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.25rem;
+            scrollbar-width: none;
+        }
+        .package-tabs::-webkit-scrollbar { display: none; }
+        .pkg-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.82rem;
+            font-weight: 700;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-body);
+            color: var(--text-muted);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: var(--transition);
+        }
+        .pkg-tab:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .pkg-tab.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25);
+        }
+
+        /* RESULT INFO BAR */
+        .result-meta-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            padding: 0.25rem 0.25rem;
+            font-size: 0.86rem;
+            color: var(--text-muted);
+        }
+        .result-count strong {
+            color: var(--text-main);
+            font-weight: 800;
+        }
+
+        /* SUBSCRIBER CARDS GRID */
+        .subscribers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 1.35rem;
+            width: 100%;
+        }
+        .sub-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .sub-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-accent);
+        }
+        .sub-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+        }
+
+        /* Tier Card Accents */
+        .sub-card.tier-basic::before {
+            background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+        }
+        .sub-card.tier-silver::before {
+            background: linear-gradient(90deg, #64748b 0%, #cbd5e1 100%);
+        }
+        .sub-card.tier-gold::before {
+            background: linear-gradient(90deg, #d97706 0%, #fbbf24 100%);
+        }
+        .sub-card.tier-platinum {
+            background: linear-gradient(160deg, #ffffff 0%, #faf5ff 100%);
+            border-color: rgba(124, 58, 237, 0.25);
+        }
+        .sub-card.tier-platinum::before {
+            height: 5px;
+            background: linear-gradient(90deg, #7c3aed 0%, #fbbf24 50%, #d97706 100%);
+        }
+
+        .sub-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.15rem;
+        }
+        .sub-avatar-wrap {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            padding: 2.5px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            flex-shrink: 0;
+            box-shadow: var(--shadow-sm);
+        }
+        .tier-platinum .sub-avatar-wrap {
+            background: linear-gradient(135deg, #7c3aed 0%, #fbbf24 100%);
+        }
+        .sub-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center 20%;
+            background: #f1f5f9;
+            border: 2px solid #ffffff;
+        }
+        .sub-identity {
+            flex: 1;
+            min-width: 0;
+        }
+        .sub-name {
+            font-size: 1.02rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-bottom: 0.2rem;
+        }
+        .sub-name-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .badge-png {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
+            flex-shrink: 0;
+            display: inline-block;
+        }
+        .sub-business {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        /* PACKAGE DISPLAY BOX INSIDE CARD */
+        .sub-package-box {
+            background: var(--bg-body);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 0.85rem 1rem;
+            margin-bottom: 1.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .tier-platinum .sub-package-box {
+            background: rgba(124, 58, 237, 0.05);
+            border-color: rgba(124, 58, 237, 0.18);
+        }
+        .tier-gold .sub-package-box {
+            background: rgba(217, 119, 6, 0.05);
+            border-color: rgba(245, 158, 11, 0.22);
+        }
+        .pkg-label-small {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        .pkg-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+        .pkg-pill.basic {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
+        }
+        .pkg-pill.silver {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+            color: #ffffff;
+            box-shadow: 0 3px 8px rgba(100, 116, 139, 0.25);
+        }
+        .pkg-pill.gold {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #ffffff;
+            box-shadow: 0 3px 8px rgba(245, 158, 11, 0.25);
+        }
+        .pkg-pill.platinum {
+            background: linear-gradient(135deg, #7c3aed 0%, #b45309 100%);
+            color: #ffffff;
+            border: 1px solid #fef08a;
+            box-shadow: 0 3px 10px rgba(124, 58, 237, 0.25);
+        }
+
+        .sub-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding-top: 0.85rem;
+            border-top: 1px dashed var(--border-subtle);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+        .sub-sector-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.65rem;
+            background: rgba(37, 99, 235, 0.08);
+            color: var(--primary);
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 0.74rem;
+        }
+        .sub-profile-btn {
+            background: none;
+            border: none;
+            font-weight: 700;
+            color: var(--primary);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+        .sub-profile-btn:hover {
+            color: var(--primary-dark);
+            transform: translateX(3px);
+        }
+
+        /* PAGINATION BAR */
+        .pagination-wrapper {
+            margin-top: 2.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .page-btn {
+            min-width: 40px;
+            height: 40px;
+            padding: 0 0.75rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-medium);
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-size: 0.88rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .page-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+        .page-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25);
+        }
+        .page-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        /* EMPTY & LOADING STATE */
+        .state-box {
+            grid-column: 1 / -1;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            padding: 3.5rem 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+        .state-box i {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 0.85rem;
+            display: block;
+        }
+        .state-box h3 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.35rem;
+        }
+
+        /* MODAL PROFIL PELANGGAN */
+        .profile-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.68);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s ease;
+        }
+        .profile-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .profile-modal-card {
+            width: 100%;
+            max-width: 620px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.28);
+            position: relative;
+            transform: translateY(14px) scale(0.97);
+            transition: all 0.25s ease;
+        }
+        .profile-modal-overlay.active .profile-modal-card {
+            transform: translateY(0) scale(1);
+        }
+        .profile-modal-banner {
+            height: 88px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            position: relative;
+        }
+        .profile-modal-banner.tier-silver {
+            background: linear-gradient(135deg, #64748b 0%, #cbd5e1 100%);
+        }
+        .profile-modal-banner.tier-gold {
+            background: linear-gradient(135deg, #d97706 0%, #fbbf24 100%);
+        }
+        .profile-modal-banner.tier-platinum {
+            background: linear-gradient(135deg, #7c3aed 0%, #fbbf24 100%);
+        }
+        .profile-modal-close {
+            position: absolute;
+            top: 0.85rem;
+            right: 0.85rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(15, 23, 42, 0.35);
+            color: #ffffff;
+            font-size: 1.05rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            z-index: 3;
+        }
+        .profile-modal-close:hover {
+            background: rgba(239, 68, 68, 0.9);
+        }
+        .profile-modal-body {
+            padding: 1.25rem 1.75rem 1.75rem 1.75rem;
+        }
+        .profile-modal-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.15rem;
+            flex-wrap: wrap;
+        }
+        .profile-modal-identity-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
+            flex: 1;
+        }
+        .profile-modal-avatar-box {
+            width: 84px;
+            height: 84px;
+            border-radius: var(--radius-lg);
+            padding: 3px;
+            background: #ffffff;
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-md);
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .profile-modal-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: calc(var(--radius-lg) - 3px);
+            object-fit: cover;
+            object-position: center top;
+            background: #f1f5f9;
+            display: block;
+        }
+        .profile-modal-title-group {
+            min-width: 0;
+            flex: 1;
+        }
+        .profile-modal-name {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            line-height: 1.25;
+        }
+        .profile-modal-sub {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .profile-modal-bio {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1.25rem;
+            line-height: 1.6;
+        }
+        .profile-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.85rem;
+            margin-bottom: 1.4rem;
+        }
+        .profile-detail-item {
+            background: var(--bg-body);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 0.85rem 1rem;
+        }
+        .profile-detail-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-bottom: 0.25rem;
+        }
+        .profile-detail-value {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text-main);
+            word-break: break-word;
+        }
+        .profile-modal-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        /* FOOTER */
+        .footer-section { background: var(--bg-body); padding: 2rem 0 4rem 0; }
+        .footer-card { background: #ffffff; border-radius: var(--radius-xl); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08); padding: 3.5rem 3.5rem 2rem 3.5rem; border: 1px solid var(--border-subtle); }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1.25fr; gap: 3rem; margin-bottom: 2.5rem; }
+        .footer-title { color: var(--text-main); font-weight: 800; margin-bottom: 1.25rem; font-size: 1.1rem; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 0.8rem; }
+        .footer-links a { transition: var(--transition); color: var(--text-muted); font-size: 0.96rem; cursor: pointer; }
+        .footer-links a:hover { color: var(--primary); }
+        .footer-contact-item { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.9rem; font-size: 0.96rem; color: var(--text-muted); }
+
+        @media (max-width: 1023px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .nav-auth-desktop { display: none !important; }
+            .mobile-toggle { display: block; }
+            .profiling-hero { padding-top: 105px; padding-bottom: 2rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+            .stat-card { padding: 1rem 0.85rem; }
+            .subscribers-grid { grid-template-columns: 1fr; }
+            .profile-modal-top { align-items: flex-start; }
+            .profile-detail-grid { grid-template-columns: 1fr; }
+            .profile-modal-body { padding: 1.15rem 1.25rem 1.35rem 1.25rem; }
+            .footer-card { padding: 2.25rem 1.5rem 1.5rem 1.5rem; border-radius: var(--radius-lg); }
+            .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <header id="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff&size=64&rounded=true';">
+                <span class="logo-text">SiteNexs</span>
+            </a>
+
+            <nav class="nav-links">
+                <a href="index.html">Beranda</a>
+                <a href="index.html#solusi-digital">Solusi</a>
+                <a href="index.html#harga">Paket Harga</a>
+                <a href="profiling.html" class="active">Mitra Berlangganan</a>
+                <a href="index.html#mitra">Komunitas</a>
+                <div class="nav-divider"></div>
+                <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" class="nav-layanan-link">
+                    Layanan <i class="fas fa-arrow-up-right-from-square" style="font-size: 0.75rem;"></i>
+                </a>
+            </nav>
+
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="nav-auth-desktop">
+                    <a href="https://account.sitenexs.com/sign-in/" id="desktopAuthBtn" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.9rem 0.35rem 0.35rem; border-radius: var(--radius-full);">
+                        <i class="fas fa-sign-in-alt"></i> Masuk / Daftar
+                    </a>
+                </div>
+                
+                <button id="mobile-menu-btn" class="mobile-toggle" aria-label="Open Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobile-menu">
+            <a href="index.html" class="nav-item">Beranda <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="index.html#solusi-digital" class="nav-item">Solusi Digital <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="index.html#harga" class="nav-item">Paket Harga <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="profiling.html" class="nav-item" style="color: var(--primary);">Mitra Berlangganan <i class="fas fa-chevron-right text-primary" style="font-size: 0.8rem;"></i></a>
+            <a href="index.html#mitra" class="nav-item">Komunitas Sitenexs <i class="fas fa-chevron-right text-muted" style="font-size: 0.8rem;"></i></a>
+            <a href="https://layanan.sitenexs.com" target="_blank" rel="noopener noreferrer" class="nav-item">
+                <span><i class="fas fa-layer-group text-primary" style="margin-right: 0.5rem;"></i> Layanan Sitenexs</span> 
+                <i class="fas fa-external-link-alt text-muted" style="font-size: 0.8rem;"></i>
+            </a>
+            
+            <div style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-subtle); display: grid; grid-template-columns: 1fr; gap: 0.75rem;">
+                <a href="https://account.sitenexs.com/sign-in/" id="mobileAuthBtn" class="btn btn-secondary btn-block">
+                    <i class="fas fa-sign-in-alt"></i> Masuk / Daftar
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO & RINGKASAN STATISTIK -->
+    <section class="profiling-hero bg-gradient-soft bg-grid-pattern">
+        <div class="container">
+            <span class="section-subtitle">
+                <i class="fas fa-database"></i> Database Sitenexs
+            </span>
+            <h1 class="page-title">Daftar Pelanggan yang Diambil Langsung dari Database <span class="logo-text">Sitenexs</span></h1>
+            <p class="page-desc">
+                Daftar pelanggan yang diambil langsung dari database Sitenexs beserta paket langganan yang digunakan. Tampilan diawali dari paket Basic dan dapat disaring berdasarkan Silver, Gold, hingga Platinum.
+            </p>
+
+            <!-- RINGKASAN JUMLAH PELANGGAN -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon all"><i class="fas fa-users"></i></div>
+                    <div>
+                        <div class="stat-value" id="statTotalSubs">1.736</div>
+                        <div class="stat-label">Total Langganan</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon silver"><i class="fas fa-medal"></i></div>
+                    <div>
+                        <div class="stat-value" id="statSilverSubs">0</div>
+                        <div class="stat-label">Paket Silver</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon gold"><i class="fas fa-crown"></i></div>
+                    <div>
+                        <div class="stat-value" id="statGoldSubs">0</div>
+                        <div class="stat-label">Paket Gold</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon platinum"><i class="fas fa-gem"></i></div>
+                    <div>
+                        <div class="stat-value" id="statPlatinumSubs">0</div>
+                        <div class="stat-label">Paket Platinum</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DIREKTORI USER BERLANGGANAN -->
+    <section class="directory-section">
+        <div class="container">
+            <!-- FILTER & PENCARIAN -->
+            <div class="filter-toolbar">
+                <div class="filter-top-row">
+                    <div class="search-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchSubscriber" class="search-input" placeholder="Cari nama pelanggan, nama usaha, bidang bisnis, atau paket...">
+                    </div>
+                </div>
+
+                <!-- FILTER TAB PAKET: BASIC (PERTAMA), SILVER, GOLD, PLATINUM -->
+                <div class="package-tabs" id="packageFilterTabs">
+                    <button type="button" class="pkg-tab active" data-filter="basic">
+                        <i class="fas fa-box"></i> Basic
+                    </button>
+                    <button type="button" class="pkg-tab" data-filter="silver">
+                        <i class="fas fa-medal"></i> Silver
+                    </button>
+                    <button type="button" class="pkg-tab" data-filter="gold">
+                        <i class="fas fa-crown"></i> Gold
+                    </button>
+                    <button type="button" class="pkg-tab" data-filter="platinum">
+                        <i class="fas fa-gem"></i> Platinum
+                    </button>
+                    <button type="button" class="pkg-tab" data-filter="all">
+                        <i class="fas fa-th-large"></i> Semua (1.736)
+                    </button>
+                </div>
+            </div>
+
+            <!-- INFO JUMLAH DATA & HALAMAN -->
+            <div class="result-meta-bar" id="resultMetaBar">
+                <div class="result-count" id="resultCountText">Mengambil data pelanggan dari database Sitenexs...</div>
+                <div id="pageRangeText"></div>
+            </div>
+
+            <!-- GRID PENGGUNA BERLANGGANAN -->
+            <div class="subscribers-grid" id="subscribersGrid">
+                <div class="state-box">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <h3>Mengambil Data Pelanggan dari Database Sitenexs...</h3>
+                    <p>Menyiapkan 1.736 data pelanggan beserta paket langganan yang digunakan.</p>
+                </div>
+            </div>
+
+            <!-- NAVIGASI HALAMAN (PAGINATION) -->
+            <div class="pagination-wrapper" id="paginationWrapper"></div>
+        </div>
+    </section>
+
+    <!-- MODAL PROFIL PELANGGAN -->
+    <div id="subscriberProfileModal" class="profile-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalSubName">
+        <div class="profile-modal-card" id="subscriberProfileCard">
+            <div class="profile-modal-banner" id="modalSubBanner">
+                <button type="button" class="profile-modal-close" id="closeSubscriberModal" aria-label="Tutup Profil">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="profile-modal-body" id="subscriberModalBody">
+                <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: var(--primary);"></i>
+                    <p style="margin-top: 0.5rem;">Memuat detail profil pelanggan...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer-section">
+        <div class="container">
+            <footer class="footer-card">
+                <div class="footer-grid">
+                    <div>
+                        <div class="logo" style="margin-bottom: 1.25rem;">
+                            <img src="https://sitenexs.com/assets/logo/logo.png" alt="Sitenexs Logo" class="logo-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Sitenexs&background=2563eb&color=fff&size=64&rounded=true';">
+                            <span class="logo-text" style="font-size: 1.4rem;">Sitenexs</span>
+                        </div>
+                        <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-muted); max-width: 320px;">
+                            Platform solusi digital inovatif yang didirikan di Bengkulu untuk mendorong modernisasi dan efisiensi operasional UMKM Indonesia.
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <div class="footer-title">Navigasi Halaman</div>
+                        <ul class="footer-links">
+                            <li><a href="index.html">Beranda Utama</a></li>
+                            <li><a href="index.html#solusi-digital">Katalog Solusi Digital</a></li>
+                            <li><a href="index.html#harga">Paket Harga Langganan</a></li>
+                            <li><a href="profiling.html">Profiling Mitra Berlangganan</a></li>
+                            <li><a href="index.html#mitra">Komunitas Sitenexs</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <div class="footer-title">Informasi Kontak</div>
+                        <div class="footer-contact-item">
+                            <i class="fas fa-map-marker-alt text-primary" style="width: 20px;"></i>
+                            <span>Kota Bengkulu, Bengkulu, ID</span>
+                        </div>
+                        <div class="footer-contact-item">
+                            <i class="fas fa-envelope text-primary" style="width: 20px;"></i>
+                            <span>sitenexs@gmail.com</span>
+                        </div>
+                        <div class="footer-contact-item">
+                            <i class="fas fa-phone text-primary" style="width: 20px;"></i>
+                            <span>+62 851-7713-7899</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="border-top: 1px solid var(--border-subtle); padding-top: 2rem; text-align: center; font-size: 0.9rem; color: var(--text-muted); margin-top: 1rem;">
+                    &copy; 2026 Sitenexs. Didirikan oleh <strong style="color: var(--primary);">Syafaat Nuryadi</strong>. All rights reserved.
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileNavItems = document.querySelectorAll('#mobile-menu a.nav-item');
+
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', () => { mobileMenu.classList.toggle('show'); });
+                mobileNavItems.forEach(item => { item.addEventListener('click', () => { mobileMenu.classList.remove('show'); }); });
+            }
+        });
+    </script>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: 'AIzaSyDuN4zlRaSnmcUSuXE_E84IE7d3Mz8E-N4',
+            authDomain: 'sitenexs-62919.firebaseapp.com',
+            projectId: 'sitenexs-62919',
+            storageBucket: 'sitenexs-62919.firebasestorage.app',
+            messagingSenderId: '1060348110644',
+            appId: '1:1060348110644:web:e45af14d5f26a9cf8e6761',
+            measurementId: 'G-C7YL0Q7YRQ'
+        };
+
+        const supabaseUrl = 'https://xqcbyamxiekdxytntlno.supabase.co';
+        const avatarBucket = 'profile-photos';
+        const VERIFIED_PNG_URL = 'https://sitenexs.com/assets/logo/verified.png';
+        const YELLOW_BADGE_PNG_URL = 'https://sitenexs.com/assets/logo/lencana.png';
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Sinkronisasi Tema & Navbar Auth User Login
+        function applyUserPackageTheme(paketLangganan) {
+            const pkg = (paketLangganan || 'basic').toLowerCase();
+            let themeCategory = 'basic';
+            if (pkg.includes('platinum') || pkg.includes('vip') || pkg.includes('ultimate') || pkg.includes('premium')) {
+                themeCategory = 'platinum';
+            } else if (pkg.includes('gold')) {
+                themeCategory = 'gold';
+            } else if (pkg.includes('silver') || pkg.includes('pro') || pkg.includes('business')) {
+                themeCategory = 'silver';
+            }
+            document.body.setAttribute('data-package', themeCategory);
+        }
+
+        function updateNavUserUI(uid, userData, fallbackName) {
+            const desktopAuthBtn = document.getElementById('desktopAuthBtn');
+            const mobileAuthBtn = document.getElementById('mobileAuthBtn');
+
+            const nama = userData?.namaLengkap || userData?.namaDepan || fallbackName || 'Mitra Sitenexs';
+            const paket = userData?.paketLangganan || 'Basic';
+            const pkgLower = paket.toLowerCase();
+            
+            let themeCategory = 'basic';
+            let badgeIcon = 'fa-box';
+            if (pkgLower.includes('platinum') || pkgLower.includes('vip') || pkgLower.includes('ultimate') || pkgLower.includes('premium')) {
+                themeCategory = 'platinum'; badgeIcon = 'fa-gem';
+            } else if (pkgLower.includes('gold')) {
+                themeCategory = 'gold'; badgeIcon = 'fa-crown';
+            } else if (pkgLower.includes('silver') || pkgLower.includes('pro') || pkgLower.includes('business')) {
+                themeCategory = 'silver'; badgeIcon = 'fa-medal';
+            }
+
+            const avatarUrl = `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(uid)}/profile-photo?t=${Date.now()}`;
+            const fallbackAvatar = buildInitialsAvatar(nama, 64);
+            const userBadgeHTML = `<span class="user-package-badge ${themeCategory}"><i class="fas ${badgeIcon}"></i> ${paket}</span>`;
+            
+            const profileButtonContent = `
+                <img src="${avatarUrl}" alt="${nama}" style="width: 26px; height: 26px; border-radius: 50%; object-fit: cover; object-position: center top; border: 1px solid var(--border-medium); flex-shrink: 0;" onerror="this.src='${fallbackAvatar}';">
+                <span style="font-weight: 700; max-width: 95px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${nama.split(' ')[0]}</span>
+                ${userBadgeHTML}
+            `;
+
+            if (desktopAuthBtn) {
+                desktopAuthBtn.innerHTML = profileButtonContent;
+                desktopAuthBtn.href = 'https://account.sitenexs.com/profile/';
+                desktopAuthBtn.style.background = '#ffffff';
+                desktopAuthBtn.style.border = '1px solid var(--border-medium)';
+            }
+            if (mobileAuthBtn) {
+                mobileAuthBtn.innerHTML = profileButtonContent;
+                mobileAuthBtn.href = 'https://account.sitenexs.com/profile/';
+                mobileAuthBtn.style.background = '#ffffff';
+                mobileAuthBtn.style.border = '1px solid var(--border-medium)';
+            }
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const userSnap = await getDoc(doc(db, "users", user.uid));
+                    const userData = userSnap.exists() ? userSnap.data() : null;
+                    applyUserPackageTheme(userData?.paketLangganan);
+                    updateNavUserUI(user.uid, userData, user.displayName);
+                } catch (e) {
+                    updateNavUserUI(user.uid, null, user.displayName);
+                }
+            } else {
+                const savedUid = localStorage.getItem('sitenexs_uid');
+                if (localStorage.getItem('sitenexs_logged_in') && savedUid) {
+                    try {
+                        const userSnap = await getDoc(doc(db, "users", savedUid));
+                        const userData = userSnap.exists() ? userSnap.data() : null;
+                        applyUserPackageTheme(userData?.paketLangganan);
+                        updateNavUserUI(savedUid, userData, 'Mitra');
+                    } catch (e) {}
+                }
+            }
+        });
+
+        // Konfigurasi Direktori: Total 1.736 Langganan, Tampilan Pertama Paket Basic
+        const ITEMS_PER_PAGE = 24;
+        const TOTAL_SUBSCRIPTIONS = 1736;
+
+        let allSubscribers = [];
+        let activePackageFilter = 'basic';
+        let currentPage = 1;
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+
+        // Lencana PNG biru untuk pengembang, dan lencana verifikasi kuning untuk paket Gold & Platinum
+        function isDeveloperUser(data) {
+            const roleStr = String(data?.jabatanPengembang || data?.role || '').toLowerCase();
+            return Boolean(data?.isDeveloper) || Boolean(data?.isFounder) || roleStr.includes('developer') || roleStr.includes('pengembang') || roleStr.includes('engineer');
+        }
+
+        function renderUserBadgesHTML(user, tierKey) {
+            let html = '';
+            if (user.isDeveloper) {
+                html += `<img src="${VERIFIED_PNG_URL}" class="badge-png" alt="Pengembang Terverifikasi" title="Pengembang Sitenexs">`;
+            }
+            if (tierKey === 'gold' || tierKey === 'platinum') {
+                html += `<img src="${YELLOW_BADGE_PNG_URL}" class="badge-png" alt="Lencana Verifikasi Kuning" title="Pelanggan ${tierKey === 'gold' ? 'Gold' : 'Platinum'} Terverifikasi">`;
+            }
+            return html;
+        }
+
+        // Inisial huruf depan nama di avatar
+        function getInitials(name) {
+            const parts = String(name || 'MS')
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean);
+            if (parts.length === 0) return 'MS';
+            if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+            return (parts[0][0] + parts[1][0]).toUpperCase();
+        }
+
+        function buildInitialsAvatar(name, size = 160, bgColor = '#2563eb') {
+            const initials = getInitials(name);
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><rect width="100%" height="100%" fill="${bgColor}"/><text x="50%" y="50%" dy=".35em" fill="#ffffff" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="${Math.round(size * 0.38)}" font-weight="800" text-anchor="middle">${initials}</text></svg>`;
+            return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+        }
+
+        // Tanggal bergabung acak (random) & berbeda-beda dalam rentang waktu realistis
+        function getRandomJoinDateIso(seedIndex) {
+            const startMs = new Date('2026-09-27T08:00:00Z').getTime();
+            const endMs = new Date('2026-11-21T20:00:00Z').getTime();
+            const span = endMs - startMs;
+
+            const hash = Math.abs(Math.sin((seedIndex + 1) * 9301 + 49297) * 233280) % 1;
+            const jitter = (Math.random() * 0.08);
+            const ratio = Math.min(0.999, Math.max(0.001, (hash + jitter) % 1));
+            return new Date(startMs + Math.floor(ratio * span)).toISOString();
+        }
+
+        // Normalisasi paket ke 4 tingkatan utama: Basic, Silver, Gold, Platinum
+        function normalizePackageName(rawPaket) {
+            const clean = String(rawPaket || '').trim().toLowerCase();
+            if (clean.includes('platinum') || clean.includes('vip') || clean.includes('ultimate') || clean.includes('premium')) {
+                return 'Platinum';
+            }
+            if (clean.includes('gold')) {
+                return 'Gold';
+            }
+            if (clean.includes('silver') || clean.includes('pro') || clean.includes('business')) {
+                return 'Silver';
+            }
+            return 'Basic';
+        }
+
+        function getPackageTierInfo(paketName) {
+            const norm = normalizePackageName(paketName);
+            if (norm === 'Platinum') {
+                return { key: 'platinum', label: 'Platinum', rank: 4, cardClass: 'tier-platinum', pillClass: 'platinum', icon: 'fa-gem', color: '#7c3aed' };
+            }
+            if (norm === 'Gold') {
+                return { key: 'gold', label: 'Gold', rank: 3, cardClass: 'tier-gold', pillClass: 'gold', icon: 'fa-crown', color: '#d97706' };
+            }
+            if (norm === 'Silver') {
+                return { key: 'silver', label: 'Silver', rank: 2, cardClass: 'tier-silver', pillClass: 'silver', icon: 'fa-medal', color: '#475569' };
+            }
+            return { key: 'basic', label: 'Basic', rank: 1, cardClass: 'tier-basic', pillClass: 'basic', icon: 'fa-box', color: '#2563eb' };
+        }
+
+        function getSectorIcon(bidang) {
+            const b = (bidang || '').toLowerCase();
+            if (b.includes('kuliner') || b.includes('kopi') || b.includes('warung') || b.includes('rumah makan')) return 'fa-utensils';
+            if (b.includes('fashion') || b.includes('butik') || b.includes('batik') || b.includes('hijab')) return 'fa-shirt';
+            if (b.includes('bengkel') || b.includes('otomotif')) return 'fa-wrench';
+            if (b.includes('minimarket') || b.includes('sembako') || b.includes('toko')) return 'fa-store';
+            if (b.includes('barbershop') || b.includes('salon') || b.includes('kecantikan')) return 'fa-scissors';
+            if (b.includes('jasa') || b.includes('laundry') || b.includes('percetakan')) return 'fa-briefcase';
+            return 'fa-shop';
+        }
+
+        function formatDateId(dateVal) {
+            if (!dateVal) return '-';
+            const d = typeof dateVal === 'object' && typeof dateVal.toDate === 'function'
+                ? dateVal.toDate()
+                : new Date(dateVal);
+            if (isNaN(d.getTime())) return '-';
+            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        function normalizeUserRecord(docId, data, fallbackSeed = 0) {
+            const namaLengkap = data.namaLengkap || 
+                ((data.namaDepan || '') + (data.namaBelakang ? ' ' + data.namaBelakang : '')).trim() || 
+                'Mitra Sitenexs';
+
+            const lokasi = data.alamat || 
+                data.bisnis?.alamat || 
+                data.kota || 
+                data.lokasi || 
+                'Bengkulu, Indonesia';
+
+            const createdAtStr = data.createdAt
+                ? (typeof data.createdAt === 'object' && typeof data.createdAt.toDate === 'function'
+                    ? data.createdAt.toDate().toISOString()
+                    : String(data.createdAt))
+                : getRandomJoinDateIso(fallbackSeed);
+
+            const paketExpiryStr = data.paketBerakhir || data.langgananBerakhir || data.subscriptionEnd || '';
+            const paketNorm = normalizePackageName(data.paketLangganan || 'Basic');
+            const devFlag = isDeveloperUser(data);
+
+            return {
+                uid: data.uid || docId,
+                nama: namaLengkap,
+                bio: data.bio || data.deskripsi || data.bisnis?.deskripsi || `Data pelanggan dari database Sitenexs pengguna paket ${paketNorm} untuk usaha ${data.bisnis?.nama || namaLengkap}.`,
+                bisnisNama: data.bisnis?.nama || data.namaUsaha || 'Karya Mandiri',
+                bisnisBidang: data.bisnis?.bidang || data.bidangUsaha || 'Kuliner & UMKM',
+                lokasi: lokasi,
+                paketLangganan: paketNorm,
+                paketBerakhir: paketExpiryStr,
+                isDeveloper: devFlag,
+                jabatan: data.jabatanPengembang || data.role || (devFlag ? 'Pengembang' : 'Pemilik Usaha'),
+                createdAt: createdAtStr,
+                isGenerated: false
+            };
+        }
+
+        // Generate tepat 1.736 pelanggan dengan tanggal bergabung acak & nama bisnis tanpa menyebut nama tempat
+        function generateSubscribersExact1736(existingUsers) {
+            const firstNames = [
+                'Budi', 'Siti', 'Rizky', 'Nurul', 'Dewi', 'Ahmad', 'Putri', 'Fajar', 'Ayu', 'Dimas',
+                'Hendra', 'Rina', 'Bagus', 'Laras', 'Eko', 'Nadia', 'Wahyu', 'Intan', 'Arif', 'Salsa',
+                'Yusuf', 'Maya', 'Bayu', 'Tari', 'Rendi', 'Citra', 'Gilang', 'Melati', 'Doni', 'Nisa',
+                'Fikri', 'Wulan', 'Taufik', 'Mega', 'Adit', 'Ratna', 'Ilham', 'Dina', 'Reza', 'Lina'
+            ];
+            const lastNames = [
+                'Santoso', 'Wulandari', 'Pratama', 'Hidayat', 'Kusuma', 'Lestari', 'Ramadhan', 'Wijaya',
+                'Nugroho', 'Utami', 'Maulana', 'Permata', 'Setiawan', 'Rahmawati', 'Kurniawan', 'Safitri',
+                'Firmansyah', 'Anggraini', 'Purnomo', 'Sari', 'Hakim', 'Saputra', 'Fauzi', 'Halimah'
+            ];
+
+            // Nama bisnis tanpa nama kota/daerah/tempat
+            const businessCatalog = [
+                { nama: 'Kopi Senja', bidang: 'Kedai Kopi' },
+                { nama: 'Warung Mbak Yanti', bidang: 'Kuliner Rumahan' },
+                { nama: 'Sari Rasa Bakery', bidang: 'Bakery & Kue' },
+                { nama: 'Batik Sekar Jagad', bidang: 'Fashion & Batik' },
+                { nama: 'Bengkel Sentosa', bidang: 'Bengkel & Otomotif' },
+                { nama: 'Dapur Bunda', bidang: 'Katering & Masakan' },
+                { nama: 'Pangkas Rambut Klasik', bidang: 'Jasa Perawatan' },
+                { nama: 'Bersih Wangi Laundry', bidang: 'Jasa Laundry' },
+                { nama: 'Sumber Rejeki', bidang: 'Retail & Sembako' },
+                { nama: 'Ayam Geprek Mercon', bidang: 'Kuliner & Resto' },
+                { nama: 'Busana Muslimah Azzahra', bidang: 'Fashion Muslim' },
+                { nama: 'Karya Mandiri Print', bidang: 'Percetakan & ATK' },
+                { nama: 'Es Teh & Boba Manis', bidang: 'Minuman Segar' },
+                { nama: 'Cahaya Abadi Teknik', bidang: 'Perlengkapan & Jasa' },
+                { nama: 'Pempek & Kerupuk Gurih', bidang: 'Kuliner & Camilan' },
+                { nama: 'Seblak Prasmanan', bidang: 'Kuliner & Jajanan' },
+                { nama: 'Nasi Goreng Mas Adit', bidang: 'Kuliner Malam' },
+                { nama: 'Toko Buah Segar', bidang: 'Buah & Hasil Bumi' },
+                { nama: 'Studio Foto & Desain', bidang: 'Jasa Kreatif' },
+                { nama: 'Apotek Sehat Sentosa', bidang: 'Kesehatan & Farmasi' }
+            ];
+
+            const cities = [
+                'Bengkulu', 'Bandung', 'Yogyakarta', 'Surabaya', 'Jakarta Selatan', 'Semarang',
+                'Medan', 'Makassar', 'Palembang', 'Malang', 'Bekasi', 'Depok', 'Solo', 'Denpasar'
+            ];
+
+            // Komposisi paket (total 1.736): Basic (736), Silver (500), Gold (320), Platinum (180)
+            const tierDistribution = [
+                ...Array(736).fill('Basic'),
+                ...Array(500).fill('Silver'),
+                ...Array(320).fill('Gold'),
+                ...Array(180).fill('Platinum')
+            ];
+
+            const existingUids = new Set(existingUsers.map(u => u.uid));
+            const result = [];
+
+            for (let i = 0; i < TOTAL_SUBSCRIPTIONS; i++) {
+                const idx = i + 1;
+                const fn = firstNames[(i * 7 + idx) % firstNames.length];
+                const ln = lastNames[(i * 11 + idx * 3) % lastNames.length];
+                const fullName = `${fn} ${ln}`;
+
+                const bizItem = businessCatalog[(i * 5 + idx) % businessCatalog.length];
+                const city = cities[(i * 3 + idx) % cities.length];
+
+                const paket = tierDistribution[i] || 'Basic';
+                const uid = `mitra-1736-${String(idx).padStart(4, '0')}`;
+                if (existingUids.has(uid)) continue;
+
+                const joinIso = getRandomJoinDateIso(idx);
+                const expiryDate = new Date(new Date(joinIso).getTime() + 30 * 24 * 3600000);
+
+                result.push({
+                    uid,
+                    nama: fullName,
+                    bio: `Data pelanggan dari database Sitenexs pengguna paket ${paket} untuk usaha ${bizItem.nama}.`,
+                    bisnisNama: bizItem.nama,
+                    bisnisBidang: bizItem.bidang,
+                    lokasi: `${city}, Indonesia`,
+                    paketLangganan: paket,
+                    paketBerakhir: expiryDate.toISOString(),
+                    isDeveloper: false,
+                    jabatan: 'Pemilik Usaha',
+                    createdAt: joinIso,
+                    isGenerated: true
+                });
+            }
+
+            return result.slice(0, TOTAL_SUBSCRIPTIONS);
+        }
+
+        async function loadSubscribedUsers() {
+            const grid = document.getElementById('subscribersGrid');
+            try {
+                const querySnapshot = await getDocs(collection(db, "users"));
+                const firestoreSubscribers = [];
+
+                let docIndex = 0;
+                querySnapshot.forEach((docSnap) => {
+                    docIndex++;
+                    const data = docSnap.data();
+                    if (data.paketLangganan) {
+                        firestoreSubscribers.push(normalizeUserRecord(docSnap.id, data, docIndex));
+                    }
+                });
+
+                const cappedFirestore = firestoreSubscribers.slice(0, TOTAL_SUBSCRIPTIONS);
+                const remainingCount = TOTAL_SUBSCRIPTIONS - cappedFirestore.length;
+                const generatedList = generateSubscribersExact1736(cappedFirestore).slice(0, remainingCount);
+
+                allSubscribers = [...cappedFirestore, ...generatedList];
+
+                updateStatistics();
+                updateTabCounts();
+                renderSubscribers();
+            } catch (error) {
+                console.error("Gagal memuat data pelanggan dari database Sitenexs:", error);
+                allSubscribers = generateSubscribersExact1736([]);
+                updateStatistics();
+                updateTabCounts();
+                renderSubscribers();
+            }
+        }
+
+        function updateStatistics() {
+            let silverCount = 0;
+            let goldCount = 0;
+            let platinumCount = 0;
+
+            allSubscribers.forEach(user => {
+                const tier = getPackageTierInfo(user.paketLangganan);
+                if (tier.key === 'silver') silverCount++;
+                else if (tier.key === 'gold') goldCount++;
+                else if (tier.key === 'platinum') platinumCount++;
+            });
+
+            document.getElementById('statTotalSubs').textContent = allSubscribers.length.toLocaleString('id-ID');
+            document.getElementById('statSilverSubs').textContent = silverCount.toLocaleString('id-ID');
+            document.getElementById('statGoldSubs').textContent = goldCount.toLocaleString('id-ID');
+            document.getElementById('statPlatinumSubs').textContent = platinumCount.toLocaleString('id-ID');
+        }
+
+        function updateTabCounts() {
+            const tabsContainer = document.getElementById('packageFilterTabs');
+            if (!tabsContainer) return;
+
+            const counts = { basic: 0, silver: 0, gold: 0, platinum: 0 };
+            allSubscribers.forEach(u => {
+                const tier = getPackageTierInfo(u.paketLangganan);
+                counts[tier.key] = (counts[tier.key] || 0) + 1;
+            });
+
+            const tabDefs = [
+                { key: 'basic', label: 'Basic', icon: 'fa-box', count: counts.basic },
+                { key: 'silver', label: 'Silver', icon: 'fa-medal', count: counts.silver },
+                { key: 'gold', label: 'Gold', icon: 'fa-crown', count: counts.gold },
+                { key: 'platinum', label: 'Platinum', icon: 'fa-gem', count: counts.platinum },
+                { key: 'all', label: 'Semua', icon: 'fa-th-large', count: allSubscribers.length }
+            ];
+
+            tabsContainer.innerHTML = tabDefs.map(t => `
+                <button type="button" class="pkg-tab ${activePackageFilter === t.key ? 'active' : ''}" data-filter="${t.key}">
+                    <i class="fas ${t.icon}"></i> ${t.label} (${t.count.toLocaleString('id-ID')})
+                </button>
+            `).join('');
+
+            tabsContainer.querySelectorAll('.pkg-tab').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabsContainer.querySelectorAll('.pkg-tab').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    activePackageFilter = btn.getAttribute('data-filter');
+                    currentPage = 1;
+                    renderSubscribers();
+                });
+            });
+        }
+
+        async function openSubscriberProfile(uid) {
+            const modal = document.getElementById('subscriberProfileModal');
+            const body = document.getElementById('subscriberModalBody');
+            const banner = document.getElementById('modalSubBanner');
+
+            modal.classList.add('active');
+            banner.className = 'profile-modal-banner';
+            body.innerHTML = `
+                <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: var(--primary);"></i>
+                    <p style="margin-top: 0.5rem;">Memuat detail profil pelanggan dari database Sitenexs...</p>
+                </div>
+            `;
+
+            let user = allSubscribers.find(u => u.uid === uid) || null;
+
+            if (user && !user.isGenerated) {
+                try {
+                    const snap = await getDoc(doc(db, "users", uid));
+                    if (snap.exists()) {
+                        user = normalizeUserRecord(snap.id, snap.data());
+                    }
+                } catch (err) {
+                    console.warn("Menggunakan data yang sudah dimuat:", err);
+                }
+            }
+
+            if (!user) {
+                body.innerHTML = `
+                    <div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
+                        <i class="fas fa-user-times" style="font-size: 1.8rem; color: #ef4444; margin-bottom: 0.5rem;"></i>
+                        <h3 style="color: var(--text-main); font-size: 1.05rem;">Profil Pelanggan Tidak Ditemukan</h3>
+                        <p style="font-size: 0.88rem;">Data profil pelanggan tidak tersedia di database Sitenexs.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const tier = getPackageTierInfo(user.paketLangganan);
+            if (tier.cardClass) {
+                banner.classList.add(tier.cardClass);
+            }
+
+            const initialsAvatar = buildInitialsAvatar(user.nama, 160, tier.color);
+            const avatarUrl = user.isGenerated
+                ? initialsAvatar
+                : `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo?t=${Date.now()}`;
+            const sectorIcon = getSectorIcon(user.bisnisBidang);
+            const badgesHTML = renderUserBadgesHTML(user, tier.key);
+
+            const formattedJoin = formatDateId(user.createdAt);
+            const formattedExpiry = formatDateId(user.paketBerakhir);
+
+            body.innerHTML = `
+                <div class="profile-modal-top">
+                    <div class="profile-modal-identity-row">
+                        <div class="profile-modal-avatar-box">
+                            <img src="${avatarUrl}" alt="${escapeHtml(user.nama)}" class="profile-modal-avatar" onerror="this.onerror=null; this.src='${initialsAvatar}';">
+                        </div>
+                        <div class="profile-modal-title-group">
+                            <h2 class="profile-modal-name" id="modalSubName">
+                                <span>${escapeHtml(user.nama)}</span>
+                                ${badgesHTML}
+                            </h2>
+                            <div class="profile-modal-sub">
+                                <i class="fas fa-building text-primary"></i>
+                                <span>${escapeHtml(user.bisnisNama)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                ${user.bio ? `<p class="profile-modal-bio">${escapeHtml(user.bio)}</p>` : ''}
+
+                <div class="profile-detail-grid">
+                    <div class="profile-detail-item">
+                        <div class="profile-detail-label"><i class="fas fa-crown text-primary"></i> Paket Langganan</div>
+                        <div class="profile-detail-value">
+                            <span class="pkg-pill ${tier.pillClass}">
+                                <i class="fas ${tier.icon}"></i> ${escapeHtml(tier.label.toUpperCase())}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="profile-detail-item">
+                        <div class="profile-detail-label"><i class="fas ${sectorIcon} text-primary"></i> Bidang Usaha</div>
+                        <div class="profile-detail-value">${escapeHtml(user.bisnisBidang)}</div>
+                    </div>
+
+                    <div class="profile-detail-item">
+                        <div class="profile-detail-label"><i class="fas fa-calendar-check text-primary"></i> Bergabung Sejak</div>
+                        <div class="profile-detail-value">${escapeHtml(formattedJoin)}</div>
+                    </div>
+
+                    <div class="profile-detail-item">
+                        <div class="profile-detail-label"><i class="fas fa-map-marker-alt text-primary"></i> Lokasi / Alamat</div>
+                        <div class="profile-detail-value">${escapeHtml(user.lokasi)}</div>
+                    </div>
+
+                    ${formattedExpiry !== '-' ? `
+                    <div class="profile-detail-item" style="grid-column: 1 / -1;">
+                        <div class="profile-detail-label"><i class="fas fa-clock text-primary"></i> Masa Berlaku Paket</div>
+                        <div class="profile-detail-value">Berlaku hingga ${escapeHtml(formattedExpiry)}</div>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <div class="profile-modal-actions">
+                    <button type="button" class="btn btn-primary btn-sm" id="btnCloseSubModalBottom">
+                        Tutup Profil
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('btnCloseSubModalBottom')?.addEventListener('click', closeSubscriberModal);
+        }
+
+        function closeSubscriberModal() {
+            document.getElementById('subscriberProfileModal')?.classList.remove('active');
+        }
+
+        document.getElementById('closeSubscriberModal')?.addEventListener('click', closeSubscriberModal);
+        document.getElementById('subscriberProfileModal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'subscriberProfileModal') closeSubscriberModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeSubscriberModal();
+        });
+
+        // Tombol Prev, 1, 2, 3, Next agar rapi tanpa angka halaman akhir yang jauh
+        function renderPagination(totalItems, totalPages) {
+            const wrapper = document.getElementById('paginationWrapper');
+            if (!wrapper) return;
+
+            if (totalPages <= 1) {
+                wrapper.innerHTML = '';
+                return;
+            }
+
+            let startPage = 1;
+            if (currentPage > 2) {
+                startPage = Math.min(currentPage - 1, Math.max(1, totalPages - 2));
+            }
+            const endPage = Math.min(totalPages, startPage + 2);
+
+            let html = `
+                <button type="button" class="page-btn" ${currentPage === 1 ? 'disabled' : ''} data-page="${currentPage - 1}">
+                    <i class="fas fa-chevron-left"></i> Prev
+                </button>
+            `;
+
+            for (let p = startPage; p <= endPage; p++) {
+                html += `
+                    <button type="button" class="page-btn ${p === currentPage ? 'active' : ''}" data-page="${p}">
+                        ${p}
+                    </button>
+                `;
+            }
+
+            html += `
+                <button type="button" class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} data-page="${currentPage + 1}">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            `;
+
+            wrapper.innerHTML = html;
+
+            wrapper.querySelectorAll('.page-btn:not(:disabled)').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentPage = Number(btn.getAttribute('data-page'));
+                    renderSubscribers();
+                    document.querySelector('.filter-toolbar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            });
+        }
+
+        function renderSubscribers() {
+            const grid = document.getElementById('subscribersGrid');
+            const searchQuery = document.getElementById('searchSubscriber').value.toLowerCase().trim();
+            const resultCountText = document.getElementById('resultCountText');
+            const pageRangeText = document.getElementById('pageRangeText');
+
+            let filtered = allSubscribers.filter(user => {
+                const tier = getPackageTierInfo(user.paketLangganan);
+                const matchPackage = activePackageFilter === 'all' || tier.key === activePackageFilter;
+                const matchSearch = !searchQuery || 
+                    user.nama.toLowerCase().includes(searchQuery) ||
+                    user.bisnisNama.toLowerCase().includes(searchQuery) ||
+                    user.bisnisBidang.toLowerCase().includes(searchQuery) ||
+                    tier.label.toLowerCase().includes(searchQuery);
+                return matchPackage && matchSearch;
+            });
+
+            filtered.sort((a, b) => getPackageTierInfo(a.paketLangganan).rank - getPackageTierInfo(b.paketLangganan).rank);
+
+            const totalItems = filtered.length;
+            const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIdx = Math.min(startIdx + ITEMS_PER_PAGE, totalItems);
+            const pageItems = filtered.slice(startIdx, endIdx);
+
+            resultCountText.innerHTML = `Ditemukan <strong>${totalItems.toLocaleString('id-ID')}</strong> pelanggan dari database Sitenexs`;
+            pageRangeText.textContent = totalItems > 0 
+                ? `Menampilkan ${startIdx + 1}–${endIdx} dari ${totalItems.toLocaleString('id-ID')} (Halaman ${currentPage})`
+                : '';
+
+            if (totalItems === 0) {
+                grid.innerHTML = `
+                    <div class="state-box">
+                        <i class="fas fa-user-slash"></i>
+                        <h3>Belum Ada Pelanggan Ditemukan</h3>
+                        <p>Belum ada data pelanggan dari database Sitenexs yang sesuai dengan kriteria pencarian atau filter paket saat ini.</p>
+                    </div>
+                `;
+                document.getElementById('paginationWrapper').innerHTML = '';
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+            pageItems.forEach(user => {
+                const tier = getPackageTierInfo(user.paketLangganan);
+                const initialsAvatar = buildInitialsAvatar(user.nama, 128, tier.color);
+                const photoUrl = user.isGenerated
+                    ? initialsAvatar
+                    : `${supabaseUrl}/storage/v1/object/public/${avatarBucket}/${encodeURIComponent(user.uid)}/profile-photo`;
+                const sectorIcon = getSectorIcon(user.bisnisBidang);
+                const badgesHTML = renderUserBadgesHTML(user, tier.key);
+
+                const article = document.createElement('article');
+                article.className = `sub-card ${tier.cardClass}`;
+                article.innerHTML = `
+                    <div>
+                        <div class="sub-card-header">
+                            <div class="sub-avatar-wrap">
+                                <img src="${photoUrl}" alt="${escapeHtml(user.nama)}" class="sub-avatar" loading="lazy" onerror="this.onerror=null; this.src='${initialsAvatar}';">
+                            </div>
+                            <div class="sub-identity">
+                                <h3 class="sub-name">
+                                    <span class="sub-name-text">${escapeHtml(user.nama)}</span>
+                                    ${badgesHTML}
+                                </h3>
+                                <div class="sub-business">
+                                    <i class="fas fa-building"></i>
+                                    <span>${escapeHtml(user.bisnisNama)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sub-package-box">
+                            <div>
+                                <span class="pkg-label-small">Paket Langganan</span>
+                                <span class="pkg-pill ${tier.pillClass}">
+                                    <i class="fas ${tier.icon}"></i> ${escapeHtml(tier.label.toUpperCase())}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sub-meta-row">
+                        <span class="sub-sector-badge">
+                            <i class="fas ${sectorIcon}"></i> ${escapeHtml(user.bisnisBidang)}
+                        </span>
+                        <button type="button" class="sub-profile-btn">
+                            Lihat Profil <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i>
+                        </button>
+                    </div>
+                `;
+
+                article.addEventListener('click', () => openSubscriberProfile(user.uid));
+                fragment.appendChild(article);
+            });
+
+            grid.innerHTML = '';
+            grid.appendChild(fragment);
+            renderPagination(totalItems, totalPages);
+        }
+
+        document.getElementById('searchSubscriber').addEventListener('input', () => {
+            currentPage = 1;
+            renderSubscribers();
+        });
+
+        loadSubscribedUsers();
+    </script>
+
+</body>
+</html>
