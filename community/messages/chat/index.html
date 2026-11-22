@@ -225,10 +225,10 @@
             transition: all 0.2s ease;
         }
         .msg-check-svg.sent {
-            color: rgba(255, 255, 255, 0.72);
+            color: rgba(255, 255, 255, 0.68);
         }
         .msg-check-svg.delivered {
-            color: rgba(255, 255, 255, 0.96);
+            color: #cbd5e1;
         }
         .msg-check-svg.read {
             color: #4ade80;
@@ -468,12 +468,15 @@ let otherUserFcmToken = null;
 
 let cleanupMessagesSync = null;
 let unsubscribeChatMeta = null;
+let unsubscribeOtherPresence = null;
 let cleanupIncomingRedirect = null;
 let cleanupOngoingBanner = null;
+let readObserver = null;
 let lastNotifiedMessageId = null;
 let isRedirectingToCall = false;
 let isChatInitialized = false;
 let typingStopTimer = null;
+let typingExpireTimer = null;
 let lastTypingSoundAt = 0;
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -728,12 +731,13 @@ function playMessageNotificationSound() {
 }
 
 /* =====================================================
-   STATUS SEDANG MENGETIK REAL-TIME
+   STATUS SEDANG MENGETIK REAL-TIME (ANTI NYANGKUT)
 ===================================================== */
 function setMyTypingState(isTyping) {
     if (!activeChatId || !currentUid) return;
     setDoc(doc(db, 'chats', activeChatId), {
-        [`typing_${currentUid}`]: Boolean(isTyping)
+        [`typing_${currentUid}`]: Boolean(isTyping),
+        [`typingAt_${currentUid}`]: Date.now()
     }, { merge: true }).catch(() => {});
 }
 
@@ -753,7 +757,7 @@ window.handleTypingInputChange = function (event) {
     if (hasText) {
         typingStopTimer = setTimeout(() => {
             setMyTypingState(false);
-        }, 1800);
+        }, 1500);
     }
 };
 
@@ -762,20 +766,34 @@ function renderOtherTypingIndicator(isTyping) {
     const bubbleWrapperEl = document.getElementById('typingBubbleWrapper');
     const messagesContainer = document.getElementById('chatMessages');
 
+    if (typingExpireTimer) {
+        clearTimeout(typingExpireTimer);
+        typingExpireTimer = null;
+    }
+
+    const active = Boolean(isTyping);
+
     if (headerTypingEl) {
-        headerTypingEl.classList.toggle('active', Boolean(isTyping));
+        headerTypingEl.classList.toggle('active', active);
     }
     if (bubbleWrapperEl && messagesContainer) {
         messagesContainer.appendChild(bubbleWrapperEl);
-        bubbleWrapperEl.classList.toggle('active', Boolean(isTyping));
+        bubbleWrapperEl.classList.toggle('active', active);
     }
-    if (isTyping && messagesContainer) {
+    if (active && messagesContainer) {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        typingExpireTimer = setTimeout(() => {
+            if (headerTypingEl) headerTypingEl.classList.remove('active');
+            if (bubbleWrapperEl) bubbleWrapperEl.classList.remove('active');
+        }, 3500);
     }
 }
 
 /* =====================================================
-   STATUS CENTANG PESAN (1 CENTANG, 2 CENTANG, 2 CENTANG HIJAU)
+   STATUS CENTANG PESAN:
+   1. sent      -> 1 centang (masuk ke database saja, belum ke user tujuan)
+   2. delivered -> 2 centang abu-abu (masuk ke database & sampai ke user tujuan)
+   3. read      -> 2 centang hijau (terlihat di layar & dibaca user tujuan)
 ===================================================== */
 function getMessageCheckStatus(message) {
     if (message?.read === true || message?.status === 'read') {
@@ -791,30 +809,71 @@ function renderCheckmarkHtml(statusKey) {
     if (statusKey === 'read') {
         return `
             <span class="msg-check-svg read" title="Dibaca">
-                <svg width="22" height="14" viewBox="0 0 24 14" fill="none">
-                    <path d="M1.5 7.5L5.8 11.8L13.5 2.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M8.5 7.5L12.8 11.8L22.2 2.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+                <svg width="24" height="14" viewBox="0 0 26 14" fill="none">
+                    <path d="M1.2 7.5L5.8 11.9L14.2 2.2" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8.8 7.5L13.4 11.9L24.2 2.2" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </span>
         `;
     }
     if (statusKey === 'delivered') {
         return `
-            <span class="msg-check-svg delivered" title="Terkirim ke pengguna">
-                <svg width="22" height="14" viewBox="0 0 24 14" fill="none">
-                    <path d="M1.5 7.5L5.8 11.8L13.5 2.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M8.5 7.5L12.8 11.8L22.2 2.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+            <span class="msg-check-svg delivered" title="Terkirim ke pengguna (belum dibaca)">
+                <svg width="24" height="14" viewBox="0 0 26 14" fill="none">
+                    <path d="M1.2 7.5L5.8 11.9L14.2 2.2" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8.8 7.5L13.4 11.9L24.2 2.2" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </span>
         `;
     }
     return `
         <span class="msg-check-svg sent" title="Terkirim ke database">
-            <svg width="16" height="14" viewBox="0 0 18 14" fill="none">
-                <path d="M2 7.5L6.8 11.8L16 2.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg width="18" height="14" viewBox="0 0 20 14" fill="none">
+                <path d="M2 7.5L7.2 11.9L17.8 2.2" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </span>
     `;
+}
+
+function markMessageAsReadOnScreen(msgId) {
+    if (!activeChatId || !currentUid || !msgId) return;
+    if (document.visibilityState !== 'visible') return;
+    updateDoc(doc(db, 'chats', activeChatId, 'messages', msgId), {
+        delivered: true,
+        read: true,
+        status: 'read'
+    }).catch(() => {});
+}
+
+function observeIncomingMessageForRead(wrapper, msgId, message) {
+    if (!wrapper || !msgId || !currentUid) return;
+    if (message.senderUid === currentUid) return;
+    if (message.read === true || message.status === 'read') return;
+
+    const messagesContainer = document.getElementById('chatMessages');
+    if (!readObserver && 'IntersectionObserver' in window && messagesContainer) {
+        readObserver = new IntersectionObserver((entries) => {
+            if (document.visibilityState !== 'visible') return;
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const targetId = entry.target?.dataset?.msgId;
+                    if (targetId) {
+                        markMessageAsReadOnScreen(targetId);
+                        readObserver.unobserve(entry.target);
+                    }
+                }
+            });
+        }, {
+            root: messagesContainer,
+            threshold: 0.4
+        });
+    }
+
+    if (readObserver) {
+        readObserver.observe(wrapper);
+    } else if (document.visibilityState === 'visible') {
+        markMessageAsReadOnScreen(msgId);
+    }
 }
 
 function escapeHtml(text) {
@@ -1077,13 +1136,36 @@ async function initChat(user) {
     unsubscribeChatMeta = onSnapshot(doc(db, 'chats', activeChatId), (chatSnap) => {
         if (!chatSnap.exists()) return;
         const cData = chatSnap.data();
-        const isOtherTyping = Boolean(cData[`typing_${activeChatUserId}`]);
-        renderOtherTypingIndicator(isOtherTyping);
+
+        const rawTyping = Boolean(cData[`typing_${activeChatUserId}`]);
+        const typingAt = Number(cData[`typingAt_${activeChatUserId}`] || 0);
+        const isTypingFresh = rawTyping && (!typingAt || (Date.now() - typingAt < 4000));
+        renderOtherTypingIndicator(isTypingFresh);
 
         if (cData[`unread_${currentUid}`] === true && document.visibilityState === 'visible') {
             updateDoc(doc(db, 'chats', activeChatId), {
                 [`unread_${currentUid}`]: false
             }).catch(() => {});
+        }
+    });
+
+    // Jika lawan bicara sedang online di RTDB, pesan kita yang sudah di database otomatis sampai ke user tujuan (centang 2 abu-abu)
+    if (unsubscribeOtherPresence) unsubscribeOtherPresence();
+    unsubscribeOtherPresence = onValue(ref(rtdb, `presence/${activeChatUserId}`), (snap) => {
+        const pVal = snap.val();
+        const isOtherOnline = Boolean(pVal && (pVal.online === true || pVal === true));
+        if (isOtherOnline && activeChatId && currentUid) {
+            const container = document.getElementById('chatMessages');
+            container?.querySelectorAll('.message-wrapper.outgoing').forEach(w => {
+                const msgId = w.dataset.msgId;
+                const checkEl = w.querySelector('.msg-check-svg');
+                if (msgId && checkEl && checkEl.classList.contains('sent')) {
+                    updateDoc(doc(db, 'chats', activeChatId, 'messages', msgId), {
+                        delivered: true,
+                        status: 'delivered'
+                    }).catch(() => {});
+                }
+            });
         }
     });
 
@@ -1110,22 +1192,24 @@ async function initChat(user) {
             }
 
             if (msgData.senderUid !== currentUid) {
-                const isPageVisible = document.visibilityState === 'visible';
-                const updates = {};
+                // Begitu pesan baru masuk dari lawan bicara, matikan indikator mengetik miliknya
+                renderOtherTypingIndicator(false);
 
-                if (msgData.delivered !== true) {
-                    updates.delivered = true;
-                    if (msgData.status !== 'read' && msgData.read !== true) {
-                        updates.status = 'delivered';
+                // Pesan sampai ke user tujuan -> centang 2 abu-abu (delivered: true)
+                if (msgData.delivered !== true && msgData.read !== true && docSnap?.ref) {
+                    updateDoc(docSnap.ref, {
+                        delivered: true,
+                        status: 'delivered'
+                    }).catch(() => {});
+                }
+
+                // Pantau apakah pesan terlihat di layar user tujuan -> centang 2 hijau (read: true)
+                const addedEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
+                if (addedEl) {
+                    observeIncomingMessageForRead(addedEl, msgId, msgData);
+                    if (document.visibilityState === 'visible') {
+                        markMessageAsReadOnScreen(msgId);
                     }
-                }
-                if (isPageVisible && msgData.read !== true) {
-                    updates.read = true;
-                    updates.status = 'read';
-                }
-
-                if (Object.keys(updates).length > 0 && docSnap?.ref) {
-                    updateDoc(docSnap.ref, updates).catch(() => {});
                 }
 
                 if (
@@ -1134,7 +1218,7 @@ async function initChat(user) {
                 ) {
                     lastNotifiedMessageId = msgId;
 
-                    if (isPageVisible) {
+                    if (document.visibilityState === 'visible') {
                         updateDoc(doc(db, 'chats', activeChatId), {
                             [`unread_${currentUid}`]: false
                         }).catch(() => {});
@@ -1159,20 +1243,15 @@ async function initChat(user) {
         },
         onModifiedItem: (msgId, msgData, docSnap) => {
             if (msgData.senderUid !== currentUid && !String(msgData.text || '').startsWith('[CALL_LOG]|')) {
-                const isPageVisible = document.visibilityState === 'visible';
-                const updates = {};
-                if (msgData.delivered !== true) {
-                    updates.delivered = true;
-                    if (!msgData.read && msgData.status !== 'read') {
-                        updates.status = 'delivered';
-                    }
+                if (msgData.delivered !== true && msgData.read !== true && docSnap?.ref) {
+                    updateDoc(docSnap.ref, {
+                        delivered: true,
+                        status: 'delivered'
+                    }).catch(() => {});
                 }
-                if (isPageVisible && msgData.read !== true) {
-                    updates.read = true;
-                    updates.status = 'read';
-                }
-                if (Object.keys(updates).length > 0 && docSnap?.ref) {
-                    updateDoc(docSnap.ref, updates).catch(() => {});
+                const modEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
+                if (modEl && msgData.read !== true) {
+                    observeIncomingMessageForRead(modEl, msgId, msgData);
                 }
             }
         },
@@ -1180,20 +1259,21 @@ async function initChat(user) {
             if (typingBubbleWrapper && messagesContainer) {
                 messagesContainer.appendChild(typingBubbleWrapper);
             }
-            if (document.visibilityState === 'visible' && currentUid) {
-                snapshot.forEach(docSnap => {
-                    const m = docSnap.data();
-                    if (m.senderUid && m.senderUid !== currentUid) {
-                        if (m.delivered !== true || m.read !== true) {
-                            updateDoc(docSnap.ref, {
-                                delivered: true,
-                                read: true,
-                                status: 'read'
-                            }).catch(() => {});
-                        }
+            snapshot.forEach(docSnap => {
+                const m = docSnap.data();
+                if (m.senderUid && m.senderUid !== currentUid) {
+                    if (m.delivered !== true && m.read !== true) {
+                        updateDoc(docSnap.ref, {
+                            delivered: true,
+                            status: 'delivered'
+                        }).catch(() => {});
                     }
-                });
-            }
+                    const el = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(docSnap.id)}"]`);
+                    if (el && m.read !== true) {
+                        observeIncomingMessageForRead(el, docSnap.id, m);
+                    }
+                }
+            });
         },
         onError: error => {
             console.error('Message listener error:', error);
@@ -1237,6 +1317,11 @@ document.addEventListener('visibilitychange', () => {
         updateDoc(doc(db, 'chats', activeChatId), {
             [`unread_${currentUid}`]: false
         }).catch(() => {});
+        const container = document.getElementById('chatMessages');
+        container?.querySelectorAll('.message-wrapper.incoming').forEach(w => {
+            const msgId = w.dataset.msgId;
+            if (msgId) markMessageAsReadOnScreen(msgId);
+        });
     }
 });
 
