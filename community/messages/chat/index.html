@@ -527,6 +527,8 @@ let isRedirectingToCall = false;
 let isChatInitialized = false;
 let typingStopTimer = null;
 let lastTypingSoundAt = 0;
+let stickToBottom = true;
+const updatedDocIds = new Set();
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
@@ -535,9 +537,15 @@ function scrollMessagesToBottom(force = false) {
     const messagesContainer = document.getElementById('chatMessages');
     if (!messagesContainer) return;
     const distanceFromBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight;
-    if (force || distanceFromBottom < 180) {
+    if (force || stickToBottom || distanceFromBottom < 220) {
+        stickToBottom = true;
         requestAnimationFrame(() => {
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            setTimeout(() => {
+                if (stickToBottom) {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+            }, 60);
         });
     }
 }
@@ -723,6 +731,14 @@ if (!targetUserId) {
         const earlyChatId = [earlyUid, activeChatUserId].sort().join('_');
         renderCachedMessagesImmediately(earlyChatId, earlyUid);
     }
+}
+
+const initialMessagesEl = document.getElementById('chatMessages');
+if (initialMessagesEl) {
+    initialMessagesEl.addEventListener('scroll', () => {
+        const dist = initialMessagesEl.scrollHeight - initialMessagesEl.scrollTop - initialMessagesEl.clientHeight;
+        stickToBottom = dist < 120;
+    }, { passive: true });
 }
 
 window.showToast = function (msg) {
@@ -960,7 +976,7 @@ function renderOtherTypingIndicator(isTyping) {
         bubbleWrapperEl.classList.toggle('active', Boolean(isTyping));
     }
     if (isTyping) {
-        scrollMessagesToBottom(true);
+        scrollMessagesToBottom(false);
     }
 }
 
@@ -1404,7 +1420,7 @@ async function initChat(user) {
     }
 
     unsubscribeMessages = onSnapshot(qMsgs, (snapshot) => {
-        let shouldScroll = false;
+        let hasNewMessage = false;
 
         snapshot.docChanges().forEach((change) => {
             const msgId = change.doc.id;
@@ -1427,25 +1443,27 @@ async function initChat(user) {
             });
 
             if (change.type === 'added') {
-                shouldScroll = true;
+                hasNewMessage = true;
                 const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
                 if (existingEl) {
                     updateMessageElement(existingEl, msgId, msgData, currentUid);
-                    if (typingBubbleWrapper && messagesContainer) {
-                        messagesContainer.appendChild(typingBubbleWrapper);
-                    }
                 } else {
                     const newEl = buildMessageElement(msgId, msgData, currentUid);
                     if (typingBubbleWrapper) {
                         messagesContainer.insertBefore(newEl, typingBubbleWrapper);
-                        messagesContainer.appendChild(typingBubbleWrapper);
                     } else {
                         messagesContainer.appendChild(newEl);
                     }
                 }
 
                 if (msgData.senderUid === currentUid) {
-                    if (isPlaceholderName(msgData.senderName) && !isPlaceholderName(myUserName) && change.doc.ref) {
+                    if (
+                        !updatedDocIds.has(msgId) &&
+                        isPlaceholderName(msgData.senderName) &&
+                        !isPlaceholderName(myUserName) &&
+                        change.doc.ref
+                    ) {
+                        updatedDocIds.add(msgId);
                         updateDoc(change.doc.ref, {
                             senderName: myUserName,
                             senderIsVerified: Boolean(myProfile?.isVerified),
@@ -1473,7 +1491,8 @@ async function initChat(user) {
                         updates.checkColor = resolvedColor;
                     }
 
-                    if (Object.keys(updates).length > 0 && change.doc.ref) {
+                    if (!updatedDocIds.has(msgId) && Object.keys(updates).length > 0 && change.doc.ref) {
+                        updatedDocIds.add(msgId);
                         updateDoc(change.doc.ref, updates).catch(() => {});
                     }
 
@@ -1519,25 +1538,6 @@ async function initChat(user) {
                     if (checkState === 'read-green') {
                         persistGreenReadId(activeChatId, msgId);
                     }
-                } else if (!String(msgData.text || '').startsWith('[CALL_LOG]|')) {
-                    const isPageVisible = document.visibilityState === 'visible';
-                    const updates = {};
-                    const resolvedColor = msgData.checkColor || (msgData.status === 'read-yellow' ? 'yellow' : msgData.status === 'read-blue' ? 'blue' : 'green');
-
-                    if (msgData.delivered !== true) {
-                        updates.delivered = true;
-                        if (!msgData.read && msgData.status !== 'read') {
-                            updates.status = 'delivered';
-                        }
-                    }
-                    if (isPageVisible && msgData.read !== true) {
-                        updates.read = true;
-                        updates.status = resolvedColor === 'yellow' ? 'read-yellow' : (resolvedColor === 'blue' ? 'read-blue' : 'read-green');
-                        updates.checkColor = resolvedColor;
-                    }
-                    if (Object.keys(updates).length > 0 && change.doc.ref) {
-                        updateDoc(change.doc.ref, updates).catch(() => {});
-                    }
                 }
             } else if (change.type === 'removed') {
                 const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
@@ -1549,24 +1549,7 @@ async function initChat(user) {
             messagesContainer.appendChild(typingBubbleWrapper);
         }
 
-        if (currentUid && document.visibilityState === 'visible') {
-            snapshot.forEach(docSnap => {
-                const m = docSnap.data();
-                if (m.senderUid && m.senderUid !== currentUid) {
-                    const resolvedColor = m.checkColor || (m.status === 'read-yellow' ? 'yellow' : m.status === 'read-blue' ? 'blue' : 'green');
-                    if (m.delivered !== true || m.read !== true) {
-                        updateDoc(docSnap.ref, {
-                            delivered: true,
-                            read: true,
-                            status: resolvedColor === 'yellow' ? 'read-yellow' : (resolvedColor === 'blue' ? 'read-blue' : 'read-green'),
-                            checkColor: resolvedColor
-                        }).catch(() => {});
-                    }
-                }
-            });
-        }
-
-        if (shouldScroll) {
+        if (hasNewMessage) {
             scrollMessagesToBottom(true);
         }
     }, (error) => {
@@ -1616,6 +1599,7 @@ document.addEventListener('visibilitychange', () => {
         updateDoc(doc(db, 'chats', activeChatId), {
             [`unread_${currentUid}`]: false
         }).catch(() => {});
+        scrollMessagesToBottom(false);
     }
 });
 
@@ -1640,6 +1624,7 @@ window.handleChatFormSubmit = async function (event) {
 
     if (!text || !activeChatId || !currentUid) return;
 
+    stickToBottom = true;
     inputEl.value = '';
     if (typingStopTimer) {
         clearTimeout(typingStopTimer);
