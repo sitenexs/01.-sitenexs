@@ -426,6 +426,12 @@ import {
 } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
 import {
+    ref,
+    onValue,
+    remove
+} from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
+
+import {
     app,
     db,
     rtdb,
@@ -446,15 +452,8 @@ import {
     sendPushNotification
 } from 'https://sitenexs.com/assets/js/sitenexs-push-client.js';
 
-import {
-    DEFAULT_CALL_PAGE_URL,
-    attachForcedIncomingCallRedirect,
-    attachOngoingCallBanner
-} from 'https://sitenexs.com/assets/js/sitenexs-call-presence.js';
-
-import {
-    attachFlickerFreeSnapshot
-} from 'https://sitenexs.com/assets/js/sitenexs-realtime-sync.js';
+const CALL_PAGE_URL = 'https://sitenexs.com/community/messages/call/';
+const ONGOING_CALL_STORAGE_KEY = 'sitenexs_ongoing_call_room';
 
 let currentUid = null;
 let myProfile = null;
@@ -466,18 +465,20 @@ let otherProfile = null;
 let otherUserName = 'Mitra Sitenexs';
 let otherUserFcmToken = null;
 
-let cleanupMessagesSync = null;
+let unsubscribeMessages = null;
 let unsubscribeChatMeta = null;
 let unsubscribeOtherPresence = null;
-let cleanupIncomingRedirect = null;
-let cleanupOngoingBanner = null;
+let unsubscribeIncomingCalls = null;
+let unsubscribeCallsScan = null;
 let readObserver = null;
+let isInitialMessagesLoad = true;
 let lastNotifiedMessageId = null;
 let isRedirectingToCall = false;
 let isChatInitialized = false;
 let typingStopTimer = null;
 let typingExpireTimer = null;
 let lastTypingSoundAt = 0;
+let ongoingCallTarget = null;
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
@@ -491,39 +492,58 @@ function getEarlyUid() {
     return localStorage.getItem('sitenexs_uid') || null;
 }
 
+function readChatCache(chatId) {
+    if (!chatId) return [];
+    try {
+        const raw = localStorage.getItem(getChatCacheKey(chatId));
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function writeChatCache(chatId, mapObj) {
+    if (!chatId) return;
+    try {
+        const sorted = Array.from(mapObj.values())
+            .sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0))
+            .slice(-200);
+        localStorage.setItem(getChatCacheKey(chatId), JSON.stringify(sorted));
+    } catch (e) {}
+}
+
 function renderCachedMessagesImmediately(chatId, uid) {
     const messagesContainer = document.getElementById('chatMessages');
     const typingBubbleWrapper = document.getElementById('typingBubbleWrapper');
     if (!messagesContainer || !chatId) return;
-    try {
-        const raw = localStorage.getItem(getChatCacheKey(chatId));
-        if (!raw) return;
-        const cachedList = JSON.parse(raw);
-        if (!Array.isArray(cachedList) || cachedList.length === 0) return;
 
-        cachedList.forEach(item => {
-            if (!item?.id) return;
-            if (messagesContainer.querySelector(`[data-msg-id="${CSS.escape(item.id)}"]`)) return;
-            const fakeTimestamp = item.createdAtMs
-                ? { toDate: () => new Date(item.createdAtMs) }
-                : null;
-            const el = buildMessageElement(item.id, {
-                senderUid: item.senderUid,
-                text: item.text,
-                isEdited: item.isEdited,
-                status: item.status || 'sent',
-                delivered: Boolean(item.delivered),
-                read: Boolean(item.read),
-                createdAt: fakeTimestamp
-            }, uid);
-            if (typingBubbleWrapper) {
-                messagesContainer.insertBefore(el, typingBubbleWrapper);
-            } else {
-                messagesContainer.appendChild(el);
-            }
-        });
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    } catch (e) {}
+    const cachedList = readChatCache(chatId);
+    if (cachedList.length === 0) return;
+
+    cachedList.forEach(item => {
+        if (!item?.id) return;
+        if (messagesContainer.querySelector(`[data-msg-id="${CSS.escape(item.id)}"]`)) return;
+        const fakeTimestamp = item.createdAtMs
+            ? { toDate: () => new Date(item.createdAtMs) }
+            : null;
+        const el = buildMessageElement(item.id, {
+            senderUid: item.senderUid,
+            text: item.text,
+            isEdited: item.isEdited,
+            status: item.status || 'sent',
+            delivered: Boolean(item.delivered),
+            read: Boolean(item.read),
+            createdAt: fakeTimestamp
+        }, uid);
+        if (typingBubbleWrapper) {
+            messagesContainer.insertBefore(el, typingBubbleWrapper);
+        } else {
+            messagesContainer.appendChild(el);
+        }
+    });
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
 if (!targetUserId) {
@@ -561,12 +581,97 @@ window.showToast = function (msg) {
 window.openCallPage = function (callType = 'video') {
     if (!activeChatUserId || isRedirectingToCall) return;
     isRedirectingToCall = true;
-    const callUrl = new URL(DEFAULT_CALL_PAGE_URL);
+    const callUrl = new URL(CALL_PAGE_URL);
     callUrl.searchParams.set('to', activeChatUserId);
     callUrl.searchParams.set('mode', 'outgoing');
     callUrl.searchParams.set('type', callType === 'audio' ? 'audio' : 'video');
     window.location.href = callUrl.toString();
 };
+
+function setupCallPresenceAndBanner(uid) {
+    if (!uid || !rtdb) return;
+
+    if (unsubscribeIncomingCalls) unsubscribeIncomingCalls();
+    unsubscribeIncomingCalls = onValue(ref(rtdb, `incomingCalls/${uid}`), (snap) => {
+        const data = snap.val();
+        if (!data) return;
+        if (data.timestamp && Date.now() - data.timestamp > 60000) {
+            remove(ref(rtdb, `incomingCalls/${uid}`)).catch(() => {});
+            return;
+        }
+        if (data.callerUid === uid) return;
+        if (data.calleeUid === uid && data.status === 'ringing' && !isRedirectingToCall) {
+            isRedirectingToCall = true;
+            const callUrl = new URL(CALL_PAGE_URL);
+            callUrl.searchParams.set('to', data.callerUid);
+            callUrl.searchParams.set('mode', 'incoming');
+            callUrl.searchParams.set('roomId', data.roomId);
+            callUrl.searchParams.set('type', data.callType === 'audio' ? 'audio' : 'video');
+            window.location.replace(callUrl.toString());
+        }
+    });
+
+    const bannerEl = document.getElementById('activeCallBanner');
+    const bannerTextEl = document.getElementById('activeCallBannerText');
+    const bannerIconEl = document.getElementById('activeCallBannerIcon');
+
+    if (bannerEl) {
+        bannerEl.onclick = () => {
+            if (!ongoingCallTarget?.roomId || isRedirectingToCall) return;
+            isRedirectingToCall = true;
+            const callUrl = new URL(CALL_PAGE_URL);
+            callUrl.searchParams.set('roomId', ongoingCallTarget.roomId);
+            callUrl.searchParams.set('to', ongoingCallTarget.peerUid || activeChatUserId || '');
+            callUrl.searchParams.set('mode', ongoingCallTarget.mode || 'outgoing');
+            callUrl.searchParams.set('type', ongoingCallTarget.callType === 'audio' ? 'audio' : 'video');
+            callUrl.searchParams.set('resume', '1');
+            window.location.href = callUrl.toString();
+        };
+    }
+
+    if (unsubscribeCallsScan) unsubscribeCallsScan();
+    unsubscribeCallsScan = onValue(ref(rtdb, 'calls'), (snap) => {
+        const allCalls = snap.val() || {};
+        let found = null;
+
+        for (const [rKey, rData] of Object.entries(allCalls)) {
+            if (!rData || rData.status === 'ended' || rData.status === 'rejected') continue;
+            if (rData.status !== 'ringing' && rData.status !== 'connected') continue;
+            const myP = rData.participants && rData.participants[uid];
+            if (!myP || typeof myP !== 'object') continue;
+            if (!myP.joinedAt || (Date.now() - myP.joinedAt > 600000)) continue;
+
+            const matchChat = !activeChatUserId ||
+                rData.callerUid === activeChatUserId ||
+                rData.calleeUid === activeChatUserId ||
+                rData.chatId === activeChatId;
+
+            if (matchChat) {
+                found = {
+                    roomId: rData.roomId || rKey,
+                    peerUid: rData.callerUid === uid ? (rData.calleeUid || activeChatUserId) : (rData.callerUid || activeChatUserId),
+                    callType: rData.callType === 'audio' ? 'audio' : 'video',
+                    mode: rData.callerUid === uid ? 'outgoing' : 'incoming'
+                };
+                break;
+            }
+        }
+
+        if (found) {
+            ongoingCallTarget = found;
+            try { sessionStorage.setItem(ONGOING_CALL_STORAGE_KEY, JSON.stringify(found)); } catch (e) {}
+            if (bannerIconEl) {
+                bannerIconEl.className = found.callType === 'audio' ? 'fas fa-phone-alt' : 'fas fa-video';
+            }
+            if (bannerTextEl) bannerTextEl.textContent = 'Dalam panggilan...';
+            bannerEl?.classList.add('active');
+        } else {
+            ongoingCallTarget = null;
+            try { sessionStorage.removeItem(ONGOING_CALL_STORAGE_KEY); } catch (e) {}
+            bannerEl?.classList.remove('active');
+        }
+    });
+}
 
 function updateNotificationUIState() {
     const banner = document.getElementById('notifPermissionBanner');
@@ -1095,7 +1200,7 @@ function updateMessageElement(wrapper, _docId, message, ownerUid = currentUid) {
 }
 
 /* =====================================================
-   INITIALIZE CHAT (CACHE PERANGKAT + UPDATE PERUBAHAN SAJA)
+   INITIALIZE CHAT (REALTIME + CACHE + TYPING + CENTANG)
 ===================================================== */
 
 async function initChat(user) {
@@ -1110,27 +1215,7 @@ async function initChat(user) {
     activeChatId = `${participants[0]}_${participants[1]}`;
 
     renderCachedMessagesImmediately(activeChatId, currentUid);
-
-    if (cleanupIncomingRedirect) cleanupIncomingRedirect();
-    cleanupIncomingRedirect = attachForcedIncomingCallRedirect({
-        rtdb,
-        currentUid,
-        callPageUrl: DEFAULT_CALL_PAGE_URL,
-        fallbackPeerName: otherUserName
-    });
-
-    if (cleanupOngoingBanner) cleanupOngoingBanner();
-    cleanupOngoingBanner = attachOngoingCallBanner({
-        rtdb,
-        currentUid,
-        bannerElement: document.getElementById('activeCallBanner'),
-        textElement: document.getElementById('activeCallBannerText'),
-        iconElement: document.getElementById('activeCallBannerIcon'),
-        filterPeerUid: activeChatUserId,
-        filterChatId: activeChatId,
-        fallbackPeerName: otherUserName,
-        callPageUrl: DEFAULT_CALL_PAGE_URL
-    });
+    setupCallPresenceAndBanner(currentUid);
 
     if (unsubscribeChatMeta) unsubscribeChatMeta();
     unsubscribeChatMeta = onSnapshot(doc(db, 'chats', activeChatId), (chatSnap) => {
@@ -1149,7 +1234,6 @@ async function initChat(user) {
         }
     });
 
-    // Jika lawan bicara sedang online di RTDB, pesan kita yang sudah di database otomatis sampai ke user tujuan (centang 2 abu-abu)
     if (unsubscribeOtherPresence) unsubscribeOtherPresence();
     unsubscribeOtherPresence = onValue(ref(rtdb, `presence/${activeChatUserId}`), (snap) => {
         const pVal = snap.val();
@@ -1173,111 +1257,168 @@ async function initChat(user) {
     const qMsgs = query(messagesRef, orderBy('createdAt', 'asc'));
     const messagesContainer = document.getElementById('chatMessages');
     const typingBubbleWrapper = document.getElementById('typingBubbleWrapper');
+    const cacheMap = new Map(readChatCache(activeChatId).map(item => [item.id, item]));
 
-    if (cleanupMessagesSync) {
-        cleanupMessagesSync();
+    if (unsubscribeMessages) {
+        unsubscribeMessages();
     }
 
-    cleanupMessagesSync = attachFlickerFreeSnapshot({
-        queryRef: qMsgs,
-        container: messagesContainer,
-        keyAttr: 'data-msg-id',
-        storageKey: getChatCacheKey(activeChatId),
-        autoScroll: true,
-        createElement: (msgId, msgData) => buildMessageElement(msgId, msgData, currentUid),
-        updateElement: (existingEl, msgId, msgData) => updateMessageElement(existingEl, msgId, msgData, currentUid),
-        onAddedItem: (msgId, msgData, docSnap) => {
-            if (typingBubbleWrapper && messagesContainer) {
-                messagesContainer.appendChild(typingBubbleWrapper);
-            }
+    isInitialMessagesLoad = true;
 
-            if (msgData.senderUid !== currentUid) {
-                // Begitu pesan baru masuk dari lawan bicara, matikan indikator mengetik miliknya
-                renderOtherTypingIndicator(false);
+    unsubscribeMessages = onSnapshot(qMsgs, snapshot => {
+        const nearBottom = (messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight) < 120;
+        let shouldScroll = false;
+        let cacheChanged = false;
 
-                // Pesan sampai ke user tujuan -> centang 2 abu-abu (delivered: true)
-                if (msgData.delivered !== true && msgData.read !== true && docSnap?.ref) {
-                    updateDoc(docSnap.ref, {
-                        delivered: true,
-                        status: 'delivered'
-                    }).catch(() => {});
-                }
+        snapshot.docChanges().forEach(change => {
+            const msgId = change.doc.id;
+            const msgData = change.doc.data();
+            const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
 
-                // Pantau apakah pesan terlihat di layar user tujuan -> centang 2 hijau (read: true)
-                const addedEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
-                if (addedEl) {
-                    observeIncomingMessageForRead(addedEl, msgId, msgData);
-                    if (document.visibilityState === 'visible') {
-                        markMessageAsReadOnScreen(msgId);
-                    }
-                }
-
-                if (
-                    lastNotifiedMessageId !== msgId &&
-                    !String(msgData.text || '').startsWith('[CALL_LOG]|')
-                ) {
-                    lastNotifiedMessageId = msgId;
-
-                    if (document.visibilityState === 'visible') {
-                        updateDoc(doc(db, 'chats', activeChatId), {
-                            [`unread_${currentUid}`]: false
-                        }).catch(() => {});
-                        playMessageNotificationSound();
+            if (change.type === 'added') {
+                if (!existingEl) {
+                    const el = buildMessageElement(msgId, msgData, currentUid);
+                    if (typingBubbleWrapper) {
+                        messagesContainer.insertBefore(el, typingBubbleWrapper);
                     } else {
-                        const previewText = String(msgData.text || '').includes('📋 *LAMARAN KERJA BARU*')
-                            ? 'Mengirim lamaran kerja baru'
-                            : String(msgData.text || 'Pesan baru');
-
-                        triggerLocalSystemNotification(
-                            otherUserName,
-                            previewText,
-                            {
-                                tag: `chat-${activeChatId}`,
-                                icon: otherProfile?.avatarUrl || getUserAvatarUrl(activeChatUserId),
-                                url: window.location.href
-                            }
-                        );
+                        messagesContainer.appendChild(el);
                     }
+                    if (msgData.senderUid === currentUid || isInitialMessagesLoad || nearBottom) {
+                        shouldScroll = true;
+                    }
+                } else {
+                    updateMessageElement(existingEl, msgId, msgData, currentUid);
                 }
-            }
-        },
-        onModifiedItem: (msgId, msgData, docSnap) => {
-            if (msgData.senderUid !== currentUid && !String(msgData.text || '').startsWith('[CALL_LOG]|')) {
-                if (msgData.delivered !== true && msgData.read !== true && docSnap?.ref) {
-                    updateDoc(docSnap.ref, {
-                        delivered: true,
-                        status: 'delivered'
-                    }).catch(() => {});
-                }
-                const modEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
-                if (modEl && msgData.read !== true) {
-                    observeIncomingMessageForRead(modEl, msgId, msgData);
-                }
-            }
-        },
-        onSnapshotDone: (snapshot) => {
-            if (typingBubbleWrapper && messagesContainer) {
-                messagesContainer.appendChild(typingBubbleWrapper);
-            }
-            snapshot.forEach(docSnap => {
-                const m = docSnap.data();
-                if (m.senderUid && m.senderUid !== currentUid) {
-                    if (m.delivered !== true && m.read !== true) {
-                        updateDoc(docSnap.ref, {
+
+                const ms = msgData?.createdAt?.toMillis ? msgData.createdAt.toMillis() : (cacheMap.get(msgId)?.createdAtMs || Date.now());
+                cacheMap.set(msgId, {
+                    id: msgId,
+                    senderUid: msgData.senderUid || '',
+                    text: msgData.text || '',
+                    isEdited: Boolean(msgData.isEdited),
+                    status: msgData.status || 'sent',
+                    delivered: Boolean(msgData.delivered),
+                    read: Boolean(msgData.read),
+                    createdAtMs: ms
+                });
+                cacheChanged = true;
+
+                if (msgData.senderUid !== currentUid) {
+                    renderOtherTypingIndicator(false);
+
+                    if (msgData.delivered !== true && msgData.read !== true && change.doc.ref) {
+                        updateDoc(change.doc.ref, {
                             delivered: true,
                             status: 'delivered'
                         }).catch(() => {});
                     }
-                    const el = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(docSnap.id)}"]`);
-                    if (el && m.read !== true) {
-                        observeIncomingMessageForRead(el, docSnap.id, m);
+
+                    const addedEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
+                    if (addedEl) {
+                        observeIncomingMessageForRead(addedEl, msgId, msgData);
+                        if (document.visibilityState === 'visible') {
+                            markMessageAsReadOnScreen(msgId);
+                        }
+                    }
+
+                    if (
+                        !isInitialMessagesLoad &&
+                        lastNotifiedMessageId !== msgId &&
+                        !String(msgData.text || '').startsWith('[CALL_LOG]|')
+                    ) {
+                        lastNotifiedMessageId = msgId;
+
+                        if (document.visibilityState === 'visible') {
+                            updateDoc(doc(db, 'chats', activeChatId), {
+                                [`unread_${currentUid}`]: false
+                            }).catch(() => {});
+                            playMessageNotificationSound();
+                        } else {
+                            const previewText = String(msgData.text || '').includes('📋 *LAMARAN KERJA BARU*')
+                                ? 'Mengirim lamaran kerja baru'
+                                : String(msgData.text || 'Pesan baru');
+
+                            triggerLocalSystemNotification(
+                                otherUserName,
+                                previewText,
+                                {
+                                    tag: `chat-${activeChatId}`,
+                                    icon: otherProfile?.avatarUrl || getUserAvatarUrl(activeChatUserId),
+                                    url: window.location.href
+                                }
+                            );
+                        }
                     }
                 }
-            });
-        },
-        onError: error => {
-            console.error('Message listener error:', error);
+            } else if (change.type === 'modified') {
+                if (existingEl) {
+                    updateMessageElement(existingEl, msgId, msgData, currentUid);
+                }
+                const prevItem = cacheMap.get(msgId);
+                cacheMap.set(msgId, {
+                    id: msgId,
+                    senderUid: msgData.senderUid || prevItem?.senderUid || '',
+                    text: msgData.text ?? prevItem?.text ?? '',
+                    isEdited: Boolean(msgData.isEdited),
+                    status: msgData.status || prevItem?.status || 'sent',
+                    delivered: Boolean(msgData.delivered),
+                    read: Boolean(msgData.read),
+                    createdAtMs: msgData?.createdAt?.toMillis ? msgData.createdAt.toMillis() : (prevItem?.createdAtMs || Date.now())
+                });
+                cacheChanged = true;
+
+                if (msgData.senderUid !== currentUid && !String(msgData.text || '').startsWith('[CALL_LOG]|')) {
+                    if (msgData.delivered !== true && msgData.read !== true && change.doc.ref) {
+                        updateDoc(change.doc.ref, {
+                            delivered: true,
+                            status: 'delivered'
+                        }).catch(() => {});
+                    }
+                    const modEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
+                    if (modEl && msgData.read !== true) {
+                        observeIncomingMessageForRead(modEl, msgId, msgData);
+                    }
+                }
+            } else if (change.type === 'removed') {
+                if (existingEl) existingEl.remove();
+                if (cacheMap.has(msgId)) {
+                    cacheMap.delete(msgId);
+                    cacheChanged = true;
+                }
+            }
+        });
+
+        if (typingBubbleWrapper && messagesContainer) {
+            messagesContainer.appendChild(typingBubbleWrapper);
         }
+
+        snapshot.forEach(docSnap => {
+            const m = docSnap.data();
+            if (m.senderUid && m.senderUid !== currentUid) {
+                if (m.delivered !== true && m.read !== true) {
+                    updateDoc(docSnap.ref, {
+                        delivered: true,
+                        status: 'delivered'
+                    }).catch(() => {});
+                }
+                const el = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(docSnap.id)}"]`);
+                if (el && m.read !== true) {
+                    observeIncomingMessageForRead(el, docSnap.id, m);
+                }
+            }
+        });
+
+        if (cacheChanged) {
+            writeChatCache(activeChatId, cacheMap);
+        }
+
+        if (shouldScroll) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        isInitialMessagesLoad = false;
+    }, error => {
+        console.error('Message listener error:', error);
     });
 
     updateDoc(doc(db, 'chats', activeChatId), {
@@ -1398,3 +1539,6 @@ window.handleChatFormSubmit = async function (event) {
 </script>
 </body>
 </html>
+
+
+perbaiki kenapa tidak masuk pesan ke database, serta namanya dan indikator mengetik juga tidak ada, padahal kode sebelumnya ada
