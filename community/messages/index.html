@@ -145,8 +145,12 @@
         .conv-avatar-wrap { position: relative; flex-shrink: 0; }
         .conv-avatar { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); }
         .status-dot {
-            position: absolute; bottom: 2px; right: 2px; width: 10px; height: 10px;
-            background: var(--accent); border: 2px solid #fff; border-radius: 50%;
+            position: absolute; bottom: 2px; right: 2px; width: 11px; height: 11px;
+            background: #10b981; border: 2px solid #fff; border-radius: 50%;
+            display: none; box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2);
+        }
+        .status-dot.active {
+            display: block;
         }
 
         .conv-info { flex: 1; min-width: 0; }
@@ -287,7 +291,7 @@
     <script type="module">
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
         import { doc, updateDoc, deleteDoc, collection, query, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
-        import { ref, onValue, remove } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
+        import { ref, onValue, remove, set, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
 
         import {
             db,
@@ -300,11 +304,16 @@
         } from 'https://sitenexs.com/assets/js/sitenexs-user-data.js';
 
         const CALL_PAGE_URL = 'https://sitenexs.com/community/messages/call/';
+        const ONLINE_TIMEOUT_MS = 120000; // 2 menit batas aktif
 
         let currentUid = null;
         let allConversationsData = [];
         let unsubscribesMap = {};
+        let presenceUnsubsMap = {};
+        let onlineStatusMap = {};
         let unsubscribeIncomingCalls = null;
+        let unsubscribeMyPresence = null;
+        let presenceHeartbeatInterval = null;
         let isRedirectingToCall = false;
         
         let selectedChatId = null;
@@ -328,6 +337,121 @@
                 '"': '&quot;',
                 "'": '&#039;'
             }[char]));
+        }
+
+        /* =====================================================
+           SISTEM KEHADIRAN REAL-TIME (ONLINE / AKTIF DI SITENEXS)
+        ===================================================== */
+        function setupMyPresence(uid) {
+            if (!uid) return;
+
+            const connectedRef = ref(rtdb, '.info/connected');
+            const myStatusRef = ref(rtdb, `presence/${uid}`);
+
+            if (unsubscribeMyPresence) {
+                unsubscribeMyPresence();
+            }
+            if (presenceHeartbeatInterval) {
+                clearInterval(presenceHeartbeatInterval);
+            }
+
+            const markOnline = () => {
+                if (document.visibilityState === 'hidden') return;
+                set(myStatusRef, {
+                    online: true,
+                    lastActive: serverTimestamp(),
+                    clientTime: Date.now(),
+                    page: 'messages'
+                }).catch(() => {});
+            };
+
+            const markOffline = () => {
+                set(myStatusRef, {
+                    online: false,
+                    lastActive: serverTimestamp(),
+                    clientTime: Date.now()
+                }).catch(() => {});
+            };
+
+            unsubscribeMyPresence = onValue(connectedRef, (snap) => {
+                if (snap.val() === true) {
+                    onDisconnect(myStatusRef).set({
+                        online: false,
+                        lastActive: serverTimestamp()
+                    }).then(() => {
+                        markOnline();
+                    }).catch(() => {});
+                }
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    markOnline();
+                } else {
+                    markOffline();
+                }
+            });
+
+            window.addEventListener('beforeunload', markOffline);
+            window.addEventListener('pagehide', markOffline);
+
+            // Heartbeat tiap 45 detik agar status tetap segar selama halaman dibuka
+            presenceHeartbeatInterval = setInterval(() => {
+                if (document.visibilityState === 'visible') {
+                    markOnline();
+                }
+            }, 45000);
+        }
+
+        function isUserActivelyOnline(presenceData) {
+            if (!presenceData || presenceData.online !== true) return false;
+            const lastSeen = typeof presenceData.lastActive === 'number'
+                ? presenceData.lastActive
+                : (typeof presenceData.clientTime === 'number' ? presenceData.clientTime : Date.now());
+            return (Date.now() - lastSeen) < ONLINE_TIMEOUT_MS;
+        }
+
+        function updateStatusDotUI(otherUid, isOnline) {
+            onlineStatusMap[otherUid] = isOnline;
+            const convObj = allConversationsData.find(c => c.otherUid === otherUid);
+            if (convObj) {
+                convObj.isOnline = isOnline;
+            }
+            const dotEls = document.querySelectorAll(`.status-dot[data-uid="${otherUid}"]`);
+            dotEls.forEach(el => {
+                if (isOnline) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+        }
+
+        function listenOtherUsersPresence(otherUids) {
+            const activeSet = new Set(otherUids);
+
+            // Bersihkan listener untuk user yang sudah tidak ada di daftar
+            Object.keys(presenceUnsubsMap).forEach(uid => {
+                if (!activeSet.has(uid)) {
+                    presenceUnsubsMap[uid]();
+                    delete presenceUnsubsMap[uid];
+                    delete onlineStatusMap[uid];
+                }
+            });
+
+            // Pasang listener baru untuk setiap lawan bicara
+            otherUids.forEach(otherUid => {
+                if (presenceUnsubsMap[otherUid]) return;
+
+                const userPresenceRef = ref(rtdb, `presence/${otherUid}`);
+                presenceUnsubsMap[otherUid] = onValue(userPresenceRef, (snap) => {
+                    const data = snap.val();
+                    const active = isUserActivelyOnline(data);
+                    updateStatusDotUI(otherUid, active);
+                }, () => {
+                    updateStatusDotUI(otherUid, false);
+                });
+            });
         }
 
         /* =====================================================
@@ -374,6 +498,7 @@
 
         async function initInbox(uid) {
             currentUid = uid;
+            setupMyPresence(uid);
             listenIncomingCallsAndForceRedirect(uid);
 
             // Terapkan tema paket user dari modul data user
@@ -464,7 +589,8 @@
                             lastTimestamp: chat.lastTimestamp,
                             unread: isUnread,
                             pinned: isPinned,
-                            muted: isMuted
+                            muted: isMuted,
+                            isOnline: Boolean(onlineStatusMap[chat.otherUid])
                         });
                     }
                 }
@@ -478,6 +604,7 @@
                 renderConversationsList(allConversationsData);
                 updateGlobalUnreadCount();
                 setupRealtimeSublisteners(chats, uid);
+                listenOtherUsersPresence(allConversationsData.map(c => c.otherUid));
             });
         }
 
@@ -580,6 +707,7 @@
 
                 const pinDisplay = chat.pinned ? 'inline-block' : 'none';
                 const muteDisplay = chat.muted ? 'inline-block' : 'none';
+                const statusDotClass = (chat.isOnline || onlineStatusMap[chat.otherUid]) ? 'status-dot active' : 'status-dot';
 
                 html += `
                     <div class="conversation-item ${unreadItemClass} ${pinnedItemClass}" id="item-${chat.chatId}"
@@ -589,7 +717,7 @@
                          onclick="openChatSafely('${chat.otherUid}')">
                         <div class="conv-avatar-wrap">
                             <img src="${chat.avatarUrl}" class="conv-avatar" onerror="this.src='${fallbackAvatar}';">
-                            <span class="status-dot"></span>
+                            <span class="${statusDotClass}" data-uid="${escapeHtml(chat.otherUid)}"></span>
                         </div>
                         <div class="conv-info">
                             <div class="conv-name-row">
