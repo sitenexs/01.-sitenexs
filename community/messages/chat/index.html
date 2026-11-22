@@ -93,6 +93,64 @@
             flex-shrink: 0;
         }
 
+        /* BANNER SEDANG ADA PANGGILAN (DI BAWAH NAVBAR) */
+        .active-call-banner {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.6rem 1.15rem;
+            background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-weight: 700;
+            flex: 0 0 auto;
+            z-index: 9;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+            transition: var(--transition);
+        }
+        .active-call-banner:hover {
+            filter: brightness(1.04);
+        }
+        .active-call-banner.active {
+            display: flex;
+        }
+        .active-call-banner-left {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            min-width: 0;
+        }
+        .active-call-pulse {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #ffffff;
+            flex-shrink: 0;
+            animation: callBannerPulse 1.3s infinite ease-in-out;
+        }
+        @keyframes callBannerPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.45); opacity: 0.55; }
+        }
+        .active-call-banner-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .active-call-banner-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(255, 255, 255, 0.22);
+            padding: 0.28rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: 0.74rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
         /* RUANG CHAT UTAMA */
         .chat-wrapper {
             width: 100%; height: 100%; background: #fafbfc; border: 1px solid var(--border-subtle); 
@@ -245,6 +303,19 @@
                 </div>
             </div>
 
+            <!-- NOTIFIKASI DI BAWAH NAVBAR SAAT SEDANG ADA PANGGILAN -->
+            <div id="activeCallBanner" class="active-call-banner" onclick="returnToOngoingCall()" role="button" tabindex="0">
+                <div class="active-call-banner-left">
+                    <span class="active-call-pulse"></span>
+                    <i id="activeCallBannerIcon" class="fas fa-phone-alt"></i>
+                    <span id="activeCallBannerText" class="active-call-banner-text">Sedang ada panggilan berlangsung</span>
+                </div>
+                <span class="active-call-banner-cta">
+                    <span>Masuk</span>
+                    <i class="fas fa-chevron-right"></i>
+                </span>
+            </div>
+
             <!-- ISI PESAN -->
             <div class="chat-messages" id="chatMessages">
                 <div id="loadingState" style="text-align: center; margin: auto; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
@@ -317,9 +388,11 @@ let otherUserFcmToken = null;
 
 let unsubscribeMessages = null;
 let unsubscribeIncomingCalls = null;
+let unsubscribeActiveCallRoom = null;
 let isInitialMessagesLoad = true;
 let lastNotifiedMessageId = null;
 let isRedirectingToCall = false;
+let ongoingCallTarget = null;
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
@@ -359,6 +432,91 @@ window.openCallPage = function (callType = 'video') {
     callUrl.searchParams.set('type', callType === 'audio' ? 'audio' : 'video');
     window.location.href = callUrl.toString();
 };
+
+function setOngoingCallBanner(show, info = null) {
+    const banner = document.getElementById('activeCallBanner');
+    const textEl = document.getElementById('activeCallBannerText');
+    const iconEl = document.getElementById('activeCallBannerIcon');
+    if (!banner) return;
+
+    if (!show || !info) {
+        ongoingCallTarget = null;
+        banner.classList.remove('active');
+        return;
+    }
+
+    ongoingCallTarget = info;
+    const isAudio = info.callType === 'audio';
+    if (iconEl) {
+        iconEl.className = isAudio ? 'fas fa-phone-alt' : 'fas fa-video';
+    }
+    if (textEl) {
+        const peerLabel = info.peerName || otherUserName || 'Mitra Sitenexs';
+        textEl.textContent = isAudio
+            ? `Sedang ada panggilan suara dengan ${peerLabel}`
+            : `Sedang ada panggilan video dengan ${peerLabel}`;
+    }
+    banner.classList.add('active');
+}
+
+window.returnToOngoingCall = function () {
+    if (isRedirectingToCall) return;
+    isRedirectingToCall = true;
+
+    const callUrl = new URL(CALL_PAGE_URL);
+    if (ongoingCallTarget?.roomId) {
+        callUrl.searchParams.set('roomId', ongoingCallTarget.roomId);
+    }
+    callUrl.searchParams.set('to', ongoingCallTarget?.peerUid || activeChatUserId || '');
+    callUrl.searchParams.set('mode', ongoingCallTarget?.mode || 'outgoing');
+    callUrl.searchParams.set('type', ongoingCallTarget?.callType === 'audio' ? 'audio' : 'video');
+    window.location.href = callUrl.toString();
+};
+
+function watchOngoingCallInRoom(callId, fallbackPeerUid, fallbackCallType) {
+    if (unsubscribeActiveCallRoom) {
+        unsubscribeActiveCallRoom();
+        unsubscribeActiveCallRoom = null;
+    }
+    if (!callId) {
+        setOngoingCallBanner(false);
+        return;
+    }
+
+    const callRef = ref(rtdb, `calls/${callId}`);
+    unsubscribeActiveCallRoom = onValue(callRef, snapshot => {
+        const data = snapshot.val();
+        if (!data || data.status === 'ended' || data.status === 'rejected') {
+            setOngoingCallBanner(false);
+            return;
+        }
+
+        const isParticipant =
+            (currentUid && data.participants && Boolean(data.participants[currentUid])) ||
+            data.callerUid === currentUid ||
+            data.calleeUid === currentUid;
+
+        if (!isParticipant) {
+            setOngoingCallBanner(false);
+            return;
+        }
+
+        const peerUid = data.callerUid === currentUid
+            ? (data.calleeUid || fallbackPeerUid)
+            : (data.callerUid || fallbackPeerUid);
+        const peerName = data.callerUid === currentUid
+            ? otherUserName
+            : (data.callerName || otherUserName);
+
+        setOngoingCallBanner(true, {
+            roomId: callId,
+            peerUid,
+            peerName,
+            callType: data.callType || fallbackCallType || 'video',
+            mode: 'outgoing'
+        });
+    });
+}
 
 function updateNotificationUIState() {
     const banner = document.getElementById('notifPermissionBanner');
@@ -641,7 +799,6 @@ function listenIncomingCallsAndForceRedirect() {
         if (
             data.calleeUid === currentUid &&
             data.status === 'ringing' &&
-            data.offer &&
             !isRedirectingToCall
         ) {
             isRedirectingToCall = true;
@@ -678,7 +835,7 @@ async function initChat(user) {
     const participants = [currentUid, activeChatUserId].sort();
     activeChatId = `${participants[0]}_${participants[1]}`;
 
-    // Pantau panggilan masuk & langsung alihkan ke halaman telepon
+    // Pantau panggilan masuk & langsung alihkan ke halaman panggilan masuk
     listenIncomingCallsAndForceRedirect();
 
     try {
@@ -714,10 +871,24 @@ async function initChat(user) {
         if (loadingState) loadingState.remove();
 
         let html = '';
+        let latestCallLog = null;
 
         snapshot.forEach(docSnap => {
             const message = docSnap.data();
             const isOutgoing = message.senderUid === currentUid;
+
+            if (String(message.text || '').startsWith('[CALL_LOG]|')) {
+                const [, cType = 'video', cStatus = 'ended'] = String(message.text).split('|');
+                if (cStatus === 'ringing' || cStatus === 'connected') {
+                    latestCallLog = {
+                        callType: cType,
+                        status: cStatus,
+                        timestamp: message.createdAt?.toMillis ? message.createdAt.toMillis() : Date.now()
+                    };
+                } else {
+                    latestCallLog = null;
+                }
+            }
 
             html += `
                 <div class="message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}">
@@ -728,6 +899,17 @@ async function initChat(user) {
                 </div>
             `;
         });
+
+        if (latestCallLog && (Date.now() - latestCallLog.timestamp < 3600000)) {
+            setOngoingCallBanner(true, {
+                peerUid: activeChatUserId,
+                peerName: otherUserName,
+                callType: latestCallLog.callType,
+                mode: 'outgoing'
+            });
+        } else if (!unsubscribeActiveCallRoom) {
+            setOngoingCallBanner(false);
+        }
 
         messagesContainer.innerHTML = html;
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
