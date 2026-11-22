@@ -34,7 +34,7 @@
 
         button, input { font-family: inherit; outline: none; border: none; }
 
-        .chat-header-verif { width: 15px; height: 15px; object-fit: contain; flex-shrink: 0; display: inline-block; }
+        .chat-header-verif { width: 16px; height: 16px; object-fit: contain; flex-shrink: 0; display: inline-block; }
 
         /* LAYAR PANGGILAN MASUK (INCOMING CALL) */
         .incoming-screen {
@@ -135,16 +135,23 @@
         }
         .vc-overlay.active { display: flex; }
 
+        /* Gradasi atas halus agar teks nama tetap jelas tanpa kotak kapsul */
+        .vc-top-gradient {
+            position: absolute; top: 0; left: 0; right: 0; height: 120px;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.68) 0%, rgba(15, 23, 42, 0) 100%);
+            pointer-events: none; z-index: 9;
+        }
+
         .vc-top-actions {
-            position: absolute; top: 22px; left: 20px;
-            display: flex; align-items: center; gap: 0.5rem; z-index: 25;
+            position: absolute; top: 20px; left: 16px;
+            display: flex; align-items: center; gap: 0.45rem; z-index: 25;
         }
         .vc-top-btn {
-            width: 40px; height: 40px; border-radius: 50%;
-            background: rgba(15, 23, 42, 0.72); backdrop-filter: blur(8px);
+            width: 38px; height: 38px; border-radius: 50%;
+            background: rgba(15, 23, 42, 0.52); backdrop-filter: blur(8px);
             color: #fff; border: 1px solid rgba(255, 255, 255, 0.18);
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 0.95rem; transition: var(--transition);
+            cursor: pointer; font-size: 0.9rem; transition: var(--transition);
         }
         .vc-top-btn:hover { background: rgba(37, 99, 235, 0.85); }
         .vc-top-btn.share-active {
@@ -158,7 +165,76 @@
         }
 
         /* =====================================================
-           GRID LAYAR TERBAGI (2 ORANG = FULL + PIP, 3+ = SPLIT)
+           HEADER NAMA TENGAH PRESISI (TANPA KAPSUL) + TIMER BAWAH
+        ===================================================== */
+        .vc-header-center {
+            position: absolute;
+            top: 22px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 12;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            pointer-events: none;
+            width: max-content;
+            max-width: calc(100vw - 208px);
+        }
+
+        /* Grid 3 kolom (1fr auto 1fr) memastikan teks nama tetap tepat di titik tengah */
+        .vc-name-symmetry-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            width: 100%;
+        }
+
+        .vc-name-title {
+            grid-column: 2;
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.01em;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.72);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: calc(100vw - 236px);
+        }
+
+        .vc-badges-right {
+            grid-column: 3;
+            justify-self: start;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            margin-left: 5px;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+        }
+
+        .vc-timer-sub {
+            margin-top: 3px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            letter-spacing: 0.05em;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.78);
+            display: none;
+        }
+        .vc-timer-sub.active {
+            display: block;
+        }
+
+        /* Sembunyikan nama & timer header atas saat mode panggilan suara karena sudah ada di tengah layar */
+        .vc-overlay.voice-mode .vc-header-center {
+            display: none;
+        }
+
+        /* =====================================================
+           GRID LAYAR TERBAGI (2 ORANG = FULL + PIP GESER, 3+ = SPLIT)
         ===================================================== */
         .vc-videos-grid {
             position: relative; width: 100%; height: 100%;
@@ -166,12 +242,12 @@
             gap: 0; background: #0f172a;
         }
 
-        /* Mode 3 peserta (2 lawan bicara + kamera sendiri di grid sejajar) */
+        /* Mode 3 peserta */
         .vc-videos-grid[data-count="3"] {
             grid-template-columns: 1fr 1fr;
             grid-template-rows: 1fr 1fr;
             gap: 6px;
-            padding: 76px 8px 104px 8px;
+            padding: 82px 8px 104px 8px;
         }
         .vc-videos-grid[data-count="3"] .video-tile:nth-child(1) {
             grid-column: 1 / 2;
@@ -184,6 +260,14 @@
         .vc-videos-grid[data-count="3"] .video-tile.local-tile {
             grid-column: 1 / 3;
             grid-row: 2 / 3;
+            position: relative !important;
+            left: auto !important;
+            top: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            width: 100% !important;
+            height: 100% !important;
+            cursor: default !important;
         }
 
         /* Mode 4 peserta atau lebih */
@@ -192,7 +276,18 @@
             grid-template-columns: 1fr 1fr;
             grid-auto-rows: 1fr;
             gap: 6px;
-            padding: 76px 8px 104px 8px;
+            padding: 82px 8px 104px 8px;
+        }
+        .vc-videos-grid[data-count="4"] .video-tile.local-tile,
+        .vc-videos-grid[data-count="many"] .video-tile.local-tile {
+            position: relative !important;
+            left: auto !important;
+            top: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            width: 100% !important;
+            height: 100% !important;
+            cursor: default !important;
         }
 
         .video-tile {
@@ -210,17 +305,36 @@
         }
         .video-tile.local-tile video {
             transform: scaleX(-1);
+            pointer-events: none;
         }
 
-        /* Saat hanya berdua (1 atau 2 peserta), video lokal mengambang di pojok */
+        /* Saat hanya berdua (1 atau 2 peserta), video lokal mengambang & bisa digeser */
         .vc-videos-grid[data-count="1"] .video-tile.local-tile,
         .vc-videos-grid[data-count="2"] .video-tile.local-tile {
-            position: absolute; bottom: 105px; right: 20px; width: 115px; height: 165px;
-            border-radius: 14px; overflow: hidden; border: 2px solid rgba(255,255,255,0.3);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5); background: #000; z-index: 15;
+            position: absolute;
+            bottom: 108px;
+            right: 18px;
+            width: 112px;
+            height: 162px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+            background: #0f172a;
+            z-index: 18;
+            touch-action: none;
+            cursor: grab;
+            transition: left 0.25s cubic-bezier(0.22, 1, 0.36, 1), top 0.25s cubic-bezier(0.22, 1, 0.36, 1), transform 0.18s ease;
+        }
+        .vc-videos-grid[data-count="1"] .video-tile.local-tile.dragging,
+        .vc-videos-grid[data-count="2"] .video-tile.local-tile.dragging {
+            transition: none;
+            cursor: grabbing;
+            transform: scale(1.04);
+            border-color: rgba(255, 255, 255, 0.7);
         }
 
-        /* Label nama & status per kotak peserta */
+        /* Label nama & status per kotak peserta (mode 3+ orang) */
         .tile-footer-badge {
             position: absolute; bottom: 10px; left: 10px; right: 10px;
             display: flex; align-items: center; justify-content: space-between; gap: 0.4rem;
@@ -233,7 +347,7 @@
             display: none;
         }
         .tile-name-pill {
-            background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px);
+            background: rgba(15, 23, 42, 0.72); backdrop-filter: blur(8px);
             color: #fff; padding: 0.25rem 0.65rem; border-radius: var(--radius-full);
             font-size: 0.74rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem;
             border: 1px solid rgba(255, 255, 255, 0.14);
@@ -253,6 +367,7 @@
             background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
             display: none; flex-direction: column; align-items: center; justify-content: center;
             z-index: 4; padding: 1rem; text-align: center;
+            pointer-events: none;
         }
         .tile-cam-off-overlay.active { display: flex; }
 
@@ -270,9 +385,9 @@
             width: 44px; height: 44px; margin-bottom: 0.25rem;
         }
 
-        /* Indikator global saat berdua */
+        /* Indikator status mute/kamera lawan bicara saat berdua */
         .remote-media-indicators {
-            position: absolute; top: 74px; left: 50%; transform: translateX(-50%);
+            position: absolute; top: 82px; left: 50%; transform: translateX(-50%);
             display: flex; flex-direction: column; align-items: center; gap: 0.45rem;
             z-index: 16; pointer-events: none; width: max-content; max-width: 90%;
         }
@@ -281,8 +396,8 @@
         }
         .remote-indicator-pill {
             background: rgba(239, 68, 68, 0.92); backdrop-filter: blur(8px);
-            color: #fff; padding: 0.4rem 0.95rem; border-radius: var(--radius-full);
-            font-size: 0.78rem; font-weight: 700; display: none; align-items: center; gap: 0.45rem;
+            color: #fff; padding: 0.36rem 0.9rem; border-radius: var(--radius-full);
+            font-size: 0.76rem; font-weight: 700; display: none; align-items: center; gap: 0.45rem;
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
@@ -323,35 +438,36 @@
             0% { transform: scale(0.95); opacity: 0.85; }
             100% { transform: scale(1.4); opacity: 0; }
         }
+        .voice-peer-name-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            width: 100%;
+            max-width: 92vw;
+            margin-bottom: 0.35rem;
+        }
         .voice-peer-name {
-            font-size: 1.35rem; font-weight: 800; color: #ffffff; margin-bottom: 0.35rem;
-            max-width: 90%; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
+            grid-column: 2;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #ffffff;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .voice-peer-badges {
+            grid-column: 3;
+            justify-self: start;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            margin-left: 6px;
         }
         .voice-call-timer {
             font-size: 0.95rem; font-weight: 600; color: #94a3b8;
             letter-spacing: 0.06em; font-variant-numeric: tabular-nums;
         }
-
-        .vc-status-banner {
-            position: absolute; top: 24px; left: 50%; transform: translateX(-50%);
-            background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(8px);
-            color: #fff; padding: 0.5rem 1.25rem; border-radius: var(--radius-full);
-            font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;
-            border: 1px solid rgba(255,255,255,0.15); z-index: 10; white-space: nowrap;
-            max-width: calc(100vw - 210px); overflow: hidden; text-overflow: ellipsis;
-        }
-        .vc-timer-pill {
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-            padding: 0.12rem 0.55rem;
-            border-radius: var(--radius-full);
-            font-size: 0.78rem;
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-            margin-left: 0.2rem;
-            display: none;
-        }
-        .vc-timer-pill.active { display: inline-block; }
 
         .vc-controls {
             position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
@@ -387,9 +503,9 @@
             <div id="incomingCallTypeLabel" style="font-size: 0.82rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem;">
                 <i class="fas fa-video" style="color: var(--accent); margin-right: 4px;"></i> Panggilan Video Masuk
             </div>
-            <div style="display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; max-width: 90vw;">
-                <div id="callerNameDisplay" style="font-weight: 800; font-size: 1.45rem; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Mitra Sitenexs</div>
-                <div id="callerBadgesDisplay" style="display: inline-flex; align-items: center; gap: 2px;"></div>
+            <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; max-width: 90vw;">
+                <div id="callerNameDisplay" style="grid-column: 2; font-weight: 800; font-size: 1.45rem; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Mitra Sitenexs</div>
+                <div id="callerBadgesDisplay" style="grid-column: 3; justify-self: start; display: inline-flex; align-items: center; gap: 2px; margin-left: 5px;"></div>
             </div>
             <div id="incomingSubText" style="font-size: 0.88rem; color: #cbd5e1; margin-top: 0.35rem;">Menghubungkan panggilan masuk...</div>
         </div>
@@ -419,9 +535,9 @@
             <div id="guestCallTypeLabel" style="font-size: 0.82rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem;">
                 <i class="fas fa-link" style="color: var(--accent); margin-right: 4px;"></i> Undangan Panggilan Sitenexs
             </div>
-            <div style="display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; max-width: 90vw;">
-                <div id="guestHostName" style="font-weight: 800; font-size: 1.4rem; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Memuat ruang panggilan...</div>
-                <div id="guestHostBadges" style="display: inline-flex; align-items: center; gap: 2px;"></div>
+            <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; max-width: 90vw;">
+                <div id="guestHostName" style="grid-column: 2; font-weight: 800; font-size: 1.4rem; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Memuat ruang panggilan...</div>
+                <div id="guestHostBadges" style="grid-column: 3; justify-self: start; display: inline-flex; align-items: center; gap: 2px; margin-left: 5px;"></div>
             </div>
             <div id="guestStatusSubText" style="font-size: 0.86rem; color: #cbd5e1; margin-top: 0.35rem;">Masuk langsung tanpa perlu login akun.</div>
 
@@ -444,6 +560,8 @@
     <!-- LAYAR PANGGILAN AKTIF (VIDEO / SUARA) -->
     <div id="vcOverlay" class="vc-overlay">
         <div class="vc-remote-container">
+            <div class="vc-top-gradient"></div>
+
             <div class="vc-top-actions">
                 <button type="button" id="nativePipBtn" class="vc-top-btn" onclick="enterSystemPiP()" title="Jendela Mengambang (PiP)">
                     <i class="fas fa-external-link-alt"></i>
@@ -453,11 +571,13 @@
                 </button>
             </div>
 
-            <div class="vc-status-banner">
-                <i class="fas fa-circle" style="color: var(--accent); font-size: 0.6rem;"></i>
-                <span id="vcStatusText">Menghubungkan...</span>
-                <span id="vcBannerBadges" style="display: inline-flex; align-items: center; gap: 2px;"></span>
-                <span id="vcCallTimer" class="vc-timer-pill">00:00</span>
+            <!-- HEADER NAMA PRESISI DI TENGAH TANPA KAPSUL + PENGHITUNG WAKTU DI BAWAHNYA -->
+            <div class="vc-header-center">
+                <div class="vc-name-symmetry-row">
+                    <span id="vcStatusText" class="vc-name-title">Menghubungkan...</span>
+                    <span id="vcBannerBadges" class="vc-badges-right"></span>
+                </div>
+                <span id="vcCallTimer" class="vc-timer-sub">00:00</span>
             </div>
 
             <!-- GRID VIDEO DINAMIS (BERDUA / BERTIGA / LEBIH) -->
@@ -465,7 +585,7 @@
                 <div id="localVideoTile" class="video-tile local-tile">
                     <div id="localCamOffOverlay" class="tile-cam-off-overlay">
                         <img id="localCamOffAvatar" src="" class="tile-avatar-img" alt="Anda" onerror="this.src='https://ui-avatars.com/api/?name=Anda&background=2563eb&color=fff'">
-                        <div style="font-size: 0.78rem; color: #cbd5e1; font-weight: 700;">Kamera Anda Mati</div>
+                        <div style="font-size: 0.72rem; color: #cbd5e1; font-weight: 700;">Kamera Mati</div>
                     </div>
                     <video id="localVideo" autoplay playsinline muted></video>
                     <div class="tile-footer-badge">
@@ -493,9 +613,9 @@
                         <img id="voicePeerAvatar" src="" class="voice-avatar-img" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
                     </div>
                 </div>
-                <div class="voice-peer-name">
-                    <span id="voicePeerName">Mitra Sitenexs</span>
-                    <span id="voicePeerBadges" style="display: inline-flex; align-items: center; gap: 2px;"></span>
+                <div class="voice-peer-name-row">
+                    <span id="voicePeerName" class="voice-peer-name">Mitra Sitenexs</span>
+                    <span id="voicePeerBadges" class="voice-peer-badges"></span>
                 </div>
                 <div id="voiceCallTimer" class="voice-call-timer">Menghubungkan...</div>
             </div>
@@ -573,17 +693,19 @@ let isGuestUser = false;
 let myProfile = null;
 let myUserName = 'Mitra Sitenexs';
 let myIsVerified = false;
+let myBadgeType = null;
 
 let activeChatUserId = peerUidParam || null;
 let activeChatId = null;
 let otherProfile = null;
 let otherUserName = 'Mitra Sitenexs';
 let otherUserVerified = false;
+let otherUserBadgeType = null;
 let otherUserFcmToken = null;
 
 let localStream = null;
 
-// Peta koneksi multi-peserta: remoteUid -> { pc, stream, candidateQueue, unsubSignal, unsubCandidates, disconnectTimer, name, verified, micMuted, camOff }
+// Peta koneksi multi-peserta: remoteUid -> { pc, stream, candidateQueue, unsubSignal, unsubCandidates, disconnectTimer, name, verified, badgeType, micMuted, camOff }
 const peersMap = new Map();
 const participantsInfoMap = new Map();
 
@@ -613,6 +735,151 @@ let unsubscribeCallRoom = null;
 let unsubscribeParticipants = null;
 let unsubscribeIncomingCalls = null;
 let unsubscribeGuestRoomWatch = null;
+
+/* =====================================================
+   HELPER LENCANA CENTANG BIRU & LENCANA KUNING
+===================================================== */
+function resolveBadgeTypeFromProfile(profile) {
+    if (!profile || typeof profile !== 'object') return null;
+    if (
+        profile.badgeType === 'yellow' ||
+        profile.badge === 'yellow' ||
+        profile.verificationType === 'yellow' ||
+        profile.isYellowVerified === true ||
+        profile.yellowBadge === true ||
+        profile.verifiedYellow === true
+    ) {
+        return 'yellow';
+    }
+    if (
+        profile.badgeType === 'blue' ||
+        profile.isVerified === true ||
+        profile.verified === true
+    ) {
+        return 'blue';
+    }
+    return null;
+}
+
+function renderCustomBadgesHtml(verifiedFlag, badgeType = null, existingHtml = '') {
+    if (badgeType === 'yellow' || verifiedFlag === 'yellow') {
+        return `<img src="https://sitenexs.com/assets/logo/verif-yellow.png" class="chat-header-verif" alt="Terverifikasi Kuning" title="Terverifikasi Resmi" onerror="this.outerHTML='<svg class=&quot;chat-header-verif&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;#f59e0b&quot;><path d=&quot;M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.26 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.45 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z&quot;/></svg>'">`;
+    }
+    if (existingHtml && existingHtml.trim() !== '') {
+        return existingHtml;
+    }
+    if (verifiedFlag) {
+        try {
+            const sdkHtml = getUserBadgesHtml(true, badgeType);
+            if (sdkHtml && sdkHtml.trim() !== '') return sdkHtml;
+        } catch (e) {}
+        return `<svg class="chat-header-verif" viewBox="0 0 24 24" fill="#38bdf8"><path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.26 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.45 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"/></svg>`;
+    }
+    return '';
+}
+
+/* =====================================================
+   KAMERA LOKAL BISA DIGESER-GESER (DRAGGABLE PIP)
+===================================================== */
+function initDraggableLocalTile() {
+    const localTile = document.getElementById('localVideoTile');
+    const grid = document.getElementById('vcVideosGrid');
+    if (!localTile || !grid) return;
+
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let initialLeft = 0;
+    let initialTop = 0;
+
+    function isPipModeActive() {
+        const count = grid.getAttribute('data-count');
+        return count === '1' || count === '2';
+    }
+
+    function snapToNearestEdge() {
+        if (!isPipModeActive()) return;
+        const rect = localTile.getBoundingClientRect();
+        const winW = window.innerWidth;
+        const winH = window.innerHeight;
+        const margin = 16;
+        const topSafe = 82;
+        const bottomSafe = 104;
+
+        const targetLeft = (rect.left + rect.width / 2 < winW / 2)
+            ? margin
+            : Math.max(margin, winW - rect.width - margin);
+
+        const clampedTop = Math.min(
+            Math.max(topSafe, rect.top),
+            Math.max(topSafe, winH - rect.height - bottomSafe)
+        );
+
+        localTile.style.left = `${targetLeft}px`;
+        localTile.style.top = `${clampedTop}px`;
+        localTile.style.right = 'auto';
+        localTile.style.bottom = 'auto';
+    }
+
+    localTile.addEventListener('pointerdown', (e) => {
+        if (!isPipModeActive()) return;
+        isDragging = true;
+        localTile.classList.add('dragging');
+
+        const rect = localTile.getBoundingClientRect();
+        localTile.style.left = `${rect.left}px`;
+        localTile.style.top = `${rect.top}px`;
+        localTile.style.right = 'auto';
+        localTile.style.bottom = 'auto';
+
+        startX = e.clientX;
+        startY = e.clientY;
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        try {
+            localTile.setPointerCapture(e.pointerId);
+        } catch (err) {}
+    });
+
+    localTile.addEventListener('pointermove', (e) => {
+        if (!isDragging || !isPipModeActive()) return;
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        const winW = window.innerWidth;
+        const winH = window.innerHeight;
+        const tileW = localTile.offsetWidth;
+        const tileH = localTile.offsetHeight;
+
+        const nextLeft = Math.min(Math.max(10, initialLeft + dx), winW - tileW - 10);
+        const nextTop = Math.min(Math.max(76, initialTop + dy), winH - tileH - 96);
+
+        localTile.style.left = `${nextLeft}px`;
+        localTile.style.top = `${nextTop}px`;
+    });
+
+    function finishDrag(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        localTile.classList.remove('dragging');
+        try {
+            if (e && e.pointerId !== undefined) {
+                localTile.releasePointerCapture(e.pointerId);
+            }
+        } catch (err) {}
+        snapToNearestEdge();
+    }
+
+    localTile.addEventListener('pointerup', finishDrag);
+    localTile.addEventListener('pointercancel', finishDrag);
+
+    window.addEventListener('resize', () => {
+        if (isPipModeActive() && localTile.style.left) {
+            snapToNearestEdge();
+        }
+    });
+}
 
 function returnAfterCall(delayMs = 600) {
     setTimeout(() => {
@@ -849,11 +1116,13 @@ function escapeHtml(text) {
 /* =====================================================
    MANAJEMEN TILE LAYAR TERBAGI (2 / 3 / 4+ PESERTA)
 ===================================================== */
-function ensureRemoteVideoTile(remoteUid, peerName, peerVerified = false) {
+function ensureRemoteVideoTile(remoteUid, peerName, peerVerified = false, peerBadgeType = null) {
     const grid = document.getElementById('vcVideosGrid');
     const localTile = document.getElementById('localVideoTile');
     const tileId = `remote-tile-${remoteUid}`;
     let tile = document.getElementById(tileId);
+
+    const badgesHtml = renderCustomBadgesHtml(Boolean(peerVerified), peerBadgeType);
 
     if (!tile) {
         tile = document.createElement('div');
@@ -862,14 +1131,13 @@ function ensureRemoteVideoTile(remoteUid, peerName, peerVerified = false) {
         tile.setAttribute('data-uid', remoteUid);
 
         const avatarSrc = getSafePeerAvatar(remoteUid, peerName);
-        const badgesHtml = getUserBadgesHtml(Boolean(peerVerified));
 
         tile.innerHTML = `
             <div class="tile-cam-off-overlay" id="camoff-${remoteUid}">
                 <img src="${avatarSrc}" class="tile-avatar-img" alt="${escapeHtml(peerName)}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(peerName || 'User')}&background=2563eb&color=fff'">
                 <div style="font-size: 0.92rem; font-weight: 800; color: #fff; display: inline-flex; align-items: center; gap: 0.3rem;">
                     <span>${escapeHtml(peerName)}</span>
-                    ${badgesHtml}
+                    <span id="camoff-badges-${remoteUid}">${badgesHtml}</span>
                 </div>
                 <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.25rem;">
                     <i class="fas fa-video-slash" style="margin-right: 4px;"></i> Kamera dimatikan
@@ -879,7 +1147,7 @@ function ensureRemoteVideoTile(remoteUid, peerName, peerVerified = false) {
             <div class="tile-footer-badge">
                 <span class="tile-name-pill">
                     <span id="name-${remoteUid}">${escapeHtml(peerName)}</span>
-                    ${badgesHtml}
+                    <span id="tile-badges-${remoteUid}">${badgesHtml}</span>
                 </span>
                 <span class="tile-muted-badge" id="muted-${remoteUid}" title="Mikrofon dibisukan">
                     <i class="fas fa-microphone-slash"></i>
@@ -890,6 +1158,10 @@ function ensureRemoteVideoTile(remoteUid, peerName, peerVerified = false) {
     } else {
         const nameSpan = document.getElementById(`name-${remoteUid}`);
         if (nameSpan && peerName) nameSpan.textContent = peerName;
+        const tileBadges = document.getElementById(`tile-badges-${remoteUid}`);
+        if (tileBadges) tileBadges.innerHTML = badgesHtml;
+        const camOffBadges = document.getElementById(`camoff-badges-${remoteUid}`);
+        if (camOffBadges) camOffBadges.innerHTML = badgesHtml;
     }
 
     updateGridLayoutCount();
@@ -907,7 +1179,7 @@ function updateGridLayoutCount() {
     if (!grid) return;
 
     const remoteTiles = grid.querySelectorAll('.remote-tile');
-    const totalParticipants = remoteTiles.length + 1; // +1 untuk kamera kita sendiri
+    const totalParticipants = remoteTiles.length + 1;
 
     if (totalParticipants <= 1) {
         grid.setAttribute('data-count', '1');
@@ -935,7 +1207,6 @@ function updateRemoteTileMediaState(remoteUid, muted, camOff, peerName) {
         mutedBadgeEl.classList.toggle('active', Boolean(muted));
     }
 
-    // Jika hanya berdua (total 2 orang), perbarui juga indikator kapsul atas
     const remoteTilesCount = document.querySelectorAll('#vcVideosGrid .remote-tile').length;
     if (remoteTilesCount === 1) {
         const mutedEl = document.getElementById('remoteMutedIndicator');
@@ -972,7 +1243,7 @@ function updateHeaderAndVoiceStageUI() {
                 : `Memanggil ${otherUserName}...`;
         }
         if (bannerBadgesEl) {
-            bannerBadgesEl.innerHTML = getUserBadgesHtml(Boolean(otherUserVerified));
+            bannerBadgesEl.innerHTML = renderCustomBadgesHtml(Boolean(otherUserVerified), otherUserBadgeType, otherProfile?.badgesHtml || '');
         }
         return;
     }
@@ -981,7 +1252,9 @@ function updateHeaderAndVoiceStageUI() {
         const [peerUid, peerObj] = remoteEntries[0];
         const pName = peerObj.name || otherUserName;
         const pVerif = Boolean(peerObj.verified);
-        const badges = getUserBadgesHtml(pVerif);
+        const pBadgeType = peerObj.badgeType || (peerUid === activeChatUserId ? otherUserBadgeType : null);
+        const fallbackHtml = peerUid === activeChatUserId ? (otherProfile?.badgesHtml || '') : '';
+        const badges = renderCustomBadgesHtml(pVerif, pBadgeType, fallbackHtml);
 
         if (statusTextEl) {
             statusTextEl.textContent = currentCallType === 'audio' ? 'Panggilan Suara' : pName;
@@ -998,7 +1271,6 @@ function updateHeaderAndVoiceStageUI() {
             `;
         }
     } else {
-        // Mode bertiga atau lebih
         const namesList = remoteEntries.map(([, p]) => p.name || 'Peserta').join(', ');
         if (statusTextEl) {
             statusTextEl.textContent = `Panggilan Grup (${totalCount} Orang)`;
@@ -1017,19 +1289,19 @@ function updateHeaderAndVoiceStageUI() {
     }
 }
 
-function applyCallOverlayMode(callType, peerUid, peerName, peerVerified = false) {
+function applyCallOverlayMode(callType, peerUid, peerName, peerVerified = false, peerBadgeType = null) {
     const overlay = document.getElementById('vcOverlay');
     const toggleCamBtn = document.getElementById('toggleCamBtn');
     const nativePipBtn = document.getElementById('nativePipBtn');
     const shareLinkBtn = document.getElementById('shareCallLinkBtn');
-    const badgesHtml = getUserBadgesHtml(Boolean(peerVerified));
+    const fallbackHtml = peerUid === activeChatUserId ? (otherProfile?.badgesHtml || '') : '';
+    const badgesHtml = renderCustomBadgesHtml(Boolean(peerVerified), peerBadgeType, fallbackHtml);
     const avatarSrc = getSafePeerAvatar(peerUid, peerName);
 
     document.getElementById('vcBannerBadges').innerHTML = badgesHtml;
     document.getElementById('localCamOffAvatar').src = getSafePeerAvatar(currentUid, myUserName);
     document.getElementById('localTileNameLabel').textContent = `${myUserName} (Anda)`;
 
-    // Semua peserta aktif bisa membagikan link agar orang ke-3 bisa masuk
     if (shareLinkBtn) {
         shareLinkBtn.style.display = 'flex';
     }
@@ -1156,7 +1428,11 @@ function showIncomingCallScreen(data) {
 
     document.getElementById('callerAvatarDisplay').src = getUserAvatarUrl(data.callerUid);
     document.getElementById('callerNameDisplay').textContent = data.callerName || 'Mitra Sitenexs';
-    document.getElementById('callerBadgesDisplay').innerHTML = getUserBadgesHtml(Boolean(data.callerVerified));
+    document.getElementById('callerBadgesDisplay').innerHTML = renderCustomBadgesHtml(
+        Boolean(data.callerVerified),
+        data.callerBadgeType || null,
+        otherProfile?.badgesHtml || ''
+    );
     document.getElementById('incomingSubText').textContent = 'Mengajak Anda terhubung secara langsung...';
 
     document.getElementById('incomingCallScreen').classList.add('active');
@@ -1273,14 +1549,15 @@ async function flushPeerCandidateQueue(peerObj) {
 
 async function connectToMeshParticipant(callId, remoteUid, peerMeta = {}) {
     if (!callId || !currentUid || !remoteUid || remoteUid === currentUid || !localStream) return;
-    if (peersMap.has(remoteUid)) return; // Sudah terhubung atau sedang menyambung
+    if (peersMap.has(remoteUid)) return;
 
     const isInitiator = String(currentUid) < String(remoteUid);
     const pairKey = getMeshPairKey(currentUid, remoteUid);
     const peerName = peerMeta.name || 'Peserta Sitenexs';
     const peerVerified = Boolean(peerMeta.verified);
+    const peerBadgeType = peerMeta.badgeType || (remoteUid === activeChatUserId ? otherUserBadgeType : null);
 
-    ensureRemoteVideoTile(remoteUid, peerName, peerVerified);
+    ensureRemoteVideoTile(remoteUid, peerName, peerVerified, peerBadgeType);
 
     const pc = new RTCPeerConnection(rtcConfig);
     const remoteStream = new MediaStream();
@@ -1298,6 +1575,7 @@ async function connectToMeshParticipant(callId, remoteUid, peerMeta = {}) {
         uid: remoteUid,
         name: peerName,
         verified: peerVerified,
+        badgeType: peerBadgeType,
         pc,
         stream: remoteStream,
         candidateQueue: [],
@@ -1388,7 +1666,6 @@ async function connectToMeshParticipant(callId, remoteUid, peerMeta = {}) {
         }
     };
 
-    // Negosiasi Offer / Answer per pasangan
     if (isInitiator) {
         peerObj.unsubSignal = onValue(signalRef, async snap => {
             const sig = snap.val();
@@ -1450,6 +1727,7 @@ function registerSelfInRoom(callId) {
         uid: currentUid,
         name: myUserName,
         verified: myIsVerified,
+        badgeType: myBadgeType,
         isGuest: isGuestUser,
         micMuted: isMicMuted,
         camOff: isCamOff,
@@ -1468,7 +1746,6 @@ function listenToRoomParticipants(callId) {
         const val = snapshot.val() || {};
         const activeUids = new Set(Object.keys(val));
 
-        // 1. Hubungkan peserta baru yang masuk (termasuk user ke-3 lewat link)
         Object.entries(val).forEach(([uid, pData]) => {
             if (uid === currentUid) return;
 
@@ -1485,13 +1762,13 @@ function listenToRoomParticipants(callId) {
                 const peerObj = peersMap.get(uid);
                 peerObj.name = pData.name || peerObj.name;
                 peerObj.verified = Boolean(pData.verified);
-                ensureRemoteVideoTile(uid, peerObj.name, peerObj.verified);
+                peerObj.badgeType = pData.badgeType || peerObj.badgeType;
+                ensureRemoteVideoTile(uid, peerObj.name, peerObj.verified, peerObj.badgeType);
             }
 
             updateRemoteTileMediaState(uid, Boolean(pData.micMuted), Boolean(pData.camOff), pData.name);
         });
 
-        // 2. Jika ada satu peserta keluar, tutup hanya koneksi peserta tersebut (yang lain tetap nyambung!)
         Array.from(peersMap.keys()).forEach(existingUid => {
             if (!activeUids.has(existingUid)) {
                 const leftPeer = peersMap.get(existingUid);
@@ -1533,7 +1810,6 @@ function listenToCallRoom(callId, sessionId, isCaller) {
 
         if (sessionId && data.sessionId && data.sessionId !== sessionId) return;
 
-        // Jika panggilan ditolak sebelum ada siapa pun yang terhubung
         if (data.status === 'rejected' && !isShareLinkEnabled && !data.allowGuestLink && peersMap.size === 0) {
             if (isCaller && currentCallLogDocId) {
                 updateCallLogMessage(currentCallLogDocId, currentCallType, 'rejected', 0);
@@ -1567,7 +1843,7 @@ async function startOutgoingCall(callType) {
     wasCallConnected = false;
     callSecondsElapsed = 0;
 
-    applyCallOverlayMode(callType, activeChatUserId, otherUserName, otherUserVerified);
+    applyCallOverlayMode(callType, activeChatUserId, otherUserName, otherUserVerified, otherUserBadgeType);
     document.getElementById('vcOverlay').classList.add('active');
     document.getElementById('vcStatusText').textContent =
         callType === 'audio' ? 'Panggilan Suara' : `Memanggil ${otherUserName}...`;
@@ -1605,6 +1881,7 @@ async function startOutgoingCall(callType) {
             callerUid: currentUid,
             callerName: myUserName,
             callerVerified: myIsVerified,
+            callerBadgeType: myBadgeType,
             calleeUid: activeChatUserId,
             allowGuestLink: false,
             status: 'ringing',
@@ -1699,7 +1976,7 @@ function initGuestShareLinkRoom(roomId) {
 
         hostNameEl.textContent = data.callerName || 'Mitra Sitenexs';
         hostAvatarEl.src = getSafePeerAvatar(data.callerUid, data.callerName);
-        hostBadgesEl.innerHTML = getUserBadgesHtml(Boolean(data.callerVerified));
+        hostBadgesEl.innerHTML = renderCustomBadgesHtml(Boolean(data.callerVerified), data.callerBadgeType || null);
 
         const activeCount = data.participants ? Object.keys(data.participants).length : 1;
         typeLabel.innerHTML = currentCallType === 'audio'
@@ -1734,6 +2011,7 @@ window.joinCallViaShareLink = async function () {
     currentCallType = sharedRoomData.callType === 'audio' ? 'audio' : 'video';
     otherUserName = sharedRoomData.callerName || 'Mitra Sitenexs';
     otherUserVerified = Boolean(sharedRoomData.callerVerified);
+    otherUserBadgeType = sharedRoomData.callerBadgeType || null;
 
     const mediaReady = await setupLocalMedia(currentCallType);
     if (!mediaReady) {
@@ -1752,7 +2030,7 @@ window.joinCallViaShareLink = async function () {
     isInCall = true;
 
     document.getElementById('guestJoinScreen').classList.remove('active');
-    applyCallOverlayMode(currentCallType, sharedRoomData.callerUid, otherUserName, otherUserVerified);
+    applyCallOverlayMode(currentCallType, sharedRoomData.callerUid, otherUserName, otherUserVerified, otherUserBadgeType);
     document.getElementById('vcOverlay').classList.add('active');
     document.getElementById('vcStatusText').textContent = 'Menyambungkan ke ruang...';
 
@@ -1764,7 +2042,6 @@ window.joinCallViaShareLink = async function () {
             status: 'connected'
         });
 
-        // Daftarkan diri ke daftar peserta agar otomatis tersambung ke SEMUA peserta yang sudah ada (bertiga/grup)
         registerSelfInRoom(currentCallId);
         listenToCallRoom(currentCallId, currentSessionId, false);
         listenToRoomParticipants(currentCallId);
@@ -1804,6 +2081,9 @@ window.acceptIncomingCall = async function () {
     if (typeof data.callerVerified === 'boolean') {
         otherUserVerified = data.callerVerified;
     }
+    if (data.callerBadgeType) {
+        otherUserBadgeType = data.callerBadgeType;
+    }
 
     isStartingCall = true;
 
@@ -1818,7 +2098,7 @@ window.acceptIncomingCall = async function () {
     isInCall = true;
 
     document.getElementById('incomingCallScreen').classList.remove('active');
-    applyCallOverlayMode(callType, data.callerUid, otherUserName, otherUserVerified);
+    applyCallOverlayMode(callType, data.callerUid, otherUserName, otherUserVerified, otherUserBadgeType);
     document.getElementById('vcOverlay').classList.add('active');
     document.getElementById('vcStatusText').textContent =
         callType === 'audio' ? 'Panggilan Suara' : 'Menghubungkan...';
@@ -1893,11 +2173,8 @@ window.endActiveCall = function (forcedStatus = null) {
     }
 
     if (callId && currentUid) {
-        // Hapus diri sendiri dari daftar peserta
         remove(ref(rtdb, `calls/${callId}/participants/${currentUid}`)).catch(() => {});
 
-        // Jika masih ada 2 orang lain yang sedang ngobrol di dalam panggilan grup, biarkan mereka tetap tersambung!
-        // Jika tinggal 1 orang atau 0 orang, akhiri ruang panggilan sepenuhnya.
         if (remainingOthers <= 1) {
             update(ref(rtdb, `calls/${callId}`), {
                 status: 'ended',
@@ -1945,7 +2222,6 @@ function cleanupCallResources() {
         unsubscribeGuestRoomWatch = null;
     }
 
-    // Tutup seluruh koneksi P2P peserta
     Array.from(peersMap.keys()).forEach(uid => {
         closeSinglePeer(uid, true);
     });
@@ -2056,10 +2332,12 @@ async function initCallPage(user, guestFlag = false) {
             myProfile = await fetchUserProfile(db, currentUid);
             myUserName = myProfile.displayName || 'Mitra Sitenexs';
             myIsVerified = Boolean(myProfile.isVerified);
+            myBadgeType = resolveBadgeTypeFromProfile(myProfile);
         } catch (e) {}
     } else {
         myUserName = 'Tamu Sitenexs';
         myIsVerified = false;
+        myBadgeType = null;
     }
 
     if (modeParam === 'guest_link' && roomIdParam) {
@@ -2073,18 +2351,25 @@ async function initCallPage(user, guestFlag = false) {
     otherProfile = await fetchUserProfile(db, activeChatUserId);
     otherUserName = otherProfile.displayName;
     otherUserVerified = otherProfile.isVerified;
+    otherUserBadgeType = resolveBadgeTypeFromProfile(otherProfile);
     otherUserFcmToken = otherProfile.fcmToken;
 
     if (modeParam === 'incoming') {
         document.getElementById('callerAvatarDisplay').src = otherProfile.avatarUrl;
         document.getElementById('callerNameDisplay').textContent = otherUserName;
-        document.getElementById('callerBadgesDisplay').innerHTML = otherProfile.badgesHtml;
+        document.getElementById('callerBadgesDisplay').innerHTML = renderCustomBadgesHtml(
+            otherUserVerified,
+            otherUserBadgeType,
+            otherProfile.badgesHtml
+        );
         document.getElementById('incomingCallScreen').classList.add('active');
         listenIncomingCallForPage();
     } else {
         startOutgoingCall(typeParam);
     }
 }
+
+initDraggableLocalTile();
 
 onAuthStateChanged(auth, async user => {
     if (user) {
