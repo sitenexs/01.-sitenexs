@@ -520,6 +520,18 @@ window.returnToOngoingCall = function () {
     window.location.href = callUrl.toString();
 };
 
+function isRoomActuallyLive(roomData) {
+    if (!roomData || typeof roomData !== 'object') return false;
+    if (roomData.status === 'ended' || roomData.status === 'rejected') return false;
+    if (roomData.status !== 'ringing' && roomData.status !== 'connected') return false;
+    if (roomData.timestamp && (Date.now() - roomData.timestamp > 3600000)) return false;
+
+    const hasActiveParticipant = roomData.participants && Object.keys(roomData.participants).length > 0;
+    if (roomData.status === 'connected' && !hasActiveParticipant) return false;
+
+    return true;
+}
+
 function watchOngoingCallInRoom(callId, fallbackPeerUid, fallbackCallType) {
     if (unsubscribeActiveCallRoom) {
         unsubscribeActiveCallRoom();
@@ -533,15 +545,14 @@ function watchOngoingCallInRoom(callId, fallbackPeerUid, fallbackCallType) {
     const callRef = ref(rtdb, `calls/${callId}`);
     unsubscribeActiveCallRoom = onValue(callRef, snapshot => {
         const data = snapshot.val();
-        if (!data || data.status === 'ended' || data.status === 'rejected') {
+        if (!isRoomActuallyLive(data)) {
             setOngoingCallBanner(false);
             return;
         }
 
         const isParticipant =
             (currentUid && data.participants && Boolean(data.participants[currentUid])) ||
-            data.callerUid === currentUid ||
-            data.calleeUid === currentUid;
+            (data.status === 'ringing' && (data.callerUid === currentUid || data.calleeUid === currentUid));
 
         if (!isParticipant) {
             setOngoingCallBanner(false);
@@ -568,11 +579,6 @@ function watchOngoingCallInRoom(callId, fallbackPeerUid, fallbackCallType) {
 function discoverOngoingCallRoom() {
     if (!currentUid) return;
 
-    const cached = readOngoingCallStorage();
-    if (cached?.roomId && (!cached.peerUid || cached.peerUid === activeChatUserId)) {
-        watchOngoingCallInRoom(cached.roomId, cached.peerUid, cached.callType);
-    }
-
     if (unsubscribeAllCallsScan) {
         unsubscribeAllCallsScan();
         unsubscribeAllCallsScan = null;
@@ -584,15 +590,22 @@ function discoverOngoingCallRoom() {
         let foundRoom = null;
 
         for (const [roomKey, roomData] of Object.entries(allCalls)) {
-            if (!roomData || roomData.status === 'ended' || roomData.status === 'rejected') continue;
+            if (!isRoomActuallyLive(roomData)) continue;
 
             const inParticipants = Boolean(roomData.participants && roomData.participants[currentUid]);
-            const involvedInChat =
-                (roomData.callerUid === currentUid && (!activeChatUserId || roomData.calleeUid === activeChatUserId)) ||
-                (roomData.calleeUid === currentUid && (!activeChatUserId || roomData.callerUid === activeChatUserId)) ||
-                (activeChatId && roomData.chatId === activeChatId && (roomData.callerUid === currentUid || roomData.calleeUid === currentUid || inParticipants));
+            const isRingingForUser =
+                roomData.status === 'ringing' &&
+                ((roomData.callerUid === currentUid && (!activeChatUserId || roomData.calleeUid === activeChatUserId)) ||
+                 (roomData.calleeUid === currentUid && (!activeChatUserId || roomData.callerUid === activeChatUserId)));
 
-            if (inParticipants || involvedInChat) {
+            const inCurrentChatRoom =
+                inParticipants &&
+                (!activeChatUserId ||
+                 roomData.callerUid === activeChatUserId ||
+                 roomData.calleeUid === activeChatUserId ||
+                 (roomData.chatId && roomData.chatId === activeChatId));
+
+            if (isRingingForUser || inCurrentChatRoom) {
                 foundRoom = {
                     roomId: roomData.roomId || roomKey,
                     peerUid: roomData.callerUid === currentUid
@@ -609,8 +622,13 @@ function discoverOngoingCallRoom() {
         }
 
         if (foundRoom) {
+            watchOngoingCallInRoom(foundRoom.roomId, foundRoom.peerUid, foundRoom.callType);
             setOngoingCallBanner(true, foundRoom);
         } else {
+            if (unsubscribeActiveCallRoom) {
+                unsubscribeActiveCallRoom();
+                unsubscribeActiveCallRoom = null;
+            }
             setOngoingCallBanner(false);
         }
     });
@@ -981,24 +999,10 @@ async function initChat(user) {
         if (loadingState) loadingState.remove();
 
         let html = '';
-        let latestCallLog = null;
 
         snapshot.forEach(docSnap => {
             const message = docSnap.data();
             const isOutgoing = message.senderUid === currentUid;
-
-            if (String(message.text || '').startsWith('[CALL_LOG]|')) {
-                const [, cType = 'video', cStatus = 'ended'] = String(message.text).split('|');
-                if (cStatus === 'ringing' || cStatus === 'connected') {
-                    latestCallLog = {
-                        callType: cType,
-                        status: cStatus,
-                        timestamp: message.createdAt?.toMillis ? message.createdAt.toMillis() : Date.now()
-                    };
-                } else {
-                    latestCallLog = null;
-                }
-            }
 
             html += `
                 <div class="message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}">
@@ -1009,22 +1013,6 @@ async function initChat(user) {
                 </div>
             `;
         });
-
-        const cachedRoom = readOngoingCallStorage();
-        if (latestCallLog && (Date.now() - latestCallLog.timestamp < 3600000)) {
-            if (cachedRoom?.roomId) {
-                watchOngoingCallInRoom(cachedRoom.roomId, activeChatUserId, latestCallLog.callType);
-            }
-            setOngoingCallBanner(true, {
-                roomId: cachedRoom?.roomId || ongoingCallTarget?.roomId || '',
-                peerUid: activeChatUserId,
-                peerName: otherUserName,
-                callType: latestCallLog.callType,
-                mode: 'outgoing'
-            });
-        } else if (!unsubscribeActiveCallRoom && !ongoingCallTarget?.roomId) {
-            setOngoingCallBanner(false);
-        }
 
         messagesContainer.innerHTML = html;
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
