@@ -522,16 +522,16 @@ window.returnToOngoingCall = function () {
 function isRoomActuallyLive(roomData) {
     if (!roomData || typeof roomData !== 'object' || !currentUid) return false;
     if (roomData.status === 'ended' || roomData.status === 'rejected') return false;
-    if (roomData.status !== 'connected') return false;
+    if (roomData.status !== 'ringing' && roomData.status !== 'connected') return false;
 
     const myParticipant = roomData.participants && roomData.participants[currentUid];
-    if (!myParticipant || typeof myParticipant !== 'object') return false;
+    const baseTime =
+        (myParticipant && typeof myParticipant === 'object' && myParticipant.joinedAt) ||
+        roomData.answeredAt ||
+        roomData.timestamp ||
+        0;
 
-    const joinedAt = myParticipant.joinedAt || roomData.answeredAt || roomData.timestamp || 0;
-    if (!joinedAt || (Date.now() - joinedAt > 1800000)) return false;
-
-    const otherParticipantsCount = Object.keys(roomData.participants).filter(uid => uid !== currentUid).length;
-    if (otherParticipantsCount <= 0) return false;
+    if (!baseTime || (Date.now() - baseTime > 1800000)) return false;
 
     return true;
 }
@@ -550,6 +550,16 @@ function watchOngoingCallInRoom(callId, fallbackPeerUid, fallbackCallType) {
     unsubscribeActiveCallRoom = onValue(callRef, snapshot => {
         const data = snapshot.val();
         if (!isRoomActuallyLive(data)) {
+            setOngoingCallBanner(false);
+            return;
+        }
+
+        const isParticipant =
+            (currentUid && data.participants && Boolean(data.participants[currentUid])) ||
+            data.callerUid === currentUid ||
+            data.calleeUid === currentUid;
+
+        if (!isParticipant) {
             setOngoingCallBanner(false);
             return;
         }
@@ -591,14 +601,14 @@ function discoverOngoingCallRoom() {
         for (const [roomKey, roomData] of Object.entries(allCalls)) {
             if (!isRoomActuallyLive(roomData)) continue;
 
+            const inParticipants = Boolean(roomData.participants && roomData.participants[currentUid]);
             const involvedInChat =
-                !activeChatUserId ||
-                roomData.callerUid === activeChatUserId ||
-                roomData.calleeUid === activeChatUserId ||
-                (roomData.chatId && roomData.chatId === activeChatId) ||
-                Boolean(roomData.participants && roomData.participants[activeChatUserId]);
+                (roomData.callerUid === currentUid && (!activeChatUserId || roomData.calleeUid === activeChatUserId)) ||
+                (roomData.calleeUid === currentUid && (!activeChatUserId || roomData.callerUid === activeChatUserId)) ||
+                (activeChatId && roomData.chatId === activeChatId && (roomData.callerUid === currentUid || roomData.calleeUid === currentUid || inParticipants)) ||
+                (inParticipants && (!activeChatUserId || Boolean(roomData.participants && roomData.participants[activeChatUserId])));
 
-            if (involvedInChat) {
+            if (inParticipants || involvedInChat) {
                 foundRoom = {
                     roomId: roomData.roomId || roomKey,
                     peerUid: roomData.callerUid === currentUid
