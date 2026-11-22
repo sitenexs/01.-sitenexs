@@ -353,15 +353,10 @@
             </div>
         </div>
         
-        <div class="conversations-list" id="conversationsList">
-            <div style="text-align: center; padding: 4rem 1rem; color: var(--text-muted); font-size: 0.88rem;">
-                <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom: 0.75rem;"></i>
-                <div>Memuat daftar percakapan...</div>
-            </div>
-        </div>
+        <div class="conversations-list" id="conversationsList"></div>
     </main>
 
-    <!-- MODUL KONFIGURASI, DATA USER & PANGGILAN MASUK -->
+    <!-- MODUL KONFIGURASI, DATA USER, PANGGILAN MASUK & REALTIME SYNC -->
     <script type="module">
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
         import { doc, updateDoc, deleteDoc, setDoc, collection, query, where, onSnapshot, serverTimestamp as fsServerTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
@@ -374,7 +369,8 @@
         } from 'https://sitenexs.com/assets/js/sitenexs-config.js';
 
         import {
-            fetchUserProfile
+            fetchUserProfile,
+            getUserAvatarUrl
         } from 'https://sitenexs.com/assets/js/sitenexs-user-data.js';
 
         import {
@@ -382,6 +378,10 @@
             attachForcedIncomingCallRedirect,
             attachOngoingCallBanner
         } from 'https://sitenexs.com/assets/js/sitenexs-call-presence.js';
+
+        import {
+            prepareFlickerFreeContainer
+        } from 'https://sitenexs.com/assets/js/sitenexs-realtime-sync.js';
 
         let currentUid = null;
         let isInitialized = false;
@@ -420,6 +420,16 @@
                 '"': '&quot;',
                 "'": '&#039;'
             }[char]));
+        }
+
+        function formatChatTimestamp(lastTimestamp) {
+            if (!lastTimestamp?.toDate) return '';
+            const date = lastTimestamp.toDate();
+            const now = new Date();
+            if (date.toDateString() === now.toDateString()) {
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+            return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
         }
 
         /* =====================================================
@@ -568,7 +578,6 @@
 
             setupMyPresence(uid);
 
-            // 1. Paksa masuk ke halaman panggilan saat ada panggilan masuk
             if (cleanupIncomingRedirect) cleanupIncomingRedirect();
             cleanupIncomingRedirect = attachForcedIncomingCallRedirect({
                 rtdb,
@@ -576,7 +585,6 @@
                 callPageUrl: DEFAULT_CALL_PAGE_URL
             });
 
-            // 2. Tampilkan banner "Dalam panggilan..." di bawah navbar saat panggilan sedang berlangsung
             if (cleanupOngoingBanner) cleanupOngoingBanner();
             cleanupOngoingBanner = attachOngoingCallBanner({
                 rtdb,
@@ -612,8 +620,98 @@
             }
         });
 
+        function buildConversationElement(chat) {
+            const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.otherName)}&background=2563eb&color=fff`;
+            const timeStr = formatChatTimestamp(chat.lastTimestamp);
+
+            const unreadClass = chat.unread ? 'unread' : '';
+            const unreadBadgeStyle = chat.unread ? 'display: inline-block;' : 'display: none;';
+            const unreadItemClass = chat.unread ? 'unread-chat-item' : '';
+            const pinnedItemClass = chat.pinned ? 'pinned-chat-item' : '';
+
+            const pinDisplay = chat.pinned ? 'inline-block' : 'none';
+            const muteDisplay = chat.muted ? 'inline-block' : 'none';
+            const statusDotClass = (chat.isOnline || onlineStatusMap[chat.otherUid]) ? 'status-dot active' : 'status-dot';
+
+            const itemEl = document.createElement('div');
+            itemEl.id = `item-${chat.chatId}`;
+            itemEl.className = `conversation-item ${unreadItemClass} ${pinnedItemClass}`.trim();
+            itemEl.dataset.chatId = chat.chatId;
+            itemEl.dataset.otherUid = chat.otherUid;
+
+            itemEl.addEventListener('pointerdown', () => startPressTimer(chat.chatId, chat.otherName));
+            itemEl.addEventListener('pointerup', clearPressTimer);
+            itemEl.addEventListener('pointerleave', clearPressTimer);
+            itemEl.addEventListener('click', () => openChatSafely(chat.otherUid));
+
+            itemEl.innerHTML = `
+                <div class="conv-avatar-wrap">
+                    <img src="${chat.avatarUrl}" class="conv-avatar" onerror="this.src='${fallbackAvatar}';">
+                    <span class="${statusDotClass}" data-uid="${escapeHtml(chat.otherUid)}"></span>
+                </div>
+                <div class="conv-info">
+                    <div class="conv-name-row">
+                        <div class="conv-name-group">
+                            <span class="conv-name">${escapeHtml(chat.otherName)}</span>
+                            ${chat.badgesHtml}
+                            <i class="fas fa-thumbtack pin-icon" id="pin-icon-${chat.chatId}" style="display: ${pinDisplay};"></i>
+                            <i class="fas fa-bell-slash muted-icon" id="mute-icon-${chat.chatId}" style="display: ${muteDisplay};"></i>
+                        </div>
+                        <span class="conv-time" id="time-${chat.chatId}">${timeStr}</span>
+                    </div>
+                    <div class="conv-msg-row">
+                        <div style="min-width: 0; flex: 1;">
+                            <div class="conv-last-msg ${unreadClass}" id="msg-${chat.chatId}">${escapeHtml(chat.lastMessage)}</div>
+                            <div class="conv-typing" id="typing-${chat.chatId}">Sedang mengetik<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></div>
+                        </div>
+                        <span class="unread-badge" id="badge-${chat.chatId}" style="${unreadBadgeStyle}">Baru</span>
+                    </div>
+                </div>
+            `;
+
+            return itemEl;
+        }
+
+        function updateConversationElement(itemEl, chat) {
+            itemEl.classList.toggle('unread-chat-item', Boolean(chat.unread));
+            itemEl.classList.toggle('pinned-chat-item', Boolean(chat.pinned));
+
+            const nameEl = itemEl.querySelector('.conv-name');
+            if (nameEl && nameEl.textContent !== chat.otherName) {
+                nameEl.textContent = chat.otherName;
+            }
+
+            const timeEl = document.getElementById(`time-${chat.chatId}`);
+            if (timeEl) {
+                timeEl.textContent = formatChatTimestamp(chat.lastTimestamp);
+            }
+
+            const msgEl = document.getElementById(`msg-${chat.chatId}`);
+            if (msgEl) {
+                msgEl.textContent = chat.lastMessage;
+                msgEl.classList.toggle('unread', Boolean(chat.unread));
+            }
+
+            const badgeEl = document.getElementById(`badge-${chat.chatId}`);
+            if (badgeEl) {
+                badgeEl.style.display = chat.unread ? 'inline-block' : 'none';
+            }
+
+            const pinEl = document.getElementById(`pin-icon-${chat.chatId}`);
+            if (pinEl) {
+                pinEl.style.display = chat.pinned ? 'inline-block' : 'none';
+            }
+
+            const muteEl = document.getElementById(`mute-icon-${chat.chatId}`);
+            if (muteEl) {
+                muteEl.style.display = chat.muted ? 'inline-block' : 'none';
+            }
+        }
+
         function loadConversations(uid) {
             const listEl = document.getElementById('conversationsList');
+            prepareFlickerFreeContainer(listEl, true);
+
             const q = query(collection(db, "chats"), where("participants", "array-contains", uid));
 
             if (unsubscribeConversations) {
@@ -623,8 +721,9 @@
             unsubscribeConversations = onSnapshot(q, async (snapshot) => {
                 try {
                     if (snapshot.empty) {
+                        allConversationsData = [];
                         listEl.innerHTML = `
-                            <div style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted); font-size: 0.88rem;">
+                            <div id="emptyInboxState" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted); font-size: 0.88rem;">
                                 <i class="far fa-comments fa-3x" style="color: var(--border-medium); margin-bottom: 1rem;"></i>
                                 <div style="font-weight: 750; color: var(--text-main); margin-bottom: 0.35rem; font-size: 1rem;">Belum ada percakapan</div>
                                 <div>Mulai kirim pesan dari profil anggota komunitas Sitenexs!</div>
@@ -653,26 +752,32 @@
                     });
 
                     const chats = Array.from(chatsMap.values());
+                    const prevByChatId = new Map(allConversationsData.map(item => [item.chatId, item]));
 
                     const resolvedItems = await Promise.all(chats.map(async (chat) => {
-                        let userProfile = null;
-                        try {
-                            userProfile = await fetchUserProfile(db, chat.otherUid, {
-                                badgeClass: 'conv-verif'
-                            });
-                        } catch (e) {
-                            userProfile = {
-                                displayName: 'Mitra Sitenexs',
-                                avatarUrl: `https://ui-avatars.com/api/?name=Mitra&background=2563eb&color=fff`,
-                                badgesHtml: '',
-                                raw: {}
-                            };
-                        }
+                        const cachedItem = prevByChatId.get(chat.id);
+                        let otherName = cachedItem?.otherName || 'Mitra Sitenexs';
+                        let avatarUrl = cachedItem?.avatarUrl || getUserAvatarUrl(chat.otherUid);
+                        let badgesHtml = cachedItem?.badgesHtml || '';
 
-                        const isPro = Boolean(userProfile.raw?.isPro) || Boolean(userProfile.raw?.lencanaKuning) || Boolean(userProfile.raw?.isLencanaKuning);
-                        let badgesHtml = userProfile.badgesHtml || '';
-                        if (isPro) {
-                            badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="conv-verif" alt="Pro" title="Lencana Pro" style="margin-left: 2px;">`;
+                        if (!cachedItem) {
+                            try {
+                                const userProfile = await fetchUserProfile(db, chat.otherUid, {
+                                    badgeClass: 'conv-verif'
+                                });
+                                otherName = userProfile.displayName || 'Mitra Sitenexs';
+                                avatarUrl = userProfile.avatarUrl || getUserAvatarUrl(chat.otherUid);
+                                const isPro = Boolean(userProfile.raw?.isPro) || Boolean(userProfile.raw?.lencanaKuning) || Boolean(userProfile.raw?.isLencanaKuning);
+                                badgesHtml = userProfile.badgesHtml || '';
+                                if (isPro) {
+                                    badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="conv-verif" alt="Pro" title="Lencana Pro" style="margin-left: 2px;">`;
+                                }
+                                if (userProfile.raw?.isOnline === true || userProfile.raw?.online === true) {
+                                    fsUserOnlineMap[chat.otherUid] = true;
+                                }
+                            } catch (e) {
+                                avatarUrl = `https://ui-avatars.com/api/?name=Mitra&background=2563eb&color=fff`;
+                            }
                         }
 
                         const isUnread = chat[`unread_${uid}`] === true;
@@ -680,9 +785,6 @@
                         const isArchived = chat[`archived_${uid}`] === true;
                         const isMuted = chat[`muted_${uid}`] === true;
 
-                        if (userProfile.raw?.isOnline === true || userProfile.raw?.online === true) {
-                            fsUserOnlineMap[chat.otherUid] = true;
-                        }
                         if (chat[`online_${chat.otherUid}`] === true) {
                             chatDocOnlineMap[chat.otherUid] = true;
                         }
@@ -697,9 +799,9 @@
                         return {
                             chatId: chat.id,
                             otherUid: chat.otherUid,
-                            otherName: userProfile.displayName || 'Mitra Sitenexs',
-                            avatarUrl: userProfile.avatarUrl || `https://ui-avatars.com/api/?name=Mitra&background=2563eb&color=fff`,
-                            badgesHtml: badgesHtml,
+                            otherName,
+                            avatarUrl,
+                            badgesHtml,
                             lastMessage: chat.lastMessage || 'Mulai percakapan...',
                             lastTimestamp: chat.lastTimestamp,
                             unread: isUnread,
@@ -730,17 +832,9 @@
                     listenOtherUsersPresence(allConversationsData.map(c => c.otherUid));
                 } catch (err) {
                     console.error('Error memproses daftar percakapan:', err);
-                    listEl.innerHTML = `
-                        <div style="text-align: center; padding: 3rem 1rem; color: var(--danger); font-size: 0.88rem;">
-                            Gagal memuat daftar percakapan. Silakan muat ulang halaman.
-                        </div>`;
                 }
             }, (error) => {
                 console.error('Firestore chats listener error:', error);
-                listEl.innerHTML = `
-                    <div style="text-align: center; padding: 3rem 1rem; color: var(--danger); font-size: 0.88rem;">
-                        Terjadi gangguan koneksi database.
-                    </div>`;
             });
         }
 
@@ -818,69 +912,39 @@
             });
         }
 
+        /* =====================================================
+           RENDER INREMENTAL TANPA KEDIP (DOM RECONCILIATION)
+        ===================================================== */
         window.renderConversationsList = function(chats) {
             const listEl = document.getElementById('conversationsList');
+            const emptyStateEl = document.getElementById('emptyInboxState');
+            if (emptyStateEl) emptyStateEl.remove();
+
             if (chats.length === 0) {
-                listEl.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.88rem;">Tidak ada percakapan aktif.</div>';
+                listEl.innerHTML = '<div id="emptyInboxState" style="text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.88rem;">Tidak ada percakapan aktif.</div>';
                 return;
             }
 
-            let html = '';
-            for (const chat of chats) {
-                const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.otherName)}&background=2563eb&color=fff`;
+            const validIds = new Set(chats.map(c => c.chatId));
+            listEl.querySelectorAll('.conversation-item').forEach(existingEl => {
+                if (!validIds.has(existingEl.dataset.chatId)) {
+                    existingEl.remove();
+                }
+            });
 
-                let timeStr = '';
-                if (chat.lastTimestamp?.toDate) {
-                    const date = chat.lastTimestamp.toDate();
-                    const now = new Date();
-                    if (date.toDateString() === now.toDateString()) {
-                        timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    } else {
-                        timeStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-                    }
+            chats.forEach((chat, index) => {
+                let itemEl = document.getElementById(`item-${chat.chatId}`);
+                if (!itemEl) {
+                    itemEl = buildConversationElement(chat);
+                } else {
+                    updateConversationElement(itemEl, chat);
                 }
 
-                const unreadClass = chat.unread ? 'unread' : '';
-                const unreadBadgeStyle = chat.unread ? 'display: inline-block;' : 'display: none;';
-                const unreadItemClass = chat.unread ? 'unread-chat-item' : '';
-                const pinnedItemClass = chat.pinned ? 'pinned-chat-item' : '';
-
-                const pinDisplay = chat.pinned ? 'inline-block' : 'none';
-                const muteDisplay = chat.muted ? 'inline-block' : 'none';
-                const statusDotClass = (chat.isOnline || onlineStatusMap[chat.otherUid]) ? 'status-dot active' : 'status-dot';
-
-                html += `
-                    <div class="conversation-item ${unreadItemClass} ${pinnedItemClass}" id="item-${chat.chatId}"
-                         onpointerdown="startPressTimer('${chat.chatId}', '${escapeHtml(chat.otherName).replace(/'/g, "\\'")}')"
-                         onpointerup="clearPressTimer()"
-                         onpointerleave="clearPressTimer()"
-                         onclick="openChatSafely('${chat.otherUid}')">
-                        <div class="conv-avatar-wrap">
-                            <img src="${chat.avatarUrl}" class="conv-avatar" onerror="this.src='${fallbackAvatar}';">
-                            <span class="${statusDotClass}" data-uid="${escapeHtml(chat.otherUid)}"></span>
-                        </div>
-                        <div class="conv-info">
-                            <div class="conv-name-row">
-                                <div class="conv-name-group">
-                                    <span class="conv-name">${escapeHtml(chat.otherName)}</span>
-                                    ${chat.badgesHtml}
-                                    <i class="fas fa-thumbtack pin-icon" id="pin-icon-${chat.chatId}" style="display: ${pinDisplay};"></i>
-                                    <i class="fas fa-bell-slash muted-icon" id="mute-icon-${chat.chatId}" style="display: ${muteDisplay};"></i>
-                                </div>
-                                <span class="conv-time">${timeStr}</span>
-                            </div>
-                            <div class="conv-msg-row">
-                                <div style="min-width: 0; flex: 1;">
-                                    <div class="conv-last-msg ${unreadClass}" id="msg-${chat.chatId}">${escapeHtml(chat.lastMessage)}</div>
-                                    <div class="conv-typing" id="typing-${chat.chatId}">Sedang mengetik<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></div>
-                                </div>
-                                <span class="unread-badge" id="badge-${chat.chatId}" style="${unreadBadgeStyle}">Baru</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            listEl.innerHTML = html;
+                const currentChildAtIdx = listEl.children[index];
+                if (currentChildAtIdx !== itemEl) {
+                    listEl.insertBefore(itemEl, currentChildAtIdx || null);
+                }
+            });
         }
 
         let isLongPress = false;
