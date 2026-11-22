@@ -387,11 +387,52 @@ let isChatInitialized = false;
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
 
+function getChatCacheKey(chatId) {
+    return `sitenexs_chat_cache_${chatId}`;
+}
+
+function getEarlyUid() {
+    if (auth.currentUser?.uid) return auth.currentUser.uid;
+    return localStorage.getItem('sitenexs_uid') || null;
+}
+
+function renderCachedMessagesImmediately(chatId, uid) {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (!messagesContainer || !chatId) return;
+    try {
+        const raw = localStorage.getItem(getChatCacheKey(chatId));
+        if (!raw) return;
+        const cachedList = JSON.parse(raw);
+        if (!Array.isArray(cachedList) || cachedList.length === 0) return;
+
+        cachedList.forEach(item => {
+            if (!item?.id) return;
+            if (messagesContainer.querySelector(`[data-msg-id="${CSS.escape(item.id)}"]`)) return;
+            const fakeTimestamp = item.createdAtMs
+                ? { toDate: () => new Date(item.createdAtMs) }
+                : null;
+            const el = buildMessageElement(item.id, {
+                senderUid: item.senderUid,
+                text: item.text,
+                isEdited: item.isEdited,
+                createdAt: fakeTimestamp
+            }, uid);
+            messagesContainer.appendChild(el);
+        });
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    } catch (e) {}
+}
+
 if (!targetUserId) {
     window.location.replace('https://sitenexs.com/community/messages/');
 } else {
     activeChatUserId = targetUserId;
     document.getElementById('activeChatAvatar').src = getUserAvatarUrl(activeChatUserId);
+    const earlyUid = getEarlyUid();
+    if (earlyUid) {
+        const earlyChatId = [earlyUid, activeChatUserId].sort().join('_');
+        renderCachedMessagesImmediately(earlyChatId, earlyUid);
+    }
 }
 
 window.showToast = function (msg) {
@@ -678,8 +719,8 @@ function renderMessageBody(text) {
     return escapeHtml(text).replace(/\n/g, '<br>');
 }
 
-function buildMessageElement(docId, message) {
-    const isOutgoing = message.senderUid === currentUid;
+function buildMessageElement(docId, message, ownerUid = currentUid) {
+    const isOutgoing = message.senderUid === ownerUid;
     const wrapper = document.createElement('div');
     wrapper.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
     wrapper.dataset.msgId = docId;
@@ -700,8 +741,8 @@ function buildMessageElement(docId, message) {
     return wrapper;
 }
 
-function updateMessageElement(wrapper, _docId, message) {
-    const isOutgoing = message.senderUid === currentUid;
+function updateMessageElement(wrapper, _docId, message, ownerUid = currentUid) {
+    const isOutgoing = message.senderUid === ownerUid;
     wrapper.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
 
     const bubble = wrapper.querySelector('.message-bubble');
@@ -715,13 +756,13 @@ function updateMessageElement(wrapper, _docId, message) {
     }
 
     const timeDiv = wrapper.querySelector('.message-time');
-    if (timeDiv) {
+    if (timeDiv && message.createdAt) {
         timeDiv.textContent = formatMessageTime(message.createdAt);
     }
 }
 
 /* =====================================================
-   INITIALIZE CHAT (TANPA LOADING / KEDIP)
+   INITIALIZE CHAT (CACHE PERANGKAT + UPDATE PERUBAHAN SAJA)
 ===================================================== */
 
 async function initChat(user) {
@@ -734,6 +775,8 @@ async function initChat(user) {
 
     const participants = [currentUid, activeChatUserId].sort();
     activeChatId = `${participants[0]}_${participants[1]}`;
+
+    renderCachedMessagesImmediately(activeChatId, currentUid);
 
     if (cleanupIncomingRedirect) cleanupIncomingRedirect();
     cleanupIncomingRedirect = attachForcedIncomingCallRedirect({
@@ -768,9 +811,10 @@ async function initChat(user) {
         queryRef: qMsgs,
         container: messagesContainer,
         keyAttr: 'data-msg-id',
+        storageKey: getChatCacheKey(activeChatId),
         autoScroll: true,
-        createElement: (msgId, msgData) => buildMessageElement(msgId, msgData),
-        updateElement: (existingEl, msgId, msgData) => updateMessageElement(existingEl, msgId, msgData),
+        createElement: (msgId, msgData) => buildMessageElement(msgId, msgData, currentUid),
+        updateElement: (existingEl, msgId, msgData) => updateMessageElement(existingEl, msgId, msgData, currentUid),
         onAddedItem: (msgId, msgData) => {
             if (
                 msgData.senderUid !== currentUid &&
