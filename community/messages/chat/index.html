@@ -26,6 +26,7 @@
             --danger: #ef4444;
             --check-blue: #38bdf8;
             --check-yellow: #facc15;
+            --check-green: #4ade80;
             --bg-body: #f8fafc;
             --bg-card: #ffffff;
             --text-main: #0f172a;
@@ -201,27 +202,25 @@
         .message-wrapper.incoming { align-items: flex-start; }
         .message-wrapper.outgoing { align-items: flex-end; }
 
-        /* NAMA KECIL DI ATAS CHAT */
-        .message-sender-name {
-            font-size: 0.68rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            margin-bottom: 0.2rem;
-            padding: 0 0.25rem;
-            max-width: 82%;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            line-height: 1.2;
-        }
-        .message-wrapper.outgoing .message-sender-name {
-            text-align: right;
-        }
-
         .message-bubble {
-            max-width: 82%; padding: 0.7rem 0.95rem; border-radius: var(--radius-lg); font-size: 0.88rem;
+            max-width: 82%; padding: 0.65rem 0.95rem 0.7rem; border-radius: var(--radius-lg); font-size: 0.88rem;
             line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
             background: #fff;
+        }
+
+        /* NAMA PENGIRIM DI DALAM BUBBLE CHAT */
+        .message-sender-name {
+            font-size: 0.69rem;
+            font-weight: 800;
+            margin-bottom: 0.22rem;
+            line-height: 1.2;
+            letter-spacing: 0.01em;
+        }
+        .message-bubble.incoming .message-sender-name {
+            color: var(--primary);
+        }
+        .message-bubble.outgoing .message-sender-name {
+            color: rgba(255, 255, 255, 0.92);
         }
 
         .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); border-bottom-left-radius: 4px; }
@@ -236,7 +235,7 @@
         }
         .message-time { font-size: 0.65rem; opacity: 0.78; font-weight: 500; }
 
-        /* INDIKATOR CENTANG KECIL & RAPI (1 CENTANG, 2 CENTANG, 2 CENTANG BIRU / KUNING) */
+        /* INDIKATOR CENTANG KECIL & RAPI (1 CENTANG, 2 CENTANG, 2 CENTANG BIRU / KUNING / HIJAU) */
         .msg-check-svg {
             display: inline-flex;
             align-items: center;
@@ -249,7 +248,6 @@
         .msg-check-svg.delivered {
             color: rgba(255, 255, 255, 0.94);
         }
-        .msg-check-svg.read,
         .msg-check-svg.read-blue {
             color: var(--check-blue);
             filter: drop-shadow(0 0 2px rgba(56, 189, 248, 0.35));
@@ -257,6 +255,11 @@
         .msg-check-svg.read-yellow {
             color: var(--check-yellow);
             filter: drop-shadow(0 0 2px rgba(250, 204, 21, 0.35));
+        }
+        .msg-check-svg.read,
+        .msg-check-svg.read-green {
+            color: var(--check-green);
+            filter: drop-shadow(0 0 2px rgba(74, 222, 128, 0.4));
         }
 
         /* BUBBLE ANIMASI MENGETIK DI BAWAH CHAT TERAKHIR */
@@ -361,7 +364,6 @@
             .container { max-width: 100%; height: 100svh; max-height: none; }
             .chat-wrapper { border: none; border-radius: 0; height: 100%; }
             .message-bubble { max-width: 88%; }
-            .message-sender-name { max-width: 88%; }
         }
     </style>
 </head>
@@ -483,7 +485,7 @@ import {
 
 let currentUid = null;
 let myProfile = null;
-let myUserName = 'Mitra Sitenexs';
+let myUserName = localStorage.getItem('sitenexs_display_name') || 'Mitra Sitenexs';
 
 let activeChatUserId = null;
 let activeChatId = null;
@@ -508,15 +510,43 @@ function getChatCacheKey(chatId) {
     return `sitenexs_chat_cache_${chatId}`;
 }
 
+function getGreenReadStoreKey(chatId) {
+    return `sitenexs_green_read_${chatId}`;
+}
+
+function loadPersistedGreenReadIds(chatId) {
+    if (!chatId) return new Set();
+    try {
+        const raw = localStorage.getItem(getGreenReadStoreKey(chatId));
+        if (!raw) return new Set();
+        const arr = JSON.parse(raw);
+        return new Set(Array.isArray(arr) ? arr : []);
+    } catch (e) {
+        return new Set();
+    }
+}
+
+function persistGreenReadId(chatId, msgId) {
+    if (!chatId || !msgId) return;
+    try {
+        const set = loadPersistedGreenReadIds(chatId);
+        if (!set.has(msgId)) {
+            set.add(msgId);
+            localStorage.setItem(getGreenReadStoreKey(chatId), JSON.stringify([...set]));
+        }
+    } catch (e) {}
+}
+
 function getEarlyUid() {
     if (auth.currentUser?.uid) return auth.currentUser.uid;
     return localStorage.getItem('sitenexs_uid') || null;
 }
 
 function getSenderDisplayName(senderUid, fallbackName = null) {
-    if (fallbackName) return fallbackName;
-    if (senderUid === currentUid) return myUserName || 'Anda';
-    return otherUserName || 'Mitra Sitenexs';
+    if (senderUid === currentUid) {
+        return myUserName || fallbackName || 'Anda';
+    }
+    return otherUserName || fallbackName || 'Mitra Sitenexs';
 }
 
 function renderCachedMessagesImmediately(chatId, uid) {
@@ -529,21 +559,24 @@ function renderCachedMessagesImmediately(chatId, uid) {
         const cachedList = JSON.parse(raw);
         if (!Array.isArray(cachedList) || cachedList.length === 0) return;
 
+        const greenIds = loadPersistedGreenReadIds(chatId);
+
         cachedList.forEach(item => {
             if (!item?.id) return;
             if (messagesContainer.querySelector(`[data-msg-id="${CSS.escape(item.id)}"]`)) return;
             const fakeTimestamp = item.createdAtMs
                 ? { toDate: () => new Date(item.createdAtMs) }
                 : null;
+            const isGreenPersisted = greenIds.has(item.id);
             const el = buildMessageElement(item.id, {
                 senderUid: item.senderUid,
                 senderName: item.senderName,
                 text: item.text,
                 isEdited: item.isEdited,
-                status: item.status || 'sent',
-                checkColor: item.checkColor || 'blue',
-                delivered: Boolean(item.delivered),
-                read: Boolean(item.read),
+                status: isGreenPersisted ? 'read-green' : (item.status || 'sent'),
+                checkColor: isGreenPersisted ? 'green' : (item.checkColor || null),
+                delivered: isGreenPersisted ? true : Boolean(item.delivered),
+                read: isGreenPersisted ? true : Boolean(item.read),
                 createdAt: fakeTimestamp
             }, uid);
             if (typingBubbleWrapper) {
@@ -808,15 +841,27 @@ function renderOtherTypingIndicator(isTyping) {
 }
 
 /* =====================================================
-   STATUS CENTANG PESAN (KECIL & RAPI: 1 CENTANG, 2 CENTANG, 2 CENTANG BIRU / KUNING)
+   STATUS CENTANG PESAN (1 CENTANG, 2 CENTANG, 2 CENTANG BIRU / KUNING / HIJAU)
 ===================================================== */
-function getMessageCheckStatus(message) {
-    const isRead = message?.read === true || message?.status === 'read' || message?.status === 'read-blue' || message?.status === 'read-yellow';
-    if (isRead) {
-        if (message?.checkColor === 'yellow' || message?.status === 'read-yellow') {
-            return 'read-yellow';
-        }
+function getMessageCheckStatus(message, docId = '') {
+    const persistedGreen = docId && activeChatId ? loadPersistedGreenReadIds(activeChatId).has(docId) : false;
+    const rawColor = message?.checkColor || (
+        message?.status === 'read-yellow' ? 'yellow' :
+        message?.status === 'read-blue' ? 'blue' :
+        message?.status === 'read-green' ? 'green' : null
+    );
+
+    if (persistedGreen || rawColor === 'green') {
+        return 'read-green';
+    }
+    if (rawColor === 'yellow') {
+        return 'read-yellow';
+    }
+    if (rawColor === 'blue') {
         return 'read-blue';
+    }
+    if (message?.read === true || message?.status === 'read') {
+        return 'read-green';
     }
     if (message?.delivered === true || message?.status === 'delivered') {
         return 'delivered';
@@ -835,9 +880,19 @@ function renderCheckmarkHtml(statusKey) {
             </span>
         `;
     }
-    if (statusKey === 'read-blue' || statusKey === 'read') {
+    if (statusKey === 'read-blue') {
         return `
             <span class="msg-check-svg read-blue" title="Dibaca (Centang Biru)">
+                <svg width="15" height="10" viewBox="0 0 20 12" fill="none">
+                    <path d="M1.5 6.2L5.2 9.9L11.5 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M7.5 6.2L11.2 9.9L18.5 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+        `;
+    }
+    if (statusKey === 'read-green' || statusKey === 'read') {
+        return `
+            <span class="msg-check-svg read-green" title="Dibaca">
                 <svg width="15" height="10" viewBox="0 0 20 12" fill="none">
                     <path d="M1.5 6.2L5.2 9.9L11.5 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     <path d="M7.5 6.2L11.2 9.9L18.5 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1019,12 +1074,12 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
     wrapper.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
     wrapper.dataset.msgId = docId;
 
+    const bubble = document.createElement('div');
+    bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
+
     const senderLabel = document.createElement('div');
     senderLabel.className = 'message-sender-name';
     senderLabel.textContent = getSenderDisplayName(message.senderUid, message.senderName);
-
-    const bubble = document.createElement('div');
-    bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
 
     const bodyDiv = document.createElement('div');
     bodyDiv.className = 'message-body';
@@ -1040,32 +1095,36 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
     metaRow.appendChild(timeDiv);
 
     if (isOutgoing) {
+        const checkState = getMessageCheckStatus(message, docId);
+        if (checkState === 'read-green' && activeChatId) {
+            persistGreenReadId(activeChatId, docId);
+        }
         const statusSpan = document.createElement('span');
         statusSpan.className = 'msg-status-slot';
-        statusSpan.innerHTML = renderCheckmarkHtml(getMessageCheckStatus(message));
+        statusSpan.innerHTML = renderCheckmarkHtml(checkState);
         metaRow.appendChild(statusSpan);
     }
 
-    bubble.append(bodyDiv, metaRow);
-    wrapper.append(senderLabel, bubble);
+    bubble.append(senderLabel, bodyDiv, metaRow);
+    wrapper.appendChild(bubble);
     return wrapper;
 }
 
-function updateMessageElement(wrapper, _docId, message, ownerUid = currentUid) {
+function updateMessageElement(wrapper, docId, message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     wrapper.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
-
-    let senderLabel = wrapper.querySelector('.message-sender-name');
-    if (!senderLabel) {
-        senderLabel = document.createElement('div');
-        senderLabel.className = 'message-sender-name';
-        wrapper.prepend(senderLabel);
-    }
-    senderLabel.textContent = getSenderDisplayName(message.senderUid, message.senderName);
 
     const bubble = wrapper.querySelector('.message-bubble');
     if (bubble) {
         bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
+
+        let senderLabel = bubble.querySelector('.message-sender-name');
+        if (!senderLabel) {
+            senderLabel = document.createElement('div');
+            senderLabel.className = 'message-sender-name';
+            bubble.prepend(senderLabel);
+        }
+        senderLabel.textContent = getSenderDisplayName(message.senderUid, message.senderName);
     }
 
     const bodyDiv = wrapper.querySelector('.message-body');
@@ -1082,12 +1141,16 @@ function updateMessageElement(wrapper, _docId, message, ownerUid = currentUid) {
     if (metaRow) {
         let statusSlot = metaRow.querySelector('.msg-status-slot');
         if (isOutgoing) {
+            const checkState = getMessageCheckStatus(message, docId);
+            if (checkState === 'read-green' && activeChatId) {
+                persistGreenReadId(activeChatId, docId);
+            }
             if (!statusSlot) {
                 statusSlot = document.createElement('span');
                 statusSlot.className = 'msg-status-slot';
                 metaRow.appendChild(statusSlot);
             }
-            statusSlot.innerHTML = renderCheckmarkHtml(getMessageCheckStatus(message));
+            statusSlot.innerHTML = renderCheckmarkHtml(checkState);
         } else if (statusSlot) {
             statusSlot.remove();
         }
@@ -1179,9 +1242,15 @@ async function initChat(user) {
                 messagesContainer.appendChild(typingBubbleWrapper);
             }
 
-            if (msgData.senderUid !== currentUid) {
+            if (msgData.senderUid === currentUid) {
+                const checkState = getMessageCheckStatus(msgData, msgId);
+                if (checkState === 'read-green') {
+                    persistGreenReadId(activeChatId, msgId);
+                }
+            } else {
                 const isPageVisible = document.visibilityState === 'visible';
                 const updates = {};
+                const resolvedColor = msgData.checkColor || (msgData.status === 'read-yellow' ? 'yellow' : msgData.status === 'read-blue' ? 'blue' : 'green');
 
                 if (msgData.delivered !== true) {
                     updates.delivered = true;
@@ -1191,10 +1260,8 @@ async function initChat(user) {
                 }
                 if (isPageVisible && msgData.read !== true) {
                     updates.read = true;
-                    updates.status = 'read';
-                    if (!updates.checkColor && !msgData.checkColor) {
-                        updates.checkColor = 'blue';
-                    }
+                    updates.status = resolvedColor === 'yellow' ? 'read-yellow' : (resolvedColor === 'blue' ? 'read-blue' : 'read-green');
+                    updates.checkColor = resolvedColor;
                 }
 
                 if (Object.keys(updates).length > 0 && docSnap?.ref) {
@@ -1231,9 +1298,16 @@ async function initChat(user) {
             }
         },
         onModifiedItem: (msgId, msgData, docSnap) => {
-            if (msgData.senderUid !== currentUid && !String(msgData.text || '').startsWith('[CALL_LOG]|')) {
+            if (msgData.senderUid === currentUid) {
+                const checkState = getMessageCheckStatus(msgData, msgId);
+                if (checkState === 'read-green') {
+                    persistGreenReadId(activeChatId, msgId);
+                }
+            } else if (!String(msgData.text || '').startsWith('[CALL_LOG]|')) {
                 const isPageVisible = document.visibilityState === 'visible';
                 const updates = {};
+                const resolvedColor = msgData.checkColor || (msgData.status === 'read-yellow' ? 'yellow' : msgData.status === 'read-blue' ? 'blue' : 'green');
+
                 if (msgData.delivered !== true) {
                     updates.delivered = true;
                     if (!msgData.read && msgData.status !== 'read') {
@@ -1242,10 +1316,8 @@ async function initChat(user) {
                 }
                 if (isPageVisible && msgData.read !== true) {
                     updates.read = true;
-                    updates.status = 'read';
-                    if (!updates.checkColor && !msgData.checkColor) {
-                        updates.checkColor = 'blue';
-                    }
+                    updates.status = resolvedColor === 'yellow' ? 'read-yellow' : (resolvedColor === 'blue' ? 'read-blue' : 'read-green');
+                    updates.checkColor = resolvedColor;
                 }
                 if (Object.keys(updates).length > 0 && docSnap?.ref) {
                     updateDoc(docSnap.ref, updates).catch(() => {});
@@ -1256,16 +1328,22 @@ async function initChat(user) {
             if (typingBubbleWrapper && messagesContainer) {
                 messagesContainer.appendChild(typingBubbleWrapper);
             }
-            if (document.visibilityState === 'visible' && currentUid) {
+            if (currentUid) {
                 snapshot.forEach(docSnap => {
                     const m = docSnap.data();
-                    if (m.senderUid && m.senderUid !== currentUid) {
+                    if (m.senderUid === currentUid) {
+                        const checkState = getMessageCheckStatus(m, docSnap.id);
+                        if (checkState === 'read-green') {
+                            persistGreenReadId(activeChatId, docSnap.id);
+                        }
+                    } else if (m.senderUid && document.visibilityState === 'visible') {
+                        const resolvedColor = m.checkColor || (m.status === 'read-yellow' ? 'yellow' : m.status === 'read-blue' ? 'blue' : 'green');
                         if (m.delivered !== true || m.read !== true) {
                             updateDoc(docSnap.ref, {
                                 delivered: true,
                                 read: true,
-                                status: 'read',
-                                checkColor: m.checkColor || 'blue'
+                                status: resolvedColor === 'yellow' ? 'read-yellow' : (resolvedColor === 'blue' ? 'read-blue' : 'read-green'),
+                                checkColor: resolvedColor
                             }).catch(() => {});
                         }
                     }
@@ -1283,7 +1361,8 @@ async function initChat(user) {
 
     fetchUserProfile(db, currentUid).then(profile => {
         myProfile = profile;
-        myUserName = profile.displayName || 'Mitra Sitenexs';
+        myUserName = profile.displayName || myUserName || 'Mitra Sitenexs';
+        localStorage.setItem('sitenexs_display_name', myUserName);
         refreshVisibleSenderNames();
     }).catch(() => {});
 
@@ -1366,7 +1445,7 @@ window.handleChatFormSubmit = async function (event) {
             createdAt: serverTimestamp(),
             isEdited: false,
             status: 'sent',
-            checkColor: 'blue',
+            checkColor: null,
             delivered: false,
             read: false
         });
