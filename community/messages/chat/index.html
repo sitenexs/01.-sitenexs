@@ -562,6 +562,11 @@ function buildCombinedBadgesHtml(profileOrMsg = {}, badgeClass = 'message-bubble
     return html;
 }
 
+function isPlaceholderName(val) {
+    const clean = String(val || '').trim().toLowerCase();
+    return !clean || clean === 'mitra sitenexs' || clean === 'user' || clean === 'pengguna';
+}
+
 function extractProfileName(profile, fallbackName = '') {
     if (profile) {
         const raw = profile.raw || {};
@@ -569,10 +574,12 @@ function extractProfileName(profile, fallbackName = '') {
         const belakang = String(raw.namaBelakang || profile.lastName || '').trim();
         const combined = [depan, belakang].filter(Boolean).join(' ').trim();
         const full = String(raw.namaLengkap || profile.displayName || '').trim();
-        if (full) return full;
-        if (combined) return combined;
+
+        if (!isPlaceholderName(full)) return full;
+        if (!isPlaceholderName(combined)) return combined;
     }
-    return String(fallbackName || '').trim();
+    const cleanFallback = String(fallbackName || '').trim();
+    return isPlaceholderName(cleanFallback) ? '' : cleanFallback;
 }
 
 function getChatCacheKey(chatId) {
@@ -614,9 +621,14 @@ function getEarlyUid() {
 function getSenderDisplayName(message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     if (isOutgoing) {
-        return myUserName || String(message.senderName || '').trim() || String(auth.currentUser?.displayName || '').trim() || '';
+        if (!isPlaceholderName(myUserName)) return myUserName;
+        if (!isPlaceholderName(auth.currentUser?.displayName)) return auth.currentUser.displayName.trim();
+        if (!isPlaceholderName(message.senderName)) return String(message.senderName).trim();
+        return '';
     }
-    return otherUserName || String(message.senderName || '').trim() || '';
+    if (!isPlaceholderName(otherUserName)) return otherUserName;
+    if (!isPlaceholderName(message.senderName)) return String(message.senderName).trim();
+    return '';
 }
 
 function getSenderBadgesHtml(message, ownerUid = currentUid) {
@@ -1283,13 +1295,15 @@ function refreshVisibleSenderInfo() {
         const nameSpan = wrapper.querySelector('.message-sender-name');
         const badgesSpan = wrapper.querySelector('.message-sender-badges');
 
-        const nextName = isOutgoing ? myUserName : otherUserName;
+        const nextName = isOutgoing
+            ? (!isPlaceholderName(myUserName) ? myUserName : (!isPlaceholderName(auth.currentUser?.displayName) ? auth.currentUser.displayName.trim() : ''))
+            : (!isPlaceholderName(otherUserName) ? otherUserName : '');
         const nextBadges = isOutgoing ? myBadgesHtml : otherBadgesHtml;
 
         if (nameSpan && nextName) {
             nameSpan.textContent = nextName;
         }
-        if (badgesSpan) {
+        if (badgesSpan && nextBadges) {
             badgesSpan.innerHTML = nextBadges;
         }
         if (senderHeader) {
@@ -1307,6 +1321,10 @@ async function initChat(user) {
     if (isChatInitialized && currentUid === user.uid) return;
     isChatInitialized = true;
     currentUid = user.uid;
+
+    if (!isPlaceholderName(user.displayName)) {
+        myUserName = user.displayName.trim();
+    }
 
     updateNotificationUIState();
 
@@ -1373,6 +1391,13 @@ async function initChat(user) {
             }
 
             if (msgData.senderUid === currentUid) {
+                if (isPlaceholderName(msgData.senderName) && !isPlaceholderName(myUserName) && docSnap?.ref) {
+                    updateDoc(docSnap.ref, {
+                        senderName: myUserName,
+                        senderIsVerified: Boolean(myProfile?.isVerified),
+                        senderIsPro: hasYellowBadge(myProfile)
+                    }).catch(() => {});
+                }
                 const checkState = getMessageCheckStatus(msgData, msgId);
                 if (checkState === 'read-green') {
                     persistGreenReadId(activeChatId, msgId);
@@ -1414,8 +1439,12 @@ async function initChat(user) {
                             ? 'Mengirim lamaran kerja baru'
                             : String(msgData.text || 'Pesan baru');
 
+                        const notifTitle = !isPlaceholderName(otherUserName)
+                            ? otherUserName
+                            : (!isPlaceholderName(msgData.senderName) ? String(msgData.senderName).trim() : 'Pesan Baru');
+
                         triggerLocalSystemNotification(
-                            otherUserName || String(msgData.senderName || 'Pesan Baru'),
+                            notifTitle,
                             previewText,
                             {
                                 tag: `chat-${activeChatId}`,
@@ -1462,6 +1491,13 @@ async function initChat(user) {
                 snapshot.forEach(docSnap => {
                     const m = docSnap.data();
                     if (m.senderUid === currentUid) {
+                        if (isPlaceholderName(m.senderName) && !isPlaceholderName(myUserName)) {
+                            updateDoc(docSnap.ref, {
+                                senderName: myUserName,
+                                senderIsVerified: Boolean(myProfile?.isVerified),
+                                senderIsPro: hasYellowBadge(myProfile)
+                            }).catch(() => {});
+                        }
                         const checkState = getMessageCheckStatus(m, docSnap.id);
                         if (checkState === 'read-green') {
                             persistGreenReadId(activeChatId, docSnap.id);
@@ -1489,20 +1525,22 @@ async function initChat(user) {
         [`unread_${currentUid}`]: false
     }).catch(() => {});
 
-    fetchUserProfile(db, currentUid).then(profile => {
+    fetchUserProfile(db, currentUid, { forceRefresh: true }).then(profile => {
         myProfile = profile;
         myUserName = extractProfileName(profile, user.displayName);
         myBadgesHtml = buildCombinedBadgesHtml(profile, 'message-bubble-verif');
         refreshVisibleSenderInfo();
     }).catch(() => {});
 
-    fetchUserProfile(db, activeChatUserId).then(profile => {
+    fetchUserProfile(db, activeChatUserId, { forceRefresh: true }).then(profile => {
         otherProfile = profile;
         otherUserName = extractProfileName(profile);
         otherBadgesHtml = buildCombinedBadgesHtml(profile, 'message-bubble-verif');
         otherUserFcmToken = profile?.fcmToken || null;
         document.getElementById('activeChatBadges').innerHTML = buildCombinedBadgesHtml(profile, 'chat-header-verif');
-        document.getElementById('activeChatName').textContent = otherUserName;
+        if (otherUserName) {
+            document.getElementById('activeChatName').textContent = otherUserName;
+        }
         document.getElementById('activeChatAvatar').src = profile?.avatarUrl || getUserAvatarUrl(activeChatUserId);
         refreshVisibleSenderInfo();
     }).catch(() => {});
@@ -1560,7 +1598,16 @@ window.handleChatFormSubmit = async function (event) {
     try {
         const recipientUid = activeChatUserId;
         const chatDocRef = doc(db, 'chats', activeChatId);
-        const senderNameToSave = myUserName || extractProfileName(myProfile, auth.currentUser?.displayName);
+        let senderNameToSave = extractProfileName(myProfile, myUserName || auth.currentUser?.displayName);
+        if (!senderNameToSave) {
+            const freshProfile = await fetchUserProfile(db, currentUid, { forceRefresh: true }).catch(() => null);
+            if (freshProfile) {
+                myProfile = freshProfile;
+                senderNameToSave = extractProfileName(freshProfile, auth.currentUser?.displayName);
+                myUserName = senderNameToSave;
+                myBadgesHtml = buildCombinedBadgesHtml(freshProfile, 'message-bubble-verif');
+            }
+        }
         const senderVerifiedToSave = Boolean(myProfile?.isVerified);
         const senderProToSave = hasYellowBadge(myProfile);
 
