@@ -93,7 +93,7 @@
             flex-shrink: 0;
         }
 
-        /* BANNER SEDANG ADA PANGGILAN (DI BAWAH NAVBAR) */
+        /* BANNER DALAM PANGGILAN (DI BAWAH NAVBAR) */
         .active-call-banner {
             display: none;
             align-items: center;
@@ -304,11 +304,11 @@
             </div>
 
             <!-- NOTIFIKASI DI BAWAH NAVBAR SAAT SEDANG ADA PANGGILAN -->
-            <div id="activeCallBanner" class="active-call-banner" onclick="returnToOngoingCall()" role="button" tabindex="0">
+            <div id="activeCallBanner" class="active-call-banner" role="button" tabindex="0">
                 <div class="active-call-banner-left">
                     <span class="active-call-pulse"></span>
                     <i id="activeCallBannerIcon" class="fas fa-phone-alt"></i>
-                    <span id="activeCallBannerText" class="active-call-banner-text">Sedang ada panggilan...</span>
+                    <span id="activeCallBannerText" class="active-call-banner-text">Dalam panggilan...</span>
                 </div>
                 <span class="active-call-banner-cta">
                     <span>Masuk</span>
@@ -348,12 +348,6 @@ import {
 } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
 import {
-    ref,
-    onValue,
-    remove
-} from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js';
-
-import {
     app,
     db,
     rtdb,
@@ -374,8 +368,11 @@ import {
     sendPushNotification
 } from 'https://sitenexs.com/assets/js/sitenexs-push-client.js';
 
-const CALL_PAGE_URL = 'https://sitenexs.com/community/messages/call/';
-const ACTIVE_CALL_STORAGE_KEY = 'sitenexs_ongoing_call_room';
+import {
+    DEFAULT_CALL_PAGE_URL,
+    attachForcedIncomingCallRedirect,
+    attachOngoingCallBanner
+} from 'https://sitenexs.com/assets/js/sitenexs-call-presence.js';
 
 let currentUid = null;
 let myProfile = null;
@@ -388,13 +385,11 @@ let otherUserName = 'Mitra Sitenexs';
 let otherUserFcmToken = null;
 
 let unsubscribeMessages = null;
-let unsubscribeIncomingCalls = null;
-let unsubscribeActiveCallRoom = null;
-let unsubscribeAllCallsScan = null;
+let cleanupIncomingRedirect = null;
+let cleanupOngoingBanner = null;
 let isInitialMessagesLoad = true;
 let lastNotifiedMessageId = null;
 let isRedirectingToCall = false;
-let ongoingCallTarget = null;
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
@@ -403,38 +398,6 @@ if (!targetUserId) {
     window.location.replace('https://sitenexs.com/community/messages/');
 } else {
     activeChatUserId = targetUserId;
-}
-
-function saveOngoingCallStorage(info) {
-    try {
-        if (!info || !info.roomId) {
-            sessionStorage.removeItem(ACTIVE_CALL_STORAGE_KEY);
-            return;
-        }
-        sessionStorage.setItem(ACTIVE_CALL_STORAGE_KEY, JSON.stringify({
-            roomId: info.roomId,
-            peerUid: info.peerUid || activeChatUserId || '',
-            peerName: info.peerName || otherUserName || 'Mitra Sitenexs',
-            callType: info.callType || 'video',
-            mode: info.mode || 'outgoing',
-            savedAt: Date.now()
-        }));
-    } catch (e) {}
-}
-
-function readOngoingCallStorage() {
-    try {
-        const raw = sessionStorage.getItem(ACTIVE_CALL_STORAGE_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (!parsed?.roomId || (Date.now() - (parsed.savedAt || 0) > 600000)) {
-            sessionStorage.removeItem(ACTIVE_CALL_STORAGE_KEY);
-            return null;
-        }
-        return parsed;
-    } catch (e) {
-        return null;
-    }
 }
 
 window.showToast = function (msg) {
@@ -459,173 +422,13 @@ window.showToast = function (msg) {
 
 window.openCallPage = function (callType = 'video') {
     if (!activeChatUserId || isRedirectingToCall) return;
-
-    if (ongoingCallTarget?.roomId) {
-        window.returnToOngoingCall();
-        return;
-    }
-
     isRedirectingToCall = true;
-    const callUrl = new URL(CALL_PAGE_URL);
+    const callUrl = new URL(DEFAULT_CALL_PAGE_URL);
     callUrl.searchParams.set('to', activeChatUserId);
     callUrl.searchParams.set('mode', 'outgoing');
     callUrl.searchParams.set('type', callType === 'audio' ? 'audio' : 'video');
     window.location.href = callUrl.toString();
 };
-
-function setOngoingCallBanner(show, info = null) {
-    const banner = document.getElementById('activeCallBanner');
-    const textEl = document.getElementById('activeCallBannerText');
-    const iconEl = document.getElementById('activeCallBannerIcon');
-    if (!banner) return;
-
-    if (!show || !info || !info.roomId) {
-        ongoingCallTarget = null;
-        saveOngoingCallStorage(null);
-        banner.classList.remove('active');
-        return;
-    }
-
-    ongoingCallTarget = info;
-    saveOngoingCallStorage(info);
-
-    const isAudio = info.callType === 'audio';
-    if (iconEl) {
-        iconEl.className = isAudio ? 'fas fa-phone-alt' : 'fas fa-video';
-    }
-    if (textEl) {
-        textEl.textContent = 'Sedang ada panggilan...';
-    }
-    banner.classList.add('active');
-}
-
-/* =====================================================
-   MELANJUTKAN PANGGILAN SEBELUMNYA (BUKAN MEMBUAT BARU)
-===================================================== */
-window.returnToOngoingCall = function () {
-    const target = ongoingCallTarget || readOngoingCallStorage();
-    if (!target || !target.roomId || isRedirectingToCall) return;
-
-    isRedirectingToCall = true;
-    const callUrl = new URL(CALL_PAGE_URL);
-    callUrl.searchParams.set('roomId', target.roomId);
-    callUrl.searchParams.set('to', target.peerUid || activeChatUserId || '');
-    callUrl.searchParams.set('mode', target.mode || 'outgoing');
-    callUrl.searchParams.set('type', target.callType === 'audio' ? 'audio' : 'video');
-    callUrl.searchParams.set('resume', '1');
-    window.location.href = callUrl.toString();
-};
-
-function isRoomActuallyLive(roomData) {
-    if (!roomData || typeof roomData !== 'object' || !currentUid) return false;
-    if (roomData.status === 'ended' || roomData.status === 'rejected') return false;
-    if (roomData.status !== 'ringing' && roomData.status !== 'connected') return false;
-
-    const myParticipant = roomData.participants && roomData.participants[currentUid];
-    if (!myParticipant || typeof myParticipant !== 'object') return false;
-
-    const joinedAt = myParticipant.joinedAt || 0;
-    if (!joinedAt || (Date.now() - joinedAt > 600000)) return false;
-
-    return true;
-}
-
-function watchOngoingCallInRoom(callId, fallbackPeerUid, fallbackCallType) {
-    if (unsubscribeActiveCallRoom) {
-        unsubscribeActiveCallRoom();
-        unsubscribeActiveCallRoom = null;
-    }
-    if (!callId) {
-        setOngoingCallBanner(false);
-        return;
-    }
-
-    const callRef = ref(rtdb, `calls/${callId}`);
-    unsubscribeActiveCallRoom = onValue(callRef, snapshot => {
-        const data = snapshot.val();
-        if (!isRoomActuallyLive(data)) {
-            setOngoingCallBanner(false);
-            return;
-        }
-
-        const peerUid = data.callerUid === currentUid
-            ? (data.calleeUid || fallbackPeerUid)
-            : (data.callerUid || fallbackPeerUid);
-        const peerName = data.callerUid === currentUid
-            ? otherUserName
-            : (data.callerName || otherUserName);
-
-        setOngoingCallBanner(true, {
-            roomId: callId,
-            peerUid,
-            peerName,
-            callType: data.callType || fallbackCallType || 'video',
-            mode: data.callerUid === currentUid ? 'outgoing' : 'incoming'
-        });
-    }, () => {
-        setOngoingCallBanner(false);
-    });
-}
-
-function discoverOngoingCallRoom() {
-    if (!currentUid) return;
-
-    setOngoingCallBanner(false);
-
-    if (unsubscribeAllCallsScan) {
-        unsubscribeAllCallsScan();
-        unsubscribeAllCallsScan = null;
-    }
-
-    const callsRootRef = ref(rtdb, 'calls');
-    unsubscribeAllCallsScan = onValue(callsRootRef, snapshot => {
-        const allCalls = snapshot.val() || {};
-        let foundRoom = null;
-
-        for (const [roomKey, roomData] of Object.entries(allCalls)) {
-            if (!isRoomActuallyLive(roomData)) continue;
-
-            const involvedInChat =
-                !activeChatUserId ||
-                roomData.callerUid === activeChatUserId ||
-                roomData.calleeUid === activeChatUserId ||
-                (roomData.chatId && roomData.chatId === activeChatId) ||
-                Boolean(roomData.participants && roomData.participants[activeChatUserId]);
-
-            if (involvedInChat) {
-                foundRoom = {
-                    roomId: roomData.roomId || roomKey,
-                    peerUid: roomData.callerUid === currentUid
-                        ? (roomData.calleeUid || activeChatUserId)
-                        : (roomData.callerUid || activeChatUserId),
-                    peerName: roomData.callerUid === currentUid
-                        ? otherUserName
-                        : (roomData.callerName || otherUserName),
-                    callType: roomData.callType || 'video',
-                    mode: roomData.callerUid === currentUid ? 'outgoing' : 'incoming'
-                };
-                break;
-            }
-        }
-
-        if (foundRoom) {
-            watchOngoingCallInRoom(foundRoom.roomId, foundRoom.peerUid, foundRoom.callType);
-            setOngoingCallBanner(true, foundRoom);
-        } else {
-            if (unsubscribeActiveCallRoom) {
-                unsubscribeActiveCallRoom();
-                unsubscribeActiveCallRoom = null;
-            }
-            setOngoingCallBanner(false);
-        }
-    }, () => {
-        if (unsubscribeActiveCallRoom) {
-            unsubscribeActiveCallRoom();
-            unsubscribeActiveCallRoom = null;
-        }
-        setOngoingCallBanner(false);
-    });
-}
 
 function updateNotificationUIState() {
     const banner = document.getElementById('notifPermissionBanner');
@@ -882,57 +685,6 @@ function renderMessageBody(text) {
 }
 
 /* =====================================================
-   PAKSA MEMBUKA HALAMAN TELEPON SAAT ADA PANGGILAN MASUK
-===================================================== */
-
-function listenIncomingCallsAndForceRedirect() {
-    if (!currentUid) return;
-
-    const incomingRef = ref(rtdb, `incomingCalls/${currentUid}`);
-
-    if (unsubscribeIncomingCalls) {
-        unsubscribeIncomingCalls();
-    }
-
-    unsubscribeIncomingCalls = onValue(incomingRef, snapshot => {
-        const data = snapshot.val();
-        if (!data) return;
-
-        if (data.timestamp && Date.now() - data.timestamp > 60000) {
-            remove(incomingRef).catch(() => {});
-            return;
-        }
-
-        if (data.callerUid === currentUid) return;
-
-        if (
-            data.calleeUid === currentUid &&
-            data.status === 'ringing' &&
-            !isRedirectingToCall
-        ) {
-            isRedirectingToCall = true;
-            if (data.roomId) {
-                saveOngoingCallStorage({
-                    roomId: data.roomId,
-                    peerUid: data.callerUid,
-                    peerName: data.callerName || otherUserName,
-                    callType: data.callType === 'audio' ? 'audio' : 'video',
-                    mode: 'incoming'
-                });
-            }
-            const callUrl = new URL(CALL_PAGE_URL);
-            callUrl.searchParams.set('to', data.callerUid);
-            callUrl.searchParams.set('mode', 'incoming');
-            callUrl.searchParams.set('roomId', data.roomId);
-            callUrl.searchParams.set('type', data.callType === 'audio' ? 'audio' : 'video');
-            window.location.replace(callUrl.toString());
-        }
-    }, error => {
-        console.error('Incoming call listener error:', error);
-    });
-}
-
-/* =====================================================
    INITIALIZE CHAT
 ===================================================== */
 
@@ -953,8 +705,13 @@ async function initChat(user) {
     const participants = [currentUid, activeChatUserId].sort();
     activeChatId = `${participants[0]}_${participants[1]}`;
 
-    // Pantau panggilan masuk & langsung alihkan ke halaman panggilan masuk
-    listenIncomingCallsAndForceRedirect();
+    if (cleanupIncomingRedirect) cleanupIncomingRedirect();
+    cleanupIncomingRedirect = attachForcedIncomingCallRedirect({
+        rtdb,
+        currentUid,
+        callPageUrl: DEFAULT_CALL_PAGE_URL,
+        fallbackPeerName: otherUserName
+    });
 
     try {
         await updateDoc(doc(db, 'chats', activeChatId), {
@@ -973,8 +730,18 @@ async function initChat(user) {
     document.getElementById('activeChatName').textContent = otherUserName;
     document.getElementById('activeChatAvatar').src = otherProfile.avatarUrl;
 
-    // Cari ruang panggilan aktif agar saat menekan "Masuk" langsung melanjutkan panggilan sebelumnya
-    discoverOngoingCallRoom();
+    if (cleanupOngoingBanner) cleanupOngoingBanner();
+    cleanupOngoingBanner = attachOngoingCallBanner({
+        rtdb,
+        currentUid,
+        bannerElement: document.getElementById('activeCallBanner'),
+        textElement: document.getElementById('activeCallBannerText'),
+        iconElement: document.getElementById('activeCallBannerIcon'),
+        filterPeerUid: activeChatUserId,
+        filterChatId: activeChatId,
+        fallbackPeerName: otherUserName,
+        callPageUrl: DEFAULT_CALL_PAGE_URL
+    });
 
     const messagesRef = collection(db, 'chats', activeChatId, 'messages');
     const qMsgs = query(messagesRef, orderBy('createdAt', 'asc'));
