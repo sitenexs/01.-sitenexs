@@ -857,6 +857,7 @@ let lastNotifiedMessageId = null;
 let isRedirectingToCall = false;
 let isChatInitialized = false;
 let isSendingMessage = false;
+let sendLockTimer = null;
 let typingStopTimer = null;
 let lastTypingSoundAt = 0;
 let stickToBottom = true;
@@ -866,6 +867,26 @@ const messagesStore = new Map();
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
+
+function releaseSendLock() {
+    isSendingMessage = false;
+    if (sendLockTimer) {
+        clearTimeout(sendLockTimer);
+        sendLockTimer = null;
+    }
+    const sendBtn = document.getElementById('sendMessageBtn');
+    if (sendBtn) sendBtn.disabled = false;
+}
+
+function engageSendLock() {
+    isSendingMessage = true;
+    const sendBtn = document.getElementById('sendMessageBtn');
+    if (sendBtn) sendBtn.disabled = true;
+    if (sendLockTimer) clearTimeout(sendLockTimer);
+    sendLockTimer = setTimeout(() => {
+        releaseSendLock();
+    }, 8000);
+}
 
 /* =====================================================
    SINKRONISASI SESI LOGIN MENGIKUTI INDEX.HTML
@@ -2493,6 +2514,18 @@ function attachChatSyncListeners(chatId, uid, peerUid) {
 
     if (unsubscribeMessages) unsubscribeMessages();
     unsubscribeMessages = onSnapshot(qMsgs, (snapshot) => {
+        const liveIds = new Set();
+        snapshot.docs.forEach(d => liveIds.add(d.id));
+        if (messagesContainer) {
+            messagesContainer.querySelectorAll('.message-wrapper[data-msg-id]').forEach(el => {
+                const id = el.dataset.msgId;
+                if (id && !liveIds.has(id)) {
+                    el.remove();
+                    messagesStore.delete(id);
+                }
+            });
+        }
+
         let shouldScroll = stickToBottom;
 
         snapshot.docChanges().forEach((change) => {
@@ -2585,7 +2618,6 @@ async function initChat(user) {
     const participants = [currentUid, activeChatUserId].sort();
     activeChatId = `${participants[0]}_${participants[1]}`;
 
-    // Hapus sisa cache chat lama jika pernah tersimpan sebelumnya
     clearChatCacheStorage(activeChatId);
     clearChatMessagesDom();
 
@@ -2624,9 +2656,6 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-/* =====================================================
-   CEK AUTH MENGIKUTI INDEX.HTML (FIREBASE AUTH + LOCALSTORAGE)
-===================================================== */
 onAuthStateChanged(auth, (user) => {
     if (user) {
         localStorage.setItem('sitenexs_logged_in', 'true');
@@ -2649,17 +2678,19 @@ window.handleChatFormSubmit = async function (event) {
     if (isSendingMessage) return;
 
     const inputEl = document.getElementById('messageInput');
-    const sendBtn = document.getElementById('sendMessageBtn');
     const text = inputEl.value.trim();
 
-    if (!text || !activeChatId || !currentUid) return;
+    if (!text) return;
+    if (!activeChatId || !currentUid) {
+        showToast('Sesi chat belum siap, coba lagi sebentar.');
+        return;
+    }
 
     const targetEditId = editingMessageId;
     const prevEditingOriginalText = editingOriginalText;
     const replyToPayload = activeReplyData ? { ...activeReplyData } : null;
 
-    isSendingMessage = true;
-    if (sendBtn) sendBtn.disabled = true;
+    engageSendLock();
 
     editingMessageId = null;
     editingOriginalText = '';
@@ -2691,16 +2722,7 @@ window.handleChatFormSubmit = async function (event) {
 
         stickToBottom = true;
         const recipientUid = activeChatUserId;
-        let senderNameToSave = extractProfileName(myProfile, myUserName || auth.currentUser?.displayName);
-        if (!senderNameToSave) {
-            const freshProfile = await fetchUserProfile(db, currentUid, { forceRefresh: true }).catch(() => null);
-            if (freshProfile) {
-                myProfile = freshProfile;
-                senderNameToSave = extractProfileName(freshProfile, auth.currentUser?.displayName);
-                myUserName = senderNameToSave;
-                myBadgesHtml = buildCombinedBadgesHtml(freshProfile, 'message-bubble-verif');
-            }
-        }
+        const senderNameToSave = extractProfileName(myProfile, myUserName || auth.currentUser?.displayName);
         const senderVerifiedToSave = Boolean(myProfile?.isVerified);
         const senderProToSave = hasYellowBadge(myProfile);
 
@@ -2719,14 +2741,14 @@ window.handleChatFormSubmit = async function (event) {
             read: false
         });
 
-        await syncChatSummaryOnSend(activeChatId, currentUid, recipientUid, text).catch(err => {
+        syncChatSummaryOnSend(activeChatId, currentUid, recipientUid, text).catch(err => {
             console.warn('Gagal memperbarui ringkasan chat:', err);
         });
 
         scrollMessagesToBottom(true);
         playSentMessageSound();
 
-        const pushRes = await sendPushNotification({
+        sendPushNotification({
             db,
             recipientUid: activeChatUserId,
             cachedToken: otherUserFcmToken,
@@ -2736,8 +2758,9 @@ window.handleChatFormSubmit = async function (event) {
             url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(currentUid)}`,
             icon: myProfile?.avatarUrl || getUserAvatarUrl(currentUid),
             workerUrl: PUSH_WORKER_URL
-        });
-        if (pushRes?.token) otherUserFcmToken = pushRes.token;
+        }).then(pushRes => {
+            if (pushRes?.token) otherUserFcmToken = pushRes.token;
+        }).catch(() => {});
 
     } catch (error) {
         console.error('Send message error:', error);
@@ -2756,8 +2779,7 @@ window.handleChatFormSubmit = async function (event) {
             showToast('Gagal mengirim pesan.');
         }
     } finally {
-        isSendingMessage = false;
-        if (sendBtn) sendBtn.disabled = false;
+        releaseSendLock();
     }
 };
 </script>
