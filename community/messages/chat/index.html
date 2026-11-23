@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Chat — Komunitas Sitenexs</title>
+    
     <!-- Meta SEO -->
     <meta name="description" content="Kirim dan terima pesan langsung dengan sesama mitra UMKM serta Sitenexs AI di ekosistem Sitenexs.">
     <link rel="icon" type="image/png" href="https://sitenexs.com/assets/logo/logo.png">
@@ -41,9 +42,9 @@
         }
 
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-        html, body {
-            height: 100%; height: 100svh; overflow: hidden; font-size: 15px;
+        
+        html, body { 
+            height: 100%; height: 100svh; overflow: hidden; font-size: 15px; 
             user-select: none; -webkit-user-select: none;
         }
 
@@ -221,11 +222,11 @@
 
         /* RUANG CHAT UTAMA */
         .chat-wrapper {
-            width: 100%; height: 100%; background: #fafbfc; border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-xl); box-shadow: var(--shadow-md); display: flex; flex-direction: column;
+            width: 100%; height: 100%; background: #fafbfc; border: 1px solid var(--border-subtle); 
+            border-radius: var(--radius-xl); box-shadow: var(--shadow-md); display: flex; flex-direction: column; 
             overflow: hidden; position: relative;
         }
-
+        
         .chat-header {
             padding: 0.75rem 1.25rem; background: #fff; border-bottom: 1px solid var(--border-subtle);
             display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto; z-index: 10;
@@ -234,7 +235,7 @@
         .chat-header-left { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
         .chat-header-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
         .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-medium); flex-shrink: 0; }
-
+        
         .chat-header-info { min-width: 0; display: flex; flex-direction: column; }
         .chat-header-name-row { display: flex; align-items: center; gap: 0.3rem; min-width: 0; }
         .chat-header-name { font-weight: 850; font-size: 0.98rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.45rem; }
@@ -255,7 +256,7 @@
 
         /* ISI CHAT */
         .chat-messages {
-            flex: 1 1 auto; min-height: 0; padding: 1.25rem; overflow-y: auto;
+            flex: 1 1 auto; min-height: 0; padding: 1.25rem; overflow-y: auto; 
             display: flex; flex-direction: column; gap: 0.75rem; background-color: #f8fafc;
             background-image: radial-gradient(rgba(37, 99, 235, 0.08) 1px, transparent 1px), radial-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px);
             background-size: 24px 24px; background-position: 0 0, 12px 12px; -webkit-overflow-scrolling: touch;
@@ -518,7 +519,7 @@
 
         .message-bubble.incoming { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-subtle); border-bottom-left-radius: 4px; }
         .message-bubble.outgoing { background: var(--primary); color: #fff; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
-
+        
         .message-meta-row {
             display: flex;
             align-items: center;
@@ -642,15 +643,11 @@
             border-radius: var(--radius-full); font-size: 0.88rem; color: var(--text-main);
         }
         .chat-input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-
+        
         .chat-send-btn {
             width: 42px; height: 42px; border-radius: 50%; background: var(--primary); color: #fff;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); flex-shrink: 0;
-        }
-        .chat-send-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
         }
 
         #toastContainer { position: fixed; bottom: 24px; right: 24px; z-index: 30000; display: flex; flex-direction: column; gap: 0.5rem; max-width: 340px; }
@@ -667,124 +664,124 @@
 </head>
 <body data-package="basic">
 
-<div id="toastContainer"></div>
+    <div id="toastContainer"></div>
 
-<!-- MENU OPSI TEKAN LAMA PESAN -->
-<div id="msgContextBackdrop" class="msg-context-backdrop" onclick="closeMessageContextMenu(event)">
-    <div class="msg-context-sheet" onclick="event.stopPropagation()">
-        <div id="msgContextPreview" class="msg-context-preview">Opsi pesan</div>
-        <button type="button" id="ctxPinBtn" class="msg-context-item" onclick="handleContextPinMessage()">
-            <i class="fas fa-thumbtack"></i>
-            <span id="ctxPinLabel">Sematkan pesan</span>
-        </button>
-        <button type="button" id="ctxEditBtn" class="msg-context-item" onclick="handleContextEditMessage()">
-            <i class="fas fa-pen"></i>
-            <span>Edit pesan</span>
-        </button>
-        <button type="button" id="ctxDeleteEveryoneBtn" class="msg-context-item danger" onclick="handleContextDeleteForEveryone()">
-            <i class="fas fa-trash-alt"></i>
-            <span>Hapus untuk semua orang</span>
-        </button>
-        <button type="button" id="ctxDeleteMeBtn" class="msg-context-item danger" onclick="handleContextDeleteForMe()">
-            <i class="fas fa-eye-slash"></i>
-            <span>Hapus untuk saya</span>
-        </button>
-    </div>
-</div>
-
-<main class="container">
-    <div class="chat-wrapper">
-        <!-- BANNER AKTIFKAN PUSH NOTIFIKASI HP -->
-        <div id="notifPermissionBanner" class="notif-permission-banner">
-            <span><i class="fas fa-bell" style="margin-right: 5px;"></i> Aktifkan notifikasi agar pesan & panggilan masuk muncul di HP.</span>
-            <button type="button" class="notif-enable-btn" onclick="requestPushNotificationPermission()">Aktifkan</button>
+    <!-- MENU OPSI TEKAN LAMA PESAN -->
+    <div id="msgContextBackdrop" class="msg-context-backdrop" onclick="closeMessageContextMenu(event)">
+        <div class="msg-context-sheet" onclick="event.stopPropagation()">
+            <div id="msgContextPreview" class="msg-context-preview">Opsi pesan</div>
+            <button type="button" id="ctxPinBtn" class="msg-context-item" onclick="handleContextPinMessage()">
+                <i class="fas fa-thumbtack"></i>
+                <span id="ctxPinLabel">Sematkan pesan</span>
+            </button>
+            <button type="button" id="ctxEditBtn" class="msg-context-item" onclick="handleContextEditMessage()">
+                <i class="fas fa-pen"></i>
+                <span>Edit pesan</span>
+            </button>
+            <button type="button" id="ctxDeleteEveryoneBtn" class="msg-context-item danger" onclick="handleContextDeleteForEveryone()">
+                <i class="fas fa-trash-alt"></i>
+                <span>Hapus untuk semua orang</span>
+            </button>
+            <button type="button" id="ctxDeleteMeBtn" class="msg-context-item danger" onclick="handleContextDeleteForMe()">
+                <i class="fas fa-eye-slash"></i>
+                <span>Hapus untuk saya</span>
+            </button>
         </div>
+    </div>
 
-        <!-- HEADER ATAS -->
-        <div class="chat-header">
-            <div class="chat-header-left">
-                <a href="https://sitenexs.com/community/messages/" class="btn btn-secondary btn-icon-only" title="Kembali"><i class="fas fa-arrow-left"></i></a>
-                <img id="activeChatAvatar" src="" class="chat-header-avatar" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
-                <div class="chat-header-info">
-                    <div class="chat-header-name-row">
-                        <div class="chat-header-name" id="activeChatName"></div>
-                        <div id="activeChatBadges" style="display: inline-flex; align-items: center; gap: 2px;"></div>
+    <main class="container">
+        <div class="chat-wrapper">
+            <!-- BANNER AKTIFKAN PUSH NOTIFIKASI HP -->
+            <div id="notifPermissionBanner" class="notif-permission-banner">
+                <span><i class="fas fa-bell" style="margin-right: 5px;"></i> Aktifkan notifikasi agar pesan & panggilan masuk muncul di HP.</span>
+                <button type="button" class="notif-enable-btn" onclick="requestPushNotificationPermission()">Aktifkan</button>
+            </div>
+
+            <!-- HEADER ATAS -->
+            <div class="chat-header">
+                <div class="chat-header-left">
+                    <a href="https://sitenexs.com/community/messages/" class="btn btn-secondary btn-icon-only" title="Kembali"><i class="fas fa-arrow-left"></i></a>
+                    <img id="activeChatAvatar" src="" class="chat-header-avatar" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=2563eb&color=fff'">
+                    <div class="chat-header-info">
+                        <div class="chat-header-name-row">
+                            <div class="chat-header-name" id="activeChatName"></div>
+                            <div id="activeChatBadges" style="display: inline-flex; align-items: center; gap: 2px;"></div>
+                        </div>
+                        <div id="headerTypingStatus" class="header-typing-status">Sedang mengetik...</div>
                     </div>
-                    <div id="headerTypingStatus" class="header-typing-status">Sedang mengetik...</div>
+                </div>
+                <div class="chat-header-right">
+                    <button type="button" id="notifBellBtn" class="btn btn-secondary btn-icon-only" onclick="requestPushNotificationPermission()" title="Notifikasi HP">
+                        <i class="fas fa-bell" style="color: var(--text-muted);"></i>
+                    </button>
+                    <button type="button" id="startVoiceBtn" class="btn btn-secondary btn-icon-only" onclick="openCallPage('audio')" title="Panggilan Suara">
+                        <i class="fas fa-phone" style="color: var(--accent);"></i>
+                    </button>
+                    <button type="button" id="startVcBtn" class="btn btn-secondary btn-icon-only" onclick="openCallPage('video')" title="Panggilan Video">
+                        <i class="fas fa-video" style="color: var(--primary);"></i>
+                    </button>
                 </div>
             </div>
-            <div class="chat-header-right">
-                <button type="button" id="notifBellBtn" class="btn btn-secondary btn-icon-only" onclick="requestPushNotificationPermission()" title="Notifikasi HP">
-                    <i class="fas fa-bell" style="color: var(--text-muted);"></i>
-                </button>
-                <button type="button" id="startVoiceBtn" class="btn btn-secondary btn-icon-only" onclick="openCallPage('audio')" title="Panggilan Suara">
-                    <i class="fas fa-phone" style="color: var(--accent);"></i>
-                </button>
-                <button type="button" id="startVcBtn" class="btn btn-secondary btn-icon-only" onclick="openCallPage('video')" title="Panggilan Video">
-                    <i class="fas fa-video" style="color: var(--primary);"></i>
+
+            <!-- NOTIFIKASI DI BAWAH NAVBAR SAAT SEDANG ADA PANGGILAN -->
+            <div id="activeCallBanner" class="active-call-banner" role="button" tabindex="0">
+                <div class="active-call-banner-left">
+                    <span class="active-call-pulse"></span>
+                    <i id="activeCallBannerIcon" class="fas fa-phone-alt"></i>
+                    <span id="activeCallBannerText" class="active-call-banner-text">Dalam panggilan...</span>
+                </div>
+                <span class="active-call-banner-cta">
+                    <span>Masuk</span>
+                    <i class="fas fa-chevron-right"></i>
+                </span>
+            </div>
+
+            <!-- BANNER PESAN TERSEMAT -->
+            <div id="pinnedMessageBar" class="pinned-message-bar" onclick="handlePinnedBarClick()">
+                <div class="pinned-message-left">
+                    <i class="fas fa-thumbtack pinned-message-icon"></i>
+                    <div class="pinned-message-info">
+                        <div id="pinnedMessageLabel" class="pinned-message-label">Pesan Tersemat</div>
+                        <div id="pinnedMessageSnippet" class="pinned-message-snippet"></div>
+                    </div>
+                </div>
+                <button type="button" class="pinned-unpin-btn" onclick="handleUnpinFromBar(event)" title="Lepas sematan">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
-        </div>
 
-        <!-- NOTIFIKASI DI BAWAH NAVBAR SAAT SEDANG ADA PANGGILAN -->
-        <div id="activeCallBanner" class="active-call-banner" role="button" tabindex="0">
-            <div class="active-call-banner-left">
-                <span class="active-call-pulse"></span>
-                <i id="activeCallBannerIcon" class="fas fa-phone-alt"></i>
-                <span id="activeCallBannerText" class="active-call-banner-text">Dalam panggilan...</span>
-            </div>
-            <span class="active-call-banner-cta">
-                <span>Masuk</span>
-                <i class="fas fa-chevron-right"></i>
-            </span>
-        </div>
-
-        <!-- BANNER PESAN TERSEMAT -->
-        <div id="pinnedMessageBar" class="pinned-message-bar" onclick="handlePinnedBarClick()">
-            <div class="pinned-message-left">
-                <i class="fas fa-thumbtack pinned-message-icon"></i>
-                <div class="pinned-message-info">
-                    <div id="pinnedMessageLabel" class="pinned-message-label">Pesan Tersemat</div>
-                    <div id="pinnedMessageSnippet" class="pinned-message-snippet"></div>
+            <!-- ISI PESAN -->
+            <div class="chat-messages" id="chatMessages">
+                <div id="typingBubbleWrapper" class="typing-bubble-wrapper">
+                    <div class="typing-bubble-box">
+                        <span class="typing-dot-circle"></span>
+                        <span class="typing-dot-circle"></span>
+                        <span class="typing-dot-circle"></span>
+                    </div>
                 </div>
             </div>
-            <button type="button" class="pinned-unpin-btn" onclick="handleUnpinFromBar(event)" title="Lepas sematan">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
 
-        <!-- ISI PESAN -->
-        <div class="chat-messages" id="chatMessages">
-            <div id="typingBubbleWrapper" class="typing-bubble-wrapper">
-                <div class="typing-bubble-box">
-                    <span class="typing-dot-circle"></span>
-                    <span class="typing-dot-circle"></span>
-                    <span class="typing-dot-circle"></span>
+            <!-- BAR BALAS PESAN (REPLY) / EDIT PESAN -->
+            <div id="replyPreviewBar" class="reply-preview-bar">
+                <div class="reply-preview-content">
+                    <div id="replyPreviewTitle" class="reply-preview-title">Membalas pesan</div>
+                    <div id="replyPreviewText" class="reply-preview-text"></div>
                 </div>
+                <button type="button" id="cancelReplyBtn" class="reply-cancel-btn" onclick="clearActiveReply()" title="Batalkan">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-        </div>
 
-        <!-- BAR BALAS PESAN (REPLY) / EDIT PESAN -->
-        <div id="replyPreviewBar" class="reply-preview-bar">
-            <div class="reply-preview-content">
-                <div id="replyPreviewTitle" class="reply-preview-title">Membalas pesan</div>
-                <div id="replyPreviewText" class="reply-preview-text"></div>
-            </div>
-            <button type="button" id="cancelReplyBtn" class="reply-cancel-btn" onclick="clearActiveReply()" title="Batalkan">
-                <i class="fas fa-times"></i>
-            </button>
+            <!-- INPUT PESAN BAWAH -->
+            <form class="chat-input-box" id="sendMessageForm" onsubmit="handleChatFormSubmit(event)" autocomplete="off">
+                <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." oninput="handleTypingInputChange(event)" required autocomplete="off">
+                <button type="submit" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane"></i></button>
+            </form>
         </div>
-
-        <!-- INPUT PESAN BAWAH -->
-        <form class="chat-input-box" id="sendMessageForm" onsubmit="handleChatFormSubmit(event)" autocomplete="off">
-            <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." oninput="handleTypingInputChange(event)" required autocomplete="off">
-            <button type="submit" id="sendMessageBtn" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane"></i></button>
-        </form>
-    </div>
-</main>
+    </main>
 
 <script type="module">
-import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
 
 import {
     doc,
@@ -855,8 +852,6 @@ let cleanupOngoingBanner = null;
 let lastNotifiedMessageId = null;
 let isRedirectingToCall = false;
 let isChatInitialized = false;
-let isSendingMessage = false;
-let renderedCacheChatId = null;
 let typingStopTimer = null;
 let lastTypingSoundAt = 0;
 let stickToBottom = true;
@@ -866,36 +861,6 @@ const messagesStore = new Map();
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
-
-/* =====================================================
-   SINKRONISASI SESI LOGIN MENGIKUTI INDEX.HTML
-===================================================== */
-const urlUid = urlParams.get('uid');
-if (urlUid) {
-    localStorage.setItem('sitenexs_logged_in', 'true');
-    localStorage.setItem('sitenexs_uid', urlUid);
-}
-
-if (urlParams.get('logout') === 'true') {
-    localStorage.removeItem('sitenexs_logged_in');
-    localStorage.removeItem('sitenexs_uid');
-    localStorage.removeItem('sitenexs_show_welcome');
-    sessionStorage.clear();
-    signOut(auth).catch(() => {});
-    window.location.replace('https://account.sitenexs.com/sign-in/');
-}
-
-window.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'sitenexs-auth-state') {
-        if (event.data.signedIn) {
-            localStorage.setItem('sitenexs_logged_in', 'true');
-        } else {
-            localStorage.removeItem('sitenexs_logged_in');
-            localStorage.removeItem('sitenexs_uid');
-            window.location.replace('https://account.sitenexs.com/sign-in/');
-        }
-    }
-});
 
 /* =====================================================
    HAPUS UNTUK SAYA & SEMATKAN BEBERAPA PESAN (LOKAL + FIRESTORE)
@@ -1199,8 +1164,6 @@ window.handleContextDeleteForEveryone = async function () {
             removePinnedMessageById(target.id, true);
         }
         await deleteDoc(doc(db, 'chats', activeChatId, 'messages', target.id));
-        removeMessageFromCache(activeChatId, target.id);
-        messagesStore.delete(target.id);
         const messagesContainer = document.getElementById('chatMessages');
         const el = messagesContainer?.querySelector(`[data-msg-id="${CSS.escape(target.id)}"]`);
         if (el) el.remove();
@@ -1594,9 +1557,30 @@ function persistGreenReadId(chatId, msgId) {
     } catch (e) {}
 }
 
-function serializeMessageForCache(msgId, msgData) {
+function upsertMessageToCache(chatId, item) {
+    if (!chatId || !item?.id) return;
+    try {
+        const raw = localStorage.getItem(getChatCacheKey(chatId));
+        let list = [];
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) list = parsed;
+        }
+        const idx = list.findIndex(x => x.id === item.id);
+        if (idx >= 0) {
+            list[idx] = { ...list[idx], ...item };
+        } else {
+            list.push(item);
+        }
+        list.sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
+        localStorage.setItem(getChatCacheKey(chatId), JSON.stringify(list.slice(-120)));
+    } catch (e) {}
+}
+
+function syncMessageDocToCache(chatId, msgId, msgData) {
+    if (!chatId || !msgId || !msgData) return;
     const createdAtMs = msgData?.createdAt?.toDate ? msgData.createdAt.toDate().getTime() : Date.now();
-    return {
+    upsertMessageToCache(chatId, {
         id: msgId,
         senderUid: msgData.senderUid,
         senderName: msgData.senderName,
@@ -1610,55 +1594,7 @@ function serializeMessageForCache(msgId, msgData) {
         delivered: Boolean(msgData.delivered),
         read: Boolean(msgData.read),
         createdAtMs
-    };
-}
-
-function removeMessageFromCache(chatId, msgId) {
-    if (!chatId || !msgId) return;
-    try {
-        const raw = localStorage.getItem(getChatCacheKey(chatId));
-        if (!raw) return;
-        const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) return;
-        const next = parsed.filter(x => x && x.id !== msgId);
-        localStorage.setItem(getChatCacheKey(chatId), JSON.stringify(next));
-    } catch (e) {}
-}
-
-function reconcileSnapshotWithCache(chatId, snapshot, messagesContainer) {
-    if (!chatId || !snapshot) return;
-    const liveIds = new Set();
-    const cacheList = [];
-
-    snapshot.docs.forEach(docSnap => {
-        const id = docSnap.id;
-        const data = docSnap.data();
-        liveIds.add(id);
-        cacheList.push(serializeMessageForCache(id, data));
     });
-
-    // Hapus pesan basi dari DOM & messagesStore yang sudah tidak ada di Firestore
-    if (messagesContainer) {
-        messagesContainer.querySelectorAll('.message-wrapper[data-msg-id]').forEach(el => {
-            const id = el.dataset.msgId;
-            if (id && !liveIds.has(id)) {
-                el.remove();
-                messagesStore.delete(id);
-            }
-        });
-    }
-
-    try {
-        cacheList.sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
-        localStorage.setItem(getChatCacheKey(chatId), JSON.stringify(cacheList.slice(-120)));
-    } catch (e) {}
-}
-
-function clearChatMessagesDom() {
-    const messagesContainer = document.getElementById('chatMessages');
-    if (!messagesContainer) return;
-    messagesContainer.querySelectorAll('.message-wrapper').forEach(el => el.remove());
-    messagesStore.clear();
 }
 
 function syncUnreadReset(chatId, uid) {
@@ -1740,6 +1676,11 @@ function extractProfileName(profile, fallbackName = '') {
     return isPlaceholderName(cleanFallback) ? '' : cleanFallback;
 }
 
+function getEarlyUid() {
+    if (auth.currentUser?.uid) return auth.currentUser.uid;
+    return localStorage.getItem('sitenexs_uid') || null;
+}
+
 function getSenderDisplayName(message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     if (isOutgoing) {
@@ -1771,15 +1712,10 @@ function getSenderBadgesHtml(message, ownerUid = currentUid) {
     }, 'message-bubble-verif');
 }
 
-function renderCachedMessagesOnce(chatId, uid) {
-    if (!chatId || !uid) return;
-    if (renderedCacheChatId === chatId) return;
-    renderedCacheChatId = chatId;
-
+function renderCachedMessagesImmediately(chatId, uid) {
     const messagesContainer = document.getElementById('chatMessages');
     const typingBubbleWrapper = document.getElementById('typingBubbleWrapper');
-    if (!messagesContainer) return;
-
+    if (!messagesContainer || !chatId || !uid) return;
     try {
         const raw = localStorage.getItem(getChatCacheKey(chatId));
         if (!raw) return;
@@ -1844,6 +1780,16 @@ if (!targetUserId) {
         cachedPeer?.headerBadgesHtml || '',
         cachedPeer?.avatarUrl || getUserAvatarUrl(activeChatUserId)
     );
+
+    const earlyUid = getEarlyUid();
+    if (earlyUid) {
+        const cachedMe = loadCachedProfile(earlyUid);
+        if (cachedMe?.name) myUserName = cachedMe.name;
+        if (cachedMe?.badgesHtml) myBadgesHtml = cachedMe.badgesHtml;
+        const earlyChatId = [earlyUid, activeChatUserId].sort().join('_');
+        loadLocalPinnedMessages(earlyChatId);
+        renderCachedMessagesImmediately(earlyChatId, earlyUid);
+    }
 }
 
 const initialMessagesEl = document.getElementById('chatMessages');
@@ -2358,7 +2304,6 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
     }
 
     const senderHeader = buildSenderHeaderElement(message, ownerUid);
-    bubble.appendChild(senderHeader);
 
     const quotedEl = buildQuotedReplyElement(message.replyTo);
     if (quotedEl) {
@@ -2396,7 +2341,7 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
         metaRow.appendChild(statusSpan);
     }
 
-    bubble.append(bodyDiv, metaRow);
+    bubble.append(senderHeader, bodyDiv, metaRow);
     wrapper.appendChild(bubble);
     attachSwipeToReply(wrapper, bubble, docId, message, ownerUid);
     attachLongPressToMessage(wrapper, bubble, docId, message);
@@ -2524,6 +2469,7 @@ function handleMessageDocChange(change, ctx) {
     const hiddenIds = loadHiddenMessageIds(chatId, uid);
 
     messagesStore.set(msgId, msgData);
+    syncMessageDocToCache(chatId, msgId, msgData);
 
     if (hiddenIds.has(msgId)) {
         const existingHiddenEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
@@ -2533,9 +2479,11 @@ function handleMessageDocChange(change, ctx) {
 
     if (change.type === 'added') {
         const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
-        let isBrandNewDom = false;
         if (existingEl) {
             updateMessageElement(existingEl, msgId, msgData, uid);
+            if (typingBubbleWrapper && existingEl.nextElementSibling !== typingBubbleWrapper) {
+                messagesContainer.insertBefore(existingEl, typingBubbleWrapper);
+            }
         } else {
             const newEl = buildMessageElement(msgId, msgData, uid);
             if (typingBubbleWrapper) {
@@ -2543,7 +2491,6 @@ function handleMessageDocChange(change, ctx) {
             } else {
                 messagesContainer.appendChild(newEl);
             }
-            isBrandNewDom = true;
         }
 
         if (msgData.senderUid === uid) {
@@ -2587,7 +2534,6 @@ function handleMessageDocChange(change, ctx) {
             }
 
             if (
-                isBrandNewDom &&
                 lastNotifiedMessageId !== msgId &&
                 !String(msgData.text || '').startsWith('[CALL_LOG]|')
             ) {
@@ -2617,7 +2563,7 @@ function handleMessageDocChange(change, ctx) {
                 }
             }
         }
-        return isBrandNewDom;
+        return true;
     }
 
     if (change.type === 'modified') {
@@ -2642,7 +2588,6 @@ function handleMessageDocChange(change, ctx) {
         return false;
     } else if (change.type === 'removed') {
         messagesStore.delete(msgId);
-        removeMessageFromCache(chatId, msgId);
         const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
         if (existingEl) existingEl.remove();
         if (pinnedMessagesList.some(p => p.id === msgId)) {
@@ -2690,9 +2635,6 @@ function attachChatSyncListeners(chatId, uid, peerUid) {
             if (added) shouldScroll = true;
         });
 
-        // Sinkronkan ulang DOM & cache lokal dengan isi terbaru Firestore agar pesan lama/terhapus tidak tertinggal
-        reconcileSnapshotWithCache(chatId, snapshot, messagesContainer);
-
         if (typingBubbleWrapper && messagesContainer && messagesContainer.lastElementChild !== typingBubbleWrapper) {
             messagesContainer.appendChild(typingBubbleWrapper);
         }
@@ -2702,9 +2644,6 @@ function attachChatSyncListeners(chatId, uid, peerUid) {
         }
     }, (error) => {
         console.error('Message listener error:', error);
-        if (error?.code === 'permission-denied') {
-            showToast('Akses chat ditolak. Silakan cek izin Firestore.');
-        }
     });
 }
 
@@ -2785,20 +2724,10 @@ function syncProfilesAndPush(user, uid, peerUid) {
    INITIALIZE CHAT (REALTIME SNAPSHOT TERBARU + CACHE)
 ===================================================== */
 async function initChat(user) {
-    if (!user?.uid || !activeChatUserId) return;
+    if (!user?.uid) return;
     if (isChatInitialized && currentUid === user.uid) return;
-
-    if (currentUid && currentUid !== user.uid) {
-        clearChatMessagesDom();
-        renderedCacheChatId = null;
-    }
-
     isChatInitialized = true;
     currentUid = user.uid;
-    try {
-        localStorage.setItem('sitenexs_logged_in', 'true');
-        localStorage.setItem('sitenexs_uid', currentUid);
-    } catch (e) {}
 
     if (!isPlaceholderName(user.displayName)) {
         myUserName = user.displayName.trim();
@@ -2810,7 +2739,7 @@ async function initChat(user) {
     activeChatId = `${participants[0]}_${participants[1]}`;
 
     loadLocalPinnedMessages(activeChatId);
-    renderCachedMessagesOnce(activeChatId, currentUid);
+    renderCachedMessagesImmediately(activeChatId, currentUid);
 
     if (cleanupIncomingRedirect) cleanupIncomingRedirect();
     cleanupIncomingRedirect = attachForcedIncomingCallRedirect({
@@ -2847,18 +2776,12 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-/* =====================================================
-   CEK AUTH MENGIKUTI INDEX.HTML (FIREBASE AUTH + LOCALSTORAGE)
-===================================================== */
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, user => {
     if (user) {
-        localStorage.setItem('sitenexs_logged_in', 'true');
-        localStorage.setItem('sitenexs_uid', user.uid);
         initChat(user);
     } else {
-        const localLoggedIn = localStorage.getItem('sitenexs_logged_in');
         const savedUid = localStorage.getItem('sitenexs_uid');
-        if ((localLoggedIn && savedUid) || savedUid) {
+        if (savedUid) {
             initChat({ uid: savedUid });
         } else {
             window.location.replace('https://account.sitenexs.com/sign-in/');
@@ -2869,23 +2792,16 @@ onAuthStateChanged(auth, (user) => {
 window.handleChatFormSubmit = async function (event) {
     event.preventDefault();
 
-    if (isSendingMessage) return;
-
     const inputEl = document.getElementById('messageInput');
-    const sendBtn = document.getElementById('sendMessageBtn');
     const text = inputEl.value.trim();
 
     if (!text || !activeChatId || !currentUid) return;
 
     const targetEditId = editingMessageId;
-    const prevEditingOriginalText = editingOriginalText;
-    const replyToPayload = activeReplyData ? { ...activeReplyData } : null;
-
-    isSendingMessage = true;
-    if (sendBtn) sendBtn.disabled = true;
-
     editingMessageId = null;
     editingOriginalText = '';
+
+    const replyToPayload = activeReplyData ? { ...activeReplyData } : null;
     window.clearActiveReply();
 
     inputEl.value = '';
@@ -2927,7 +2843,8 @@ window.handleChatFormSubmit = async function (event) {
         const senderVerifiedToSave = Boolean(myProfile?.isVerified);
         const senderProToSave = hasYellowBadge(myProfile);
 
-        // Kirim pesan terlebih dahulu agar kegagalan update ringkasan chat tidak memblokir pengiriman
+        await syncChatSummaryOnSend(activeChatId, currentUid, recipientUid, text);
+
         await addDoc(collection(db, 'chats', activeChatId, 'messages'), {
             senderUid: currentUid,
             senderName: senderNameToSave,
@@ -2941,10 +2858,6 @@ window.handleChatFormSubmit = async function (event) {
             checkColor: null,
             delivered: false,
             read: false
-        });
-
-        await syncChatSummaryOnSend(activeChatId, currentUid, recipientUid, text).catch(err => {
-            console.warn('Gagal memperbarui ringkasan chat:', err);
         });
 
         scrollMessagesToBottom(true);
@@ -2965,24 +2878,7 @@ window.handleChatFormSubmit = async function (event) {
 
     } catch (error) {
         console.error('Send message error:', error);
-        // Kembalikan teks ke input jika gagal terkirim
-        inputEl.value = text;
-        if (targetEditId) {
-            editingMessageId = targetEditId;
-            editingOriginalText = prevEditingOriginalText;
-            renderReplyPreviewBar();
-        } else if (replyToPayload) {
-            activeReplyData = replyToPayload;
-            renderReplyPreviewBar();
-        }
-        if (error?.code === 'permission-denied') {
-            showToast('Gagal mengirim: izin Firestore ditolak.');
-        } else {
-            showToast('Gagal mengirim pesan.');
-        }
-    } finally {
-        isSendingMessage = false;
-        if (sendBtn) sendBtn.disabled = false;
+        showToast('Gagal mengirim pesan.');
     }
 };
 </script>
