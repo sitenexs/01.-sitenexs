@@ -1485,7 +1485,7 @@ async function uploadMediaToSupabase(file, mediaType, chatId, senderUid, recipie
 
     const contentType = (processedFile.type || file.type || 'application/octet-stream').split(';')[0].trim();
 
-    const { error: uploadError } = await withTimeout(
+    let { error: uploadError } = await withTimeout(
         supabase.storage
             .from(SUPABASE_CHAT_BUCKET)
             .upload(objectPath, processedFile, {
@@ -1496,6 +1496,24 @@ async function uploadMediaToSupabase(file, mediaType, chatId, senderUid, recipie
         45000,
         'Supabase upload'
     );
+
+    // Fallback otomatis jika bucket Supabase membatasi contentType tertentu
+    if (uploadError && /mime|not supported/i.test(uploadError.message || '')) {
+        const rawArrayBuffer = await processedFile.arrayBuffer();
+        const fallbackBlob = new Blob([rawArrayBuffer], { type: 'image/png' });
+        const retryRes = await withTimeout(
+            supabase.storage
+                .from(SUPABASE_CHAT_BUCKET)
+                .upload(objectPath, fallbackBlob, {
+                    contentType: 'image/png',
+                    cacheControl: '3600',
+                    upsert: true
+                }),
+            45000,
+            'Supabase upload fallback'
+        );
+        uploadError = retryRes.error;
+    }
 
     if (uploadError) {
         throw new Error(uploadError.message || 'Gagal upload ke Supabase Storage');
