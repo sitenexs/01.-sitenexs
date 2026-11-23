@@ -22,10 +22,12 @@ export const PUSH_WORKER_URL = 'https://sitenexs-push.sitenexs.workers.dev';
 
 export const supabaseConfig = {
     url: 'https://xqcbyamxiekdxytntlno.supabase.co',
+    publishableKey: 'sb_publishable_XKHXYrEw2EDdfYH17Uyx6w_k_BtGLQa',
     avatarBucket: 'profile-photos'
 };
 
 export const supabaseUrl = supabaseConfig.url;
+export const supabasePublishableKey = supabaseConfig.publishableKey;
 export const avatarBucket = supabaseConfig.avatarBucket;
 
 export const app = initializeApp(firebaseConfig);
