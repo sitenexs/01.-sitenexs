@@ -775,17 +775,15 @@
             <!-- INPUT PESAN BAWAH -->
             <form class="chat-input-box" id="sendMessageForm" onsubmit="handleChatFormSubmit(event)" autocomplete="off">
                 <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." oninput="handleTypingInputChange(event)" required autocomplete="off">
-                <button type="submit" id="sendMessageBtn" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane"></i></button>
+                <button type="submit" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane"></i></button>
             </form>
         </div>
     </main>
 
 <script type="module">
-import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
 
 import {
-    initializeFirestore,
-    enableNetwork,
     doc,
     setDoc,
     updateDoc,
@@ -800,6 +798,7 @@ import {
 
 import {
     app,
+    db,
     rtdb,
     auth,
     PUSH_WORKER_URL
@@ -824,10 +823,6 @@ import {
     attachForcedIncomingCallRedirect,
     attachOngoingCallBanner
 } from 'https://sitenexs.com/assets/js/sitenexs-call-presence.js';
-
-const db = initializeFirestore(app, {
-    experimentalForceLongPolling: true
-});
 
 const VERIFIED_BADGE_URL = 'https://sitenexs.com/assets/logo/verified.png';
 const PRO_BADGE_URL = 'https://sitenexs.com/assets/logo/lencana.png';
@@ -857,7 +852,6 @@ let cleanupOngoingBanner = null;
 let lastNotifiedMessageId = null;
 let isRedirectingToCall = false;
 let isChatInitialized = false;
-let lastTypingSentState = false;
 let typingStopTimer = null;
 let lastTypingSoundAt = 0;
 let stickToBottom = true;
@@ -869,33 +863,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
 
 /* =====================================================
-   SINKRONISASI SESI LOGIN MENGIKUTI INDEX.HTML
-===================================================== */
-const urlUid = urlParams.get('uid');
-if (urlUid) {
-    localStorage.setItem('sitenexs_logged_in', 'true');
-    localStorage.setItem('sitenexs_uid', urlUid);
-}
-
-if (urlParams.get('logout') === 'true') {
-    localStorage.removeItem('sitenexs_logged_in');
-    localStorage.removeItem('sitenexs_uid');
-    localStorage.removeItem('sitenexs_show_welcome');
-    sessionStorage.clear();
-    signOut(auth).catch(() => {});
-    window.location.replace('https://account.sitenexs.com/sign-in/');
-}
-
-window.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'sitenexs-auth-state') {
-        if (event.data.signedIn) {
-            localStorage.setItem('sitenexs_logged_in', 'true');
-        }
-    }
-});
-
-/* =====================================================
-   HAPUS UNTUK SAYA & SEMATKAN BEBERAPA PESAN
+   HAPUS UNTUK SAYA & SEMATKAN BEBERAPA PESAN (LOKAL + FIRESTORE)
 ===================================================== */
 function getHiddenForMeKey(chatId, uid) {
     return `sitenexs_hidden_msgs_${chatId}_${uid}`;
@@ -926,6 +894,10 @@ function hideMessageForMe(chatId, uid, msgId) {
     if (pinnedMessagesList.some(p => p.id === msgId)) {
         removePinnedMessageById(msgId, false);
     }
+}
+
+function getPinnedStoreKey(chatId) {
+    return `sitenexs_pinned_msgs_${chatId}`;
 }
 
 function normalizePinnedArray(rawPinned, legacySingle = null) {
@@ -1002,12 +974,22 @@ function applyPinnedHighlightToDom() {
 function setPinnedMessagesList(nextList, syncRemote = true) {
     pinnedMessagesList = normalizePinnedArray(nextList);
 
-    if (activeChatId && syncRemote) {
-        const latestSingle = pinnedMessagesList.length > 0 ? pinnedMessagesList[pinnedMessagesList.length - 1] : null;
-        setDoc(doc(db, 'chats', activeChatId), {
-            pinnedMessages: pinnedMessagesList,
-            pinnedMessage: latestSingle
-        }, { merge: true }).catch(() => {});
+    if (activeChatId) {
+        try {
+            if (pinnedMessagesList.length > 0) {
+                localStorage.setItem(getPinnedStoreKey(activeChatId), JSON.stringify(pinnedMessagesList));
+            } else {
+                localStorage.removeItem(getPinnedStoreKey(activeChatId));
+            }
+        } catch (e) {}
+
+        if (syncRemote) {
+            const latestSingle = pinnedMessagesList.length > 0 ? pinnedMessagesList[pinnedMessagesList.length - 1] : null;
+            setDoc(doc(db, 'chats', activeChatId), {
+                pinnedMessages: pinnedMessagesList,
+                pinnedMessage: latestSingle
+            }, { merge: true }).catch(() => {});
+        }
     }
 
     applyPinnedHighlightToDom();
@@ -1041,6 +1023,24 @@ function removePinnedMessageById(msgId, syncRemote = true) {
         activePinnedIndex = Math.max(0, next.length - 1);
     }
     setPinnedMessagesList(next, syncRemote);
+}
+
+function loadLocalPinnedMessages(chatId) {
+    if (!chatId) return;
+    try {
+        const raw = localStorage.getItem(getPinnedStoreKey(chatId));
+        if (!raw) {
+            const legacyRaw = localStorage.getItem(`sitenexs_pinned_msg_${chatId}`);
+            if (!legacyRaw) return;
+            const legacyParsed = JSON.parse(legacyRaw);
+            pinnedMessagesList = normalizePinnedArray(null, legacyParsed);
+        } else {
+            const parsed = JSON.parse(raw);
+            pinnedMessagesList = normalizePinnedArray(parsed);
+        }
+        activePinnedIndex = Math.max(0, getVisiblePinnedMessages().length - 1);
+        renderPinnedMessageBar();
+    } catch (e) {}
 }
 
 window.handlePinnedBarClick = function () {
@@ -1152,24 +1152,26 @@ window.handleContextEditMessage = function () {
     }
 };
 
-window.handleContextDeleteForEveryone = function () {
+window.handleContextDeleteForEveryone = async function () {
     if (!contextTargetMsg || !activeChatId) return;
     const target = { ...contextTargetMsg };
     window.closeMessageContextMenu();
 
     if (target.senderUid !== currentUid) return;
 
-    if (pinnedMessagesList.some(p => p.id === target.id)) {
-        removePinnedMessageById(target.id, true);
+    try {
+        if (pinnedMessagesList.some(p => p.id === target.id)) {
+            removePinnedMessageById(target.id, true);
+        }
+        await deleteDoc(doc(db, 'chats', activeChatId, 'messages', target.id));
+        const messagesContainer = document.getElementById('chatMessages');
+        const el = messagesContainer?.querySelector(`[data-msg-id="${CSS.escape(target.id)}"]`);
+        if (el) el.remove();
+        showToast('Pesan dihapus untuk semua orang.');
+    } catch (err) {
+        console.error('Delete for everyone error:', err);
+        showToast('Gagal menghapus pesan.');
     }
-    deleteDoc(doc(db, 'chats', activeChatId, 'messages', target.id))
-        .then(() => {
-            showToast('Pesan dihapus untuk semua orang.');
-        })
-        .catch((err) => {
-            console.error('Delete for everyone error:', err);
-            showToast('Gagal menghapus pesan.');
-        });
 };
 
 window.handleContextDeleteForMe = function () {
@@ -1480,8 +1482,31 @@ function buildQuotedReplyElement(replyTo) {
 }
 
 /* =====================================================
-   HEADER PROFIL LAWAN BICARA (LANGSUNG DARI FIRESTORE)
+   CACHE PROFIL AGAR NAMA & LENCANA TIDAK HILANG SAAT MUAT
 ===================================================== */
+function getProfileCacheKey(uid) {
+    return `sitenexs_profile_cache_${uid}`;
+}
+
+function loadCachedProfile(uid) {
+    if (!uid) return null;
+    try {
+        const raw = localStorage.getItem(getProfileCacheKey(uid));
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function saveCachedProfile(uid, profileData) {
+    if (!uid || !profileData) return;
+    try {
+        localStorage.setItem(getProfileCacheKey(uid), JSON.stringify(profileData));
+    } catch (e) {}
+}
+
 function applyPeerHeaderImmediate(name, badgesHtml, avatarUrl) {
     const nameEl = document.getElementById('activeChatName');
     const badgesEl = document.getElementById('activeChatBadges');
@@ -1499,15 +1524,10 @@ function applyPeerHeaderImmediate(name, badgesHtml, avatarUrl) {
 }
 
 /* =====================================================
-   MODUL SYNC REALTIME CHAT LANGSUNG DARI FIRESTORE
+   MODUL SYNC REALTIME CHAT, CACHE LOKAL & STATUS BACA
 ===================================================== */
-function clearChatCacheStorage(chatId) {
-    if (!chatId) return;
-    try {
-        localStorage.removeItem(`sitenexs_chat_cache_${chatId}`);
-        localStorage.removeItem(`sitenexs_pinned_msg_${chatId}`);
-        localStorage.removeItem(`sitenexs_pinned_msgs_${chatId}`);
-    } catch (e) {}
+function getChatCacheKey(chatId) {
+    return `sitenexs_chat_cache_${chatId}`;
 }
 
 function getGreenReadStoreKey(chatId) {
@@ -1537,11 +1557,44 @@ function persistGreenReadId(chatId, msgId) {
     } catch (e) {}
 }
 
-function clearChatMessagesDom() {
-    const messagesContainer = document.getElementById('chatMessages');
-    if (!messagesContainer) return;
-    messagesContainer.querySelectorAll('.message-wrapper').forEach(el => el.remove());
-    messagesStore.clear();
+function upsertMessageToCache(chatId, item) {
+    if (!chatId || !item?.id) return;
+    try {
+        const raw = localStorage.getItem(getChatCacheKey(chatId));
+        let list = [];
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) list = parsed;
+        }
+        const idx = list.findIndex(x => x.id === item.id);
+        if (idx >= 0) {
+            list[idx] = { ...list[idx], ...item };
+        } else {
+            list.push(item);
+        }
+        list.sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
+        localStorage.setItem(getChatCacheKey(chatId), JSON.stringify(list.slice(-120)));
+    } catch (e) {}
+}
+
+function syncMessageDocToCache(chatId, msgId, msgData) {
+    if (!chatId || !msgId || !msgData) return;
+    const createdAtMs = msgData?.createdAt?.toDate ? msgData.createdAt.toDate().getTime() : Date.now();
+    upsertMessageToCache(chatId, {
+        id: msgId,
+        senderUid: msgData.senderUid,
+        senderName: msgData.senderName,
+        senderIsVerified: Boolean(msgData.senderIsVerified),
+        senderIsPro: hasYellowBadge(msgData),
+        text: msgData.text || '',
+        replyTo: msgData.replyTo || null,
+        isEdited: Boolean(msgData.isEdited),
+        status: msgData.status || 'sent',
+        checkColor: msgData.checkColor || null,
+        delivered: Boolean(msgData.delivered),
+        read: Boolean(msgData.read),
+        createdAtMs
+    });
 }
 
 function syncUnreadReset(chatId, uid) {
@@ -1623,15 +1676,24 @@ function extractProfileName(profile, fallbackName = '') {
     return isPlaceholderName(cleanFallback) ? '' : cleanFallback;
 }
 
+function getEarlyUid() {
+    if (auth.currentUser?.uid) return auth.currentUser.uid;
+    return localStorage.getItem('sitenexs_uid') || null;
+}
+
 function getSenderDisplayName(message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     if (isOutgoing) {
         if (!isPlaceholderName(myUserName)) return myUserName;
+        const cachedMe = loadCachedProfile(ownerUid);
+        if (cachedMe && !isPlaceholderName(cachedMe.name)) return cachedMe.name;
         if (!isPlaceholderName(auth.currentUser?.displayName)) return auth.currentUser.displayName.trim();
         if (!isPlaceholderName(message.senderName)) return String(message.senderName).trim();
         return '';
     }
     if (!isPlaceholderName(otherUserName)) return otherUserName;
+    const cachedPeer = loadCachedProfile(message.senderUid || activeChatUserId);
+    if (cachedPeer && !isPlaceholderName(cachedPeer.name)) return cachedPeer.name;
     if (!isPlaceholderName(message.senderName)) return String(message.senderName).trim();
     return '';
 }
@@ -1639,22 +1701,95 @@ function getSenderDisplayName(message, ownerUid = currentUid) {
 function getSenderBadgesHtml(message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     if (isOutgoing) {
-        return myBadgesHtml || buildCombinedBadgesHtml({
+        return myBadgesHtml || loadCachedProfile(ownerUid)?.badgesHtml || buildCombinedBadgesHtml({
             isVerified: message.senderIsVerified,
             isPro: message.senderIsPro
         }, 'message-bubble-verif');
     }
-    return otherBadgesHtml || buildCombinedBadgesHtml({
+    return otherBadgesHtml || loadCachedProfile(message.senderUid || activeChatUserId)?.badgesHtml || buildCombinedBadgesHtml({
         isVerified: message.senderIsVerified,
         isPro: message.senderIsPro
     }, 'message-bubble-verif');
+}
+
+function renderCachedMessagesImmediately(chatId, uid) {
+    const messagesContainer = document.getElementById('chatMessages');
+    const typingBubbleWrapper = document.getElementById('typingBubbleWrapper');
+    if (!messagesContainer || !chatId || !uid) return;
+    try {
+        const raw = localStorage.getItem(getChatCacheKey(chatId));
+        if (!raw) return;
+        const cachedList = JSON.parse(raw);
+        if (!Array.isArray(cachedList) || cachedList.length === 0) return;
+
+        cachedList.sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
+        const greenIds = loadPersistedGreenReadIds(chatId);
+        const hiddenIds = loadHiddenMessageIds(chatId, uid);
+
+        const fragment = document.createDocumentFragment();
+        let hasNew = false;
+
+        cachedList.forEach(item => {
+            if (!item?.id || hiddenIds.has(item.id)) return;
+            if (messagesContainer.querySelector(`[data-msg-id="${CSS.escape(item.id)}"]`)) return;
+            const fakeTimestamp = item.createdAtMs
+                ? { toDate: () => new Date(item.createdAtMs) }
+                : null;
+            const isGreenPersisted = greenIds.has(item.id);
+            const msgObj = {
+                senderUid: item.senderUid,
+                senderName: item.senderName,
+                senderIsVerified: item.senderIsVerified,
+                senderIsPro: item.senderIsPro,
+                text: item.text,
+                replyTo: item.replyTo || null,
+                isEdited: Boolean(item.isEdited),
+                status: isGreenPersisted ? 'read-green' : (item.status || 'sent'),
+                checkColor: isGreenPersisted ? 'green' : (item.checkColor || null),
+                delivered: isGreenPersisted ? true : Boolean(item.delivered),
+                read: isGreenPersisted ? true : Boolean(item.read),
+                createdAt: fakeTimestamp
+            };
+            messagesStore.set(item.id, msgObj);
+            const el = buildMessageElement(item.id, msgObj, uid);
+            fragment.appendChild(el);
+            hasNew = true;
+        });
+
+        if (hasNew) {
+            if (typingBubbleWrapper) {
+                messagesContainer.insertBefore(fragment, typingBubbleWrapper);
+            } else {
+                messagesContainer.appendChild(fragment);
+            }
+            scrollMessagesToBottom(true);
+        }
+    } catch (e) {}
 }
 
 if (!targetUserId) {
     window.location.replace('https://sitenexs.com/community/messages/');
 } else {
     activeChatUserId = targetUserId;
-    applyPeerHeaderImmediate('', '', getUserAvatarUrl(activeChatUserId));
+    const cachedPeer = loadCachedProfile(activeChatUserId);
+    otherUserName = cachedPeer?.name || '';
+    otherBadgesHtml = cachedPeer?.badgesHtml || '';
+    otherUserFcmToken = cachedPeer?.fcmToken || null;
+    applyPeerHeaderImmediate(
+        otherUserName,
+        cachedPeer?.headerBadgesHtml || '',
+        cachedPeer?.avatarUrl || getUserAvatarUrl(activeChatUserId)
+    );
+
+    const earlyUid = getEarlyUid();
+    if (earlyUid) {
+        const cachedMe = loadCachedProfile(earlyUid);
+        if (cachedMe?.name) myUserName = cachedMe.name;
+        if (cachedMe?.badgesHtml) myBadgesHtml = cachedMe.badgesHtml;
+        const earlyChatId = [earlyUid, activeChatUserId].sort().join('_');
+        loadLocalPinnedMessages(earlyChatId);
+        renderCachedMessagesImmediately(earlyChatId, earlyUid);
+    }
 }
 
 const initialMessagesEl = document.getElementById('chatMessages');
@@ -1682,7 +1817,7 @@ window.showToast = function (msg) {
     toast.append(icon, text);
     container.appendChild(toast);
 
-    setTimeout(() => toast.remove(), 4000);
+    setTimeout(() => toast.remove(), 3500);
 };
 
 window.openCallPage = function (callType = 'video') {
@@ -1862,11 +1997,8 @@ function playMessageNotificationSound() {
 ===================================================== */
 function setMyTypingState(isTyping) {
     if (!activeChatId || !currentUid) return;
-    const nextState = Boolean(isTyping);
-    if (lastTypingSentState === nextState) return;
-    lastTypingSentState = nextState;
     setDoc(doc(db, 'chats', activeChatId), {
-        [`typing_${currentUid}`]: nextState
+        [`typing_${currentUid}`]: Boolean(isTyping)
     }, { merge: true }).catch(() => {});
 }
 
@@ -2172,7 +2304,6 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
     }
 
     const senderHeader = buildSenderHeaderElement(message, ownerUid);
-    bubble.appendChild(senderHeader);
 
     const quotedEl = buildQuotedReplyElement(message.replyTo);
     if (quotedEl) {
@@ -2210,7 +2341,7 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
         metaRow.appendChild(statusSpan);
     }
 
-    bubble.append(bodyDiv, metaRow);
+    bubble.append(senderHeader, bodyDiv, metaRow);
     wrapper.appendChild(bubble);
     attachSwipeToReply(wrapper, bubble, docId, message, ownerUid);
     attachLongPressToMessage(wrapper, bubble, docId, message);
@@ -2338,6 +2469,7 @@ function handleMessageDocChange(change, ctx) {
     const hiddenIds = loadHiddenMessageIds(chatId, uid);
 
     messagesStore.set(msgId, msgData);
+    syncMessageDocToCache(chatId, msgId, msgData);
 
     if (hiddenIds.has(msgId)) {
         const existingHiddenEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
@@ -2347,9 +2479,11 @@ function handleMessageDocChange(change, ctx) {
 
     if (change.type === 'added') {
         const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
-        let isBrandNewDom = false;
         if (existingEl) {
             updateMessageElement(existingEl, msgId, msgData, uid);
+            if (typingBubbleWrapper && existingEl.nextElementSibling !== typingBubbleWrapper) {
+                messagesContainer.insertBefore(existingEl, typingBubbleWrapper);
+            }
         } else {
             const newEl = buildMessageElement(msgId, msgData, uid);
             if (typingBubbleWrapper) {
@@ -2357,7 +2491,6 @@ function handleMessageDocChange(change, ctx) {
             } else {
                 messagesContainer.appendChild(newEl);
             }
-            isBrandNewDom = true;
         }
 
         if (msgData.senderUid === uid) {
@@ -2401,7 +2534,6 @@ function handleMessageDocChange(change, ctx) {
             }
 
             if (
-                isBrandNewDom &&
                 lastNotifiedMessageId !== msgId &&
                 !String(msgData.text || '').startsWith('[CALL_LOG]|')
             ) {
@@ -2431,7 +2563,7 @@ function handleMessageDocChange(change, ctx) {
                 }
             }
         }
-        return isBrandNewDom;
+        return true;
     }
 
     if (change.type === 'modified') {
@@ -2516,6 +2648,26 @@ function attachChatSyncListeners(chatId, uid, peerUid) {
 }
 
 function syncProfilesAndPush(user, uid, peerUid) {
+    const cachedMe = loadCachedProfile(uid);
+    if (cachedMe) {
+        if (!isPlaceholderName(cachedMe.name)) myUserName = cachedMe.name;
+        if (cachedMe.badgesHtml) myBadgesHtml = cachedMe.badgesHtml;
+        refreshVisibleSenderInfo();
+    }
+
+    const cachedPeer = loadCachedProfile(peerUid);
+    if (cachedPeer) {
+        if (!isPlaceholderName(cachedPeer.name)) otherUserName = cachedPeer.name;
+        if (cachedPeer.badgesHtml) otherBadgesHtml = cachedPeer.badgesHtml;
+        if (cachedPeer.fcmToken) otherUserFcmToken = cachedPeer.fcmToken;
+        applyPeerHeaderImmediate(
+            otherUserName,
+            cachedPeer.headerBadgesHtml || '',
+            cachedPeer.avatarUrl || getUserAvatarUrl(peerUid)
+        );
+        refreshVisibleSenderInfo();
+    }
+
     fetchUserProfile(db, uid, { forceRefresh: true }).then(profile => {
         if (!profile) return;
         myProfile = profile;
@@ -2523,6 +2675,13 @@ function syncProfilesAndPush(user, uid, peerUid) {
         if (!isPlaceholderName(resolvedName)) myUserName = resolvedName;
         const resolvedBadges = buildCombinedBadgesHtml(profile, 'message-bubble-verif');
         if (resolvedBadges) myBadgesHtml = resolvedBadges;
+
+        saveCachedProfile(uid, {
+            ...(cachedMe || {}),
+            name: myUserName || cachedMe?.name || '',
+            badgesHtml: myBadgesHtml || cachedMe?.badgesHtml || '',
+            avatarUrl: profile?.avatarUrl || cachedMe?.avatarUrl || getUserAvatarUrl(uid)
+        });
         refreshVisibleSenderInfo();
     }).catch(() => {});
 
@@ -2538,6 +2697,14 @@ function syncProfilesAndPush(user, uid, peerUid) {
         if (profile?.fcmToken) otherUserFcmToken = profile.fcmToken;
 
         applyPeerHeaderImmediate(otherUserName, headerBadges, resolvedAvatar);
+        saveCachedProfile(peerUid, {
+            ...(cachedPeer || {}),
+            name: otherUserName || cachedPeer?.name || '',
+            badgesHtml: otherBadgesHtml || cachedPeer?.badgesHtml || '',
+            headerBadgesHtml: headerBadges || cachedPeer?.headerBadgesHtml || '',
+            avatarUrl: resolvedAvatar,
+            fcmToken: otherUserFcmToken
+        });
         refreshVisibleSenderInfo();
     }).catch(() => {});
 
@@ -2554,22 +2721,13 @@ function syncProfilesAndPush(user, uid, peerUid) {
 }
 
 /* =====================================================
-   INITIALIZE CHAT (LANGSUNG DARI FIRESTORE)
+   INITIALIZE CHAT (REALTIME SNAPSHOT TERBARU + CACHE)
 ===================================================== */
 async function initChat(user) {
-    if (!user?.uid || !activeChatUserId) return;
+    if (!user?.uid) return;
     if (isChatInitialized && currentUid === user.uid) return;
-
-    if (currentUid && currentUid !== user.uid) {
-        clearChatMessagesDom();
-    }
-
     isChatInitialized = true;
     currentUid = user.uid;
-    try {
-        localStorage.setItem('sitenexs_logged_in', 'true');
-        localStorage.setItem('sitenexs_uid', currentUid);
-    } catch (e) {}
 
     if (!isPlaceholderName(user.displayName)) {
         myUserName = user.displayName.trim();
@@ -2580,10 +2738,8 @@ async function initChat(user) {
     const participants = [currentUid, activeChatUserId].sort();
     activeChatId = `${participants[0]}_${participants[1]}`;
 
-    clearChatCacheStorage(activeChatId);
-    clearChatMessagesDom();
-
-    enableNetwork(db).catch(() => {});
+    loadLocalPinnedMessages(activeChatId);
+    renderCachedMessagesImmediately(activeChatId, currentUid);
 
     if (cleanupIncomingRedirect) cleanupIncomingRedirect();
     cleanupIncomingRedirect = attachForcedIncomingCallRedirect({
@@ -2620,15 +2776,12 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, user => {
     if (user) {
-        localStorage.setItem('sitenexs_logged_in', 'true');
-        localStorage.setItem('sitenexs_uid', user.uid);
         initChat(user);
     } else {
-        const localLoggedIn = localStorage.getItem('sitenexs_logged_in');
         const savedUid = localStorage.getItem('sitenexs_uid');
-        if ((localLoggedIn && savedUid) || savedUid) {
+        if (savedUid) {
             initChat({ uid: savedUid });
         } else {
             window.location.replace('https://account.sitenexs.com/sign-in/');
@@ -2636,23 +2789,19 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-window.handleChatFormSubmit = function (event) {
+window.handleChatFormSubmit = async function (event) {
     event.preventDefault();
 
     const inputEl = document.getElementById('messageInput');
     const text = inputEl.value.trim();
 
-    if (!text) return;
-    if (!activeChatId || !currentUid) {
-        showToast('Sesi chat belum siap, coba lagi sebentar.');
-        return;
-    }
+    if (!text || !activeChatId || !currentUid) return;
 
     const targetEditId = editingMessageId;
-    const replyToPayload = activeReplyData ? { ...activeReplyData } : null;
-
     editingMessageId = null;
     editingOriginalText = '';
+
+    const replyToPayload = activeReplyData ? { ...activeReplyData } : null;
     window.clearActiveReply();
 
     inputEl.value = '';
@@ -2662,11 +2811,12 @@ window.handleChatFormSubmit = function (event) {
     }
     setMyTypingState(false);
 
-    if (targetEditId) {
-        updateDoc(doc(db, 'chats', activeChatId, 'messages', targetEditId), {
-            text,
-            isEdited: true
-        }).then(() => {
+    try {
+        if (targetEditId) {
+            await updateDoc(doc(db, 'chats', activeChatId, 'messages', targetEditId), {
+                text,
+                isEdited: true
+            });
             const existingPin = pinnedMessagesList.find(p => p.id === targetEditId);
             if (existingPin) {
                 addOrUpdatePinnedMessage({
@@ -2675,36 +2825,45 @@ window.handleChatFormSubmit = function (event) {
                 }, true);
             }
             showToast('Pesan diperbarui.');
-        }).catch((err) => {
-            console.error('Edit message error:', err);
-            showToast('Gagal mengedit pesan.');
+            return;
+        }
+
+        stickToBottom = true;
+        const recipientUid = activeChatUserId;
+        let senderNameToSave = extractProfileName(myProfile, myUserName || auth.currentUser?.displayName || loadCachedProfile(currentUid)?.name);
+        if (!senderNameToSave) {
+            const freshProfile = await fetchUserProfile(db, currentUid, { forceRefresh: true }).catch(() => null);
+            if (freshProfile) {
+                myProfile = freshProfile;
+                senderNameToSave = extractProfileName(freshProfile, auth.currentUser?.displayName);
+                myUserName = senderNameToSave;
+                myBadgesHtml = buildCombinedBadgesHtml(freshProfile, 'message-bubble-verif');
+            }
+        }
+        const senderVerifiedToSave = Boolean(myProfile?.isVerified);
+        const senderProToSave = hasYellowBadge(myProfile);
+
+        await syncChatSummaryOnSend(activeChatId, currentUid, recipientUid, text);
+
+        await addDoc(collection(db, 'chats', activeChatId, 'messages'), {
+            senderUid: currentUid,
+            senderName: senderNameToSave,
+            senderIsVerified: senderVerifiedToSave,
+            senderIsPro: senderProToSave,
+            text,
+            replyTo: replyToPayload,
+            createdAt: serverTimestamp(),
+            isEdited: false,
+            status: 'sent',
+            checkColor: null,
+            delivered: false,
+            read: false
         });
-        return;
-    }
 
-    stickToBottom = true;
-    const recipientUid = activeChatUserId;
-    const senderNameToSave = extractProfileName(myProfile, myUserName || auth.currentUser?.displayName);
-    const senderVerifiedToSave = Boolean(myProfile?.isVerified);
-    const senderProToSave = hasYellowBadge(myProfile);
+        scrollMessagesToBottom(true);
+        playSentMessageSound();
 
-    addDoc(collection(db, 'chats', activeChatId, 'messages'), {
-        senderUid: currentUid,
-        senderName: senderNameToSave,
-        senderIsVerified: senderVerifiedToSave,
-        senderIsPro: senderProToSave,
-        text,
-        replyTo: replyToPayload,
-        createdAt: serverTimestamp(),
-        isEdited: false,
-        status: 'sent',
-        checkColor: null,
-        delivered: false,
-        read: false
-    }).then(() => {
-        syncChatSummaryOnSend(activeChatId, currentUid, recipientUid, text).catch(() => {});
-
-        sendPushNotification({
+        const pushRes = await sendPushNotification({
             db,
             recipientUid: activeChatUserId,
             cachedToken: otherUserFcmToken,
@@ -2714,16 +2873,13 @@ window.handleChatFormSubmit = function (event) {
             url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(currentUid)}`,
             icon: myProfile?.avatarUrl || getUserAvatarUrl(currentUid),
             workerUrl: PUSH_WORKER_URL
-        }).then(pushRes => {
-            if (pushRes?.token) otherUserFcmToken = pushRes.token;
-        }).catch(() => {});
-    }).catch((error) => {
-        console.error('Send message error:', error);
-        showToast(`Gagal mengirim (${error?.code || error?.message || 'error'}).`);
-    });
+        });
+        if (pushRes?.token) otherUserFcmToken = pushRes.token;
 
-    scrollMessagesToBottom(true);
-    playSentMessageSound();
+    } catch (error) {
+        console.error('Send message error:', error);
+        showToast('Gagal mengirim pesan.');
+    }
 };
 </script>
 </body>
