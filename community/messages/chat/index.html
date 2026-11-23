@@ -1459,6 +1459,36 @@ async function compressImageFile(file, maxDimension = 1440, quality = 0.82) {
     });
 }
 
+function extractStoragePathFromUrl(publicUrl = '') {
+    if (!publicUrl) return '';
+    try {
+        const parsed = new URL(String(publicUrl));
+        const marker = `/storage/v1/object/public/${SUPABASE_CHAT_BUCKET}/`;
+        const idx = parsed.pathname.indexOf(marker);
+        if (idx >= 0) {
+            return decodeURIComponent(parsed.pathname.slice(idx + marker.length));
+        }
+    } catch (e) {}
+    return '';
+}
+
+async function deleteMediaFromSupabase(messageObj = {}) {
+    const rawUrl = messageObj?.mediaUrl || messageObj?.imageUrl || '';
+    const storagePath = extractStoragePathFromUrl(rawUrl);
+    if (!storagePath) return;
+
+    await supabase.storage
+        .from(SUPABASE_CHAT_BUCKET)
+        .remove([storagePath])
+        .catch(() => {});
+
+    await supabase
+        .from('chat_media_files')
+        .delete()
+        .eq('storage_path', storagePath)
+        .catch(() => {});
+}
+
 async function uploadMediaToSupabase(file, mediaType, chatId, senderUid, recipientUid = '') {
     if (!file) throw new Error('File tidak ditemukan');
     if (!SUPABASE_PUBLISHABLE_KEY) {
@@ -1497,7 +1527,6 @@ async function uploadMediaToSupabase(file, mediaType, chatId, senderUid, recipie
         'Supabase upload'
     );
 
-    // Fallback otomatis jika bucket Supabase membatasi contentType tertentu
     if (uploadError && /mime|not supported/i.test(uploadError.message || '')) {
         const rawArrayBuffer = await processedFile.arrayBuffer();
         const fallbackBlob = new Blob([rawArrayBuffer], { type: 'image/png' });
@@ -1874,7 +1903,7 @@ if (msgInputPasteEl) {
 }
 
 /* =====================================================
-   HAPUS UNTUK SAYA & SEMATKAN BEBERAPA PESAN (LOKAL + FIRESTORE)
+   HAPUS UNTUK SAYA, HAPUS UNTUK SEMUA ORANG & SEMATKAN
 ===================================================== */
 function getHiddenForMeKey(chatId, uid) {
     return `sitenexs_hidden_msgs_${chatId}_${uid}`;
@@ -1890,6 +1919,28 @@ function loadHiddenMessageIds(chatId, uid) {
     } catch (e) {
         return new Set();
     }
+}
+
+function removeMessageFromLocalCacheAndGreenRead(chatId, msgId) {
+    if (!chatId || !msgId) return;
+    try {
+        const raw = localStorage.getItem(getChatCacheKey(chatId));
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+                const filtered = parsed.filter(item => item && item.id !== msgId);
+                localStorage.setItem(getChatCacheKey(chatId), JSON.stringify(filtered));
+            }
+        }
+    } catch (e) {}
+
+    try {
+        const greenSet = loadPersistedGreenReadIds(chatId);
+        if (greenSet.has(msgId)) {
+            greenSet.delete(msgId);
+            localStorage.setItem(getGreenReadStoreKey(chatId), JSON.stringify([...greenSet]));
+        }
+    } catch (e) {}
 }
 
 function hideMessageForMe(chatId, uid, msgId) {
@@ -2101,7 +2152,8 @@ window.openMessageContextMenu = function (docId, message) {
         pinLabelEl.textContent = isPinnedAlready ? 'Lepas sematan pesan' : 'Sematkan pesan';
     }
 
-    const isMine = message.senderUid === currentUid;
+    const activeUid = currentUid || auth.currentUser?.uid || getEarlyUid();
+    const isMine = message.senderUid === activeUid;
     const isCallLog = String(message.text || '').startsWith('[CALL_LOG]|');
     const isApplication = String(message.text || '').includes('📋 *LAMARAN KERJA BARU*');
     const hasAttachmentWithoutText = Boolean(message.mediaUrl || message.imageUrl) && !String(message.text || '').trim();
@@ -2151,7 +2203,8 @@ window.handleContextEditMessage = function () {
     const target = { ...contextTargetMsg };
     window.closeMessageContextMenu();
 
-    if (target.senderUid !== currentUid) return;
+    const activeUid = currentUid || auth.currentUser?.uid || getEarlyUid();
+    if (target.senderUid !== activeUid) return;
     window.clearSelectedMedia();
     activeReplyData = null;
     editingMessageId = target.id;
@@ -2166,24 +2219,37 @@ window.handleContextEditMessage = function () {
 };
 
 window.handleContextDeleteForEveryone = async function () {
-    if (!contextTargetMsg || !activeChatId) return;
+    if (!contextTargetMsg) return;
     const target = { ...contextTargetMsg };
+    const activeUid = currentUid || auth.currentUser?.uid || getEarlyUid();
+    const chatId = resolveActiveChatId(activeUid, activeChatUserId);
     window.closeMessageContextMenu();
 
-    if (target.senderUid !== currentUid) return;
+    if (!chatId || !target.id) return;
+    if (activeUid && target.senderUid && target.senderUid !== activeUid) return;
 
     try {
+        // Hapus dokumen pesan di Firestore database
+        await deleteDoc(doc(db, 'chats', chatId, 'messages', target.id));
+
+        // Hapus file media di Supabase Storage & tabel chat_media_files jika ada
+        await deleteMediaFromSupabase(target);
+
+        // Hapus dari state memori, cache localStorage & sematan
+        messagesStore.delete(target.id);
+        removeMessageFromLocalCacheAndGreenRead(chatId, target.id);
         if (pinnedMessagesList.some(p => p.id === target.id)) {
             removePinnedMessageById(target.id, true);
         }
-        await deleteDoc(doc(db, 'chats', activeChatId, 'messages', target.id));
+
         const messagesContainer = document.getElementById('chatMessages');
         const el = messagesContainer?.querySelector(`[data-msg-id="${CSS.escape(target.id)}"]`);
         if (el) el.remove();
-        showToast('Pesan dihapus untuk semua orang.');
+
+        showToast('Pesan & file dihapus dari database dan cache.');
     } catch (err) {
         console.error('Delete for everyone error:', err);
-        showToast('Gagal menghapus pesan.');
+        showToast('Gagal menghapus pesan untuk semua orang.');
     }
 };
 
@@ -3683,6 +3749,7 @@ function handleMessageDocChange(change, ctx) {
         return false;
     } else if (change.type === 'removed') {
         messagesStore.delete(msgId);
+        removeMessageFromLocalCacheAndGreenRead(chatId, msgId);
         const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
         if (existingEl) existingEl.remove();
         if (pinnedMessagesList.some(p => p.id === msgId)) {
