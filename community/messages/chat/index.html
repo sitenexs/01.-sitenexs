@@ -784,7 +784,7 @@
 </main>
 
 <script type="module">
-import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
 
 import {
     doc,
@@ -866,6 +866,36 @@ const messagesStore = new Map();
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
+
+/* =====================================================
+   SINKRONISASI SESI LOGIN MENGIKUTI INDEX.HTML
+===================================================== */
+const urlUid = urlParams.get('uid');
+if (urlUid) {
+    localStorage.setItem('sitenexs_logged_in', 'true');
+    localStorage.setItem('sitenexs_uid', urlUid);
+}
+
+if (urlParams.get('logout') === 'true') {
+    localStorage.removeItem('sitenexs_logged_in');
+    localStorage.removeItem('sitenexs_uid');
+    localStorage.removeItem('sitenexs_show_welcome');
+    sessionStorage.clear();
+    signOut(auth).catch(() => {});
+    window.location.replace('https://account.sitenexs.com/sign-in/');
+}
+
+window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'sitenexs-auth-state') {
+        if (event.data.signedIn) {
+            localStorage.setItem('sitenexs_logged_in', 'true');
+        } else {
+            localStorage.removeItem('sitenexs_logged_in');
+            localStorage.removeItem('sitenexs_uid');
+            window.location.replace('https://account.sitenexs.com/sign-in/');
+        }
+    }
+});
 
 /* =====================================================
    HAPUS UNTUK SAYA & SEMATKAN BEBERAPA PESAN (LOKAL + FIRESTORE)
@@ -2673,7 +2703,7 @@ function attachChatSyncListeners(chatId, uid, peerUid) {
     }, (error) => {
         console.error('Message listener error:', error);
         if (error?.code === 'permission-denied') {
-            showToast('Akses chat ditolak. Silakan login ulang.');
+            showToast('Akses chat ditolak. Silakan cek izin Firestore.');
         }
     });
 }
@@ -2766,6 +2796,7 @@ async function initChat(user) {
     isChatInitialized = true;
     currentUid = user.uid;
     try {
+        localStorage.setItem('sitenexs_logged_in', 'true');
         localStorage.setItem('sitenexs_uid', currentUid);
     } catch (e) {}
 
@@ -2816,11 +2847,22 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-onAuthStateChanged(auth, user => {
+/* =====================================================
+   CEK AUTH MENGIKUTI INDEX.HTML (FIREBASE AUTH + LOCALSTORAGE)
+===================================================== */
+onAuthStateChanged(auth, (user) => {
     if (user) {
+        localStorage.setItem('sitenexs_logged_in', 'true');
+        localStorage.setItem('sitenexs_uid', user.uid);
         initChat(user);
     } else {
-        window.location.replace('https://account.sitenexs.com/sign-in/');
+        const localLoggedIn = localStorage.getItem('sitenexs_logged_in');
+        const savedUid = localStorage.getItem('sitenexs_uid');
+        if ((localLoggedIn && savedUid) || savedUid) {
+            initChat({ uid: savedUid });
+        } else {
+            window.location.replace('https://account.sitenexs.com/sign-in/');
+        }
     }
 });
 
