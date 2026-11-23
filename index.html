@@ -364,7 +364,7 @@
         .highlight-text h5 { font-size: 0.98rem; font-weight: 700; color: var(--text-main); line-height: 1.25; }
         .highlight-text p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
 
-        /* FEATURED ADS CLEAN SLIDER (DIPERBAIKI & DIRAPIKAN) */
+        /* FEATURED ADS CLEAN SLIDER */
         .featured-ads-section {
             width: 100%;
             padding: 2.5rem 0 1rem 0;
@@ -404,7 +404,6 @@
             padding: 0 0.5rem;
         }
         
-        /* TAMPILAN BERSIH & RAPI: JARAK, TIPOGRAFI, DAN KELENGKAPAN VISUAL */
         .ads-clean-link {
             display: flex;
             flex-direction: column;
@@ -1263,7 +1262,7 @@
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js';
-        import { getFirestore, collection, getDocs, doc, getDoc, query, limit } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, doc, getDoc, query, where, limit } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
 
         const firebaseConfig = {
@@ -1727,39 +1726,67 @@
 
         let allMitraData = [];
 
+        function mapUserDoc(docId, data) {
+            return {
+                uid: data.uid || docId,
+                nama: data.namaLengkap || (data.namaDepan ? data.namaDepan + (data.namaBelakang ? ' ' + data.namaBelakang : '') : '') || 'Mitra Sitenexs',
+                bisnisNama: data.bisnis?.nama || 'Bisnis Sitenexs',
+                bisnisBidang: data.bisnis?.bidang || 'UMKM',
+                isVerified: data.isVerified || false,
+                isPro: Boolean(data.isPro) || Boolean(data.lencanaKuning) || Boolean(data.isLencanaKuning),
+                isDeveloper: data.isDeveloper || false,
+                isFounder: data.isFounder || false,
+                jabatanPengembang: data.jabatanPengembang || 'Pengembang',
+                createdAt: data.createdAt || new Date(0).toISOString(),
+                paketLangganan: data.paketLangganan || 'Basic'
+            };
+        }
+
         async function fetchAndRenderMitra() {
             const grid = document.getElementById('members-grid');
             if (!grid) return;
 
             try {
-                const q = query(collection(db, "users"), limit(30)); 
-                const querySnapshot = await getDocs(q);
-                if (querySnapshot.empty) {
+                const mitraQuery = query(collection(db, "users"), limit(30));
+                const devQuery = query(collection(db, "users"), where("isDeveloper", "==", true));
+                const founderQuery = query(collection(db, "users"), where("isFounder", "==", true));
+
+                const [mitraSnap, devSnap, founderSnap] = await Promise.all([
+                    getDocs(mitraQuery),
+                    getDocs(devQuery),
+                    getDocs(founderQuery)
+                ]);
+
+                const usersMap = new Map();
+
+                founderSnap.forEach((docSnap) => {
+                    const mapped = mapUserDoc(docSnap.id, docSnap.data());
+                    usersMap.set(mapped.uid, mapped);
+                });
+
+                devSnap.forEach((docSnap) => {
+                    const mapped = mapUserDoc(docSnap.id, docSnap.data());
+                    usersMap.set(mapped.uid, mapped);
+                });
+
+                mitraSnap.forEach((docSnap) => {
+                    const mapped = mapUserDoc(docSnap.id, docSnap.data());
+                    if (!usersMap.has(mapped.uid)) {
+                        usersMap.set(mapped.uid, mapped);
+                    }
+                });
+
+                allMitraData = Array.from(usersMap.values());
+
+                if (allMitraData.length === 0) {
                     grid.innerHTML = '<p style="text-align:center; grid-column: 1 / -1; width: 100%; color: var(--text-muted);">Belum ada mitra yang bergabung.</p>';
                     return;
                 }
 
-                allMitraData = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    allMitraData.push({
-                        uid: data.uid || doc.id,
-                        nama: data.namaLengkap || data.namaDepan + (data.namaBelakang ? ' ' + data.namaBelakang : '') || 'Mitra Sitenexs',
-                        bisnisNama: data.bisnis?.nama || 'Bisnis Sitenexs',
-                        bisnisBidang: data.bisnis?.bidang || 'UMKM',
-                        isVerified: data.isVerified || false,
-                        isPro: Boolean(data.isPro) || Boolean(data.lencanaKuning) || Boolean(data.isLencanaKuning),
-                        isDeveloper: data.isDeveloper || false,
-                        isFounder: data.isFounder || false, 
-                        jabatanPengembang: data.jabatanPengembang || 'Pengembang',
-                        createdAt: data.createdAt || new Date(0).toISOString(),
-                        paketLangganan: data.paketLangganan || 'Basic'
-                    });
-                });
-
                 renderDevelopers();
                 filterAndRender();
             } catch (error) {
+                console.error("Gagal memuat data komunitas & pengembang:", error);
                 grid.innerHTML = '<p style="text-align:center; grid-column: 1 / -1; width: 100%; color: var(--text-muted);">Gagal memuat data komunitas.</p>';
             }
         }
