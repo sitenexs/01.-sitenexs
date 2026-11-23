@@ -290,12 +290,8 @@
             z-index: 1;
             transition: opacity 0.12s ease, transform 0.12s ease, background-color 0.12s ease, color 0.12s ease;
         }
-        .message-wrapper.incoming .swipe-reply-icon {
-            left: 6px;
-        }
-        .message-wrapper.outgoing .swipe-reply-icon {
-            right: 6px;
-        }
+        .message-wrapper.incoming .swipe-reply-icon { left: 6px; }
+        .message-wrapper.outgoing .swipe-reply-icon { right: 6px; }
         .swipe-reply-icon.triggered {
             background: var(--primary);
             color: #ffffff;
@@ -307,9 +303,7 @@
             line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
             background: #fff; z-index: 2; will-change: transform; transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
         }
-        .message-bubble.swiping {
-            transition: none;
-        }
+        .message-bubble.swiping { transition: none; }
         .message-bubble.pinned-msg {
             box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35), 0 4px 12px rgba(15, 23, 42, 0.08);
         }
@@ -343,12 +337,8 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .message-bubble.incoming .quoted-reply-sender {
-            color: var(--primary-dark);
-        }
-        .message-bubble.outgoing .quoted-reply-sender {
-            color: #ffffff;
-        }
+        .message-bubble.incoming .quoted-reply-sender { color: var(--primary-dark); }
+        .message-bubble.outgoing .quoted-reply-sender { color: #ffffff; }
         .quoted-reply-text {
             opacity: 0.9;
             display: -webkit-box;
@@ -370,9 +360,7 @@
             flex: 0 0 auto;
             z-index: 10;
         }
-        .reply-preview-bar.active {
-            display: flex;
-        }
+        .reply-preview-bar.active { display: flex; }
         .reply-preview-content {
             flex: 1;
             min-width: 0;
@@ -414,29 +402,27 @@
             color: var(--text-main);
         }
 
-        /* PRATINJAU FOTO SEBELUM DIKIRIM */
-        .photo-preview-bar {
+        /* PRATINJAU MEDIA / FILE SEBELUM DIKIRIM */
+        .media-preview-bar {
             display: none;
             align-items: center;
             justify-content: space-between;
             gap: 0.75rem;
-            padding: 0.6rem 1.25rem;
+            padding: 0.6rem 1.15rem;
             background: #eff6ff;
             border-top: 1px solid #bfdbfe;
             flex: 0 0 auto;
             z-index: 10;
         }
-        .photo-preview-bar.active {
-            display: flex;
-        }
-        .photo-preview-left {
+        .media-preview-bar.active { display: flex; }
+        .media-preview-left {
             display: flex;
             align-items: center;
             gap: 0.7rem;
             min-width: 0;
             flex: 1;
         }
-        .photo-preview-thumb {
+        .media-preview-thumb {
             width: 48px;
             height: 48px;
             border-radius: 10px;
@@ -444,13 +430,26 @@
             border: 1px solid var(--border-medium);
             background: #fff;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+            overflow: hidden;
         }
-        .photo-preview-meta {
+        .media-preview-thumb img,
+        .media-preview-thumb video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .media-preview-meta {
             display: flex;
             flex-direction: column;
             min-width: 0;
         }
-        .photo-preview-title {
+        .media-preview-title {
             font-size: 0.78rem;
             font-weight: 800;
             color: var(--primary-dark);
@@ -458,16 +457,76 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .photo-preview-sub {
+        .media-preview-sub {
             font-size: 0.72rem;
             color: var(--text-muted);
         }
 
-        /* FOTO DI DALAM BUBBLE CHAT */
+        /* POPUP MENU PILIHAN LAMPIRAN (KAMERA, FOTO, VIDEO, MUSIK, DOKUMEN) */
+        .attach-menu-popover {
+            display: none;
+            position: absolute;
+            bottom: 72px;
+            left: 14px;
+            right: 14px;
+            max-width: 420px;
+            background: #ffffff;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            box-shadow: 0 18px 38px -8px rgba(15, 23, 42, 0.2);
+            padding: 0.85rem;
+            z-index: 30;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.65rem;
+            animation: popUpScale 0.16s ease-out;
+        }
+        .attach-menu-popover.active {
+            display: grid;
+        }
+        @keyframes popUpScale {
+            from { opacity: 0; transform: translateY(8px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .attach-option-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.65rem 0.4rem;
+            border-radius: 14px;
+            background: var(--bg-body);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .attach-option-btn:hover {
+            background: var(--primary-light);
+            border-color: #bfdbfe;
+            transform: translateY(-1px);
+        }
+        .attach-option-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: #fff;
+        }
+        .attach-option-label {
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: var(--text-main);
+            text-align: center;
+        }
+
+        /* TAMPILAN MEDIA DI DALAM BUBBLE CHAT */
         .chat-photo-box {
             display: block;
             width: 100%;
-            max-width: 240px;
+            max-width: 245px;
             border-radius: 10px;
             overflow: hidden;
             margin-top: 2px;
@@ -482,11 +541,198 @@
             object-fit: cover;
             display: block;
         }
-        .chat-photo-caption {
+        .chat-video-box {
+            display: block;
+            width: 100%;
+            max-width: 260px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 2px;
+            margin-bottom: 4px;
+            background: #000;
+            border: 1px solid rgba(15, 23, 42, 0.15);
+        }
+        .chat-video-box video {
+            width: 100%;
+            max-height: 280px;
+            display: block;
+            background: #000;
+        }
+        .chat-audio-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            min-width: 225px;
+            max-width: 280px;
+            padding: 0.45rem 0.55rem;
+            border-radius: 10px;
+            margin-top: 2px;
+            margin-bottom: 4px;
+        }
+        .message-bubble.incoming .chat-audio-card {
+            background: var(--bg-body);
+            border: 1px solid var(--border-subtle);
+        }
+        .message-bubble.outgoing .chat-audio-card {
+            background: rgba(255, 255, 255, 0.16);
+        }
+        .chat-audio-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
+        .chat-audio-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+        .chat-audio-card audio {
+            width: 100%;
+            height: 34px;
+            border-radius: 999px;
+        }
+        .chat-doc-card {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            min-width: 215px;
+            max-width: 280px;
+            padding: 0.55rem 0.7rem;
+            border-radius: 10px;
+            margin-top: 2px;
+            margin-bottom: 4px;
+            text-align: left;
+            transition: var(--transition);
+        }
+        .message-bubble.incoming .chat-doc-card {
+            background: var(--bg-body);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+        }
+        .message-bubble.outgoing .chat-doc-card {
+            background: rgba(255, 255, 255, 0.16);
+            color: #ffffff;
+        }
+        .chat-doc-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            flex-shrink: 0;
+        }
+        .message-bubble.incoming .chat-doc-icon {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        .message-bubble.outgoing .chat-doc-icon {
+            background: rgba(255, 255, 255, 0.22);
+            color: #ffffff;
+        }
+        .chat-doc-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-doc-name {
+            font-size: 0.8rem;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chat-doc-meta {
+            font-size: 0.68rem;
+            opacity: 0.82;
+        }
+        .chat-doc-dl {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.8rem;
+        }
+        .message-bubble.incoming .chat-doc-dl {
+            background: #fff;
+            border: 1px solid var(--border-medium);
+            color: var(--primary);
+        }
+        .message-bubble.outgoing .chat-doc-dl {
+            background: rgba(255, 255, 255, 0.22);
+            color: #fff;
+        }
+        .chat-media-caption {
             margin-top: 4px;
             font-size: 0.86rem;
             line-height: 1.45;
             white-space: pre-wrap;
+        }
+
+        /* BAR PEREKAM PESAN SUARA (VOICE NOTE) */
+        .voice-record-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.65rem;
+            padding: 0.72rem 1.05rem;
+            background: #fef2f2;
+            border-top: 1px solid #fecaca;
+            flex: 0 0 auto;
+            z-index: 12;
+        }
+        .voice-record-bar.active {
+            display: flex;
+        }
+        .voice-record-left {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            color: var(--danger);
+            font-weight: 800;
+            font-size: 0.85rem;
+        }
+        .voice-rec-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--danger);
+            animation: callBannerPulse 1s infinite ease-in-out;
+        }
+        .voice-record-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .voice-cancel-btn {
+            padding: 0.42rem 0.85rem;
+            border-radius: var(--radius-full);
+            background: #ffffff;
+            border: 1px solid var(--border-medium);
+            color: var(--text-main);
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .voice-send-btn {
+            padding: 0.45rem 0.95rem;
+            border-radius: var(--radius-full);
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
         }
 
         /* LIGHTBOX PERBESAR FOTO */
@@ -537,9 +783,7 @@
             justify-content: center;
             padding: 0.75rem;
         }
-        .msg-context-backdrop.active {
-            display: flex;
-        }
+        .msg-context-backdrop.active { display: flex; }
         .msg-context-sheet {
             width: 100%;
             max-width: 440px;
@@ -576,16 +820,12 @@
             border-bottom: 1px solid var(--border-subtle);
             transition: background-color 0.15s ease;
         }
-        .msg-context-item:last-child {
-            border-bottom: none;
-        }
+        .msg-context-item:last-child { border-bottom: none; }
         .msg-context-item:hover {
             background: var(--primary-light);
             color: var(--primary);
         }
-        .msg-context-item.danger {
-            color: var(--danger);
-        }
+        .msg-context-item.danger { color: var(--danger); }
         .msg-context-item.danger:hover {
             background: #fef2f2;
             color: var(--danger);
@@ -608,12 +848,8 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .message-bubble.incoming .message-sender-name {
-            color: var(--primary);
-        }
-        .message-bubble.outgoing .message-sender-name {
-            color: rgba(255, 255, 255, 0.94);
-        }
+        .message-bubble.incoming .message-sender-name { color: var(--primary); }
+        .message-bubble.outgoing .message-sender-name { color: rgba(255, 255, 255, 0.94); }
         .message-sender-badges {
             display: inline-flex;
             align-items: center;
@@ -642,19 +878,15 @@
         .message-edited-tag { font-size: 0.63rem; opacity: 0.78; font-style: italic; font-weight: 500; }
         .message-time { font-size: 0.65rem; opacity: 0.78; font-weight: 500; }
 
-        /* INDIKATOR CENTANG KECIL & RAPI (1 CENTANG, 2 CENTANG, 2 CENTANG BIRU / KUNING / HIJAU) */
+        /* INDIKATOR CENTANG */
         .msg-check-svg {
             display: inline-flex;
             align-items: center;
             vertical-align: middle;
             transition: all 0.2s ease;
         }
-        .msg-check-svg.sent {
-            color: rgba(255, 255, 255, 0.72);
-        }
-        .msg-check-svg.delivered {
-            color: rgba(255, 255, 255, 0.94);
-        }
+        .msg-check-svg.sent { color: rgba(255, 255, 255, 0.72); }
+        .msg-check-svg.delivered { color: rgba(255, 255, 255, 0.94); }
         .msg-check-svg.read-blue {
             color: var(--check-blue);
             filter: drop-shadow(0 0 2px rgba(56, 189, 248, 0.35));
@@ -677,9 +909,7 @@
             flex-shrink: 0;
             animation: typingBubbleFadeIn 0.2s ease;
         }
-        .typing-bubble-wrapper.active {
-            display: flex;
-        }
+        .typing-bubble-wrapper.active { display: flex; }
         @keyframes typingBubbleFadeIn {
             from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
@@ -717,24 +947,12 @@
             width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center;
             justify-content: center; font-size: 0.95rem; flex-shrink: 0;
         }
-        .message-bubble.outgoing .call-log-icon {
-            background: rgba(255, 255, 255, 0.2); color: #fff;
-        }
-        .message-bubble.incoming .call-log-icon {
-            background: var(--primary-light); color: var(--primary);
-        }
-        .message-bubble.incoming .call-log-icon.missed {
-            background: #fef2f2; color: var(--danger);
-        }
-        .call-log-info {
-            display: flex; flex-direction: column; text-align: left;
-        }
-        .call-log-title {
-            font-weight: 700; font-size: 0.85rem; line-height: 1.3;
-        }
-        .call-log-sub {
-            font-size: 0.74rem; opacity: 0.82; margin-top: 2px;
-        }
+        .message-bubble.outgoing .call-log-icon { background: rgba(255, 255, 255, 0.2); color: #fff; }
+        .message-bubble.incoming .call-log-icon { background: var(--primary-light); color: var(--primary); }
+        .message-bubble.incoming .call-log-icon.missed { background: #fef2f2; color: var(--danger); }
+        .call-log-info { display: flex; flex-direction: column; text-align: left; }
+        .call-log-title { font-weight: 700; font-size: 0.85rem; line-height: 1.3; }
+        .call-log-sub { font-size: 0.74rem; opacity: 0.82; margin-top: 2px; }
 
         /* PRATINJAU PASFOTO / GAMBAR DI DALAM CHAT */
         .chat-image-preview {
@@ -748,7 +966,7 @@
         /* INPUT PESAN */
         .chat-input-box {
             padding: 0.75rem 1.05rem; background: #fff; border-top: 1px solid var(--border-subtle);
-            display: flex; align-items: center; gap: 0.55rem; flex: 0 0 auto; z-index: 10;
+            display: flex; align-items: center; gap: 0.5rem; flex: 0 0 auto; z-index: 10;
         }
         .chat-attach-btn {
             width: 40px; height: 40px; border-radius: 50%; background: var(--bg-body);
@@ -756,7 +974,8 @@
             display: flex; align-items: center; justify-content: center; cursor: pointer;
             flex-shrink: 0; transition: var(--transition); font-size: 0.95rem;
         }
-        .chat-attach-btn:hover {
+        .chat-attach-btn:hover,
+        .chat-attach-btn.active {
             background: var(--primary-light); border-color: var(--primary); color: var(--primary);
         }
         .chat-input {
@@ -765,14 +984,22 @@
         }
         .chat-input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
         
+        .chat-voice-btn {
+            width: 40px; height: 40px; border-radius: 50%; background: var(--bg-body);
+            border: 1px solid var(--border-medium); color: var(--primary);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            flex-shrink: 0; transition: var(--transition); font-size: 0.95rem;
+        }
+        .chat-voice-btn:hover {
+            background: var(--primary-light); border-color: var(--primary);
+        }
+
         .chat-send-btn {
             width: 42px; height: 42px; border-radius: 50%; background: var(--primary); color: #fff;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); flex-shrink: 0;
         }
-        .chat-send-btn:disabled {
-            opacity: 0.65; cursor: not-allowed;
-        }
+        .chat-send-btn:disabled { opacity: 0.65; cursor: not-allowed; }
 
         #toastContainer { position: fixed; bottom: 24px; right: 24px; z-index: 30000; display: flex; flex-direction: column; gap: 0.5rem; max-width: 340px; }
         .toast { background: #0f172a; color: #fff; padding: 0.85rem 1.15rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 0.75rem; border-left: 4px solid var(--accent); }
@@ -900,16 +1127,46 @@
                 </div>
             </div>
 
-            <!-- BAR PRATINJAU FOTO SEBELUM DIKIRIM -->
-            <div id="photoPreviewBar" class="photo-preview-bar">
-                <div class="photo-preview-left">
-                    <img id="photoPreviewThumb" class="photo-preview-thumb" src="" alt="Pratinjau Foto">
-                    <div class="photo-preview-meta">
-                        <div id="photoPreviewTitle" class="photo-preview-title">Foto siap dikirim</div>
-                        <div id="photoPreviewSub" class="photo-preview-sub">Tambahkan keterangan atau langsung kirim</div>
+            <!-- POPUP PILIHAN LAMPIRAN -->
+            <div id="attachMenuPopover" class="attach-menu-popover">
+                <button type="button" class="attach-option-btn" onclick="openMediaPicker('camera')">
+                    <span class="attach-option-icon" style="background: #ef4444;"><i class="fas fa-camera"></i></span>
+                    <span class="attach-option-label">Kamera</span>
+                </button>
+                <button type="button" class="attach-option-btn" onclick="openMediaPicker('image')">
+                    <span class="attach-option-icon" style="background: #2563eb;"><i class="fas fa-image"></i></span>
+                    <span class="attach-option-label">Foto / Galeri</span>
+                </button>
+                <button type="button" class="attach-option-btn" onclick="openMediaPicker('video')">
+                    <span class="attach-option-icon" style="background: #8b5cf6;"><i class="fas fa-video"></i></span>
+                    <span class="attach-option-label">Video</span>
+                </button>
+                <button type="button" class="attach-option-btn" onclick="openMediaPicker('audio')">
+                    <span class="attach-option-icon" style="background: #f59e0b;"><i class="fas fa-music"></i></span>
+                    <span class="attach-option-label">Musik / Audio</span>
+                </button>
+                <button type="button" class="attach-option-btn" onclick="openMediaPicker('document')">
+                    <span class="attach-option-icon" style="background: #10b981;"><i class="fas fa-file-alt"></i></span>
+                    <span class="attach-option-label">Dokumen</span>
+                </button>
+                <button type="button" class="attach-option-btn" onclick="openMediaPicker('file')">
+                    <span class="attach-option-icon" style="background: #475569;"><i class="fas fa-folder-open"></i></span>
+                    <span class="attach-option-label">Semua File</span>
+                </button>
+            </div>
+
+            <!-- BAR PRATINJAU MEDIA / FILE SEBELUM DIKIRIM -->
+            <div id="mediaPreviewBar" class="media-preview-bar">
+                <div class="media-preview-left">
+                    <div id="mediaPreviewThumb" class="media-preview-thumb">
+                        <i class="fas fa-file"></i>
+                    </div>
+                    <div class="media-preview-meta">
+                        <div id="mediaPreviewTitle" class="media-preview-title">File siap dikirim</div>
+                        <div id="mediaPreviewSub" class="media-preview-sub">Tambahkan keterangan atau langsung kirim</div>
                     </div>
                 </div>
-                <button type="button" class="reply-cancel-btn" onclick="clearSelectedPhoto()" title="Hapus foto">
+                <button type="button" class="reply-cancel-btn" onclick="clearSelectedMedia()" title="Hapus lampiran">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -925,13 +1182,37 @@
                 </button>
             </div>
 
+            <!-- BAR PEREKAM PESAN SUARA -->
+            <div id="voiceRecordBar" class="voice-record-bar">
+                <div class="voice-record-left">
+                    <span class="voice-rec-dot"></span>
+                    <span>Merekam suara... <span id="voiceRecordTimer">00:00</span></span>
+                </div>
+                <div class="voice-record-actions">
+                    <button type="button" class="voice-cancel-btn" onclick="cancelVoiceRecording()">Batal</button>
+                    <button type="button" class="voice-send-btn" onclick="stopAndSendVoiceRecording()">
+                        <i class="fas fa-paper-plane"></i> Kirim
+                    </button>
+                </div>
+            </div>
+
+            <!-- INPUT FILE TERSEMBUNYI UNTUK BERBAGAI TIPE MEDIA -->
+            <input type="file" id="cameraCaptureInput" accept="image/*" capture="environment" style="display: none;" onchange="handleMediaInputChange(event, 'image')">
+            <input type="file" id="imageFileInput" accept="image/*" style="display: none;" onchange="handleMediaInputChange(event, 'image')">
+            <input type="file" id="videoFileInput" accept="video/*" style="display: none;" onchange="handleMediaInputChange(event, 'video')">
+            <input type="file" id="audioFileInput" accept="audio/*" style="display: none;" onchange="handleMediaInputChange(event, 'audio')">
+            <input type="file" id="documentFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.rtf,.odt,.ods,.odp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display: none;" onchange="handleMediaInputChange(event, 'document')">
+            <input type="file" id="anyFileInput" accept="*/*" style="display: none;" onchange="handleMediaInputChange(event, 'file')">
+
             <!-- INPUT PESAN BAWAH -->
             <form class="chat-input-box" id="sendMessageForm" onsubmit="handleChatFormSubmit(event)" autocomplete="off">
-                <input type="file" id="chatPhotoInput" accept="image/*" style="display: none;" onchange="handlePhotoFileSelected(event)">
-                <button type="button" id="attachPhotoBtn" class="chat-attach-btn" onclick="triggerPhotoPicker()" title="Kirim Foto">
-                    <i class="fas fa-image"></i>
+                <button type="button" id="attachMenuBtn" class="chat-attach-btn" onclick="toggleAttachMenu(event)" title="Lampirkan Foto, Kamera, Video, Musik, Dokumen, File">
+                    <i class="fas fa-paperclip"></i>
                 </button>
                 <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." oninput="handleTypingInputChange(event)" autocomplete="off">
+                <button type="button" id="voiceRecordBtn" class="chat-voice-btn" onclick="startVoiceRecording()" title="Rekam Pesan Suara">
+                    <i class="fas fa-microphone"></i>
+                </button>
                 <button type="submit" id="chatSendBtn" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane"></i></button>
             </form>
         </div>
@@ -987,6 +1268,7 @@ const VERIFIED_BADGE_URL = 'https://sitenexs.com/assets/logo/verified.png';
 const PRO_BADGE_URL = 'https://sitenexs.com/assets/logo/lencana.png';
 const SUPABASE_CHAT_BUCKET = avatarBucket || 'profile-photos';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxY2J5YW14aWVrZHh5dG50bG5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5ODcxNjgsImV4cCI6MjA5MTU2MzE2OH0.eE_4B6d1S94041336426';
+const MAX_UPLOAD_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB
 
 let currentUid = null;
 let myProfile = null;
@@ -1006,8 +1288,15 @@ let contextTargetMsg = null;
 let pinnedMessagesList = [];
 let activePinnedIndex = 0;
 
-let selectedPhotoFile = null;
-let selectedPhotoPreviewUrl = null;
+let selectedMedia = null; // { file, mediaType, fileName, fileSize, mimeType, previewUrl }
+
+// State perekam pesan suara
+let mediaRecorder = null;
+let voiceStream = null;
+let voiceChunks = [];
+let voiceTimerInterval = null;
+let voiceRecordSeconds = 0;
+let isVoiceCancelRequested = false;
 
 let unsubscribeMessages = null;
 let unsubscribeChatMeta = null;
@@ -1050,12 +1339,58 @@ function withTimeout(promise, ms = 6000, label = 'Firestore operation') {
 }
 
 /* =====================================================
-   UPLOAD & KOMPRESI FOTO KE SUPABASE STORAGE
+   DETEKSI TIPE MEDIA, KOMPRESI FOTO & UPLOAD SUPABASE
 ===================================================== */
 function formatFileSize(bytes = 0) {
+    if (!bytes || bytes <= 0) return '0 B';
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function detectMediaTypeFromFile(file, hintType = '') {
+    if (hintType === 'voice') return 'voice';
+    const mime = String(file?.type || '').toLowerCase();
+    const name = String(file?.name || '').toLowerCase();
+
+    if (mime.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|svg|heic)$/.test(name)) {
+        return 'image';
+    }
+    if (mime.startsWith('video/') || /\.(mp4|webm|mov|mkv|avi|3gp)$/.test(name)) {
+        return 'video';
+    }
+    if (mime.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac|flac|opus)$/.test(name)) {
+        return 'audio';
+    }
+    if (/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv|rtf|odt|ods|odp)$/.test(name)) {
+        return 'document';
+    }
+    return hintType || 'file';
+}
+
+function getDocumentIconClass(fileName = '', mimeType = '') {
+    const lower = `${fileName} ${mimeType}`.toLowerCase();
+    if (lower.includes('pdf')) return 'fas fa-file-pdf';
+    if (lower.includes('word') || /\.(doc|docx|rtf|odt)\b/.test(lower)) return 'fas fa-file-word';
+    if (lower.includes('excel') || lower.includes('sheet') || /\.(xls|xlsx|csv|ods)\b/.test(lower)) return 'fas fa-file-excel';
+    if (lower.includes('powerpoint') || lower.includes('presentation') || /\.(ppt|pptx|odp)\b/.test(lower)) return 'fas fa-file-powerpoint';
+    if (/\.(zip|rar|7z|tar|gz)\b/.test(lower)) return 'fas fa-file-archive';
+    if (/\.(txt|md|json|xml|html|css|js)\b/.test(lower)) return 'fas fa-file-code';
+    return 'fas fa-file-alt';
+}
+
+function getMediaSummaryLabel(mediaType, fileName = '', caption = '') {
+    const cleanCaption = String(caption || '').trim();
+    const cleanName = String(fileName || '').trim();
+    let prefix = '📎 File';
+    if (mediaType === 'image') prefix = '📷 Foto';
+    else if (mediaType === 'video') prefix = '🎬 Video';
+    else if (mediaType === 'voice') prefix = '🎤 Pesan suara';
+    else if (mediaType === 'audio') prefix = cleanName ? `🎵 Musik: ${cleanName}` : '🎵 Musik';
+    else if (mediaType === 'document') prefix = cleanName ? `📄 Dokumen: ${cleanName}` : '📄 Dokumen';
+    else if (cleanName) prefix = `📎 File: ${cleanName}`;
+
+    return cleanCaption ? `${prefix} — ${cleanCaption}` : prefix;
 }
 
 async function compressImageFile(file, maxDimension = 1440, quality = 0.82) {
@@ -1110,20 +1445,31 @@ async function compressImageFile(file, maxDimension = 1440, quality = 0.82) {
     });
 }
 
-async function uploadPhotoToSupabase(file, chatId, senderUid) {
-    if (!file) throw new Error('File foto tidak ditemukan');
-    const processedFile = await compressImageFile(file);
-    const rawExt = (processedFile.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+async function uploadMediaToSupabase(file, mediaType, chatId, senderUid) {
+    if (!file) throw new Error('File tidak ditemukan');
+    const processedFile = mediaType === 'image' ? await compressImageFile(file) : file;
+    const originalName = String(file.name || 'attachment').trim();
+    const rawExt = (processedFile.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin';
+
+    const folderMap = {
+        image: 'images',
+        video: 'videos',
+        audio: 'music',
+        voice: 'voice-notes',
+        document: 'documents',
+        file: 'files'
+    };
+    const subFolder = folderMap[mediaType] || 'files';
     const safeChatId = String(chatId || 'general').replace(/[^a-zA-Z0-9_-]/g, '_');
     const safeSender = String(senderUid || 'user').replace(/[^a-zA-Z0-9_-]/g, '_');
     const randomPart = Math.random().toString(36).slice(2, 8);
-    const objectPath = `chat-media/${safeChatId}/${Date.now()}_${safeSender}_${randomPart}.${rawExt}`;
+    const objectPath = `chat-media/${safeChatId}/${subFolder}/${Date.now()}_${safeSender}_${randomPart}.${rawExt}`;
 
     const baseUrl = String(supabaseUrl || 'https://xqcbyamxiekdxytntlno.supabase.co').replace(/\/+$/, '');
     const uploadEndpoint = `${baseUrl}/storage/v1/object/${encodeURIComponent(SUPABASE_CHAT_BUCKET)}/${objectPath}`;
 
     const headers = {
-        'Content-Type': processedFile.type || 'image/jpeg',
+        'Content-Type': processedFile.type || 'application/octet-stream',
         'x-upsert': 'true'
     };
     if (SUPABASE_ANON_KEY) {
@@ -1137,7 +1483,7 @@ async function uploadPhotoToSupabase(file, chatId, senderUid) {
             headers,
             body: processedFile
         }),
-        20000,
+        45000,
         'Supabase upload'
     );
 
@@ -1146,71 +1492,302 @@ async function uploadPhotoToSupabase(file, chatId, senderUid) {
         throw new Error(`Supabase upload failed (${response.status}): ${errText}`);
     }
 
-    return `${baseUrl}/storage/v1/object/public/${encodeURIComponent(SUPABASE_CHAT_BUCKET)}/${objectPath}`;
+    const publicUrl = `${baseUrl}/storage/v1/object/public/${encodeURIComponent(SUPABASE_CHAT_BUCKET)}/${objectPath}`;
+    return {
+        url: publicUrl,
+        mediaType,
+        fileName: originalName,
+        fileSize: processedFile.size || file.size || 0,
+        mimeType: processedFile.type || file.type || 'application/octet-stream'
+    };
 }
 
-window.triggerPhotoPicker = function () {
-    const fileInput = document.getElementById('chatPhotoInput');
-    if (fileInput) fileInput.click();
+/* =====================================================
+   MENU LAMPIRAN (KAMERA, FOTO, VIDEO, MUSIK, DOKUMEN, FILE)
+===================================================== */
+window.toggleAttachMenu = function (event) {
+    if (event) event.stopPropagation();
+    const popover = document.getElementById('attachMenuPopover');
+    const btn = document.getElementById('attachMenuBtn');
+    if (!popover) return;
+    const isOpen = popover.classList.toggle('active');
+    if (btn) btn.classList.toggle('active', isOpen);
 };
 
-function setSelectedPhotoFile(file) {
+function closeAttachMenu() {
+    const popover = document.getElementById('attachMenuPopover');
+    const btn = document.getElementById('attachMenuBtn');
+    if (popover) popover.classList.remove('active');
+    if (btn) btn.classList.remove('active');
+}
+
+document.addEventListener('click', (e) => {
+    const popover = document.getElementById('attachMenuPopover');
+    const btn = document.getElementById('attachMenuBtn');
+    if (!popover || !popover.classList.contains('active')) return;
+    if (!popover.contains(e.target) && (!btn || !btn.contains(e.target))) {
+        closeAttachMenu();
+    }
+});
+
+window.openMediaPicker = function (type) {
+    closeAttachMenu();
+    const inputMap = {
+        camera: 'cameraCaptureInput',
+        image: 'imageFileInput',
+        video: 'videoFileInput',
+        audio: 'audioFileInput',
+        document: 'documentFileInput',
+        file: 'anyFileInput'
+    };
+    const targetInput = document.getElementById(inputMap[type] || 'anyFileInput');
+    if (targetInput) {
+        targetInput.value = '';
+        targetInput.click();
+    }
+};
+
+function setSelectedMediaFile(file, hintType = '') {
     if (!file) return;
-    if (!file.type || !file.type.startsWith('image/')) {
-        showToast('Hanya file gambar/foto yang didukung.');
-        return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-        showToast('Ukuran foto maksimal 10 MB.');
+    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+        showToast('Ukuran file maksimal 50 MB.');
         return;
     }
 
-    if (selectedPhotoPreviewUrl) {
-        URL.revokeObjectURL(selectedPhotoPreviewUrl);
+    if (selectedMedia?.previewUrl) {
+        URL.revokeObjectURL(selectedMedia.previewUrl);
     }
 
-    selectedPhotoFile = file;
-    selectedPhotoPreviewUrl = URL.createObjectURL(file);
+    const mediaType = detectMediaTypeFromFile(file, hintType);
+    const previewUrl = (mediaType === 'image' || mediaType === 'video') ? URL.createObjectURL(file) : null;
 
-    const bar = document.getElementById('photoPreviewBar');
-    const thumb = document.getElementById('photoPreviewThumb');
-    const title = document.getElementById('photoPreviewTitle');
-    const sub = document.getElementById('photoPreviewSub');
+    selectedMedia = {
+        file,
+        mediaType,
+        fileName: file.name || 'Lampiran',
+        fileSize: file.size || 0,
+        mimeType: file.type || 'application/octet-stream',
+        previewUrl
+    };
+
+    const bar = document.getElementById('mediaPreviewBar');
+    const thumb = document.getElementById('mediaPreviewThumb');
+    const title = document.getElementById('mediaPreviewTitle');
+    const sub = document.getElementById('mediaPreviewSub');
     const msgInput = document.getElementById('messageInput');
 
-    if (thumb) thumb.src = selectedPhotoPreviewUrl;
-    if (title) title.textContent = file.name || 'Foto siap dikirim';
-    if (sub) sub.textContent = `${formatFileSize(file.size)} • Siap diunggah ke chat`;
+    if (thumb) {
+        if (mediaType === 'image' && previewUrl) {
+            thumb.innerHTML = `<img src="${previewUrl}" alt="Pratinjau Foto">`;
+        } else if (mediaType === 'video' && previewUrl) {
+            thumb.innerHTML = `<video src="${previewUrl}" muted playsinline></video>`;
+        } else if (mediaType === 'audio' || mediaType === 'voice') {
+            thumb.innerHTML = `<i class="fas fa-music"></i>`;
+        } else {
+            thumb.innerHTML = `<i class="${getDocumentIconClass(file.name, file.type)}"></i>`;
+        }
+    }
+
+    if (title) title.textContent = selectedMedia.fileName;
+    if (sub) {
+        const typeLabelMap = {
+            image: 'Foto',
+            video: 'Video',
+            audio: 'Musik / Audio',
+            voice: 'Pesan Suara',
+            document: 'Dokumen',
+            file: 'File'
+        };
+        sub.textContent = `${typeLabelMap[mediaType] || 'File'} • ${formatFileSize(selectedMedia.fileSize)} • Siap dikirim`;
+    }
+
     if (bar) bar.classList.add('active');
     if (msgInput) {
-        msgInput.placeholder = 'Tambahkan keterangan foto (opsional)...';
+        msgInput.placeholder = 'Tambahkan keterangan (opsional)...';
         msgInput.focus();
     }
 }
 
-window.handlePhotoFileSelected = function (event) {
+window.handleMediaInputChange = function (event, hintType = '') {
     const file = event?.target?.files?.[0];
     if (!file) return;
-    setSelectedPhotoFile(file);
+    setSelectedMediaFile(file, hintType);
 };
 
-window.clearSelectedPhoto = function () {
-    if (selectedPhotoPreviewUrl) {
-        URL.revokeObjectURL(selectedPhotoPreviewUrl);
-        selectedPhotoPreviewUrl = null;
+window.clearSelectedMedia = function () {
+    if (selectedMedia?.previewUrl) {
+        URL.revokeObjectURL(selectedMedia.previewUrl);
     }
-    selectedPhotoFile = null;
+    selectedMedia = null;
 
-    const fileInput = document.getElementById('chatPhotoInput');
-    const bar = document.getElementById('photoPreviewBar');
-    const thumb = document.getElementById('photoPreviewThumb');
+    ['cameraCaptureInput', 'imageFileInput', 'videoFileInput', 'audioFileInput', 'documentFileInput', 'anyFileInput'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+
+    const bar = document.getElementById('mediaPreviewBar');
+    const thumb = document.getElementById('mediaPreviewThumb');
     const msgInput = document.getElementById('messageInput');
 
-    if (fileInput) fileInput.value = '';
-    if (thumb) thumb.src = '';
+    if (thumb) thumb.innerHTML = '<i class="fas fa-file"></i>';
     if (bar) bar.classList.remove('active');
     if (msgInput) msgInput.placeholder = 'Tulis pesan Anda...';
 };
+
+/* =====================================================
+   PEREKAM PESAN SUARA (VOICE NOTE) LANGSUNG
+===================================================== */
+function cleanupVoiceRecorderResources() {
+    if (voiceTimerInterval) {
+        clearInterval(voiceTimerInterval);
+        voiceTimerInterval = null;
+    }
+    if (voiceStream) {
+        voiceStream.getTracks().forEach(track => track.stop());
+        voiceStream = null;
+    }
+    mediaRecorder = null;
+    voiceChunks = [];
+    voiceRecordSeconds = 0;
+
+    const bar = document.getElementById('voiceRecordBar');
+    const timerEl = document.getElementById('voiceRecordTimer');
+    if (bar) bar.classList.remove('active');
+    if (timerEl) timerEl.textContent = '00:00';
+}
+
+window.startVoiceRecording = async function () {
+    if (isSendingMessage || mediaRecorder) return;
+    closeAttachMenu();
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+        showToast('Browser Anda tidak mendukung perekam suara langsung.');
+        return;
+    }
+
+    try {
+        voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mimeCandidates = [
+            'audio/webm;codecs=opus',
+            'audio/webm',
+            'audio/mp4',
+            'audio/ogg;codecs=opus'
+        ];
+        const supportedMime = mimeCandidates.find(m => MediaRecorder.isTypeSupported?.(m)) || '';
+
+        voiceChunks = [];
+        isVoiceCancelRequested = false;
+        mediaRecorder = supportedMime
+            ? new MediaRecorder(voiceStream, { mimeType: supportedMime })
+            : new MediaRecorder(voiceStream);
+
+        mediaRecorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) {
+                voiceChunks.push(e.data);
+            }
+        };
+
+        mediaRecorder.onstop = async () => {
+            const wasCancelled = isVoiceCancelRequested;
+            const recordedMime = mediaRecorder?.mimeType || 'audio/webm';
+            const chunksCopy = [...voiceChunks];
+            const finalDuration = voiceRecordSeconds;
+            cleanupVoiceRecorderResources();
+
+            if (wasCancelled || chunksCopy.length === 0) {
+                return;
+            }
+
+            const blob = new Blob(chunksCopy, { type: recordedMime });
+            if (blob.size < 400) {
+                showToast('Rekaman suara terlalu singkat.');
+                return;
+            }
+
+            const ext = recordedMime.includes('mp4') ? 'm4a' : (recordedMime.includes('ogg') ? 'ogg' : 'webm');
+            const voiceFile = new File([blob], `Pesan_Suara_${formatDuration(finalDuration).replace(':', '-')}.${ext}`, {
+                type: recordedMime
+            });
+
+            await sendDirectVoiceNoteFile(voiceFile);
+        };
+
+        voiceRecordSeconds = 0;
+        const bar = document.getElementById('voiceRecordBar');
+        const timerEl = document.getElementById('voiceRecordTimer');
+        if (timerEl) timerEl.textContent = '00:00';
+        if (bar) bar.classList.add('active');
+
+        voiceTimerInterval = setInterval(() => {
+            voiceRecordSeconds += 1;
+            if (timerEl) timerEl.textContent = formatDuration(voiceRecordSeconds);
+            if (voiceRecordSeconds >= 180) {
+                window.stopAndSendVoiceRecording();
+            }
+        }, 1000);
+
+        mediaRecorder.start(250);
+    } catch (err) {
+        console.error('Voice recorder error:', err);
+        cleanupVoiceRecorderResources();
+        showToast('Izin mikrofon ditolak atau tidak tersedia.');
+    }
+};
+
+window.cancelVoiceRecording = function () {
+    isVoiceCancelRequested = true;
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+    } else {
+        cleanupVoiceRecorderResources();
+    }
+    showToast('Rekaman suara dibatalkan.');
+};
+
+window.stopAndSendVoiceRecording = function () {
+    isVoiceCancelRequested = false;
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+    }
+};
+
+async function sendDirectVoiceNoteFile(voiceFile) {
+    const senderUid = currentUid || auth.currentUser?.uid || getEarlyUid();
+    const recipientUid = activeChatUserId;
+    const chatId = resolveActiveChatId(senderUid, recipientUid);
+    if (!chatId || !senderUid || !recipientUid || isSendingMessage) return;
+
+    isSendingMessage = true;
+    const sendBtnEl = document.getElementById('chatSendBtn');
+    if (sendBtnEl) {
+        sendBtnEl.disabled = true;
+        sendBtnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
+
+    const replyToPayload = activeReplyData ? { ...activeReplyData } : null;
+    window.clearActiveReply();
+
+    try {
+        const uploadedMeta = await uploadMediaToSupabase(voiceFile, 'voice', chatId, senderUid);
+        await dispatchNewMessageToFirestore({
+            senderUid,
+            recipientUid,
+            chatId,
+            text: '',
+            mediaMeta: uploadedMeta,
+            replyToPayload
+        });
+    } catch (err) {
+        console.error('Voice note upload error:', err);
+        showToast('Gagal mengirim pesan suara. Coba lagi.');
+    } finally {
+        isSendingMessage = false;
+        if (sendBtnEl) {
+            sendBtnEl.disabled = false;
+            sendBtnEl.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        }
+    }
+}
 
 window.openPhotoLightbox = function (imageUrl) {
     const safeImg = safeUrl(imageUrl);
@@ -1238,11 +1815,11 @@ if (msgInputPasteEl) {
         const items = e.clipboardData?.items;
         if (!items) return;
         for (const item of items) {
-            if (item.type && item.type.startsWith('image/')) {
+            if (item.kind === 'file') {
                 const pastedFile = item.getAsFile();
                 if (pastedFile) {
                     e.preventDefault();
-                    setSelectedPhotoFile(pastedFile);
+                    setSelectedMediaFile(pastedFile);
                     break;
                 }
             }
@@ -1343,7 +1920,7 @@ function renderPinnedMessageBar() {
             ? `Pesan Tersemat (${activePinnedIndex + 1}/${visiblePins.length})`
             : 'Pesan Tersemat';
     }
-    snippetEl.textContent = getReplyExcerpt(currentPin.text || '', currentPin.imageUrl);
+    snippetEl.textContent = getReplyExcerpt(currentPin.text || '', currentPin);
     bar.classList.add('active');
 }
 
@@ -1392,7 +1969,7 @@ function addOrUpdatePinnedMessage(pinObj, syncRemote = true) {
         id: pinObj.id,
         senderUid: pinObj.senderUid || '',
         senderName: pinObj.senderName || '',
-        text: pinObj.text || (pinObj.imageUrl ? '📷 Foto' : '')
+        text: getReplyExcerpt(pinObj.text || '', pinObj)
     };
     if (idx >= 0) {
         next[idx] = normalized;
@@ -1470,7 +2047,7 @@ window.openMessageContextMenu = function (docId, message) {
     const deleteEveryoneBtnEl = document.getElementById('ctxDeleteEveryoneBtn');
 
     if (previewEl) {
-        previewEl.textContent = getReplyExcerpt(message.text || '', message.imageUrl);
+        previewEl.textContent = getReplyExcerpt(message.text || '', message);
     }
 
     const isPinnedAlready = pinnedMessagesList.some(p => p.id === docId);
@@ -1481,10 +2058,10 @@ window.openMessageContextMenu = function (docId, message) {
     const isMine = message.senderUid === currentUid;
     const isCallLog = String(message.text || '').startsWith('[CALL_LOG]|');
     const isApplication = String(message.text || '').includes('📋 *LAMARAN KERJA BARU*');
-    const hasOnlyPhotoWithoutText = Boolean(message.imageUrl) && !String(message.text || '').trim();
+    const hasAttachmentWithoutText = Boolean(message.mediaUrl || message.imageUrl) && !String(message.text || '').trim();
 
     if (editBtnEl) {
-        editBtnEl.style.display = (isMine && !isCallLog && !isApplication && !hasOnlyPhotoWithoutText) ? 'flex' : 'none';
+        editBtnEl.style.display = (isMine && !isCallLog && !isApplication && !hasAttachmentWithoutText) ? 'flex' : 'none';
     }
     if (deleteEveryoneBtnEl) {
         deleteEveryoneBtnEl.style.display = isMine ? 'flex' : 'none';
@@ -1517,8 +2094,7 @@ window.handleContextPinMessage = function () {
             id: target.id,
             senderUid: target.senderUid,
             senderName: senderLabel,
-            text: getReplyExcerpt(target.text || '', target.imageUrl),
-            imageUrl: target.imageUrl || null
+            text: getReplyExcerpt(target.text || '', target)
         }, true);
         showToast('Pesan disematkan.');
     }
@@ -1530,7 +2106,7 @@ window.handleContextEditMessage = function () {
     window.closeMessageContextMenu();
 
     if (target.senderUid !== currentUid) return;
-    window.clearSelectedPhoto();
+    window.clearSelectedMedia();
     activeReplyData = null;
     editingMessageId = target.id;
     editingOriginalText = target.text || '';
@@ -1649,10 +2225,12 @@ function attachLongPressToMessage(wrapper, bubble, docId, message) {
 /* =====================================================
    FITUR REPLY PESAN DENGAN GESER (SWIPE) & BAR EDIT
 ===================================================== */
-function getReplyExcerpt(rawText = '', imageUrl = '') {
+function getReplyExcerpt(rawText = '', mediaObj = null) {
     const clean = String(rawText || '').trim();
-    if (imageUrl) {
-        return clean ? `📷 Foto: ${clean.replace(/\s+/g, ' ')}` : '📷 Foto';
+    const attachmentUrl = mediaObj?.mediaUrl || mediaObj?.imageUrl || '';
+    if (attachmentUrl) {
+        const mType = mediaObj?.mediaType || (mediaObj?.imageUrl ? 'image' : 'file');
+        return getMediaSummaryLabel(mType, mediaObj?.fileName || '', clean);
     }
     if (!clean) return 'Pesan';
     if (clean.startsWith('[CALL_LOG]|')) {
@@ -1699,7 +2277,7 @@ window.setReplyToMessage = function (replyPayload) {
         id: replyPayload.id,
         senderUid: replyPayload.senderUid || '',
         senderName: replyPayload.senderName || 'Pengguna',
-        text: getReplyExcerpt(replyPayload.text || '', replyPayload.imageUrl || '')
+        text: getReplyExcerpt(replyPayload.text || '', replyPayload)
     };
     renderReplyPreviewBar();
     const inputEl = document.getElementById('messageInput');
@@ -1818,7 +2396,9 @@ function attachSwipeToReply(wrapper, bubble, docId, message, ownerUid) {
                 senderUid: currentMsg.senderUid,
                 senderName: senderLabel,
                 text: currentMsg.text || '',
-                imageUrl: currentMsg.imageUrl || ''
+                mediaUrl: currentMsg.mediaUrl || currentMsg.imageUrl || '',
+                mediaType: currentMsg.mediaType || (currentMsg.imageUrl ? 'image' : ''),
+                fileName: currentMsg.fileName || ''
             });
         }
     };
@@ -1870,7 +2450,7 @@ function buildQuotedReplyElement(replyTo) {
 
     const textEl = document.createElement('div');
     textEl.className = 'quoted-reply-text';
-    textEl.textContent = getReplyExcerpt(replyTo.text || '', replyTo.imageUrl || '');
+    textEl.textContent = getReplyExcerpt(replyTo.text || '', replyTo);
 
     box.append(senderEl, textEl);
     return box;
@@ -1983,6 +2563,11 @@ function syncMessageDocToCache(chatId, msgId, msgData) {
         senderIsPro: hasYellowBadge(msgData),
         text: msgData.text || '',
         imageUrl: msgData.imageUrl || null,
+        mediaUrl: msgData.mediaUrl || msgData.imageUrl || null,
+        mediaType: msgData.mediaType || (msgData.imageUrl ? 'image' : null),
+        fileName: msgData.fileName || null,
+        fileSize: msgData.fileSize || 0,
+        mimeType: msgData.mimeType || null,
         replyTo: msgData.replyTo || null,
         isEdited: Boolean(msgData.isEdited),
         status: msgData.status || 'sent',
@@ -2139,6 +2724,11 @@ function renderCachedMessagesImmediately(chatId, uid) {
                 senderIsPro: item.senderIsPro,
                 text: item.text,
                 imageUrl: item.imageUrl || null,
+                mediaUrl: item.mediaUrl || item.imageUrl || null,
+                mediaType: item.mediaType || (item.imageUrl ? 'image' : null),
+                fileName: item.fileName || null,
+                fileSize: item.fileSize || 0,
+                mimeType: item.mimeType || null,
                 replyTo: item.replyTo || null,
                 isEdited: Boolean(item.isEdited),
                 status: isGreenPersisted ? 'read-green' : (item.status || 'sent'),
@@ -2442,7 +3032,7 @@ function renderOtherTypingIndicator(isTyping) {
 }
 
 /* =====================================================
-   STATUS CENTANG PESAN (1 CENTANG, 2 CENTANG, 2 CENTANG BIRU / KUNING / HIJAU)
+   STATUS CENTANG PESAN
 ===================================================== */
 function getMessageCheckStatus(message, docId = '') {
     const persistedGreen = docId && activeChatId ? loadPersistedGreenReadIds(activeChatId).has(docId) : false;
@@ -2452,21 +3042,11 @@ function getMessageCheckStatus(message, docId = '') {
         message?.status === 'read-green' ? 'green' : null
     );
 
-    if (persistedGreen || rawColor === 'green') {
-        return 'read-green';
-    }
-    if (rawColor === 'yellow') {
-        return 'read-yellow';
-    }
-    if (rawColor === 'blue') {
-        return 'read-blue';
-    }
-    if (message?.read === true || message?.status === 'read') {
-        return 'read-green';
-    }
-    if (message?.delivered === true || message?.status === 'delivered') {
-        return 'delivered';
-    }
+    if (persistedGreen || rawColor === 'green') return 'read-green';
+    if (rawColor === 'yellow') return 'read-yellow';
+    if (rawColor === 'blue') return 'read-blue';
+    if (message?.read === true || message?.status === 'read') return 'read-green';
+    if (message?.delivered === true || message?.status === 'delivered') return 'delivered';
     return 'sent';
 }
 
@@ -2558,15 +3138,69 @@ function formatDuration(seconds) {
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
-function renderMessageBody(text, imageUrl = '') {
-    const validImageUrl = safeUrl(imageUrl);
-    if (validImageUrl) {
+function renderMessageBody(messageOrText, legacyImageUrl = '') {
+    const isObj = typeof messageOrText === 'object' && messageOrText !== null;
+    const text = isObj ? (messageOrText.text || '') : String(messageOrText || '');
+    const rawMediaUrl = isObj ? (messageOrText.mediaUrl || messageOrText.imageUrl || '') : legacyImageUrl;
+    const validMediaUrl = safeUrl(rawMediaUrl);
+
+    if (validMediaUrl) {
+        const mType = isObj
+            ? (messageOrText.mediaType || (messageOrText.imageUrl ? 'image' : 'file'))
+            : 'image';
+        const fileName = isObj ? (messageOrText.fileName || 'Lampiran') : 'Foto';
+        const fileSize = isObj ? Number(messageOrText.fileSize || 0) : 0;
+        const mimeType = isObj ? (messageOrText.mimeType || '') : '';
         const cleanCaption = String(text || '').trim();
+        const captionHtml = cleanCaption
+            ? `<div class="chat-media-caption">${escapeHtml(cleanCaption).replace(/\n/g, '<br>')}</div>`
+            : '';
+
+        if (mType === 'image') {
+            return `
+                <div class="chat-photo-box" onclick="openPhotoLightbox('${escapeHtml(validMediaUrl)}')">
+                    <img src="${escapeHtml(validMediaUrl)}" alt="${escapeHtml(fileName)}" loading="lazy">
+                </div>
+                ${captionHtml}
+            `;
+        }
+
+        if (mType === 'video') {
+            return `
+                <div class="chat-video-box">
+                    <video src="${escapeHtml(validMediaUrl)}" controls preload="metadata" playsinline></video>
+                </div>
+                ${captionHtml}
+            `;
+        }
+
+        if (mType === 'audio' || mType === 'voice') {
+            const audioIcon = mType === 'voice' ? 'fas fa-microphone' : 'fas fa-music';
+            const audioTitle = mType === 'voice' ? 'Pesan Suara' : fileName;
+            return `
+                <div class="chat-audio-card">
+                    <div class="chat-audio-header">
+                        <i class="${audioIcon}"></i>
+                        <span class="chat-audio-title">${escapeHtml(audioTitle)}</span>
+                    </div>
+                    <audio src="${escapeHtml(validMediaUrl)}" controls preload="metadata"></audio>
+                </div>
+                ${captionHtml}
+            `;
+        }
+
+        const docIcon = getDocumentIconClass(fileName, mimeType);
+        const sizeLabel = fileSize > 0 ? formatFileSize(fileSize) : 'Unduh File';
         return `
-            <div class="chat-photo-box" onclick="openPhotoLightbox('${escapeHtml(validImageUrl)}')">
-                <img src="${escapeHtml(validImageUrl)}" alt="Foto terkirim" loading="lazy">
-            </div>
-            ${cleanCaption ? `<div class="chat-photo-caption">${escapeHtml(cleanCaption).replace(/\n/g, '<br>')}</div>` : ''}
+            <a href="${escapeHtml(validMediaUrl)}" target="_blank" rel="noopener noreferrer" download="${escapeHtml(fileName)}" class="chat-doc-card">
+                <div class="chat-doc-icon"><i class="${docIcon}"></i></div>
+                <div class="chat-doc-info">
+                    <div class="chat-doc-name">${escapeHtml(fileName)}</div>
+                    <div class="chat-doc-meta">${escapeHtml(sizeLabel)}</div>
+                </div>
+                <span class="chat-doc-dl" title="Unduh"><i class="fas fa-download"></i></span>
+            </a>
+            ${captionHtml}
         `;
     }
 
@@ -2723,7 +3357,7 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
 
     const bodyDiv = document.createElement('div');
     bodyDiv.className = 'message-body';
-    bodyDiv.innerHTML = renderMessageBody(message.text || '', message.imageUrl || '');
+    bodyDiv.innerHTML = renderMessageBody(message);
 
     const metaRow = document.createElement('div');
     metaRow.className = 'message-meta-row';
@@ -2803,7 +3437,7 @@ function updateMessageElement(wrapper, docId, message, ownerUid = currentUid) {
     }
 
     const bodyDiv = wrapper.querySelector('.message-body');
-    const nextBodyHtml = renderMessageBody(message.text || '', message.imageUrl || '');
+    const nextBodyHtml = renderMessageBody(message);
     if (bodyDiv && bodyDiv.innerHTML !== nextBodyHtml) {
         bodyDiv.innerHTML = nextBodyHtml;
     }
@@ -2955,8 +3589,9 @@ function handleMessageDocChange(change, ctx) {
                     syncUnreadReset(chatId, uid);
                     playMessageNotificationSound();
                 } else {
-                    const previewText = msgData.imageUrl
-                        ? (String(msgData.text || '').trim() ? `📷 Foto: ${String(msgData.text).trim()}` : '📷 Mengirim foto')
+                    const attachmentUrl = msgData.mediaUrl || msgData.imageUrl || '';
+                    const previewText = attachmentUrl
+                        ? getReplyExcerpt(msgData.text || '', msgData)
                         : (String(msgData.text || '').includes('📋 *LAMARAN KERJA BARU*')
                             ? 'Mengirim lamaran kerja baru'
                             : String(msgData.text || 'Pesan baru'));
@@ -2990,8 +3625,7 @@ function handleMessageDocChange(change, ctx) {
                 id: msgId,
                 senderUid: msgData.senderUid,
                 senderName: getSenderDisplayName(msgData, uid),
-                text: getReplyExcerpt(msgData.text || '', msgData.imageUrl || ''),
-                imageUrl: msgData.imageUrl || null
+                text: getReplyExcerpt(msgData.text || '', msgData)
             }, false);
         }
         if (msgData.senderUid === uid) {
@@ -3208,19 +3842,133 @@ onAuthStateChanged(auth, user => {
     }
 });
 
+async function dispatchNewMessageToFirestore({ senderUid, recipientUid, chatId, text, mediaMeta = null, replyToPayload = null }) {
+    stickToBottom = true;
+    let senderNameToSave = extractProfileName(
+        myProfile,
+        myUserName || auth.currentUser?.displayName || loadCachedProfile(senderUid)?.name
+    );
+    if (!senderNameToSave) {
+        const freshProfile = await fetchUserProfile(db, senderUid, { forceRefresh: true }).catch(() => null);
+        if (freshProfile) {
+            myProfile = freshProfile;
+            senderNameToSave = extractProfileName(freshProfile, auth.currentUser?.displayName);
+            myUserName = senderNameToSave;
+            myBadgesHtml = buildCombinedBadgesHtml(freshProfile, 'message-bubble-verif');
+        }
+    }
+    const senderVerifiedToSave = Boolean(myProfile?.isVerified);
+    const senderProToSave = hasYellowBadge(myProfile);
+
+    const msgPayload = {
+        senderUid,
+        senderName: senderNameToSave,
+        senderIsVerified: senderVerifiedToSave,
+        senderIsPro: senderProToSave,
+        text,
+        imageUrl: mediaMeta?.mediaType === 'image' ? mediaMeta.url : null,
+        mediaUrl: mediaMeta?.url || null,
+        mediaType: mediaMeta?.mediaType || null,
+        fileName: mediaMeta?.fileName || null,
+        fileSize: mediaMeta?.fileSize || 0,
+        mimeType: mediaMeta?.mimeType || null,
+        replyTo: replyToPayload,
+        createdAt: serverTimestamp(),
+        isEdited: false,
+        status: 'sent',
+        checkColor: null,
+        delivered: false,
+        read: false
+    };
+
+    const summaryText = mediaMeta
+        ? getMediaSummaryLabel(mediaMeta.mediaType, mediaMeta.fileName, text)
+        : text;
+
+    const summaryPromise = syncChatSummaryOnSend(chatId, senderUid, recipientUid, summaryText).catch(err => {
+        console.warn('Sync chat summary warning:', err);
+    });
+
+    const addedDocRef = await withTimeout(
+        addDoc(collection(db, 'chats', chatId, 'messages'), msgPayload),
+        7000,
+        'Add message'
+    );
+
+    await summaryPromise;
+
+    const nowMs = Date.now();
+    const optimisticMsg = {
+        ...msgPayload,
+        createdAt: { toDate: () => new Date(nowMs) }
+    };
+    messagesStore.set(addedDocRef.id, optimisticMsg);
+    upsertMessageToCache(chatId, {
+        id: addedDocRef.id,
+        senderUid,
+        senderName: senderNameToSave,
+        senderIsVerified: senderVerifiedToSave,
+        senderIsPro: senderProToSave,
+        text,
+        imageUrl: msgPayload.imageUrl,
+        mediaUrl: msgPayload.mediaUrl,
+        mediaType: msgPayload.mediaType,
+        fileName: msgPayload.fileName,
+        fileSize: msgPayload.fileSize,
+        mimeType: msgPayload.mimeType,
+        replyTo: replyToPayload,
+        isEdited: false,
+        status: 'sent',
+        checkColor: null,
+        delivered: false,
+        read: false,
+        createdAtMs: nowMs
+    });
+
+    const messagesContainer = document.getElementById('chatMessages');
+    const typingBubbleWrapper = document.getElementById('typingBubbleWrapper');
+    if (messagesContainer && !messagesContainer.querySelector(`[data-msg-id="${CSS.escape(addedDocRef.id)}"]`)) {
+        const newEl = buildMessageElement(addedDocRef.id, optimisticMsg, senderUid);
+        if (typingBubbleWrapper) {
+            messagesContainer.insertBefore(newEl, typingBubbleWrapper);
+        } else {
+            messagesContainer.appendChild(newEl);
+        }
+    }
+
+    scrollMessagesToBottom(true);
+    playSentMessageSound();
+
+    sendPushNotification({
+        db,
+        recipientUid,
+        cachedToken: otherUserFcmToken,
+        title: senderNameToSave || 'Pesan Baru',
+        body: summaryText,
+        tag: `chat-${chatId}`,
+        url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(senderUid)}`,
+        icon: myProfile?.avatarUrl || getUserAvatarUrl(senderUid),
+        workerUrl: PUSH_WORKER_URL
+    }).then(pushRes => {
+        if (pushRes?.token) otherUserFcmToken = pushRes.token;
+    }).catch(() => {});
+}
+
 window.handleChatFormSubmit = async function (event) {
     event.preventDefault();
     if (isSendingMessage) return;
 
+    closeAttachMenu();
+
     const inputEl = document.getElementById('messageInput');
     const sendBtnEl = document.getElementById('chatSendBtn');
     const text = inputEl ? inputEl.value.trim() : '';
-    const photoFileToUpload = selectedPhotoFile;
+    const mediaToUpload = selectedMedia ? { ...selectedMedia } : null;
     const senderUid = currentUid || auth.currentUser?.uid || getEarlyUid();
     const recipientUid = activeChatUserId;
     const chatId = resolveActiveChatId(senderUid, recipientUid);
 
-    if (!text && !photoFileToUpload) return;
+    if (!text && !mediaToUpload) return;
     if (!chatId || !senderUid || !recipientUid) {
         showToast('Sesi chat belum siap, coba lagi.');
         return;
@@ -3272,120 +4020,34 @@ window.handleChatFormSubmit = async function (event) {
             if (existingPin) {
                 addOrUpdatePinnedMessage({
                     ...existingPin,
-                    text: getReplyExcerpt(text, cachedMsg?.imageUrl || '')
+                    text: getReplyExcerpt(text, cachedMsg)
                 }, true);
             }
             showToast('Pesan diperbarui.');
             return;
         }
 
-        let uploadedImageUrl = null;
-        if (photoFileToUpload) {
-            const previewSubEl = document.getElementById('photoPreviewSub');
-            if (previewSubEl) previewSubEl.textContent = 'Mengunggah foto ke Supabase...';
-            uploadedImageUrl = await uploadPhotoToSupabase(photoFileToUpload, chatId, senderUid);
-            window.clearSelectedPhoto();
+        let uploadedMediaMeta = null;
+        if (mediaToUpload?.file) {
+            const previewSubEl = document.getElementById('mediaPreviewSub');
+            if (previewSubEl) previewSubEl.textContent = 'Mengunggah ke Supabase...';
+            uploadedMediaMeta = await uploadMediaToSupabase(
+                mediaToUpload.file,
+                mediaToUpload.mediaType,
+                chatId,
+                senderUid
+            );
+            window.clearSelectedMedia();
         }
 
-        stickToBottom = true;
-        let senderNameToSave = extractProfileName(
-            myProfile,
-            myUserName || auth.currentUser?.displayName || loadCachedProfile(senderUid)?.name
-        );
-        if (!senderNameToSave) {
-            const freshProfile = await fetchUserProfile(db, senderUid, { forceRefresh: true }).catch(() => null);
-            if (freshProfile) {
-                myProfile = freshProfile;
-                senderNameToSave = extractProfileName(freshProfile, auth.currentUser?.displayName);
-                myUserName = senderNameToSave;
-                myBadgesHtml = buildCombinedBadgesHtml(freshProfile, 'message-bubble-verif');
-            }
-        }
-        const senderVerifiedToSave = Boolean(myProfile?.isVerified);
-        const senderProToSave = hasYellowBadge(myProfile);
-
-        const msgPayload = {
+        await dispatchNewMessageToFirestore({
             senderUid,
-            senderName: senderNameToSave,
-            senderIsVerified: senderVerifiedToSave,
-            senderIsPro: senderProToSave,
-            text,
-            imageUrl: uploadedImageUrl,
-            replyTo: replyToPayload,
-            createdAt: serverTimestamp(),
-            isEdited: false,
-            status: 'sent',
-            checkColor: null,
-            delivered: false,
-            read: false
-        };
-
-        const summaryText = uploadedImageUrl
-            ? (text ? `📷 Foto: ${text}` : '📷 Foto')
-            : text;
-
-        const summaryPromise = syncChatSummaryOnSend(chatId, senderUid, recipientUid, summaryText).catch(err => {
-            console.warn('Sync chat summary warning:', err);
-        });
-
-        const addedDocRef = await withTimeout(
-            addDoc(collection(db, 'chats', chatId, 'messages'), msgPayload),
-            7000,
-            'Add message'
-        );
-
-        await summaryPromise;
-
-        const nowMs = Date.now();
-        const optimisticMsg = {
-            ...msgPayload,
-            createdAt: { toDate: () => new Date(nowMs) }
-        };
-        messagesStore.set(addedDocRef.id, optimisticMsg);
-        upsertMessageToCache(chatId, {
-            id: addedDocRef.id,
-            senderUid,
-            senderName: senderNameToSave,
-            senderIsVerified: senderVerifiedToSave,
-            senderIsPro: senderProToSave,
-            text,
-            imageUrl: uploadedImageUrl,
-            replyTo: replyToPayload,
-            isEdited: false,
-            status: 'sent',
-            checkColor: null,
-            delivered: false,
-            read: false,
-            createdAtMs: nowMs
-        });
-
-        const messagesContainer = document.getElementById('chatMessages');
-        const typingBubbleWrapper = document.getElementById('typingBubbleWrapper');
-        if (messagesContainer && !messagesContainer.querySelector(`[data-msg-id="${CSS.escape(addedDocRef.id)}"]`)) {
-            const newEl = buildMessageElement(addedDocRef.id, optimisticMsg, senderUid);
-            if (typingBubbleWrapper) {
-                messagesContainer.insertBefore(newEl, typingBubbleWrapper);
-            } else {
-                messagesContainer.appendChild(newEl);
-            }
-        }
-
-        scrollMessagesToBottom(true);
-        playSentMessageSound();
-
-        sendPushNotification({
-            db,
             recipientUid,
-            cachedToken: otherUserFcmToken,
-            title: senderNameToSave || 'Pesan Baru',
-            body: summaryText,
-            tag: `chat-${chatId}`,
-            url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(senderUid)}`,
-            icon: myProfile?.avatarUrl || getUserAvatarUrl(senderUid),
-            workerUrl: PUSH_WORKER_URL
-        }).then(pushRes => {
-            if (pushRes?.token) otherUserFcmToken = pushRes.token;
-        }).catch(() => {});
+            chatId,
+            text,
+            mediaMeta: uploadedMediaMeta,
+            replyToPayload
+        });
 
     } catch (error) {
         console.error('Send message error:', error);
@@ -3397,13 +4059,13 @@ window.handleChatFormSubmit = async function (event) {
             activeReplyData = replyToPayload;
             renderReplyPreviewBar();
         }
-        if (photoFileToUpload && !selectedPhotoFile) {
-            setSelectedPhotoFile(photoFileToUpload);
+        if (mediaToUpload?.file && !selectedMedia) {
+            setSelectedMediaFile(mediaToUpload.file, mediaToUpload.mediaType);
         }
         if (inputEl && !inputEl.value && text) {
             inputEl.value = text;
         }
-        showToast(photoFileToUpload ? 'Gagal mengunggah foto ke Supabase. Coba lagi.' : 'Gagal mengirim pesan. Coba lagi.');
+        showToast(mediaToUpload ? 'Gagal mengunggah file ke Supabase. Coba lagi.' : 'Gagal mengirim pesan. Coba lagi.');
     } finally {
         isSendingMessage = false;
         if (sendBtnEl) {
