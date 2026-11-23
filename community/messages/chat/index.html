@@ -1234,15 +1234,9 @@ import {
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
-import {
-    app,
-    db,
-    rtdb,
-    auth,
-    PUSH_WORKER_URL,
-    supabaseUrl,
-    avatarBucket
-} from 'https://sitenexs.com/assets/js/sitenexs-config.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+import * as SitenexsConfig from 'https://sitenexs.com/assets/js/sitenexs-config.js';
 
 import {
     fetchUserProfile,
@@ -1264,11 +1258,31 @@ import {
     attachOngoingCallBanner
 } from 'https://sitenexs.com/assets/js/sitenexs-call-presence.js';
 
+const {
+    app,
+    db,
+    rtdb,
+    auth,
+    PUSH_WORKER_URL,
+    supabaseUrl,
+    avatarBucket,
+    supabaseConfig
+} = SitenexsConfig;
+
 const VERIFIED_BADGE_URL = 'https://sitenexs.com/assets/logo/verified.png';
 const PRO_BADGE_URL = 'https://sitenexs.com/assets/logo/lencana.png';
-const SUPABASE_CHAT_BUCKET = avatarBucket || 'profile-photos';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxY2J5YW14aWVrZHh5dG50bG5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5ODcxNjgsImV4cCI6MjA5MTU2MzE2OH0.eE_4B6d1S94041336426';
+const SUPABASE_URL = String(supabaseUrl || supabaseConfig?.url || 'https://xqcbyamxiekdxytntlno.supabase.co').replace(/\/+$/, '');
+const SUPABASE_CHAT_BUCKET = avatarBucket || supabaseConfig?.avatarBucket || 'profile-photos';
+const SUPABASE_PUBLISHABLE_KEY = String(
+    SitenexsConfig.supabasePublishableKey ||
+    supabaseConfig?.publishableKey ||
+    'sb_publishable_XKHXYrEw2EDdfYH17Uyx6w_k_BtGLQa'
+).trim();
 const MAX_UPLOAD_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false }
+});
 
 let currentUid = null;
 let myProfile = null;
@@ -1288,7 +1302,7 @@ let contextTargetMsg = null;
 let pinnedMessagesList = [];
 let activePinnedIndex = 0;
 
-let selectedMedia = null; // { file, mediaType, fileName, fileSize, mimeType, previewUrl }
+let selectedMedia = null;
 
 // State perekam pesan suara
 let mediaRecorder = null;
@@ -1445,8 +1459,12 @@ async function compressImageFile(file, maxDimension = 1440, quality = 0.82) {
     });
 }
 
-async function uploadMediaToSupabase(file, mediaType, chatId, senderUid) {
+async function uploadMediaToSupabase(file, mediaType, chatId, senderUid, recipientUid = '') {
     if (!file) throw new Error('File tidak ditemukan');
+    if (!SUPABASE_PUBLISHABLE_KEY) {
+        throw new Error('Publishable Key Supabase belum diisi');
+    }
+
     const processedFile = mediaType === 'image' ? await compressImageFile(file) : file;
     const originalName = String(file.name || 'attachment').trim();
     const rawExt = (processedFile.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin';
@@ -1465,40 +1483,50 @@ async function uploadMediaToSupabase(file, mediaType, chatId, senderUid) {
     const randomPart = Math.random().toString(36).slice(2, 8);
     const objectPath = `chat-media/${safeChatId}/${subFolder}/${Date.now()}_${safeSender}_${randomPart}.${rawExt}`;
 
-    const baseUrl = String(supabaseUrl || 'https://xqcbyamxiekdxytntlno.supabase.co').replace(/\/+$/, '');
-    const uploadEndpoint = `${baseUrl}/storage/v1/object/${encodeURIComponent(SUPABASE_CHAT_BUCKET)}/${objectPath}`;
+    const contentType = (processedFile.type || file.type || 'application/octet-stream').split(';')[0].trim();
 
-    const headers = {
-        'Content-Type': processedFile.type || 'application/octet-stream',
-        'x-upsert': 'true'
-    };
-    if (SUPABASE_ANON_KEY) {
-        headers['apikey'] = SUPABASE_ANON_KEY;
-        headers['Authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;
-    }
-
-    const response = await withTimeout(
-        fetch(uploadEndpoint, {
-            method: 'POST',
-            headers,
-            body: processedFile
-        }),
+    const { error: uploadError } = await withTimeout(
+        supabase.storage
+            .from(SUPABASE_CHAT_BUCKET)
+            .upload(objectPath, processedFile, {
+                contentType,
+                cacheControl: '3600',
+                upsert: true
+            }),
         45000,
         'Supabase upload'
     );
 
-    if (!response.ok) {
-        const errText = await response.text().catch(() => '');
-        throw new Error(`Supabase upload failed (${response.status}): ${errText}`);
+    if (uploadError) {
+        throw new Error(uploadError.message || 'Gagal upload ke Supabase Storage');
     }
 
-    const publicUrl = `${baseUrl}/storage/v1/object/public/${encodeURIComponent(SUPABASE_CHAT_BUCKET)}/${objectPath}`;
+    const { data: pubData } = supabase.storage
+        .from(SUPABASE_CHAT_BUCKET)
+        .getPublicUrl(objectPath);
+
+    const publicUrl = pubData?.publicUrl ||
+        `${SUPABASE_URL}/storage/v1/object/public/${encodeURIComponent(SUPABASE_CHAT_BUCKET)}/${objectPath}`;
+
+    supabase.from('chat_media_files').insert({
+        chat_id: chatId,
+        sender_uid: senderUid,
+        recipient_uid: recipientUid || null,
+        media_type: mediaType,
+        file_name: originalName,
+        file_size: processedFile.size || file.size || 0,
+        mime_type: contentType,
+        bucket_name: SUPABASE_CHAT_BUCKET,
+        storage_path: objectPath,
+        public_url: publicUrl
+    }).then(() => {}).catch(() => {});
+
     return {
         url: publicUrl,
         mediaType,
         fileName: originalName,
         fileSize: processedFile.size || file.size || 0,
-        mimeType: processedFile.type || file.type || 'application/octet-stream'
+        mimeType: contentType
     };
 }
 
@@ -1689,7 +1717,7 @@ window.startVoiceRecording = async function () {
 
         mediaRecorder.onstop = async () => {
             const wasCancelled = isVoiceCancelRequested;
-            const recordedMime = mediaRecorder?.mimeType || 'audio/webm';
+            const recordedMime = (mediaRecorder?.mimeType || 'audio/webm').split(';')[0].trim();
             const chunksCopy = [...voiceChunks];
             const finalDuration = voiceRecordSeconds;
             cleanupVoiceRecorderResources();
@@ -1768,7 +1796,7 @@ async function sendDirectVoiceNoteFile(voiceFile) {
     window.clearActiveReply();
 
     try {
-        const uploadedMeta = await uploadMediaToSupabase(voiceFile, 'voice', chatId, senderUid);
+        const uploadedMeta = await uploadMediaToSupabase(voiceFile, 'voice', chatId, senderUid, recipientUid);
         await dispatchNewMessageToFirestore({
             senderUid,
             recipientUid,
@@ -1779,7 +1807,7 @@ async function sendDirectVoiceNoteFile(voiceFile) {
         });
     } catch (err) {
         console.error('Voice note upload error:', err);
-        showToast('Gagal mengirim pesan suara. Coba lagi.');
+        showToast(`Gagal mengirim pesan suara: ${err.message || 'Coba lagi'}`);
     } finally {
         isSendingMessage = false;
         if (sendBtnEl) {
@@ -2805,7 +2833,7 @@ window.showToast = function (msg) {
     toast.append(icon, text);
     container.appendChild(toast);
 
-    setTimeout(() => toast.remove(), 3500);
+    setTimeout(() => toast.remove(), 4200);
 };
 
 window.openCallPage = function (callType = 'video') {
@@ -4035,7 +4063,8 @@ window.handleChatFormSubmit = async function (event) {
                 mediaToUpload.file,
                 mediaToUpload.mediaType,
                 chatId,
-                senderUid
+                senderUid,
+                recipientUid
             );
             window.clearSelectedMedia();
         }
@@ -4065,7 +4094,8 @@ window.handleChatFormSubmit = async function (event) {
         if (inputEl && !inputEl.value && text) {
             inputEl.value = text;
         }
-        showToast(mediaToUpload ? 'Gagal mengunggah file ke Supabase. Coba lagi.' : 'Gagal mengirim pesan. Coba lagi.');
+        const errDetail = error?.message ? `: ${error.message}` : '';
+        showToast(mediaToUpload ? `Gagal unggah${errDetail}` : 'Gagal mengirim pesan. Coba lagi.');
     } finally {
         isSendingMessage = false;
         if (sendBtnEl) {
