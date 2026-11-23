@@ -154,6 +154,72 @@
             flex-shrink: 0;
         }
 
+        /* BANNER PESAN TERSEMAT (PINNED MESSAGE) */
+        .pinned-message-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.65rem;
+            padding: 0.52rem 1.15rem;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-subtle);
+            flex: 0 0 auto;
+            z-index: 8;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+        }
+        .pinned-message-bar.active {
+            display: flex;
+        }
+        .pinned-message-left {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-width: 0;
+            flex: 1;
+            border-left: 3px solid var(--primary);
+            padding-left: 0.55rem;
+        }
+        .pinned-message-icon {
+            color: var(--primary);
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+        .pinned-message-info {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .pinned-message-label {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+        .pinned-message-snippet {
+            font-size: 0.78rem;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .pinned-unpin-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .pinned-unpin-btn:hover {
+            background: var(--bg-body);
+            color: var(--danger);
+        }
+
         /* RUANG CHAT UTAMA */
         .chat-wrapper {
             width: 100%; height: 100%; background: #fafbfc; border: 1px solid var(--border-subtle); 
@@ -243,6 +309,9 @@
         }
         .message-bubble.swiping {
             transition: none;
+        }
+        .message-bubble.pinned-msg {
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35), 0 4px 12px rgba(15, 23, 42, 0.08);
         }
 
         /* KUTIPAN REPLY DI DALAM BUBBLE CHAT */
@@ -343,6 +412,71 @@
         .reply-cancel-btn:hover {
             background: rgba(15, 23, 42, 0.08);
             color: var(--text-main);
+        }
+
+        /* MENU TEKAN LAMA PESAN (LONG PRESS ACTION SHEET) */
+        .msg-context-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.36);
+            z-index: 25000;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0.75rem;
+        }
+        .msg-context-backdrop.active {
+            display: flex;
+        }
+        .msg-context-sheet {
+            width: 100%;
+            max-width: 440px;
+            background: #ffffff;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .msg-context-preview {
+            padding: 0.75rem 1rem;
+            background: var(--bg-body);
+            border-bottom: 1px solid var(--border-subtle);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .msg-context-item {
+            width: 100%;
+            padding: 0.85rem 1.1rem;
+            background: #ffffff;
+            color: var(--text-main);
+            font-size: 0.88rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            text-align: left;
+            border-bottom: 1px solid var(--border-subtle);
+            transition: background-color 0.15s ease;
+        }
+        .msg-context-item:last-child {
+            border-bottom: none;
+        }
+        .msg-context-item:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        .msg-context-item.danger {
+            color: var(--danger);
+        }
+        .msg-context-item.danger:hover {
+            background: #fef2f2;
+            color: var(--danger);
         }
 
         /* NAMA PENGIRIM + CENTANG BIRU / LENCANA KUNING DI DALAM BUBBLE CHAT */
@@ -531,6 +665,29 @@
 
     <div id="toastContainer"></div>
 
+    <!-- MENU OPSI TEKAN LAMA PESAN -->
+    <div id="msgContextBackdrop" class="msg-context-backdrop" onclick="closeMessageContextMenu(event)">
+        <div class="msg-context-sheet" onclick="event.stopPropagation()">
+            <div id="msgContextPreview" class="msg-context-preview">Opsi pesan</div>
+            <button type="button" id="ctxPinBtn" class="msg-context-item" onclick="handleContextPinMessage()">
+                <i class="fas fa-thumbtack"></i>
+                <span id="ctxPinLabel">Sematkan pesan</span>
+            </button>
+            <button type="button" id="ctxEditBtn" class="msg-context-item" onclick="handleContextEditMessage()">
+                <i class="fas fa-pen"></i>
+                <span>Edit pesan</span>
+            </button>
+            <button type="button" id="ctxDeleteEveryoneBtn" class="msg-context-item danger" onclick="handleContextDeleteForEveryone()">
+                <i class="fas fa-trash-alt"></i>
+                <span>Hapus untuk semua orang</span>
+            </button>
+            <button type="button" id="ctxDeleteMeBtn" class="msg-context-item danger" onclick="handleContextDeleteForMe()">
+                <i class="fas fa-eye-slash"></i>
+                <span>Hapus untuk saya</span>
+            </button>
+        </div>
+    </div>
+
     <main class="container">
         <div class="chat-wrapper">
             <!-- BANNER AKTIFKAN PUSH NOTIFIKASI HP -->
@@ -578,6 +735,20 @@
                 </span>
             </div>
 
+            <!-- BANNER PESAN TERSEMAT -->
+            <div id="pinnedMessageBar" class="pinned-message-bar" onclick="handlePinnedBarClick()">
+                <div class="pinned-message-left">
+                    <i class="fas fa-thumbtack pinned-message-icon"></i>
+                    <div class="pinned-message-info">
+                        <div class="pinned-message-label">Pesan Tersemat</div>
+                        <div id="pinnedMessageSnippet" class="pinned-message-snippet"></div>
+                    </div>
+                </div>
+                <button type="button" class="pinned-unpin-btn" onclick="handleUnpinFromBar(event)" title="Lepas sematan">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
             <!-- ISI PESAN -->
             <div class="chat-messages" id="chatMessages">
                 <div id="typingBubbleWrapper" class="typing-bubble-wrapper">
@@ -615,6 +786,7 @@ import {
     doc,
     setDoc,
     updateDoc,
+    deleteDoc,
     collection,
     addDoc,
     query,
@@ -666,6 +838,9 @@ let otherUserName = '';
 let otherBadgesHtml = '';
 let otherUserFcmToken = null;
 let activeReplyData = null;
+let editingMessageId = null;
+let contextTargetMsg = null;
+let pinnedMessageData = null;
 
 let unsubscribeMessages = null;
 let unsubscribeChatMeta = null;
@@ -679,9 +854,316 @@ let lastTypingSoundAt = 0;
 let stickToBottom = true;
 let scrollRafId = null;
 const updatedDocIds = new Set();
+const messagesStore = new Map();
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
+
+/* =====================================================
+   HAPUS UNTUK SAYA & SEMATKAN PESAN (LOKAL + FIRESTORE)
+===================================================== */
+function getHiddenForMeKey(chatId, uid) {
+    return `sitenexs_hidden_msgs_${chatId}_${uid}`;
+}
+
+function loadHiddenMessageIds(chatId, uid) {
+    if (!chatId || !uid) return new Set();
+    try {
+        const raw = localStorage.getItem(getHiddenForMeKey(chatId, uid));
+        if (!raw) return new Set();
+        const arr = JSON.parse(raw);
+        return new Set(Array.isArray(arr) ? arr : []);
+    } catch (e) {
+        return new Set();
+    }
+}
+
+function hideMessageForMe(chatId, uid, msgId) {
+    if (!chatId || !uid || !msgId) return;
+    try {
+        const set = loadHiddenMessageIds(chatId, uid);
+        set.add(msgId);
+        localStorage.setItem(getHiddenForMeKey(chatId, uid), JSON.stringify([...set]));
+    } catch (e) {}
+    const messagesContainer = document.getElementById('chatMessages');
+    const el = messagesContainer?.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
+    if (el) el.remove();
+    if (pinnedMessageData?.id === msgId) {
+        setPinnedMessage(null);
+    }
+}
+
+function getPinnedStoreKey(chatId) {
+    return `sitenexs_pinned_msg_${chatId}`;
+}
+
+function renderPinnedMessageBar() {
+    const bar = document.getElementById('pinnedMessageBar');
+    const snippetEl = document.getElementById('pinnedMessageSnippet');
+    if (!bar || !snippetEl) return;
+
+    if (!pinnedMessageData || !pinnedMessageData.id) {
+        bar.classList.remove('active');
+        snippetEl.textContent = '';
+        return;
+    }
+
+    const hiddenSet = loadHiddenMessageIds(activeChatId, currentUid);
+    if (hiddenSet.has(pinnedMessageData.id)) {
+        bar.classList.remove('active');
+        return;
+    }
+
+    snippetEl.textContent = getReplyExcerpt(pinnedMessageData.text || '');
+    bar.classList.add('active');
+}
+
+function setPinnedMessage(pinObj, syncRemote = true) {
+    pinnedMessageData = pinObj && pinObj.id ? {
+        id: pinObj.id,
+        senderUid: pinObj.senderUid || '',
+        senderName: pinObj.senderName || '',
+        text: pinObj.text || ''
+    } : null;
+
+    if (activeChatId) {
+        try {
+            if (pinnedMessageData) {
+                localStorage.setItem(getPinnedStoreKey(activeChatId), JSON.stringify(pinnedMessageData));
+            } else {
+                localStorage.removeItem(getPinnedStoreKey(activeChatId));
+            }
+        } catch (e) {}
+
+        if (syncRemote) {
+            setDoc(doc(db, 'chats', activeChatId), {
+                pinnedMessage: pinnedMessageData
+            }, { merge: true }).catch(() => {});
+        }
+    }
+
+    const messagesContainer = document.getElementById('chatMessages');
+    if (messagesContainer) {
+        messagesContainer.querySelectorAll('.message-bubble.pinned-msg').forEach(b => b.classList.remove('pinned-msg'));
+        if (pinnedMessageData?.id) {
+            const targetWrapper = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(pinnedMessageData.id)}"]`);
+            const targetBubble = targetWrapper?.querySelector('.message-bubble');
+            if (targetBubble) targetBubble.classList.add('pinned-msg');
+        }
+    }
+
+    renderPinnedMessageBar();
+}
+
+function loadLocalPinnedMessage(chatId) {
+    if (!chatId) return;
+    try {
+        const raw = localStorage.getItem(getPinnedStoreKey(chatId));
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.id) {
+            pinnedMessageData = parsed;
+            renderPinnedMessageBar();
+        }
+    } catch (e) {}
+}
+
+window.handlePinnedBarClick = function () {
+    if (!pinnedMessageData?.id) return;
+    window.scrollToQuotedMessage(pinnedMessageData.id);
+};
+
+window.handleUnpinFromBar = function (event) {
+    if (event) event.stopPropagation();
+    setPinnedMessage(null, true);
+    showToast('Semat pesan dilepas.');
+};
+
+/* =====================================================
+   MENU OPSI TEKAN LAMA PESAN (LONG PRESS)
+===================================================== */
+window.openMessageContextMenu = function (docId, message) {
+    if (!docId || !message) return;
+    contextTargetMsg = { id: docId, ...message };
+
+    const backdrop = document.getElementById('msgContextBackdrop');
+    const previewEl = document.getElementById('msgContextPreview');
+    const pinLabelEl = document.getElementById('ctxPinLabel');
+    const editBtnEl = document.getElementById('ctxEditBtn');
+    const deleteEveryoneBtnEl = document.getElementById('ctxDeleteEveryoneBtn');
+
+    if (previewEl) {
+        previewEl.textContent = getReplyExcerpt(message.text || '');
+    }
+
+    const isPinnedAlready = Boolean(pinnedMessageData && pinnedMessageData.id === docId);
+    if (pinLabelEl) {
+        pinLabelEl.textContent = isPinnedAlready ? 'Lepas sematan pesan' : 'Sematkan pesan';
+    }
+
+    const isMine = message.senderUid === currentUid;
+    const isCallLog = String(message.text || '').startsWith('[CALL_LOG]|');
+    const isApplication = String(message.text || '').includes('📋 *LAMARAN KERJA BARU*');
+
+    if (editBtnEl) {
+        editBtnEl.style.display = (isMine && !isCallLog && !isApplication) ? 'flex' : 'none';
+    }
+    if (deleteEveryoneBtnEl) {
+        deleteEveryoneBtnEl.style.display = isMine ? 'flex' : 'none';
+    }
+
+    if (backdrop) {
+        backdrop.classList.add('active');
+    }
+};
+
+window.closeMessageContextMenu = function (event) {
+    if (event && event.target && event.target.id !== 'msgContextBackdrop') return;
+    const backdrop = document.getElementById('msgContextBackdrop');
+    if (backdrop) backdrop.classList.remove('active');
+    contextTargetMsg = null;
+};
+
+window.handleContextPinMessage = function () {
+    if (!contextTargetMsg) return;
+    const target = { ...contextTargetMsg };
+    window.closeMessageContextMenu();
+
+    if (pinnedMessageData && pinnedMessageData.id === target.id) {
+        setPinnedMessage(null, true);
+        showToast('Semat pesan dilepas.');
+    } else {
+        const senderLabel = getSenderDisplayName(target, currentUid) ||
+            (target.senderUid === currentUid ? 'Anda' : (otherUserName || 'Mitra Sitenexs'));
+        setPinnedMessage({
+            id: target.id,
+            senderUid: target.senderUid,
+            senderName: senderLabel,
+            text: target.text || ''
+        }, true);
+        showToast('Pesan disematkan.');
+    }
+};
+
+window.handleContextEditMessage = function () {
+    if (!contextTargetMsg) return;
+    const target = { ...contextTargetMsg };
+    window.closeMessageContextMenu();
+
+    if (target.senderUid !== currentUid) return;
+    editingMessageId = target.id;
+    window.clearActiveReply();
+
+    const inputEl = document.getElementById('messageInput');
+    if (inputEl) {
+        inputEl.value = target.text || '';
+        inputEl.focus();
+    }
+    showToast('Edit pesan lalu tekan kirim.');
+};
+
+window.handleContextDeleteForEveryone = async function () {
+    if (!contextTargetMsg || !activeChatId) return;
+    const target = { ...contextTargetMsg };
+    window.closeMessageContextMenu();
+
+    if (target.senderUid !== currentUid) return;
+
+    try {
+        if (pinnedMessageData?.id === target.id) {
+            setPinnedMessage(null, true);
+        }
+        await deleteDoc(doc(db, 'chats', activeChatId, 'messages', target.id));
+        const messagesContainer = document.getElementById('chatMessages');
+        const el = messagesContainer?.querySelector(`[data-msg-id="${CSS.escape(target.id)}"]`);
+        if (el) el.remove();
+        showToast('Pesan dihapus untuk semua orang.');
+    } catch (err) {
+        console.error('Delete for everyone error:', err);
+        showToast('Gagal menghapus pesan.');
+    }
+};
+
+window.handleContextDeleteForMe = function () {
+    if (!contextTargetMsg || !activeChatId || !currentUid) return;
+    const target = { ...contextTargetMsg };
+    window.closeMessageContextMenu();
+
+    hideMessageForMe(activeChatId, currentUid, target.id);
+    showToast('Pesan dihapus untuk saya.');
+};
+
+function attachLongPressToMessage(wrapper, bubble, docId, message) {
+    const LONG_PRESS_MS = 480;
+    let pressTimer = null;
+    let startX = 0;
+    let startY = 0;
+    let longPressTriggered = false;
+
+    const clearPressTimer = () => {
+        if (pressTimer) {
+            clearTimeout(pressTimer);
+            pressTimer = null;
+        }
+    };
+
+    const startPress = (clientX, clientY) => {
+        clearPressTimer();
+        startX = clientX;
+        startY = clientY;
+        longPressTriggered = false;
+        pressTimer = setTimeout(() => {
+            longPressTriggered = true;
+            window.openMessageContextMenu(docId, messagesStore.get(docId) || message);
+        }, LONG_PRESS_MS);
+    };
+
+    const movePress = (clientX, clientY) => {
+        if (!pressTimer) return;
+        if (Math.abs(clientX - startX) > 10 || Math.abs(clientY - startY) > 10) {
+            clearPressTimer();
+        }
+    };
+
+    bubble.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length !== 1) return;
+        startPress(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+
+    bubble.addEventListener('touchmove', (e) => {
+        if (!e.touches || e.touches.length !== 1) return;
+        movePress(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+
+    bubble.addEventListener('touchend', clearPressTimer);
+    bubble.addEventListener('touchcancel', clearPressTimer);
+
+    bubble.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        startPress(e.clientX, e.clientY);
+    });
+
+    bubble.addEventListener('mousemove', (e) => {
+        movePress(e.clientX, e.clientY);
+    });
+
+    bubble.addEventListener('mouseup', clearPressTimer);
+    bubble.addEventListener('mouseleave', clearPressTimer);
+
+    bubble.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        clearPressTimer();
+        window.openMessageContextMenu(docId, messagesStore.get(docId) || message);
+    });
+
+    bubble.addEventListener('click', (e) => {
+        if (longPressTriggered) {
+            e.preventDefault();
+            e.stopPropagation();
+            longPressTriggered = false;
+        }
+    }, true);
+}
 
 /* =====================================================
    FITUR REPLY PESAN DENGAN GESER (SWIPE)
@@ -720,6 +1202,7 @@ function renderReplyPreviewBar() {
 
 window.setReplyToMessage = function (replyPayload) {
     if (!replyPayload || !replyPayload.id) return;
+    editingMessageId = null;
     activeReplyData = {
         id: replyPayload.id,
         senderUid: replyPayload.senderUid || '',
@@ -828,13 +1311,14 @@ function attachSwipeToReply(wrapper, bubble, docId, message, ownerUid) {
         resetSwipe();
 
         if (shouldReply) {
-            const senderLabel = getSenderDisplayName(message, ownerUid) ||
-                (message.senderUid === ownerUid ? 'Anda' : (otherUserName || 'Mitra Sitenexs'));
+            const currentMsg = messagesStore.get(docId) || message;
+            const senderLabel = getSenderDisplayName(currentMsg, ownerUid) ||
+                (currentMsg.senderUid === ownerUid ? 'Anda' : (otherUserName || 'Mitra Sitenexs'));
             window.setReplyToMessage({
                 id: docId,
-                senderUid: message.senderUid,
+                senderUid: currentMsg.senderUid,
                 senderName: senderLabel,
-                text: message.text || ''
+                text: currentMsg.text || ''
             });
         }
     };
@@ -1135,18 +1619,19 @@ function renderCachedMessagesImmediately(chatId, uid) {
 
         cachedList.sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
         const greenIds = loadPersistedGreenReadIds(chatId);
+        const hiddenIds = loadHiddenMessageIds(chatId, uid);
 
         const fragment = document.createDocumentFragment();
         let hasNew = false;
 
         cachedList.forEach(item => {
-            if (!item?.id) return;
+            if (!item?.id || hiddenIds.has(item.id)) return;
             if (messagesContainer.querySelector(`[data-msg-id="${CSS.escape(item.id)}"]`)) return;
             const fakeTimestamp = item.createdAtMs
                 ? { toDate: () => new Date(item.createdAtMs) }
                 : null;
             const isGreenPersisted = greenIds.has(item.id);
-            const el = buildMessageElement(item.id, {
+            const msgObj = {
                 senderUid: item.senderUid,
                 senderName: item.senderName,
                 senderIsVerified: item.senderIsVerified,
@@ -1159,7 +1644,9 @@ function renderCachedMessagesImmediately(chatId, uid) {
                 delivered: isGreenPersisted ? true : Boolean(item.delivered),
                 read: isGreenPersisted ? true : Boolean(item.read),
                 createdAt: fakeTimestamp
-            }, uid);
+            };
+            messagesStore.set(item.id, msgObj);
+            const el = buildMessageElement(item.id, msgObj, uid);
             fragment.appendChild(el);
             hasNew = true;
         });
@@ -1195,6 +1682,7 @@ if (!targetUserId) {
         if (cachedMe?.name) myUserName = cachedMe.name;
         if (cachedMe?.badgesHtml) myBadgesHtml = cachedMe.badgesHtml;
         const earlyChatId = [earlyUid, activeChatUserId].sort().join('_');
+        loadLocalPinnedMessage(earlyChatId);
         renderCachedMessagesImmediately(earlyChatId, earlyUid);
     }
 }
@@ -1706,6 +2194,9 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
 
     const bubble = document.createElement('div');
     bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
+    if (pinnedMessageData && pinnedMessageData.id === docId) {
+        bubble.classList.add('pinned-msg');
+    }
 
     const senderHeader = buildSenderHeaderElement(message, ownerUid);
 
@@ -1741,6 +2232,7 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
     bubble.append(senderHeader, bodyDiv, metaRow);
     wrapper.appendChild(bubble);
     attachSwipeToReply(wrapper, bubble, docId, message, ownerUid);
+    attachLongPressToMessage(wrapper, bubble, docId, message);
     return wrapper;
 }
 
@@ -1751,6 +2243,9 @@ function updateMessageElement(wrapper, docId, message, ownerUid = currentUid) {
     const bubble = wrapper.querySelector('.message-bubble');
     if (bubble) {
         bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
+        if (pinnedMessageData && pinnedMessageData.id === docId) {
+            bubble.classList.add('pinned-msg');
+        }
 
         const resolvedName = getSenderDisplayName(message, ownerUid);
         const resolvedBadges = getSenderBadgesHtml(message, ownerUid);
@@ -1847,8 +2342,16 @@ function handleMessageDocChange(change, ctx) {
     const { chatId, uid, messagesContainer, typingBubbleWrapper } = ctx;
     const msgId = change.doc.id;
     const msgData = change.doc.data();
+    const hiddenIds = loadHiddenMessageIds(chatId, uid);
 
+    messagesStore.set(msgId, msgData);
     syncMessageDocToCache(chatId, msgId, msgData);
+
+    if (hiddenIds.has(msgId)) {
+        const existingHiddenEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
+        if (existingHiddenEl) existingHiddenEl.remove();
+        return false;
+    }
 
     if (change.type === 'added') {
         const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
@@ -1947,6 +2450,12 @@ function handleMessageDocChange(change, ctx) {
                 messagesContainer.insertBefore(existingEl, typingBubbleWrapper);
             }
         }
+        if (pinnedMessageData && pinnedMessageData.id === msgId) {
+            setPinnedMessage({
+                ...pinnedMessageData,
+                text: msgData.text || ''
+            }, false);
+        }
         if (msgData.senderUid === uid) {
             const checkState = getMessageCheckStatus(msgData, msgId);
             if (checkState === 'read-green') {
@@ -1954,8 +2463,12 @@ function handleMessageDocChange(change, ctx) {
             }
         }
     } else if (change.type === 'removed') {
+        messagesStore.delete(msgId);
         const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
         if (existingEl) existingEl.remove();
+        if (pinnedMessageData?.id === msgId) {
+            setPinnedMessage(null, false);
+        }
     }
 
     return false;
@@ -1968,6 +2481,10 @@ function attachChatSyncListeners(chatId, uid, peerUid) {
         const cData = chatSnap.data();
         const isOtherTyping = Boolean(cData[`typing_${peerUid}`]);
         renderOtherTypingIndicator(isOtherTyping);
+
+        if ('pinnedMessage' in cData) {
+            setPinnedMessage(cData.pinnedMessage || null, false);
+        }
 
         if (cData[`unread_${uid}`] === true && document.visibilityState === 'visible') {
             syncUnreadReset(chatId, uid);
@@ -2096,6 +2613,7 @@ async function initChat(user) {
     const participants = [currentUid, activeChatUserId].sort();
     activeChatId = `${participants[0]}_${participants[1]}`;
 
+    loadLocalPinnedMessage(activeChatId);
     renderCachedMessagesImmediately(activeChatId, currentUid);
 
     if (cleanupIncomingRedirect) cleanupIncomingRedirect();
@@ -2154,6 +2672,9 @@ window.handleChatFormSubmit = async function (event) {
 
     if (!text || !activeChatId || !currentUid) return;
 
+    const targetEditId = editingMessageId;
+    editingMessageId = null;
+
     const replyToPayload = activeReplyData ? { ...activeReplyData } : null;
     window.clearActiveReply();
 
@@ -2166,6 +2687,21 @@ window.handleChatFormSubmit = async function (event) {
     setMyTypingState(false);
 
     try {
+        if (targetEditId) {
+            await updateDoc(doc(db, 'chats', activeChatId, 'messages', targetEditId), {
+                text,
+                isEdited: true
+            });
+            if (pinnedMessageData?.id === targetEditId) {
+                setPinnedMessage({
+                    ...pinnedMessageData,
+                    text
+                }, true);
+            }
+            showToast('Pesan diperbarui.');
+            return;
+        }
+
         const recipientUid = activeChatUserId;
         let senderNameToSave = extractProfileName(myProfile, myUserName || auth.currentUser?.displayName || loadCachedProfile(currentUid)?.name);
         if (!senderNameToSave) {
