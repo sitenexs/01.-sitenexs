@@ -649,10 +649,6 @@
             display: flex; align-items: center; justify-content: center; cursor: pointer;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); flex-shrink: 0;
         }
-        .chat-send-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
 
         #toastContainer { position: fixed; bottom: 24px; right: 24px; z-index: 30000; display: flex; flex-direction: column; gap: 0.5rem; max-width: 340px; }
         .toast { background: #0f172a; color: #fff; padding: 0.85rem 1.15rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 0.75rem; border-left: 4px solid var(--accent); }
@@ -856,8 +852,7 @@ let cleanupOngoingBanner = null;
 let lastNotifiedMessageId = null;
 let isRedirectingToCall = false;
 let isChatInitialized = false;
-let isSendingMessage = false;
-let sendLockTimer = null;
+let lastTypingSentState = false;
 let typingStopTimer = null;
 let lastTypingSoundAt = 0;
 let stickToBottom = true;
@@ -867,26 +862,6 @@ const messagesStore = new Map();
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
-
-function releaseSendLock() {
-    isSendingMessage = false;
-    if (sendLockTimer) {
-        clearTimeout(sendLockTimer);
-        sendLockTimer = null;
-    }
-    const sendBtn = document.getElementById('sendMessageBtn');
-    if (sendBtn) sendBtn.disabled = false;
-}
-
-function engageSendLock() {
-    isSendingMessage = true;
-    const sendBtn = document.getElementById('sendMessageBtn');
-    if (sendBtn) sendBtn.disabled = true;
-    if (sendLockTimer) clearTimeout(sendLockTimer);
-    sendLockTimer = setTimeout(() => {
-        releaseSendLock();
-    }, 8000);
-}
 
 /* =====================================================
    SINKRONISASI SESI LOGIN MENGIKUTI INDEX.HTML
@@ -1172,26 +1147,24 @@ window.handleContextEditMessage = function () {
     }
 };
 
-window.handleContextDeleteForEveryone = async function () {
+window.handleContextDeleteForEveryone = function () {
     if (!contextTargetMsg || !activeChatId) return;
     const target = { ...contextTargetMsg };
     window.closeMessageContextMenu();
 
     if (target.senderUid !== currentUid) return;
 
-    try {
-        if (pinnedMessagesList.some(p => p.id === target.id)) {
-            removePinnedMessageById(target.id, true);
-        }
-        await deleteDoc(doc(db, 'chats', activeChatId, 'messages', target.id));
-        const messagesContainer = document.getElementById('chatMessages');
-        const el = messagesContainer?.querySelector(`[data-msg-id="${CSS.escape(target.id)}"]`);
-        if (el) el.remove();
-        showToast('Pesan dihapus untuk semua orang.');
-    } catch (err) {
-        console.error('Delete for everyone error:', err);
-        showToast('Gagal menghapus pesan.');
+    if (pinnedMessagesList.some(p => p.id === target.id)) {
+        removePinnedMessageById(target.id, true);
     }
+    deleteDoc(doc(db, 'chats', activeChatId, 'messages', target.id))
+        .then(() => {
+            showToast('Pesan dihapus untuk semua orang.');
+        })
+        .catch((err) => {
+            console.error('Delete for everyone error:', err);
+            showToast('Gagal menghapus pesan.');
+        });
 };
 
 window.handleContextDeleteForMe = function () {
@@ -1521,7 +1494,7 @@ function applyPeerHeaderImmediate(name, badgesHtml, avatarUrl) {
 }
 
 /* =====================================================
-   MODUL SYNC REALTIME CHAT LANGSUNG DARI FIRESTORE (TANPA CACHE)
+   MODUL SYNC REALTIME CHAT LANGSUNG DARI FIRESTORE
 ===================================================== */
 function clearChatCacheStorage(chatId) {
     if (!chatId) return;
@@ -1884,8 +1857,11 @@ function playMessageNotificationSound() {
 ===================================================== */
 function setMyTypingState(isTyping) {
     if (!activeChatId || !currentUid) return;
+    const nextState = Boolean(isTyping);
+    if (lastTypingSentState === nextState) return;
+    lastTypingSentState = nextState;
     setDoc(doc(db, 'chats', activeChatId), {
-        [`typing_${currentUid}`]: Boolean(isTyping)
+        [`typing_${currentUid}`]: nextState
     }, { merge: true }).catch(() => {});
 }
 
@@ -2027,8 +2003,8 @@ function safeUrl(url) {
     return '';
 }
 
-function formatMessageTime(timestamp, isPending = false) {
-    if (isPending || !timestamp?.toDate) return 'Mengirim...';
+function formatMessageTime(timestamp) {
+    if (!timestamp?.toDate) return 'Baru saja';
     return timestamp.toDate().toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit'
@@ -2178,7 +2154,7 @@ function buildSenderHeaderElement(message, ownerUid = currentUid) {
     return header;
 }
 
-function buildMessageElement(docId, message, ownerUid = currentUid, isPending = false) {
+function buildMessageElement(docId, message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     const wrapper = document.createElement('div');
     wrapper.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
@@ -2214,7 +2190,7 @@ function buildMessageElement(docId, message, ownerUid = currentUid, isPending = 
 
     const timeDiv = document.createElement('span');
     timeDiv.className = 'message-time';
-    timeDiv.textContent = formatMessageTime(message.createdAt, isPending);
+    timeDiv.textContent = formatMessageTime(message.createdAt);
 
     metaRow.appendChild(timeDiv);
 
@@ -2236,7 +2212,7 @@ function buildMessageElement(docId, message, ownerUid = currentUid, isPending = 
     return wrapper;
 }
 
-function updateMessageElement(wrapper, docId, message, ownerUid = currentUid, isPending = false) {
+function updateMessageElement(wrapper, docId, message, ownerUid = currentUid) {
     const isOutgoing = message.senderUid === ownerUid;
     wrapper.className = `message-wrapper ${isOutgoing ? 'outgoing' : 'incoming'}`;
 
@@ -2285,8 +2261,8 @@ function updateMessageElement(wrapper, docId, message, ownerUid = currentUid, is
     }
 
     const timeDiv = wrapper.querySelector('.message-time');
-    if (timeDiv) {
-        timeDiv.textContent = formatMessageTime(message.createdAt, isPending);
+    if (timeDiv && message.createdAt) {
+        timeDiv.textContent = formatMessageTime(message.createdAt);
     }
 
     const metaRow = wrapper.querySelector('.message-meta-row');
@@ -2354,7 +2330,6 @@ function handleMessageDocChange(change, ctx) {
     const { chatId, uid, messagesContainer, typingBubbleWrapper } = ctx;
     const msgId = change.doc.id;
     const msgData = change.doc.data();
-    const isPending = Boolean(change.doc.metadata?.hasPendingWrites);
     const hiddenIds = loadHiddenMessageIds(chatId, uid);
 
     messagesStore.set(msgId, msgData);
@@ -2369,9 +2344,9 @@ function handleMessageDocChange(change, ctx) {
         const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
         let isBrandNewDom = false;
         if (existingEl) {
-            updateMessageElement(existingEl, msgId, msgData, uid, isPending);
+            updateMessageElement(existingEl, msgId, msgData, uid);
         } else {
-            const newEl = buildMessageElement(msgId, msgData, uid, isPending);
+            const newEl = buildMessageElement(msgId, msgData, uid);
             if (typingBubbleWrapper) {
                 messagesContainer.insertBefore(newEl, typingBubbleWrapper);
             } else {
@@ -2382,7 +2357,6 @@ function handleMessageDocChange(change, ctx) {
 
         if (msgData.senderUid === uid) {
             if (
-                !isPending &&
                 !updatedDocIds.has(msgId) &&
                 isPlaceholderName(msgData.senderName) &&
                 !isPlaceholderName(myUserName) &&
@@ -2404,13 +2378,13 @@ function handleMessageDocChange(change, ctx) {
             const updates = {};
             const resolvedColor = msgData.checkColor || (msgData.status === 'read-yellow' ? 'yellow' : msgData.status === 'read-blue' ? 'blue' : 'green');
 
-            if (!isPending && msgData.delivered !== true) {
+            if (msgData.delivered !== true) {
                 updates.delivered = true;
                 if (msgData.status !== 'read' && msgData.read !== true) {
                     updates.status = 'delivered';
                 }
             }
-            if (!isPending && isPageVisible && msgData.read !== true) {
+            if (isPageVisible && msgData.read !== true) {
                 updates.read = true;
                 updates.status = resolvedColor === 'yellow' ? 'read-yellow' : (resolvedColor === 'blue' ? 'read-blue' : 'read-green');
                 updates.checkColor = resolvedColor;
@@ -2423,7 +2397,6 @@ function handleMessageDocChange(change, ctx) {
 
             if (
                 isBrandNewDom &&
-                !isPending &&
                 lastNotifiedMessageId !== msgId &&
                 !String(msgData.text || '').startsWith('[CALL_LOG]|')
             ) {
@@ -2459,7 +2432,7 @@ function handleMessageDocChange(change, ctx) {
     if (change.type === 'modified') {
         const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
         if (existingEl) {
-            updateMessageElement(existingEl, msgId, msgData, uid, isPending);
+            updateMessageElement(existingEl, msgId, msgData, uid);
         }
         if (pinnedMessagesList.some(p => p.id === msgId)) {
             addOrUpdatePinnedMessage({
@@ -2512,21 +2485,7 @@ function attachChatSyncListeners(chatId, uid, peerUid) {
     const typingBubbleWrapper = document.getElementById('typingBubbleWrapper');
 
     if (unsubscribeMessages) unsubscribeMessages();
-    unsubscribeMessages = onSnapshot(qMsgs, { includeMetadataChanges: true }, (snapshot) => {
-        if (!snapshot.metadata.hasPendingWrites && !snapshot.metadata.fromCache) {
-            const liveIds = new Set();
-            snapshot.docs.forEach(d => liveIds.add(d.id));
-            if (messagesContainer) {
-                messagesContainer.querySelectorAll('.message-wrapper[data-msg-id]').forEach(el => {
-                    const id = el.dataset.msgId;
-                    if (id && !liveIds.has(id)) {
-                        el.remove();
-                        messagesStore.delete(id);
-                    }
-                });
-            }
-        }
-
+    unsubscribeMessages = onSnapshot(qMsgs, (snapshot) => {
         let shouldScroll = stickToBottom;
 
         snapshot.docChanges().forEach((change) => {
@@ -2548,7 +2507,6 @@ function attachChatSyncListeners(chatId, uid, peerUid) {
         }
     }, (error) => {
         console.error('Message listener error:', error);
-        showToast(`Listener chat gagal: ${error?.code || error?.message || 'unknown'}`);
     });
 }
 
@@ -2671,20 +2629,8 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-function withTimeout(promise, ms, timeoutMessage) {
-    return new Promise((resolve, reject) => {
-        const timer = setTimeout(() => reject(new Error(timeoutMessage)), ms);
-        promise.then(
-            (val) => { clearTimeout(timer); resolve(val); },
-            (err) => { clearTimeout(timer); reject(err); }
-        );
-    });
-}
-
-window.handleChatFormSubmit = async function (event) {
+window.handleChatFormSubmit = function (event) {
     event.preventDefault();
-
-    if (isSendingMessage) return;
 
     const inputEl = document.getElementById('messageInput');
     const text = inputEl.value.trim();
@@ -2696,10 +2642,7 @@ window.handleChatFormSubmit = async function (event) {
     }
 
     const targetEditId = editingMessageId;
-    const prevEditingOriginalText = editingOriginalText;
     const replyToPayload = activeReplyData ? { ...activeReplyData } : null;
-
-    engageSendLock();
 
     editingMessageId = null;
     editingOriginalText = '';
@@ -2712,16 +2655,11 @@ window.handleChatFormSubmit = async function (event) {
     }
     setMyTypingState(false);
 
-    try {
-        if (targetEditId) {
-            await withTimeout(
-                updateDoc(doc(db, 'chats', activeChatId, 'messages', targetEditId), {
-                    text,
-                    isEdited: true
-                }),
-                8000,
-                'Waktu edit pesan habis'
-            );
+    if (targetEditId) {
+        updateDoc(doc(db, 'chats', activeChatId, 'messages', targetEditId), {
+            text,
+            isEdited: true
+        }).then(() => {
             const existingPin = pinnedMessagesList.find(p => p.id === targetEditId);
             if (existingPin) {
                 addOrUpdatePinnedMessage({
@@ -2730,40 +2668,34 @@ window.handleChatFormSubmit = async function (event) {
                 }, true);
             }
             showToast('Pesan diperbarui.');
-            return;
-        }
-
-        stickToBottom = true;
-        const recipientUid = activeChatUserId;
-        const senderNameToSave = extractProfileName(myProfile, myUserName || auth.currentUser?.displayName);
-        const senderVerifiedToSave = Boolean(myProfile?.isVerified);
-        const senderProToSave = hasYellowBadge(myProfile);
-
-        await withTimeout(
-            addDoc(collection(db, 'chats', activeChatId, 'messages'), {
-                senderUid: currentUid,
-                senderName: senderNameToSave,
-                senderIsVerified: senderVerifiedToSave,
-                senderIsPro: senderProToSave,
-                text,
-                replyTo: replyToPayload,
-                createdAt: serverTimestamp(),
-                isEdited: false,
-                status: 'sent',
-                checkColor: null,
-                delivered: false,
-                read: false
-            }),
-            8000,
-            'Server tidak merespons (cek jaringan atau izin Firestore)'
-        );
-
-        syncChatSummaryOnSend(activeChatId, currentUid, recipientUid, text).catch(err => {
-            console.warn('Gagal memperbarui ringkasan chat:', err);
+        }).catch((err) => {
+            console.error('Edit message error:', err);
+            showToast('Gagal mengedit pesan.');
         });
+        return;
+    }
 
-        scrollMessagesToBottom(true);
-        playSentMessageSound();
+    stickToBottom = true;
+    const recipientUid = activeChatUserId;
+    const senderNameToSave = extractProfileName(myProfile, myUserName || auth.currentUser?.displayName);
+    const senderVerifiedToSave = Boolean(myProfile?.isVerified);
+    const senderProToSave = hasYellowBadge(myProfile);
+
+    addDoc(collection(db, 'chats', activeChatId, 'messages'), {
+        senderUid: currentUid,
+        senderName: senderNameToSave,
+        senderIsVerified: senderVerifiedToSave,
+        senderIsPro: senderProToSave,
+        text,
+        replyTo: replyToPayload,
+        createdAt: serverTimestamp(),
+        isEdited: false,
+        status: 'sent',
+        checkColor: null,
+        delivered: false,
+        read: false
+    }).then(() => {
+        syncChatSummaryOnSend(activeChatId, currentUid, recipientUid, text).catch(() => {});
 
         sendPushNotification({
             db,
@@ -2778,22 +2710,13 @@ window.handleChatFormSubmit = async function (event) {
         }).then(pushRes => {
             if (pushRes?.token) otherUserFcmToken = pushRes.token;
         }).catch(() => {});
-
-    } catch (error) {
+    }).catch((error) => {
         console.error('Send message error:', error);
-        inputEl.value = text;
-        if (targetEditId) {
-            editingMessageId = targetEditId;
-            editingOriginalText = prevEditingOriginalText;
-            renderReplyPreviewBar();
-        } else if (replyToPayload) {
-            activeReplyData = replyToPayload;
-            renderReplyPreviewBar();
-        }
         showToast(`Gagal mengirim (${error?.code || error?.message || 'error'}).`);
-    } finally {
-        releaseSendLock();
-    }
+    });
+
+    scrollMessagesToBottom(true);
+    playSentMessageSound();
 };
 </script>
 </body>
