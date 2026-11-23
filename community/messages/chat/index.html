@@ -527,6 +527,7 @@
             gap: 0.3rem;
             margin-top: 0.32rem;
         }
+        .message-edited-tag { font-size: 0.63rem; opacity: 0.78; font-style: italic; font-weight: 500; }
         .message-time { font-size: 0.65rem; opacity: 0.78; font-weight: 500; }
 
         /* INDIKATOR CENTANG KECIL & RAPI (1 CENTANG, 2 CENTANG, 2 CENTANG BIRU / KUNING / HIJAU) */
@@ -740,7 +741,7 @@
                 <div class="pinned-message-left">
                     <i class="fas fa-thumbtack pinned-message-icon"></i>
                     <div class="pinned-message-info">
-                        <div class="pinned-message-label">Pesan Tersemat</div>
+                        <div id="pinnedMessageLabel" class="pinned-message-label">Pesan Tersemat</div>
                         <div id="pinnedMessageSnippet" class="pinned-message-snippet"></div>
                     </div>
                 </div>
@@ -760,13 +761,13 @@
                 </div>
             </div>
 
-            <!-- BAR BALAS PESAN (REPLY) -->
+            <!-- BAR BALAS PESAN (REPLY) / EDIT PESAN -->
             <div id="replyPreviewBar" class="reply-preview-bar">
                 <div class="reply-preview-content">
                     <div id="replyPreviewTitle" class="reply-preview-title">Membalas pesan</div>
                     <div id="replyPreviewText" class="reply-preview-text"></div>
                 </div>
-                <button type="button" id="cancelReplyBtn" class="reply-cancel-btn" onclick="clearActiveReply()" title="Batalkan balasan">
+                <button type="button" id="cancelReplyBtn" class="reply-cancel-btn" onclick="clearActiveReply()" title="Batalkan">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -839,8 +840,10 @@ let otherBadgesHtml = '';
 let otherUserFcmToken = null;
 let activeReplyData = null;
 let editingMessageId = null;
+let editingOriginalText = '';
 let contextTargetMsg = null;
-let pinnedMessageData = null;
+let pinnedMessagesList = [];
+let activePinnedIndex = 0;
 
 let unsubscribeMessages = null;
 let unsubscribeChatMeta = null;
@@ -860,7 +863,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
 
 /* =====================================================
-   HAPUS UNTUK SAYA & SEMATKAN PESAN (LOKAL + FIRESTORE)
+   HAPUS UNTUK SAYA & SEMATKAN BEBERAPA PESAN (LOKAL + FIRESTORE)
 ===================================================== */
 function getHiddenForMeKey(chatId, uid) {
     return `sitenexs_hidden_msgs_${chatId}_${uid}`;
@@ -888,94 +891,180 @@ function hideMessageForMe(chatId, uid, msgId) {
     const messagesContainer = document.getElementById('chatMessages');
     const el = messagesContainer?.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
     if (el) el.remove();
-    if (pinnedMessageData?.id === msgId) {
-        setPinnedMessage(null);
+    if (pinnedMessagesList.some(p => p.id === msgId)) {
+        removePinnedMessageById(msgId, false);
     }
 }
 
 function getPinnedStoreKey(chatId) {
-    return `sitenexs_pinned_msg_${chatId}`;
+    return `sitenexs_pinned_msgs_${chatId}`;
+}
+
+function normalizePinnedArray(rawPinned, legacySingle = null) {
+    let arr = [];
+    if (Array.isArray(rawPinned)) {
+        arr = rawPinned;
+    } else if (legacySingle && typeof legacySingle === 'object' && legacySingle.id) {
+        arr = [legacySingle];
+    }
+    const seen = new Set();
+    const clean = [];
+    arr.forEach(item => {
+        if (!item || !item.id || seen.has(item.id)) return;
+        seen.add(item.id);
+        clean.push({
+            id: item.id,
+            senderUid: item.senderUid || '',
+            senderName: item.senderName || '',
+            text: item.text || ''
+        });
+    });
+    return clean;
+}
+
+function getVisiblePinnedMessages() {
+    const hiddenSet = loadHiddenMessageIds(activeChatId, currentUid);
+    return pinnedMessagesList.filter(p => p && p.id && !hiddenSet.has(p.id));
 }
 
 function renderPinnedMessageBar() {
     const bar = document.getElementById('pinnedMessageBar');
+    const labelEl = document.getElementById('pinnedMessageLabel');
     const snippetEl = document.getElementById('pinnedMessageSnippet');
     if (!bar || !snippetEl) return;
 
-    if (!pinnedMessageData || !pinnedMessageData.id) {
+    const visiblePins = getVisiblePinnedMessages();
+    if (visiblePins.length === 0) {
+        activePinnedIndex = 0;
         bar.classList.remove('active');
         snippetEl.textContent = '';
+        if (labelEl) labelEl.textContent = 'Pesan Tersemat';
         return;
     }
 
-    const hiddenSet = loadHiddenMessageIds(activeChatId, currentUid);
-    if (hiddenSet.has(pinnedMessageData.id)) {
-        bar.classList.remove('active');
-        return;
+    if (activePinnedIndex >= visiblePins.length) {
+        activePinnedIndex = visiblePins.length - 1;
+    }
+    if (activePinnedIndex < 0) {
+        activePinnedIndex = 0;
     }
 
-    snippetEl.textContent = getReplyExcerpt(pinnedMessageData.text || '');
+    const currentPin = visiblePins[activePinnedIndex];
+    if (labelEl) {
+        labelEl.textContent = visiblePins.length > 1
+            ? `Pesan Tersemat (${activePinnedIndex + 1}/${visiblePins.length})`
+            : 'Pesan Tersemat';
+    }
+    snippetEl.textContent = getReplyExcerpt(currentPin.text || '');
     bar.classList.add('active');
 }
 
-function setPinnedMessage(pinObj, syncRemote = true) {
-    pinnedMessageData = pinObj && pinObj.id ? {
-        id: pinObj.id,
-        senderUid: pinObj.senderUid || '',
-        senderName: pinObj.senderName || '',
-        text: pinObj.text || ''
-    } : null;
+function applyPinnedHighlightToDom() {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (!messagesContainer) return;
+    const pinnedSet = new Set(getVisiblePinnedMessages().map(p => p.id));
+    messagesContainer.querySelectorAll('.message-wrapper').forEach(wrapper => {
+        const msgId = wrapper.dataset.msgId;
+        const bubble = wrapper.querySelector('.message-bubble');
+        if (!bubble) return;
+        bubble.classList.toggle('pinned-msg', Boolean(msgId && pinnedSet.has(msgId)));
+    });
+}
+
+function setPinnedMessagesList(nextList, syncRemote = true) {
+    pinnedMessagesList = normalizePinnedArray(nextList);
 
     if (activeChatId) {
         try {
-            if (pinnedMessageData) {
-                localStorage.setItem(getPinnedStoreKey(activeChatId), JSON.stringify(pinnedMessageData));
+            if (pinnedMessagesList.length > 0) {
+                localStorage.setItem(getPinnedStoreKey(activeChatId), JSON.stringify(pinnedMessagesList));
             } else {
                 localStorage.removeItem(getPinnedStoreKey(activeChatId));
             }
         } catch (e) {}
 
         if (syncRemote) {
+            const latestSingle = pinnedMessagesList.length > 0 ? pinnedMessagesList[pinnedMessagesList.length - 1] : null;
             setDoc(doc(db, 'chats', activeChatId), {
-                pinnedMessage: pinnedMessageData
+                pinnedMessages: pinnedMessagesList,
+                pinnedMessage: latestSingle
             }, { merge: true }).catch(() => {});
         }
     }
 
-    const messagesContainer = document.getElementById('chatMessages');
-    if (messagesContainer) {
-        messagesContainer.querySelectorAll('.message-bubble.pinned-msg').forEach(b => b.classList.remove('pinned-msg'));
-        if (pinnedMessageData?.id) {
-            const targetWrapper = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(pinnedMessageData.id)}"]`);
-            const targetBubble = targetWrapper?.querySelector('.message-bubble');
-            if (targetBubble) targetBubble.classList.add('pinned-msg');
-        }
-    }
-
+    applyPinnedHighlightToDom();
     renderPinnedMessageBar();
 }
 
-function loadLocalPinnedMessage(chatId) {
+function addOrUpdatePinnedMessage(pinObj, syncRemote = true) {
+    if (!pinObj || !pinObj.id) return;
+    const next = [...pinnedMessagesList];
+    const idx = next.findIndex(p => p.id === pinObj.id);
+    const normalized = {
+        id: pinObj.id,
+        senderUid: pinObj.senderUid || '',
+        senderName: pinObj.senderName || '',
+        text: pinObj.text || ''
+    };
+    if (idx >= 0) {
+        next[idx] = normalized;
+        activePinnedIndex = idx;
+    } else {
+        next.push(normalized);
+        activePinnedIndex = next.length - 1;
+    }
+    setPinnedMessagesList(next, syncRemote);
+}
+
+function removePinnedMessageById(msgId, syncRemote = true) {
+    if (!msgId) return;
+    const next = pinnedMessagesList.filter(p => p.id !== msgId);
+    if (activePinnedIndex >= next.length) {
+        activePinnedIndex = Math.max(0, next.length - 1);
+    }
+    setPinnedMessagesList(next, syncRemote);
+}
+
+function loadLocalPinnedMessages(chatId) {
     if (!chatId) return;
     try {
         const raw = localStorage.getItem(getPinnedStoreKey(chatId));
-        if (!raw) return;
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.id) {
-            pinnedMessageData = parsed;
-            renderPinnedMessageBar();
+        if (!raw) {
+            const legacyRaw = localStorage.getItem(`sitenexs_pinned_msg_${chatId}`);
+            if (!legacyRaw) return;
+            const legacyParsed = JSON.parse(legacyRaw);
+            pinnedMessagesList = normalizePinnedArray(null, legacyParsed);
+        } else {
+            const parsed = JSON.parse(raw);
+            pinnedMessagesList = normalizePinnedArray(parsed);
         }
+        activePinnedIndex = Math.max(0, getVisiblePinnedMessages().length - 1);
+        renderPinnedMessageBar();
     } catch (e) {}
 }
 
 window.handlePinnedBarClick = function () {
-    if (!pinnedMessageData?.id) return;
-    window.scrollToQuotedMessage(pinnedMessageData.id);
+    const visiblePins = getVisiblePinnedMessages();
+    if (visiblePins.length === 0) return;
+    if (activePinnedIndex >= visiblePins.length) activePinnedIndex = 0;
+
+    const targetPin = visiblePins[activePinnedIndex];
+    if (targetPin?.id) {
+        window.scrollToQuotedMessage(targetPin.id);
+    }
+    if (visiblePins.length > 1) {
+        activePinnedIndex = (activePinnedIndex + 1) % visiblePins.length;
+        renderPinnedMessageBar();
+    }
 };
 
 window.handleUnpinFromBar = function (event) {
     if (event) event.stopPropagation();
-    setPinnedMessage(null, true);
+    const visiblePins = getVisiblePinnedMessages();
+    if (visiblePins.length === 0) return;
+    const targetPin = visiblePins[activePinnedIndex] || visiblePins[0];
+    if (!targetPin?.id) return;
+    removePinnedMessageById(targetPin.id, true);
     showToast('Semat pesan dilepas.');
 };
 
@@ -996,7 +1085,7 @@ window.openMessageContextMenu = function (docId, message) {
         previewEl.textContent = getReplyExcerpt(message.text || '');
     }
 
-    const isPinnedAlready = Boolean(pinnedMessageData && pinnedMessageData.id === docId);
+    const isPinnedAlready = pinnedMessagesList.some(p => p.id === docId);
     if (pinLabelEl) {
         pinLabelEl.textContent = isPinnedAlready ? 'Lepas sematan pesan' : 'Sematkan pesan';
     }
@@ -1029,13 +1118,13 @@ window.handleContextPinMessage = function () {
     const target = { ...contextTargetMsg };
     window.closeMessageContextMenu();
 
-    if (pinnedMessageData && pinnedMessageData.id === target.id) {
-        setPinnedMessage(null, true);
+    if (pinnedMessagesList.some(p => p.id === target.id)) {
+        removePinnedMessageById(target.id, true);
         showToast('Semat pesan dilepas.');
     } else {
         const senderLabel = getSenderDisplayName(target, currentUid) ||
             (target.senderUid === currentUid ? 'Anda' : (otherUserName || 'Mitra Sitenexs'));
-        setPinnedMessage({
+        addOrUpdatePinnedMessage({
             id: target.id,
             senderUid: target.senderUid,
             senderName: senderLabel,
@@ -1051,15 +1140,16 @@ window.handleContextEditMessage = function () {
     window.closeMessageContextMenu();
 
     if (target.senderUid !== currentUid) return;
+    activeReplyData = null;
     editingMessageId = target.id;
-    window.clearActiveReply();
+    editingOriginalText = target.text || '';
+    renderReplyPreviewBar();
 
     const inputEl = document.getElementById('messageInput');
     if (inputEl) {
-        inputEl.value = target.text || '';
+        inputEl.value = editingOriginalText;
         inputEl.focus();
     }
-    showToast('Edit pesan lalu tekan kirim.');
 };
 
 window.handleContextDeleteForEveryone = async function () {
@@ -1070,8 +1160,8 @@ window.handleContextDeleteForEveryone = async function () {
     if (target.senderUid !== currentUid) return;
 
     try {
-        if (pinnedMessageData?.id === target.id) {
-            setPinnedMessage(null, true);
+        if (pinnedMessagesList.some(p => p.id === target.id)) {
+            removePinnedMessageById(target.id, true);
         }
         await deleteDoc(doc(db, 'chats', activeChatId, 'messages', target.id));
         const messagesContainer = document.getElementById('chatMessages');
@@ -1166,7 +1256,7 @@ function attachLongPressToMessage(wrapper, bubble, docId, message) {
 }
 
 /* =====================================================
-   FITUR REPLY PESAN DENGAN GESER (SWIPE)
+   FITUR REPLY PESAN DENGAN GESER (SWIPE) & BAR EDIT
 ===================================================== */
 function getReplyExcerpt(rawText = '') {
     const clean = String(rawText || '').trim();
@@ -1188,6 +1278,13 @@ function renderReplyPreviewBar() {
     const textEl = document.getElementById('replyPreviewText');
     if (!bar || !titleEl || !textEl) return;
 
+    if (editingMessageId) {
+        titleEl.textContent = 'Mengedit pesan';
+        textEl.textContent = getReplyExcerpt(editingOriginalText);
+        bar.classList.add('active');
+        return;
+    }
+
     if (!activeReplyData) {
         bar.classList.remove('active');
         titleEl.textContent = '';
@@ -1203,6 +1300,7 @@ function renderReplyPreviewBar() {
 window.setReplyToMessage = function (replyPayload) {
     if (!replyPayload || !replyPayload.id) return;
     editingMessageId = null;
+    editingOriginalText = '';
     activeReplyData = {
         id: replyPayload.id,
         senderUid: replyPayload.senderUid || '',
@@ -1215,8 +1313,15 @@ window.setReplyToMessage = function (replyPayload) {
 };
 
 window.clearActiveReply = function () {
+    const wasEditing = Boolean(editingMessageId);
     activeReplyData = null;
+    editingMessageId = null;
+    editingOriginalText = '';
     renderReplyPreviewBar();
+    if (wasEditing) {
+        const inputEl = document.getElementById('messageInput');
+        if (inputEl) inputEl.value = '';
+    }
 };
 
 window.scrollToQuotedMessage = function (msgId) {
@@ -1638,7 +1743,7 @@ function renderCachedMessagesImmediately(chatId, uid) {
                 senderIsPro: item.senderIsPro,
                 text: item.text,
                 replyTo: item.replyTo || null,
-                isEdited: item.isEdited,
+                isEdited: Boolean(item.isEdited),
                 status: isGreenPersisted ? 'read-green' : (item.status || 'sent'),
                 checkColor: isGreenPersisted ? 'green' : (item.checkColor || null),
                 delivered: isGreenPersisted ? true : Boolean(item.delivered),
@@ -1682,7 +1787,7 @@ if (!targetUserId) {
         if (cachedMe?.name) myUserName = cachedMe.name;
         if (cachedMe?.badgesHtml) myBadgesHtml = cachedMe.badgesHtml;
         const earlyChatId = [earlyUid, activeChatUserId].sort().join('_');
-        loadLocalPinnedMessage(earlyChatId);
+        loadLocalPinnedMessages(earlyChatId);
         renderCachedMessagesImmediately(earlyChatId, earlyUid);
     }
 }
@@ -2194,7 +2299,7 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
 
     const bubble = document.createElement('div');
     bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
-    if (pinnedMessageData && pinnedMessageData.id === docId) {
+    if (pinnedMessagesList.some(p => p.id === docId)) {
         bubble.classList.add('pinned-msg');
     }
 
@@ -2211,6 +2316,13 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
 
     const metaRow = document.createElement('div');
     metaRow.className = 'message-meta-row';
+
+    if (message.isEdited) {
+        const editedSpan = document.createElement('span');
+        editedSpan.className = 'message-edited-tag';
+        editedSpan.textContent = 'Diedit •';
+        metaRow.appendChild(editedSpan);
+    }
 
     const timeDiv = document.createElement('span');
     timeDiv.className = 'message-time';
@@ -2243,7 +2355,7 @@ function updateMessageElement(wrapper, docId, message, ownerUid = currentUid) {
     const bubble = wrapper.querySelector('.message-bubble');
     if (bubble) {
         bubble.className = `message-bubble ${isOutgoing ? 'outgoing' : 'incoming'}`;
-        if (pinnedMessageData && pinnedMessageData.id === docId) {
+        if (pinnedMessagesList.some(p => p.id === docId)) {
             bubble.classList.add('pinned-msg');
         }
 
@@ -2291,6 +2403,18 @@ function updateMessageElement(wrapper, docId, message, ownerUid = currentUid) {
 
     const metaRow = wrapper.querySelector('.message-meta-row');
     if (metaRow) {
+        let editedSpan = metaRow.querySelector('.message-edited-tag');
+        if (message.isEdited) {
+            if (!editedSpan) {
+                editedSpan = document.createElement('span');
+                editedSpan.className = 'message-edited-tag';
+                editedSpan.textContent = 'Diedit •';
+                metaRow.prepend(editedSpan);
+            }
+        } else if (editedSpan) {
+            editedSpan.remove();
+        }
+
         let statusSlot = metaRow.querySelector('.msg-status-slot');
         if (isOutgoing) {
             const checkState = getMessageCheckStatus(message, docId);
@@ -2446,13 +2570,12 @@ function handleMessageDocChange(change, ctx) {
         const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
         if (existingEl) {
             updateMessageElement(existingEl, msgId, msgData, uid);
-            if (typingBubbleWrapper && existingEl.nextElementSibling !== typingBubbleWrapper) {
-                messagesContainer.insertBefore(existingEl, typingBubbleWrapper);
-            }
         }
-        if (pinnedMessageData && pinnedMessageData.id === msgId) {
-            setPinnedMessage({
-                ...pinnedMessageData,
+        if (pinnedMessagesList.some(p => p.id === msgId)) {
+            addOrUpdatePinnedMessage({
+                id: msgId,
+                senderUid: msgData.senderUid,
+                senderName: getSenderDisplayName(msgData, uid),
                 text: msgData.text || ''
             }, false);
         }
@@ -2462,12 +2585,13 @@ function handleMessageDocChange(change, ctx) {
                 persistGreenReadId(chatId, msgId);
             }
         }
+        return false;
     } else if (change.type === 'removed') {
         messagesStore.delete(msgId);
         const existingEl = messagesContainer.querySelector(`[data-msg-id="${CSS.escape(msgId)}"]`);
         if (existingEl) existingEl.remove();
-        if (pinnedMessageData?.id === msgId) {
-            setPinnedMessage(null, false);
+        if (pinnedMessagesList.some(p => p.id === msgId)) {
+            removePinnedMessageById(msgId, false);
         }
     }
 
@@ -2482,8 +2606,9 @@ function attachChatSyncListeners(chatId, uid, peerUid) {
         const isOtherTyping = Boolean(cData[`typing_${peerUid}`]);
         renderOtherTypingIndicator(isOtherTyping);
 
-        if ('pinnedMessage' in cData) {
-            setPinnedMessage(cData.pinnedMessage || null, false);
+        if ('pinnedMessages' in cData || 'pinnedMessage' in cData) {
+            const remotePins = normalizePinnedArray(cData.pinnedMessages, cData.pinnedMessage);
+            setPinnedMessagesList(remotePins, false);
         }
 
         if (cData[`unread_${uid}`] === true && document.visibilityState === 'visible') {
@@ -2613,7 +2738,7 @@ async function initChat(user) {
     const participants = [currentUid, activeChatUserId].sort();
     activeChatId = `${participants[0]}_${participants[1]}`;
 
-    loadLocalPinnedMessage(activeChatId);
+    loadLocalPinnedMessages(activeChatId);
     renderCachedMessagesImmediately(activeChatId, currentUid);
 
     if (cleanupIncomingRedirect) cleanupIncomingRedirect();
@@ -2674,11 +2799,11 @@ window.handleChatFormSubmit = async function (event) {
 
     const targetEditId = editingMessageId;
     editingMessageId = null;
+    editingOriginalText = '';
 
     const replyToPayload = activeReplyData ? { ...activeReplyData } : null;
     window.clearActiveReply();
 
-    stickToBottom = true;
     inputEl.value = '';
     if (typingStopTimer) {
         clearTimeout(typingStopTimer);
@@ -2692,9 +2817,10 @@ window.handleChatFormSubmit = async function (event) {
                 text,
                 isEdited: true
             });
-            if (pinnedMessageData?.id === targetEditId) {
-                setPinnedMessage({
-                    ...pinnedMessageData,
+            const existingPin = pinnedMessagesList.find(p => p.id === targetEditId);
+            if (existingPin) {
+                addOrUpdatePinnedMessage({
+                    ...existingPin,
                     text
                 }, true);
             }
@@ -2702,6 +2828,7 @@ window.handleChatFormSubmit = async function (event) {
             return;
         }
 
+        stickToBottom = true;
         const recipientUid = activeChatUserId;
         let senderNameToSave = extractProfileName(myProfile, myUserName || auth.currentUser?.displayName || loadCachedProfile(currentUid)?.name);
         if (!senderNameToSave) {
