@@ -414,6 +414,118 @@
             color: var(--text-main);
         }
 
+        /* PRATINJAU FOTO SEBELUM DIKIRIM */
+        .photo-preview-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.6rem 1.25rem;
+            background: #eff6ff;
+            border-top: 1px solid #bfdbfe;
+            flex: 0 0 auto;
+            z-index: 10;
+        }
+        .photo-preview-bar.active {
+            display: flex;
+        }
+        .photo-preview-left {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            min-width: 0;
+            flex: 1;
+        }
+        .photo-preview-thumb {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid var(--border-medium);
+            background: #fff;
+            flex-shrink: 0;
+        }
+        .photo-preview-meta {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .photo-preview-title {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .photo-preview-sub {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        /* FOTO DI DALAM BUBBLE CHAT */
+        .chat-photo-box {
+            display: block;
+            width: 100%;
+            max-width: 240px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 2px;
+            margin-bottom: 4px;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            background: #0f172a;
+            cursor: zoom-in;
+        }
+        .chat-photo-box img {
+            width: 100%;
+            max-height: 290px;
+            object-fit: cover;
+            display: block;
+        }
+        .chat-photo-caption {
+            margin-top: 4px;
+            font-size: 0.86rem;
+            line-height: 1.45;
+            white-space: pre-wrap;
+        }
+
+        /* LIGHTBOX PERBESAR FOTO */
+        .photo-lightbox-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.88);
+            z-index: 28000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .photo-lightbox-backdrop.active {
+            display: flex;
+        }
+        .photo-lightbox-content {
+            position: relative;
+            max-width: 94vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .photo-lightbox-img {
+            max-width: 94vw;
+            max-height: 78vh;
+            border-radius: 12px;
+            object-fit: contain;
+            background: #000;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+        }
+        .photo-lightbox-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
         /* MENU TEKAN LAMA PESAN (LONG PRESS ACTION SHEET) */
         .msg-context-backdrop {
             display: none;
@@ -635,11 +747,20 @@
 
         /* INPUT PESAN */
         .chat-input-box {
-            padding: 0.75rem 1.25rem; background: #fff; border-top: 1px solid var(--border-subtle);
-            display: flex; align-items: center; gap: 0.75rem; flex: 0 0 auto; z-index: 10;
+            padding: 0.75rem 1.05rem; background: #fff; border-top: 1px solid var(--border-subtle);
+            display: flex; align-items: center; gap: 0.55rem; flex: 0 0 auto; z-index: 10;
+        }
+        .chat-attach-btn {
+            width: 40px; height: 40px; border-radius: 50%; background: var(--bg-body);
+            border: 1px solid var(--border-medium); color: var(--text-muted);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            flex-shrink: 0; transition: var(--transition); font-size: 0.95rem;
+        }
+        .chat-attach-btn:hover {
+            background: var(--primary-light); border-color: var(--primary); color: var(--primary);
         }
         .chat-input {
-            flex: 1; padding: 0.65rem 1rem; background: var(--bg-body); border: 1px solid var(--border-medium);
+            flex: 1; min-width: 0; padding: 0.65rem 1rem; background: var(--bg-body); border: 1px solid var(--border-medium);
             border-radius: var(--radius-full); font-size: 0.88rem; color: var(--text-main);
         }
         .chat-input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
@@ -648,6 +769,9 @@
             width: 42px; height: 42px; border-radius: 50%; background: var(--primary); color: #fff;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); flex-shrink: 0;
+        }
+        .chat-send-btn:disabled {
+            opacity: 0.65; cursor: not-allowed;
         }
 
         #toastContainer { position: fixed; bottom: 24px; right: 24px; z-index: 30000; display: flex; flex-direction: column; gap: 0.5rem; max-width: 340px; }
@@ -665,6 +789,21 @@
 <body data-package="basic">
 
     <div id="toastContainer"></div>
+
+    <!-- LIGHTBOX PERBESAR FOTO -->
+    <div id="photoLightboxBackdrop" class="photo-lightbox-backdrop" onclick="closePhotoLightbox(event)">
+        <div class="photo-lightbox-content" onclick="event.stopPropagation()">
+            <img id="photoLightboxImg" class="photo-lightbox-img" src="" alt="Foto">
+            <div class="photo-lightbox-actions">
+                <a id="photoLightboxDownload" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+                    <i class="fas fa-external-link-alt"></i> Buka Asli
+                </a>
+                <button type="button" class="btn" onclick="closePhotoLightbox()">
+                    <i class="fas fa-times"></i> Tutup
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- MENU OPSI TEKAN LAMA PESAN -->
     <div id="msgContextBackdrop" class="msg-context-backdrop" onclick="closeMessageContextMenu(event)">
@@ -761,6 +900,20 @@
                 </div>
             </div>
 
+            <!-- BAR PRATINJAU FOTO SEBELUM DIKIRIM -->
+            <div id="photoPreviewBar" class="photo-preview-bar">
+                <div class="photo-preview-left">
+                    <img id="photoPreviewThumb" class="photo-preview-thumb" src="" alt="Pratinjau Foto">
+                    <div class="photo-preview-meta">
+                        <div id="photoPreviewTitle" class="photo-preview-title">Foto siap dikirim</div>
+                        <div id="photoPreviewSub" class="photo-preview-sub">Tambahkan keterangan atau langsung kirim</div>
+                    </div>
+                </div>
+                <button type="button" class="reply-cancel-btn" onclick="clearSelectedPhoto()" title="Hapus foto">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
             <!-- BAR BALAS PESAN (REPLY) / EDIT PESAN -->
             <div id="replyPreviewBar" class="reply-preview-bar">
                 <div class="reply-preview-content">
@@ -774,8 +927,12 @@
 
             <!-- INPUT PESAN BAWAH -->
             <form class="chat-input-box" id="sendMessageForm" onsubmit="handleChatFormSubmit(event)" autocomplete="off">
-                <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." oninput="handleTypingInputChange(event)" required autocomplete="off">
-                <button type="submit" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane"></i></button>
+                <input type="file" id="chatPhotoInput" accept="image/*" style="display: none;" onchange="handlePhotoFileSelected(event)">
+                <button type="button" id="attachPhotoBtn" class="chat-attach-btn" onclick="triggerPhotoPicker()" title="Kirim Foto">
+                    <i class="fas fa-image"></i>
+                </button>
+                <input type="text" id="messageInput" class="chat-input" placeholder="Tulis pesan Anda..." oninput="handleTypingInputChange(event)" autocomplete="off">
+                <button type="submit" id="chatSendBtn" class="chat-send-btn" title="Kirim Pesan"><i class="fas fa-paper-plane"></i></button>
             </form>
         </div>
     </main>
@@ -801,7 +958,9 @@ import {
     db,
     rtdb,
     auth,
-    PUSH_WORKER_URL
+    PUSH_WORKER_URL,
+    supabaseUrl,
+    avatarBucket
 } from 'https://sitenexs.com/assets/js/sitenexs-config.js';
 
 import {
@@ -826,6 +985,8 @@ import {
 
 const VERIFIED_BADGE_URL = 'https://sitenexs.com/assets/logo/verified.png';
 const PRO_BADGE_URL = 'https://sitenexs.com/assets/logo/lencana.png';
+const SUPABASE_CHAT_BUCKET = avatarBucket || 'profile-photos';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxY2J5YW14aWVrZHh5dG50bG5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5ODcxNjgsImV4cCI6MjA5MTU2MzE2OH0.eE_4B6d1S94041336426';
 
 let currentUid = null;
 let myProfile = null;
@@ -844,6 +1005,9 @@ let editingOriginalText = '';
 let contextTargetMsg = null;
 let pinnedMessagesList = [];
 let activePinnedIndex = 0;
+
+let selectedPhotoFile = null;
+let selectedPhotoPreviewUrl = null;
 
 let unsubscribeMessages = null;
 let unsubscribeChatMeta = null;
@@ -882,6 +1046,207 @@ function withTimeout(promise, ms = 6000, label = 'Firestore operation') {
     });
     return Promise.race([promise, timeoutPromise]).finally(() => {
         if (timerId) clearTimeout(timerId);
+    });
+}
+
+/* =====================================================
+   UPLOAD & KOMPRESI FOTO KE SUPABASE STORAGE
+===================================================== */
+function formatFileSize(bytes = 0) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+async function compressImageFile(file, maxDimension = 1440, quality = 0.82) {
+    if (!file || !file.type.startsWith('image/')) return file;
+    if (file.type === 'image/gif' || file.size <= 350 * 1024) return file;
+
+    return new Promise((resolve) => {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+
+        img.onload = () => {
+            URL.revokeObjectURL(objectUrl);
+            let { width, height } = img;
+            if (width > maxDimension || height > maxDimension) {
+                if (width > height) {
+                    height = Math.round((height * maxDimension) / width);
+                    width = maxDimension;
+                } else {
+                    width = Math.round((width * maxDimension) / height);
+                    height = maxDimension;
+                }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                resolve(file);
+                return;
+            }
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const outType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+            canvas.toBlob((blob) => {
+                if (!blob || blob.size >= file.size) {
+                    resolve(file);
+                    return;
+                }
+                const ext = outType === 'image/png' ? 'png' : 'jpg';
+                const compressed = new File([blob], `chat_${Date.now()}.${ext}`, { type: outType });
+                resolve(compressed);
+            }, outType, quality);
+        };
+
+        img.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            resolve(file);
+        };
+
+        img.src = objectUrl;
+    });
+}
+
+async function uploadPhotoToSupabase(file, chatId, senderUid) {
+    if (!file) throw new Error('File foto tidak ditemukan');
+    const processedFile = await compressImageFile(file);
+    const rawExt = (processedFile.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+    const safeChatId = String(chatId || 'general').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const safeSender = String(senderUid || 'user').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const randomPart = Math.random().toString(36).slice(2, 8);
+    const objectPath = `chat-media/${safeChatId}/${Date.now()}_${safeSender}_${randomPart}.${rawExt}`;
+
+    const baseUrl = String(supabaseUrl || 'https://xqcbyamxiekdxytntlno.supabase.co').replace(/\/+$/, '');
+    const uploadEndpoint = `${baseUrl}/storage/v1/object/${encodeURIComponent(SUPABASE_CHAT_BUCKET)}/${objectPath}`;
+
+    const headers = {
+        'Content-Type': processedFile.type || 'image/jpeg',
+        'x-upsert': 'true'
+    };
+    if (SUPABASE_ANON_KEY) {
+        headers['apikey'] = SUPABASE_ANON_KEY;
+        headers['Authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;
+    }
+
+    const response = await withTimeout(
+        fetch(uploadEndpoint, {
+            method: 'POST',
+            headers,
+            body: processedFile
+        }),
+        20000,
+        'Supabase upload'
+    );
+
+    if (!response.ok) {
+        const errText = await response.text().catch(() => '');
+        throw new Error(`Supabase upload failed (${response.status}): ${errText}`);
+    }
+
+    return `${baseUrl}/storage/v1/object/public/${encodeURIComponent(SUPABASE_CHAT_BUCKET)}/${objectPath}`;
+}
+
+window.triggerPhotoPicker = function () {
+    const fileInput = document.getElementById('chatPhotoInput');
+    if (fileInput) fileInput.click();
+};
+
+function setSelectedPhotoFile(file) {
+    if (!file) return;
+    if (!file.type || !file.type.startsWith('image/')) {
+        showToast('Hanya file gambar/foto yang didukung.');
+        return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+        showToast('Ukuran foto maksimal 10 MB.');
+        return;
+    }
+
+    if (selectedPhotoPreviewUrl) {
+        URL.revokeObjectURL(selectedPhotoPreviewUrl);
+    }
+
+    selectedPhotoFile = file;
+    selectedPhotoPreviewUrl = URL.createObjectURL(file);
+
+    const bar = document.getElementById('photoPreviewBar');
+    const thumb = document.getElementById('photoPreviewThumb');
+    const title = document.getElementById('photoPreviewTitle');
+    const sub = document.getElementById('photoPreviewSub');
+    const msgInput = document.getElementById('messageInput');
+
+    if (thumb) thumb.src = selectedPhotoPreviewUrl;
+    if (title) title.textContent = file.name || 'Foto siap dikirim';
+    if (sub) sub.textContent = `${formatFileSize(file.size)} • Siap diunggah ke chat`;
+    if (bar) bar.classList.add('active');
+    if (msgInput) {
+        msgInput.placeholder = 'Tambahkan keterangan foto (opsional)...';
+        msgInput.focus();
+    }
+}
+
+window.handlePhotoFileSelected = function (event) {
+    const file = event?.target?.files?.[0];
+    if (!file) return;
+    setSelectedPhotoFile(file);
+};
+
+window.clearSelectedPhoto = function () {
+    if (selectedPhotoPreviewUrl) {
+        URL.revokeObjectURL(selectedPhotoPreviewUrl);
+        selectedPhotoPreviewUrl = null;
+    }
+    selectedPhotoFile = null;
+
+    const fileInput = document.getElementById('chatPhotoInput');
+    const bar = document.getElementById('photoPreviewBar');
+    const thumb = document.getElementById('photoPreviewThumb');
+    const msgInput = document.getElementById('messageInput');
+
+    if (fileInput) fileInput.value = '';
+    if (thumb) thumb.src = '';
+    if (bar) bar.classList.remove('active');
+    if (msgInput) msgInput.placeholder = 'Tulis pesan Anda...';
+};
+
+window.openPhotoLightbox = function (imageUrl) {
+    const safeImg = safeUrl(imageUrl);
+    if (!safeImg) return;
+    const backdrop = document.getElementById('photoLightboxBackdrop');
+    const imgEl = document.getElementById('photoLightboxImg');
+    const linkEl = document.getElementById('photoLightboxDownload');
+
+    if (imgEl) imgEl.src = safeImg;
+    if (linkEl) linkEl.href = safeImg;
+    if (backdrop) backdrop.classList.add('active');
+};
+
+window.closePhotoLightbox = function (event) {
+    if (event && event.target && event.target.id !== 'photoLightboxBackdrop') return;
+    const backdrop = document.getElementById('photoLightboxBackdrop');
+    const imgEl = document.getElementById('photoLightboxImg');
+    if (backdrop) backdrop.classList.remove('active');
+    if (imgEl) imgEl.src = '';
+};
+
+const msgInputPasteEl = document.getElementById('messageInput');
+if (msgInputPasteEl) {
+    msgInputPasteEl.addEventListener('paste', (e) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (const item of items) {
+            if (item.type && item.type.startsWith('image/')) {
+                const pastedFile = item.getAsFile();
+                if (pastedFile) {
+                    e.preventDefault();
+                    setSelectedPhotoFile(pastedFile);
+                    break;
+                }
+            }
+        }
     });
 }
 
@@ -978,7 +1343,7 @@ function renderPinnedMessageBar() {
             ? `Pesan Tersemat (${activePinnedIndex + 1}/${visiblePins.length})`
             : 'Pesan Tersemat';
     }
-    snippetEl.textContent = getReplyExcerpt(currentPin.text || '');
+    snippetEl.textContent = getReplyExcerpt(currentPin.text || '', currentPin.imageUrl);
     bar.classList.add('active');
 }
 
@@ -1027,7 +1392,7 @@ function addOrUpdatePinnedMessage(pinObj, syncRemote = true) {
         id: pinObj.id,
         senderUid: pinObj.senderUid || '',
         senderName: pinObj.senderName || '',
-        text: pinObj.text || ''
+        text: pinObj.text || (pinObj.imageUrl ? '📷 Foto' : '')
     };
     if (idx >= 0) {
         next[idx] = normalized;
@@ -1105,7 +1470,7 @@ window.openMessageContextMenu = function (docId, message) {
     const deleteEveryoneBtnEl = document.getElementById('ctxDeleteEveryoneBtn');
 
     if (previewEl) {
-        previewEl.textContent = getReplyExcerpt(message.text || '');
+        previewEl.textContent = getReplyExcerpt(message.text || '', message.imageUrl);
     }
 
     const isPinnedAlready = pinnedMessagesList.some(p => p.id === docId);
@@ -1116,9 +1481,10 @@ window.openMessageContextMenu = function (docId, message) {
     const isMine = message.senderUid === currentUid;
     const isCallLog = String(message.text || '').startsWith('[CALL_LOG]|');
     const isApplication = String(message.text || '').includes('📋 *LAMARAN KERJA BARU*');
+    const hasOnlyPhotoWithoutText = Boolean(message.imageUrl) && !String(message.text || '').trim();
 
     if (editBtnEl) {
-        editBtnEl.style.display = (isMine && !isCallLog && !isApplication) ? 'flex' : 'none';
+        editBtnEl.style.display = (isMine && !isCallLog && !isApplication && !hasOnlyPhotoWithoutText) ? 'flex' : 'none';
     }
     if (deleteEveryoneBtnEl) {
         deleteEveryoneBtnEl.style.display = isMine ? 'flex' : 'none';
@@ -1151,7 +1517,8 @@ window.handleContextPinMessage = function () {
             id: target.id,
             senderUid: target.senderUid,
             senderName: senderLabel,
-            text: target.text || ''
+            text: getReplyExcerpt(target.text || '', target.imageUrl),
+            imageUrl: target.imageUrl || null
         }, true);
         showToast('Pesan disematkan.');
     }
@@ -1163,6 +1530,7 @@ window.handleContextEditMessage = function () {
     window.closeMessageContextMenu();
 
     if (target.senderUid !== currentUid) return;
+    window.clearSelectedPhoto();
     activeReplyData = null;
     editingMessageId = target.id;
     editingOriginalText = target.text || '';
@@ -1281,8 +1649,11 @@ function attachLongPressToMessage(wrapper, bubble, docId, message) {
 /* =====================================================
    FITUR REPLY PESAN DENGAN GESER (SWIPE) & BAR EDIT
 ===================================================== */
-function getReplyExcerpt(rawText = '') {
+function getReplyExcerpt(rawText = '', imageUrl = '') {
     const clean = String(rawText || '').trim();
+    if (imageUrl) {
+        return clean ? `📷 Foto: ${clean.replace(/\s+/g, ' ')}` : '📷 Foto';
+    }
     if (!clean) return 'Pesan';
     if (clean.startsWith('[CALL_LOG]|')) {
         const [, callType = 'video'] = clean.split('|');
@@ -1328,7 +1699,7 @@ window.setReplyToMessage = function (replyPayload) {
         id: replyPayload.id,
         senderUid: replyPayload.senderUid || '',
         senderName: replyPayload.senderName || 'Pengguna',
-        text: getReplyExcerpt(replyPayload.text || '')
+        text: getReplyExcerpt(replyPayload.text || '', replyPayload.imageUrl || '')
     };
     renderReplyPreviewBar();
     const inputEl = document.getElementById('messageInput');
@@ -1446,7 +1817,8 @@ function attachSwipeToReply(wrapper, bubble, docId, message, ownerUid) {
                 id: docId,
                 senderUid: currentMsg.senderUid,
                 senderName: senderLabel,
-                text: currentMsg.text || ''
+                text: currentMsg.text || '',
+                imageUrl: currentMsg.imageUrl || ''
             });
         }
     };
@@ -1498,7 +1870,7 @@ function buildQuotedReplyElement(replyTo) {
 
     const textEl = document.createElement('div');
     textEl.className = 'quoted-reply-text';
-    textEl.textContent = getReplyExcerpt(replyTo.text || '');
+    textEl.textContent = getReplyExcerpt(replyTo.text || '', replyTo.imageUrl || '');
 
     box.append(senderEl, textEl);
     return box;
@@ -1610,6 +1982,7 @@ function syncMessageDocToCache(chatId, msgId, msgData) {
         senderIsVerified: Boolean(msgData.senderIsVerified),
         senderIsPro: hasYellowBadge(msgData),
         text: msgData.text || '',
+        imageUrl: msgData.imageUrl || null,
         replyTo: msgData.replyTo || null,
         isEdited: Boolean(msgData.isEdited),
         status: msgData.status || 'sent',
@@ -1765,6 +2138,7 @@ function renderCachedMessagesImmediately(chatId, uid) {
                 senderIsVerified: item.senderIsVerified,
                 senderIsPro: item.senderIsPro,
                 text: item.text,
+                imageUrl: item.imageUrl || null,
                 replyTo: item.replyTo || null,
                 isEdited: Boolean(item.isEdited),
                 status: isGreenPersisted ? 'read-green' : (item.status || 'sent'),
@@ -2184,7 +2558,18 @@ function formatDuration(seconds) {
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
-function renderMessageBody(text) {
+function renderMessageBody(text, imageUrl = '') {
+    const validImageUrl = safeUrl(imageUrl);
+    if (validImageUrl) {
+        const cleanCaption = String(text || '').trim();
+        return `
+            <div class="chat-photo-box" onclick="openPhotoLightbox('${escapeHtml(validImageUrl)}')">
+                <img src="${escapeHtml(validImageUrl)}" alt="Foto terkirim" loading="lazy">
+            </div>
+            ${cleanCaption ? `<div class="chat-photo-caption">${escapeHtml(cleanCaption).replace(/\n/g, '<br>')}</div>` : ''}
+        `;
+    }
+
     if (!text) return '';
 
     if (text.startsWith('[CALL_LOG]|')) {
@@ -2338,7 +2723,7 @@ function buildMessageElement(docId, message, ownerUid = currentUid) {
 
     const bodyDiv = document.createElement('div');
     bodyDiv.className = 'message-body';
-    bodyDiv.innerHTML = renderMessageBody(message.text || '');
+    bodyDiv.innerHTML = renderMessageBody(message.text || '', message.imageUrl || '');
 
     const metaRow = document.createElement('div');
     metaRow.className = 'message-meta-row';
@@ -2418,8 +2803,9 @@ function updateMessageElement(wrapper, docId, message, ownerUid = currentUid) {
     }
 
     const bodyDiv = wrapper.querySelector('.message-body');
-    if (bodyDiv && bodyDiv.innerHTML !== renderMessageBody(message.text || '')) {
-        bodyDiv.innerHTML = renderMessageBody(message.text || '');
+    const nextBodyHtml = renderMessageBody(message.text || '', message.imageUrl || '');
+    if (bodyDiv && bodyDiv.innerHTML !== nextBodyHtml) {
+        bodyDiv.innerHTML = nextBodyHtml;
     }
 
     const timeDiv = wrapper.querySelector('.message-time');
@@ -2569,9 +2955,11 @@ function handleMessageDocChange(change, ctx) {
                     syncUnreadReset(chatId, uid);
                     playMessageNotificationSound();
                 } else {
-                    const previewText = String(msgData.text || '').includes('📋 *LAMARAN KERJA BARU*')
-                        ? 'Mengirim lamaran kerja baru'
-                        : String(msgData.text || 'Pesan baru');
+                    const previewText = msgData.imageUrl
+                        ? (String(msgData.text || '').trim() ? `📷 Foto: ${String(msgData.text).trim()}` : '📷 Mengirim foto')
+                        : (String(msgData.text || '').includes('📋 *LAMARAN KERJA BARU*')
+                            ? 'Mengirim lamaran kerja baru'
+                            : String(msgData.text || 'Pesan baru'));
 
                     const notifTitle = !isPlaceholderName(otherUserName)
                         ? otherUserName
@@ -2602,7 +2990,8 @@ function handleMessageDocChange(change, ctx) {
                 id: msgId,
                 senderUid: msgData.senderUid,
                 senderName: getSenderDisplayName(msgData, uid),
-                text: msgData.text || ''
+                text: getReplyExcerpt(msgData.text || '', msgData.imageUrl || ''),
+                imageUrl: msgData.imageUrl || null
             }, false);
         }
         if (msgData.senderUid === uid) {
@@ -2824,12 +3213,14 @@ window.handleChatFormSubmit = async function (event) {
     if (isSendingMessage) return;
 
     const inputEl = document.getElementById('messageInput');
+    const sendBtnEl = document.getElementById('chatSendBtn');
     const text = inputEl ? inputEl.value.trim() : '';
+    const photoFileToUpload = selectedPhotoFile;
     const senderUid = currentUid || auth.currentUser?.uid || getEarlyUid();
     const recipientUid = activeChatUserId;
     const chatId = resolveActiveChatId(senderUid, recipientUid);
 
-    if (!text) return;
+    if (!text && !photoFileToUpload) return;
     if (!chatId || !senderUid || !recipientUid) {
         showToast('Sesi chat belum siap, coba lagi.');
         return;
@@ -2837,6 +3228,10 @@ window.handleChatFormSubmit = async function (event) {
 
     currentUid = senderUid;
     isSendingMessage = true;
+    if (sendBtnEl) {
+        sendBtnEl.disabled = true;
+        sendBtnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
 
     const targetEditId = editingMessageId;
     const prevEditOriginal = editingOriginalText;
@@ -2846,7 +3241,7 @@ window.handleChatFormSubmit = async function (event) {
     editingOriginalText = '';
     window.clearActiveReply();
 
-    inputEl.value = '';
+    if (inputEl) inputEl.value = '';
     if (typingStopTimer) {
         clearTimeout(typingStopTimer);
         typingStopTimer = null;
@@ -2877,11 +3272,19 @@ window.handleChatFormSubmit = async function (event) {
             if (existingPin) {
                 addOrUpdatePinnedMessage({
                     ...existingPin,
-                    text
+                    text: getReplyExcerpt(text, cachedMsg?.imageUrl || '')
                 }, true);
             }
             showToast('Pesan diperbarui.');
             return;
+        }
+
+        let uploadedImageUrl = null;
+        if (photoFileToUpload) {
+            const previewSubEl = document.getElementById('photoPreviewSub');
+            if (previewSubEl) previewSubEl.textContent = 'Mengunggah foto ke Supabase...';
+            uploadedImageUrl = await uploadPhotoToSupabase(photoFileToUpload, chatId, senderUid);
+            window.clearSelectedPhoto();
         }
 
         stickToBottom = true;
@@ -2907,6 +3310,7 @@ window.handleChatFormSubmit = async function (event) {
             senderIsVerified: senderVerifiedToSave,
             senderIsPro: senderProToSave,
             text,
+            imageUrl: uploadedImageUrl,
             replyTo: replyToPayload,
             createdAt: serverTimestamp(),
             isEdited: false,
@@ -2916,8 +3320,11 @@ window.handleChatFormSubmit = async function (event) {
             read: false
         };
 
-        // Jalankan penulisan pesan utama & pembaruan ringkasan chat tanpa saling mengunci
-        const summaryPromise = syncChatSummaryOnSend(chatId, senderUid, recipientUid, text).catch(err => {
+        const summaryText = uploadedImageUrl
+            ? (text ? `📷 Foto: ${text}` : '📷 Foto')
+            : text;
+
+        const summaryPromise = syncChatSummaryOnSend(chatId, senderUid, recipientUid, summaryText).catch(err => {
             console.warn('Sync chat summary warning:', err);
         });
 
@@ -2942,6 +3349,7 @@ window.handleChatFormSubmit = async function (event) {
             senderIsVerified: senderVerifiedToSave,
             senderIsPro: senderProToSave,
             text,
+            imageUrl: uploadedImageUrl,
             replyTo: replyToPayload,
             isEdited: false,
             status: 'sent',
@@ -2970,7 +3378,7 @@ window.handleChatFormSubmit = async function (event) {
             recipientUid,
             cachedToken: otherUserFcmToken,
             title: senderNameToSave || 'Pesan Baru',
-            body: text,
+            body: summaryText,
             tag: `chat-${chatId}`,
             url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(senderUid)}`,
             icon: myProfile?.avatarUrl || getUserAvatarUrl(senderUid),
@@ -2989,12 +3397,19 @@ window.handleChatFormSubmit = async function (event) {
             activeReplyData = replyToPayload;
             renderReplyPreviewBar();
         }
-        if (inputEl && !inputEl.value) {
+        if (photoFileToUpload && !selectedPhotoFile) {
+            setSelectedPhotoFile(photoFileToUpload);
+        }
+        if (inputEl && !inputEl.value && text) {
             inputEl.value = text;
         }
-        showToast('Gagal mengirim pesan. Coba lagi.');
+        showToast(photoFileToUpload ? 'Gagal mengunggah foto ke Supabase. Coba lagi.' : 'Gagal mengirim pesan. Coba lagi.');
     } finally {
         isSendingMessage = false;
+        if (sendBtnEl) {
+            sendBtnEl.disabled = false;
+            sendBtnEl.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        }
     }
 };
 </script>
