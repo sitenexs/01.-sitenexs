@@ -885,7 +885,7 @@ function engageSendLock() {
     if (sendLockTimer) clearTimeout(sendLockTimer);
     sendLockTimer = setTimeout(() => {
         releaseSendLock();
-    }, 8000);
+    }, 6000);
 }
 
 /* =====================================================
@@ -2547,9 +2547,7 @@ function attachChatSyncListeners(chatId, uid, peerUid) {
         }
     }, (error) => {
         console.error('Message listener error:', error);
-        if (error?.code === 'permission-denied') {
-            showToast('Akses chat ditolak. Silakan cek izin Firestore.');
-        }
+        showToast(`Listener chat gagal: ${error?.code || error?.message || 'unknown'}`);
     });
 }
 
@@ -2773,11 +2771,7 @@ window.handleChatFormSubmit = async function (event) {
             activeReplyData = replyToPayload;
             renderReplyPreviewBar();
         }
-        if (error?.code === 'permission-denied') {
-            showToast('Gagal mengirim: izin Firestore ditolak.');
-        } else {
-            showToast('Gagal mengirim pesan.');
-        }
+        showToast(`Gagal mengirim (${error?.code || error?.message || 'error'}).`);
     } finally {
         releaseSendLock();
     }
