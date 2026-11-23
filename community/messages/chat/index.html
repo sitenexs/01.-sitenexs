@@ -910,10 +910,6 @@ window.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'sitenexs-auth-state') {
         if (event.data.signedIn) {
             localStorage.setItem('sitenexs_logged_in', 'true');
-        } else {
-            localStorage.removeItem('sitenexs_logged_in');
-            localStorage.removeItem('sitenexs_uid');
-            window.location.replace('https://account.sitenexs.com/sign-in/');
         }
     }
 });
@@ -2696,11 +2692,6 @@ window.handleChatFormSubmit = async function (event) {
     if (!text) return;
     if (!activeChatId || !currentUid) {
         showToast('Sesi chat belum siap, coba lagi sebentar.');
-        return;
-    }
-
-    if (!auth.currentUser) {
-        showToast('Sesi login Firebase belum aktif di halaman ini. Silakan login ulang.');
         return;
     }
 
