@@ -146,6 +146,10 @@
             position: absolute; top: 20px; left: 16px;
             display: flex; align-items: center; gap: 0.45rem; z-index: 25;
         }
+        .vc-top-right-actions {
+            position: absolute; top: 20px; right: 16px;
+            display: flex; align-items: center; gap: 0.45rem; z-index: 25;
+        }
         .vc-top-btn {
             width: 38px; height: 38px; border-radius: 50%;
             background: rgba(15, 23, 42, 0.52); backdrop-filter: blur(8px);
@@ -157,6 +161,13 @@
         .vc-top-btn.share-active {
             background: rgba(16, 185, 129, 0.88);
             border-color: rgba(255, 255, 255, 0.4);
+        }
+        .vc-top-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .vc-overlay.voice-mode .vc-top-right-actions {
+            display: none;
         }
 
         .vc-remote-container {
@@ -306,6 +317,24 @@
             transform: scaleX(-1);
             pointer-events: none;
         }
+        .video-tile.local-tile.no-mirror video {
+            transform: none;
+        }
+        .video-tile.local-tile.screen-sharing-tile video {
+            transform: none;
+            object-fit: contain;
+            background: #020617;
+        }
+
+        /* Tampilan cermin untuk pihak yang menerima telepon (callee) */
+        body.callee-mirror .video-tile.remote-tile:not(.remote-screen-sharing) video {
+            transform: scaleX(-1);
+        }
+        .video-tile.remote-tile.remote-screen-sharing video {
+            transform: none !important;
+            object-fit: contain;
+            background: #020617;
+        }
 
         /* Saat hanya berdua (1 atau 2 peserta), video lokal mengambang & bisa digeser */
         .vc-videos-grid[data-count="1"] .video-tile.local-tile,
@@ -384,7 +413,7 @@
             width: 44px; height: 44px; margin-bottom: 0.25rem;
         }
 
-        /* Indikator status mute/kamera/video dijeda saat berdua */
+        /* Indikator status mute/kamera/video dijeda/berbagi layar saat berdua */
         .remote-media-indicators {
             position: absolute; top: 82px; left: 50%; transform: translateX(-50%);
             display: flex; flex-direction: column; align-items: center; gap: 0.45rem;
@@ -402,6 +431,9 @@
         }
         .remote-indicator-pill.paused-pill {
             background: rgba(245, 158, 11, 0.92);
+        }
+        .remote-indicator-pill.screen-pill {
+            background: rgba(16, 185, 129, 0.92);
         }
         .remote-indicator-pill.active { display: inline-flex; }
 
@@ -473,18 +505,19 @@
 
         .vc-controls {
             position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
-            display: flex; align-items: center; gap: 1.2rem; z-index: 30;
+            display: flex; align-items: center; gap: 1rem; z-index: 30;
             background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px);
-            padding: 0.8rem 1.6rem; border-radius: var(--radius-full);
+            padding: 0.8rem 1.4rem; border-radius: var(--radius-full);
             border: 1px solid rgba(255,255,255,0.15);
         }
         .vc-btn {
-            width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; font-size: 1.18rem; cursor: pointer; transition: var(--transition);
-            background: rgba(255,255,255,0.18); color: #fff;
+            width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 1.15rem; cursor: pointer; transition: var(--transition);
+            background: rgba(255,255,255,0.18); color: #fff; flex-shrink: 0;
         }
         .vc-btn:hover { background: rgba(255,255,255,0.28); }
         .vc-btn.muted { background: #fff; color: #0f172a; }
+        .vc-btn.active-feature { background: var(--accent); color: #fff; }
         .vc-btn.end-call { background: var(--danger); color: #fff; }
         .vc-btn.end-call:hover { background: #dc2626; transform: scale(1.05); }
 
@@ -573,6 +606,12 @@
                 </button>
             </div>
 
+            <div class="vc-top-right-actions">
+                <button type="button" id="switchCamBtn" class="vc-top-btn" onclick="switchCameraFacing()" title="Ganti Kamera Depan / Belakang">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+
             <!-- HEADER NAMA PRESISI DI TENGAH TANPA KAPSUL + PENGHITUNG WAKTU DI BAWAHNYA -->
             <div class="vc-header-center">
                 <div class="vc-name-symmetry-row">
@@ -606,6 +645,10 @@
                     <i class="fas fa-video-slash"></i>
                     <span id="remoteCamOffText">Kamera dimatikan</span>
                 </div>
+                <div id="remoteScreenShareIndicator" class="remote-indicator-pill screen-pill">
+                    <i class="fas fa-desktop"></i>
+                    <span id="remoteScreenShareText">Sedang membagikan layar</span>
+                </div>
             </div>
 
             <!-- STAGE PANGGILAN SUARA (AUDIO MODE) -->
@@ -629,6 +672,9 @@
             </button>
             <button type="button" id="toggleCamBtn" class="vc-btn" onclick="toggleCamera()" title="Matikan/Nyalakan Kamera">
                 <i class="fas fa-video"></i>
+            </button>
+            <button type="button" id="shareScreenBtn" class="vc-btn" onclick="toggleScreenShare()" title="Bagikan Layar">
+                <i class="fas fa-desktop"></i>
             </button>
             <button type="button" id="endCallBtn" class="vc-btn end-call" onclick="endActiveCall()" title="Akhiri Panggilan">
                 <i class="fas fa-phone-slash"></i>
@@ -709,8 +755,9 @@ let otherUserBadgeType = null;
 let otherUserFcmToken = null;
 
 let localStream = null;
+let screenStream = null;
 
-// Peta koneksi multi-peserta: remoteUid -> { pc, stream, candidateQueue, unsubSignal, unsubCandidates, disconnectTimer, name, verified, badgeType, micMuted, camOff, videoPaused }
+// Peta koneksi multi-peserta: remoteUid -> { pc, stream, candidateQueue, unsubSignal, unsubCandidates, disconnectTimer, name, verified, badgeType, micMuted, camOff, videoPaused, screenSharing }
 const peersMap = new Map();
 const participantsInfoMap = new Map();
 
@@ -728,6 +775,9 @@ let sharedRoomData = null;
 let isMicMuted = false;
 let isCamOff = false;
 let isVideoPausedInBackground = false;
+let currentFacingMode = 'user';
+let isScreenSharing = false;
+let isSwitchingCamera = false;
 let isInCall = false;
 let isStartingCall = false;
 let callDirection = null;
@@ -743,6 +793,11 @@ let unsubscribeCallRoom = null;
 let unsubscribeParticipants = null;
 let unsubscribeIncomingCalls = null;
 let unsubscribeGuestRoomWatch = null;
+
+function applyReceiverMirrorMode() {
+    const isCallee = callDirection === 'callee';
+    document.body.classList.toggle('callee-mirror', isCallee);
+}
 
 /* =====================================================
    SIMPAN & BACA STATUS PANGGILAN AKTIF (UNTUK LANJUT PANGGILAN)
@@ -769,6 +824,7 @@ function persistOngoingCallState(active) {
 ===================================================== */
 function pauseVideoKeepVoiceOnLeave() {
     if (!isInCall || isExplicitCallEnded || !currentCallId || !currentUid) return;
+    if (isScreenSharing) return;
 
     persistOngoingCallState(true);
 
@@ -795,6 +851,16 @@ function pauseVideoKeepVoiceOnLeave() {
 
 function resumeVideoWhenReturningToCall() {
     if (!isInCall || isExplicitCallEnded || !currentCallId || !currentUid) return;
+
+    if (isScreenSharing && screenStream) {
+        const localVideo = document.getElementById('localVideo');
+        if (localVideo) {
+            localVideo.srcObject = screenStream;
+            localVideo.muted = true;
+            localVideo.play().catch(() => {});
+        }
+        return;
+    }
 
     if (currentCallType === 'video' && !isCamOff && localStream) {
         isVideoPausedInBackground = false;
@@ -864,7 +930,7 @@ function renderCustomBadgesHtml(verifiedFlag, badgeType = null, existingHtml = '
             const sdkHtml = getUserBadgesHtml(true, badgeType);
             if (sdkHtml && sdkHtml.trim() !== '') return sdkHtml;
         } catch (e) {}
-        return `<svg class="chat-header-verif" viewBox="0 0 24 24" fill="#38bdf8"><path d=&quot;M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.26 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.45 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z&quot;/></svg>`;
+        return `<svg class="chat-header-verif" viewBox="0 0 24 24" fill="#38bdf8"><path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.26 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.45 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"/></svg>`;
     }
     return '';
 }
@@ -1052,6 +1118,260 @@ window.shareCallLink = async function () {
     showToast('Link panggilan disalin! Tempel & kirim ke peserta.');
 };
 
+/* =====================================================
+   GANTI VIDEO TRACK KE SEMUA PESERTA WEBRTC (KAMERA / LAYAR)
+===================================================== */
+async function replaceOutgoingVideoTrack(newVideoTrack) {
+    const replacePromises = [];
+    peersMap.forEach((peerObj) => {
+        if (!peerObj?.pc) return;
+        const sender = peerObj.pc.getSenders().find(s => s.track && s.track.kind === 'video');
+        if (sender) {
+            replacePromises.push(sender.replaceTrack(newVideoTrack).catch(err => {
+                console.warn('replaceTrack gagal:', err);
+            }));
+        } else if (newVideoTrack && localStream) {
+            try {
+                peerObj.pc.addTrack(newVideoTrack, localStream);
+            } catch (e) {}
+        }
+    });
+    await Promise.all(replacePromises);
+}
+
+function updateLocalTileVisualMode() {
+    const localTile = document.getElementById('localVideoTile');
+    const localCamOffOverlay = document.getElementById('localCamOffOverlay');
+    const localVideo = document.getElementById('localVideo');
+    const switchCamBtn = document.getElementById('switchCamBtn');
+
+    if (localTile) {
+        localTile.classList.toggle('screen-sharing-tile', isScreenSharing);
+        localTile.classList.toggle('no-mirror', currentFacingMode === 'environment' && !isScreenSharing);
+    }
+
+    if (switchCamBtn) {
+        switchCamBtn.disabled = isScreenSharing || isCamOff || currentCallType !== 'video';
+    }
+
+    if (isScreenSharing) {
+        if (localCamOffOverlay) localCamOffOverlay.classList.remove('active');
+        if (localVideo && screenStream) {
+            localVideo.srcObject = screenStream;
+            localVideo.muted = true;
+            localVideo.play().catch(() => {});
+        }
+    } else if (currentCallType === 'video') {
+        if (localCamOffOverlay) localCamOffOverlay.classList.toggle('active', isCamOff);
+        if (localVideo && localStream) {
+            localVideo.srcObject = localStream;
+            localVideo.muted = true;
+            localVideo.play().catch(() => {});
+        }
+    }
+}
+
+/* =====================================================
+   GANTI KAMERA DEPAN / BELAKANG
+===================================================== */
+window.switchCameraFacing = async function () {
+    if (currentCallType !== 'video' || !isInCall) return;
+    if (isScreenSharing) {
+        showToast('Hentikan berbagi layar terlebih dahulu untuk mengganti kamera.');
+        return;
+    }
+    if (isSwitchingCamera) return;
+
+    isSwitchingCamera = true;
+    const nextFacing = currentFacingMode === 'user' ? 'environment' : 'user';
+    const switchBtn = document.getElementById('switchCamBtn');
+    if (switchBtn) switchBtn.disabled = true;
+
+    try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+            throw new Error('Perangkat tidak mendukung kamera.');
+        }
+
+        const newVideoStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: { ideal: nextFacing },
+                width: { ideal: 640, max: 1280 },
+                height: { ideal: 480, max: 720 },
+                frameRate: { ideal: 24, max: 30 }
+            },
+            audio: false
+        });
+
+        const newVideoTrack = newVideoStream.getVideoTracks()[0];
+        if (!newVideoTrack) {
+            throw new Error('Kamera tidak tersedia.');
+        }
+
+        newVideoTrack.enabled = !isCamOff;
+
+        if (!localStream) {
+            localStream = new MediaStream();
+        }
+
+        const oldVideoTracks = localStream.getVideoTracks();
+        oldVideoTracks.forEach(t => {
+            localStream.removeTrack(t);
+            try { t.stop(); } catch (e) {}
+        });
+
+        localStream.addTrack(newVideoTrack);
+        currentFacingMode = nextFacing;
+
+        await replaceOutgoingVideoTrack(newVideoTrack);
+        updateLocalTileVisualMode();
+
+        showToast(nextFacing === 'environment' ? 'Beralih ke kamera belakang.' : 'Beralih ke kamera depan.');
+    } catch (error) {
+        console.error('Switch camera error:', error);
+        showToast('Kamera belakang tidak tersedia di perangkat ini.');
+    } finally {
+        isSwitchingCamera = false;
+        if (switchBtn) {
+            switchBtn.disabled = isScreenSharing || isCamOff || currentCallType !== 'video';
+        }
+    }
+};
+
+/* =====================================================
+   BAGIKAN LAYAR (SCREEN SHARING)
+===================================================== */
+async function stopScreenShareInternal(silent = false) {
+    if (!isScreenSharing && !screenStream) return;
+
+    isScreenSharing = false;
+    const shareBtn = document.getElementById('shareScreenBtn');
+    if (shareBtn) {
+        shareBtn.classList.remove('active-feature');
+        shareBtn.title = 'Bagikan Layar';
+    }
+
+    if (screenStream) {
+        screenStream.getTracks().forEach(track => {
+            track.onended = null;
+            try { track.stop(); } catch (e) {}
+        });
+        screenStream = null;
+    }
+
+    const overlay = document.getElementById('vcOverlay');
+    const toggleCamBtn = document.getElementById('toggleCamBtn');
+
+    if (currentCallType === 'audio') {
+        if (overlay) overlay.classList.add('voice-mode');
+        if (toggleCamBtn) toggleCamBtn.style.display = 'none';
+        await replaceOutgoingVideoTrack(null);
+    } else {
+        let cameraTrack = localStream?.getVideoTracks()?.[0] || null;
+        if (!cameraTrack || cameraTrack.readyState === 'ended') {
+            try {
+                const camStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: currentFacingMode,
+                        width: { ideal: 640, max: 1280 },
+                        height: { ideal: 480, max: 720 },
+                        frameRate: { ideal: 24, max: 30 }
+                    },
+                    audio: false
+                });
+                cameraTrack = camStream.getVideoTracks()[0];
+                if (cameraTrack && localStream) {
+                    localStream.getVideoTracks().forEach(t => localStream.removeTrack(t));
+                    localStream.addTrack(cameraTrack);
+                }
+            } catch (e) {
+                cameraTrack = null;
+            }
+        }
+        if (cameraTrack) {
+            cameraTrack.enabled = !isCamOff;
+        }
+        await replaceOutgoingVideoTrack(cameraTrack);
+    }
+
+    updateLocalTileVisualMode();
+
+    if (currentCallId && currentUid) {
+        update(ref(rtdb, `calls/${currentCallId}/participants/${currentUid}`), {
+            screenSharing: false,
+            camOff: currentCallType === 'video' ? isCamOff : true,
+            videoPaused: false
+        }).catch(() => {});
+    }
+
+    if (!silent) {
+        showToast('Berbagi layar dihentikan.');
+    }
+}
+
+window.toggleScreenShare = async function () {
+    if (!isInCall) return;
+
+    if (isScreenSharing) {
+        await stopScreenShareInternal(false);
+        return;
+    }
+
+    if (!navigator.mediaDevices?.getDisplayMedia) {
+        showToast('Browser Anda belum mendukung fitur berbagi layar.');
+        return;
+    }
+
+    try {
+        const displayStream = await navigator.mediaDevices.getDisplayMedia({
+            video: {
+                cursor: 'always'
+            },
+            audio: false
+        });
+
+        const screenTrack = displayStream.getVideoTracks()[0];
+        if (!screenTrack) {
+            throw new Error('Track layar tidak ditemukan.');
+        }
+
+        screenStream = displayStream;
+        isScreenSharing = true;
+        isVideoPausedInBackground = false;
+
+        // Pastikan stage video aktif meski panggilan awalnya suara
+        const overlay = document.getElementById('vcOverlay');
+        if (overlay) overlay.classList.remove('voice-mode');
+
+        const shareBtn = document.getElementById('shareScreenBtn');
+        if (shareBtn) {
+            shareBtn.classList.add('active-feature');
+            shareBtn.title = 'Hentikan Berbagi Layar';
+        }
+
+        screenTrack.onended = () => {
+            stopScreenShareInternal(false);
+        };
+
+        await replaceOutgoingVideoTrack(screenTrack);
+        updateLocalTileVisualMode();
+
+        if (currentCallId && currentUid) {
+            update(ref(rtdb, `calls/${currentCallId}/participants/${currentUid}`), {
+                screenSharing: true,
+                camOff: false,
+                videoPaused: false
+            }).catch(() => {});
+        }
+
+        showToast('Anda sedang membagikan layar.');
+    } catch (error) {
+        if (error?.name !== 'NotAllowedError' && error?.name !== 'AbortError') {
+            console.error('Screen share error:', error);
+            showToast('Gagal membagikan layar: ' + error.message);
+        }
+    }
+};
+
 const rtcConfig = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
@@ -1101,7 +1421,7 @@ async function releaseWakeLock() {
 
 window.enterSystemPiP = async function () {
     const firstRemoteVideo = document.querySelector('#vcVideosGrid .remote-tile video');
-    if (!firstRemoteVideo || currentCallType !== 'video') return;
+    if (!firstRemoteVideo || (currentCallType !== 'video' && !isScreenSharing)) return;
 
     try {
         if (document.pictureInPictureEnabled && !firstRemoteVideo.disablePictureInPicture) {
@@ -1131,7 +1451,7 @@ document.addEventListener('visibilitychange', () => {
     if (!isInCall || isExplicitCallEnded) return;
     if (document.visibilityState === 'hidden') {
         pauseVideoKeepVoiceOnLeave();
-        if (currentCallType === 'video') window.enterSystemPiP();
+        if (currentCallType === 'video' || isScreenSharing) window.enterSystemPiP();
     } else if (document.visibilityState === 'visible') {
         resumeVideoWhenReturningToCall();
         requestWakeLock();
@@ -1304,12 +1624,28 @@ function updateGridLayoutCount() {
     updateHeaderAndVoiceStageUI();
 }
 
-function updateRemoteTileMediaState(remoteUid, muted, camOff, peerName, videoPaused = false) {
+function updateRemoteTileMediaState(remoteUid, muted, camOff, peerName, videoPaused = false, remoteScreenSharing = false) {
+    const tileEl = document.getElementById(`remote-tile-${remoteUid}`);
     const camOffEl = document.getElementById(`camoff-${remoteUid}`);
     const camOffStatusEl = document.getElementById(`camoff-status-${remoteUid}`);
     const mutedBadgeEl = document.getElementById(`muted-${remoteUid}`);
+    const overlay = document.getElementById('vcOverlay');
 
-    const shouldHideVideo = (Boolean(camOff) || Boolean(videoPaused)) && currentCallType === 'video';
+    if (tileEl) {
+        tileEl.classList.toggle('remote-screen-sharing', Boolean(remoteScreenSharing));
+    }
+
+    // Jika lawan bicara membagikan layar pada panggilan suara, otomatis tampilkan layar tersebut
+    if (remoteScreenSharing && overlay && overlay.classList.contains('voice-mode')) {
+        overlay.classList.remove('voice-mode');
+    } else if (!remoteScreenSharing && !isScreenSharing && currentCallType === 'audio' && overlay) {
+        const anyPeerSharing = Array.from(participantsInfoMap.values()).some(p => Boolean(p.screenSharing));
+        if (!anyPeerSharing) {
+            overlay.classList.add('voice-mode');
+        }
+    }
+
+    const shouldHideVideo = !remoteScreenSharing && (Boolean(camOff) || Boolean(videoPaused)) && currentCallType === 'video';
 
     if (camOffEl) {
         camOffEl.classList.toggle('active', shouldHideVideo);
@@ -1331,14 +1667,22 @@ function updateRemoteTileMediaState(remoteUid, muted, camOff, peerName, videoPau
         const mutedTextEl = document.getElementById('remoteMutedText');
         const camOffIndEl = document.getElementById('remoteCamOffIndicator');
         const camOffTextEl = document.getElementById('remoteCamOffText');
+        const screenIndEl = document.getElementById('remoteScreenShareIndicator');
+        const screenTextEl = document.getElementById('remoteScreenShareText');
 
         const displayPeer = peerName || 'Lawan bicara';
         if (mutedEl && mutedTextEl) {
             mutedTextEl.textContent = `${displayPeer} membisukan mikrofon`;
             mutedEl.classList.toggle('active', Boolean(muted));
         }
+        if (screenIndEl && screenTextEl) {
+            screenTextEl.textContent = `${displayPeer} membagikan layar`;
+            screenIndEl.classList.toggle('active', Boolean(remoteScreenSharing));
+        }
         if (camOffIndEl && camOffTextEl) {
-            if (videoPaused && currentCallType === 'video') {
+            if (remoteScreenSharing) {
+                camOffIndEl.classList.remove('active');
+            } else if (videoPaused && currentCallType === 'video') {
                 camOffIndEl.classList.add('paused-pill');
                 camOffTextEl.textContent = `${displayPeer} menjeda video (lanjut suara)`;
                 camOffIndEl.classList.add('active');
@@ -1382,7 +1726,7 @@ function updateHeaderAndVoiceStageUI() {
         const badges = renderCustomBadgesHtml(pVerif, pBadgeType, fallbackHtml);
 
         if (statusTextEl) {
-            statusTextEl.textContent = currentCallType === 'audio' ? 'Panggilan Suara' : pName;
+            statusTextEl.textContent = (currentCallType === 'audio' && !isScreenSharing) ? 'Panggilan Suara' : pName;
         }
         if (bannerBadgesEl) bannerBadgesEl.innerHTML = badges;
 
@@ -1419,9 +1763,12 @@ function applyCallOverlayMode(callType, peerUid, peerName, peerVerified = false,
     const toggleCamBtn = document.getElementById('toggleCamBtn');
     const nativePipBtn = document.getElementById('nativePipBtn');
     const shareLinkBtn = document.getElementById('shareCallLinkBtn');
+    const switchCamBtn = document.getElementById('switchCamBtn');
     const fallbackHtml = peerUid === activeChatUserId ? (otherProfile?.badgesHtml || '') : '';
     const badgesHtml = renderCustomBadgesHtml(Boolean(peerVerified), peerBadgeType, fallbackHtml);
     const avatarSrc = getSafePeerAvatar(peerUid, peerName);
+
+    applyReceiverMirrorMode();
 
     document.getElementById('vcBannerBadges').innerHTML = badgesHtml;
     document.getElementById('localCamOffAvatar').src = getSafePeerAvatar(currentUid, myUserName);
@@ -1435,6 +1782,7 @@ function applyCallOverlayMode(callType, peerUid, peerName, peerVerified = false,
         overlay.classList.add('voice-mode');
         if (toggleCamBtn) toggleCamBtn.style.display = 'none';
         if (nativePipBtn) nativePipBtn.style.display = 'none';
+        if (switchCamBtn) switchCamBtn.disabled = true;
 
         document.getElementById('voicePeerAvatar').src = avatarSrc;
         document.getElementById('voicePeerName').textContent = peerName || 'Mitra Sitenexs';
@@ -1446,7 +1794,10 @@ function applyCallOverlayMode(callType, peerUid, peerName, peerVerified = false,
         overlay.classList.remove('voice-mode');
         if (toggleCamBtn) toggleCamBtn.style.display = 'flex';
         if (nativePipBtn) nativePipBtn.style.display = 'flex';
+        if (switchCamBtn) switchCamBtn.disabled = isCamOff || isScreenSharing;
     }
+
+    updateLocalTileVisualMode();
 }
 
 async function createCallLogMessage(callType) {
@@ -1607,7 +1958,7 @@ async function setupLocalMedia(callType = 'video') {
             }
             : {
                 video: {
-                    facingMode: 'user',
+                    facingMode: currentFacingMode,
                     width: { ideal: 640, max: 1280 },
                     height: { ideal: 480, max: 720 },
                     frameRate: { ideal: 24, max: 30 }
@@ -1637,6 +1988,7 @@ async function setupLocalMedia(callType = 'video') {
             localVideo.srcObject = null;
         }
 
+        updateLocalTileVisualMode();
         return true;
     } catch (error) {
         const label = callType === 'audio' ? 'Mikrofon' : 'Kamera/mikrofon';
@@ -1708,9 +2060,17 @@ async function connectToMeshParticipant(callId, remoteUid, peerMeta = {}) {
         videoEl.srcObject = remoteStream;
     }
 
-    localStream.getTracks().forEach(track => {
+    localStream.getAudioTracks().forEach(track => {
         pc.addTrack(track, localStream);
     });
+
+    const activeVideoTrack = isScreenSharing
+        ? screenStream?.getVideoTracks()?.[0]
+        : localStream.getVideoTracks()?.[0];
+
+    if (activeVideoTrack) {
+        pc.addTrack(activeVideoTrack, isScreenSharing ? screenStream : localStream);
+    }
 
     const peerObj = {
         uid: remoteUid,
@@ -1870,6 +2230,7 @@ function registerSelfInRoom(callId, preserveJoinedAt = null) {
         isGuest: isGuestUser,
         micMuted: isMicMuted,
         camOff: isCamOff,
+        screenSharing: isScreenSharing,
         videoPaused: false,
         voiceOnlyBackground: false,
         joinedAt: preserveJoinedAt || Date.now(),
@@ -1920,7 +2281,8 @@ function listenToRoomParticipants(callId) {
                 Boolean(pData.micMuted),
                 Boolean(pData.camOff),
                 pData.name,
-                Boolean(pData.videoPaused)
+                Boolean(pData.videoPaused),
+                Boolean(pData.screenSharing)
             );
         });
 
@@ -2491,6 +2853,15 @@ function cleanupCallResources() {
     isInCall = false;
     isStartingCall = false;
     isVideoPausedInBackground = false;
+    isScreenSharing = false;
+    isSwitchingCamera = false;
+    document.body.classList.remove('callee-mirror');
+
+    const shareBtn = document.getElementById('shareScreenBtn');
+    if (shareBtn) {
+        shareBtn.classList.remove('active-feature');
+        shareBtn.title = 'Bagikan Layar';
+    }
 
     exitSystemPiP();
     releaseWakeLock();
@@ -2518,6 +2889,14 @@ function cleanupCallResources() {
     });
     peersMap.clear();
     participantsInfoMap.clear();
+
+    if (screenStream) {
+        screenStream.getTracks().forEach(track => {
+            track.onended = null;
+            try { track.stop(); } catch (e) {}
+        });
+        screenStream = null;
+    }
 
     if (localStream) {
         localStream.getTracks().forEach(track => {
@@ -2555,6 +2934,11 @@ window.toggleMic = function () {
 
 window.toggleCamera = function () {
     if (!localStream || currentCallType === 'audio') return;
+    if (isScreenSharing) {
+        showToast('Hentikan berbagi layar terlebih dahulu untuk mengatur kamera.');
+        return;
+    }
+
     isCamOff = !isCamOff;
     isVideoPausedInBackground = false;
 
@@ -2570,6 +2954,9 @@ window.toggleCamera = function () {
 
     const localCamOffOverlay = document.getElementById('localCamOffOverlay');
     if (localCamOffOverlay) localCamOffOverlay.classList.toggle('active', isCamOff);
+
+    const switchCamBtn = document.getElementById('switchCamBtn');
+    if (switchCamBtn) switchCamBtn.disabled = isCamOff;
 
     if (currentCallId && currentUid) {
         update(ref(rtdb, `calls/${currentCallId}/participants/${currentUid}`), {
