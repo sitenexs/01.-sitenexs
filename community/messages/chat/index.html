@@ -784,6 +784,8 @@
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
 
 import {
+    initializeFirestore,
+    enableNetwork,
     doc,
     setDoc,
     updateDoc,
@@ -798,7 +800,6 @@ import {
 
 import {
     app,
-    db,
     rtdb,
     auth,
     PUSH_WORKER_URL
@@ -823,6 +824,10 @@ import {
     attachForcedIncomingCallRedirect,
     attachOngoingCallBanner
 } from 'https://sitenexs.com/assets/js/sitenexs-call-presence.js';
+
+const db = initializeFirestore(app, {
+    experimentalForceLongPolling: true
+});
 
 const VERIFIED_BADGE_URL = 'https://sitenexs.com/assets/logo/verified.png';
 const PRO_BADGE_URL = 'https://sitenexs.com/assets/logo/lencana.png';
@@ -2577,6 +2582,8 @@ async function initChat(user) {
 
     clearChatCacheStorage(activeChatId);
     clearChatMessagesDom();
+
+    enableNetwork(db).catch(() => {});
 
     if (cleanupIncomingRedirect) cleanupIncomingRedirect();
     cleanupIncomingRedirect = attachForcedIncomingCallRedirect({
