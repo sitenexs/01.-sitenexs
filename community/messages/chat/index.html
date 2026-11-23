@@ -851,7 +851,8 @@ let cleanupIncomingRedirect = null;
 let cleanupOngoingBanner = null;
 let lastNotifiedMessageId = null;
 let isRedirectingToCall = false;
-let isChatInitialized = false;
+let initializedUid = null;
+let isSendingMessage = false;
 let typingStopTimer = null;
 let lastTypingSoundAt = 0;
 let stickToBottom = true;
@@ -861,6 +862,28 @@ const messagesStore = new Map();
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('to');
+
+function resolveActiveChatId(uid = currentUid, peerUid = activeChatUserId) {
+    if (activeChatId && (!uid || !peerUid)) return activeChatId;
+    if (!uid || !peerUid) return activeChatId || null;
+    const computed = [String(uid).trim(), String(peerUid).trim()].sort().join('_');
+    if (!activeChatId) {
+        activeChatId = computed;
+    }
+    return computed;
+}
+
+function withTimeout(promise, ms = 6000, label = 'Firestore operation') {
+    let timerId = null;
+    const timeoutPromise = new Promise((_, reject) => {
+        timerId = setTimeout(() => {
+            reject(new Error(`${label} timeout after ${ms}ms`));
+        }, ms);
+    });
+    return Promise.race([promise, timeoutPromise]).finally(() => {
+        if (timerId) clearTimeout(timerId);
+    });
+}
 
 /* =====================================================
    HAPUS UNTUK SAYA & SEMATKAN BEBERAPA PESAN (LOKAL + FIRESTORE)
@@ -1783,10 +1806,11 @@ if (!targetUserId) {
 
     const earlyUid = getEarlyUid();
     if (earlyUid) {
+        currentUid = earlyUid;
         const cachedMe = loadCachedProfile(earlyUid);
         if (cachedMe?.name) myUserName = cachedMe.name;
         if (cachedMe?.badgesHtml) myBadgesHtml = cachedMe.badgesHtml;
-        const earlyChatId = [earlyUid, activeChatUserId].sort().join('_');
+        const earlyChatId = resolveActiveChatId(earlyUid, activeChatUserId);
         loadLocalPinnedMessages(earlyChatId);
         renderCachedMessagesImmediately(earlyChatId, earlyUid);
     }
@@ -1996,8 +2020,9 @@ function playMessageNotificationSound() {
    STATUS SEDANG MENGETIK REAL-TIME
 ===================================================== */
 function setMyTypingState(isTyping) {
-    if (!activeChatId || !currentUid) return;
-    setDoc(doc(db, 'chats', activeChatId), {
+    const chatId = resolveActiveChatId();
+    if (!chatId || !currentUid) return;
+    setDoc(doc(db, 'chats', chatId), {
         [`typing_${currentUid}`]: Boolean(isTyping)
     }, { merge: true }).catch(() => {});
 }
@@ -2005,7 +2030,8 @@ function setMyTypingState(isTyping) {
 window.handleTypingInputChange = function (event) {
     playTypingSound();
 
-    if (!activeChatId || !currentUid) return;
+    const chatId = resolveActiveChatId();
+    if (!chatId || !currentUid) return;
     const hasText = Boolean(event?.target?.value && event.target.value.trim().length > 0);
 
     setMyTypingState(hasText);
@@ -2724,10 +2750,10 @@ function syncProfilesAndPush(user, uid, peerUid) {
    INITIALIZE CHAT (REALTIME SNAPSHOT TERBARU + CACHE)
 ===================================================== */
 async function initChat(user) {
-    if (!user?.uid) return;
-    if (isChatInitialized && currentUid === user.uid) return;
-    isChatInitialized = true;
-    currentUid = user.uid;
+    if (!user?.uid || !activeChatUserId) return;
+    const uid = String(user.uid).trim();
+    const isSameUser = initializedUid === uid;
+    currentUid = uid;
 
     if (!isPlaceholderName(user.displayName)) {
         myUserName = user.displayName.trim();
@@ -2735,43 +2761,47 @@ async function initChat(user) {
 
     updateNotificationUIState();
 
-    const participants = [currentUid, activeChatUserId].sort();
-    activeChatId = `${participants[0]}_${participants[1]}`;
+    const chatId = resolveActiveChatId(currentUid, activeChatUserId);
 
-    loadLocalPinnedMessages(activeChatId);
-    renderCachedMessagesImmediately(activeChatId, currentUid);
+    if (!isSameUser) {
+        initializedUid = uid;
+        loadLocalPinnedMessages(chatId);
+        renderCachedMessagesImmediately(chatId, currentUid);
 
-    if (cleanupIncomingRedirect) cleanupIncomingRedirect();
-    cleanupIncomingRedirect = attachForcedIncomingCallRedirect({
-        rtdb,
-        currentUid,
-        callPageUrl: DEFAULT_CALL_PAGE_URL,
-        fallbackPeerName: otherUserName || 'Mitra Sitenexs'
-    });
+        if (cleanupIncomingRedirect) cleanupIncomingRedirect();
+        cleanupIncomingRedirect = attachForcedIncomingCallRedirect({
+            rtdb,
+            currentUid,
+            callPageUrl: DEFAULT_CALL_PAGE_URL,
+            fallbackPeerName: otherUserName || 'Mitra Sitenexs'
+        });
 
-    if (cleanupOngoingBanner) cleanupOngoingBanner();
-    cleanupOngoingBanner = attachOngoingCallBanner({
-        rtdb,
-        currentUid,
-        bannerElement: document.getElementById('activeCallBanner'),
-        textElement: document.getElementById('activeCallBannerText'),
-        iconElement: document.getElementById('activeCallBannerIcon'),
-        filterPeerUid: activeChatUserId,
-        filterChatId: activeChatId,
-        fallbackPeerName: otherUserName || 'Mitra Sitenexs',
-        callPageUrl: DEFAULT_CALL_PAGE_URL
-    });
+        if (cleanupOngoingBanner) cleanupOngoingBanner();
+        cleanupOngoingBanner = attachOngoingCallBanner({
+            rtdb,
+            currentUid,
+            bannerElement: document.getElementById('activeCallBanner'),
+            textElement: document.getElementById('activeCallBannerText'),
+            iconElement: document.getElementById('activeCallBannerIcon'),
+            filterPeerUid: activeChatUserId,
+            filterChatId: chatId,
+            fallbackPeerName: otherUserName || 'Mitra Sitenexs',
+            callPageUrl: DEFAULT_CALL_PAGE_URL
+        });
 
-    attachChatSyncListeners(activeChatId, currentUid, activeChatUserId);
-    syncUnreadReset(activeChatId, currentUid);
+        attachChatSyncListeners(chatId, currentUid, activeChatUserId);
+        syncUnreadReset(chatId, currentUid);
+    }
+
     syncProfilesAndPush(user, currentUid, activeChatUserId);
 }
 
 document.addEventListener('visibilitychange', () => {
+    const chatId = resolveActiveChatId();
     if (document.visibilityState === 'hidden') {
         setMyTypingState(false);
-    } else if (document.visibilityState === 'visible' && activeChatId && currentUid) {
-        syncUnreadReset(activeChatId, currentUid);
+    } else if (document.visibilityState === 'visible' && chatId && currentUid) {
+        syncUnreadReset(chatId, currentUid);
         scrollMessagesToBottom(false);
     }
 });
@@ -2791,17 +2821,29 @@ onAuthStateChanged(auth, user => {
 
 window.handleChatFormSubmit = async function (event) {
     event.preventDefault();
+    if (isSendingMessage) return;
 
     const inputEl = document.getElementById('messageInput');
-    const text = inputEl.value.trim();
+    const text = inputEl ? inputEl.value.trim() : '';
+    const senderUid = currentUid || auth.currentUser?.uid || getEarlyUid();
+    const recipientUid = activeChatUserId;
+    const chatId = resolveActiveChatId(senderUid, recipientUid);
 
-    if (!text || !activeChatId || !currentUid) return;
+    if (!text) return;
+    if (!chatId || !senderUid || !recipientUid) {
+        showToast('Sesi chat belum siap, coba lagi.');
+        return;
+    }
+
+    currentUid = senderUid;
+    isSendingMessage = true;
 
     const targetEditId = editingMessageId;
+    const prevEditOriginal = editingOriginalText;
+    const replyToPayload = activeReplyData ? { ...activeReplyData } : null;
+
     editingMessageId = null;
     editingOriginalText = '';
-
-    const replyToPayload = activeReplyData ? { ...activeReplyData } : null;
     window.clearActiveReply();
 
     inputEl.value = '';
@@ -2813,10 +2855,24 @@ window.handleChatFormSubmit = async function (event) {
 
     try {
         if (targetEditId) {
-            await updateDoc(doc(db, 'chats', activeChatId, 'messages', targetEditId), {
-                text,
-                isEdited: true
-            });
+            await withTimeout(
+                updateDoc(doc(db, 'chats', chatId, 'messages', targetEditId), {
+                    text,
+                    isEdited: true
+                }),
+                7000,
+                'Update message'
+            );
+
+            const cachedMsg = messagesStore.get(targetEditId);
+            if (cachedMsg) {
+                const updatedMsg = { ...cachedMsg, text, isEdited: true };
+                messagesStore.set(targetEditId, updatedMsg);
+                syncMessageDocToCache(chatId, targetEditId, updatedMsg);
+                const el = document.getElementById('chatMessages')?.querySelector(`[data-msg-id="${CSS.escape(targetEditId)}"]`);
+                if (el) updateMessageElement(el, targetEditId, updatedMsg, senderUid);
+            }
+
             const existingPin = pinnedMessagesList.find(p => p.id === targetEditId);
             if (existingPin) {
                 addOrUpdatePinnedMessage({
@@ -2829,10 +2885,12 @@ window.handleChatFormSubmit = async function (event) {
         }
 
         stickToBottom = true;
-        const recipientUid = activeChatUserId;
-        let senderNameToSave = extractProfileName(myProfile, myUserName || auth.currentUser?.displayName || loadCachedProfile(currentUid)?.name);
+        let senderNameToSave = extractProfileName(
+            myProfile,
+            myUserName || auth.currentUser?.displayName || loadCachedProfile(senderUid)?.name
+        );
         if (!senderNameToSave) {
-            const freshProfile = await fetchUserProfile(db, currentUid, { forceRefresh: true }).catch(() => null);
+            const freshProfile = await fetchUserProfile(db, senderUid, { forceRefresh: true }).catch(() => null);
             if (freshProfile) {
                 myProfile = freshProfile;
                 senderNameToSave = extractProfileName(freshProfile, auth.currentUser?.displayName);
@@ -2843,10 +2901,8 @@ window.handleChatFormSubmit = async function (event) {
         const senderVerifiedToSave = Boolean(myProfile?.isVerified);
         const senderProToSave = hasYellowBadge(myProfile);
 
-        await syncChatSummaryOnSend(activeChatId, currentUid, recipientUid, text);
-
-        await addDoc(collection(db, 'chats', activeChatId, 'messages'), {
-            senderUid: currentUid,
+        const msgPayload = {
+            senderUid,
             senderName: senderNameToSave,
             senderIsVerified: senderVerifiedToSave,
             senderIsPro: senderProToSave,
@@ -2858,27 +2914,87 @@ window.handleChatFormSubmit = async function (event) {
             checkColor: null,
             delivered: false,
             read: false
+        };
+
+        // Jalankan penulisan pesan utama & pembaruan ringkasan chat tanpa saling mengunci
+        const summaryPromise = syncChatSummaryOnSend(chatId, senderUid, recipientUid, text).catch(err => {
+            console.warn('Sync chat summary warning:', err);
         });
+
+        const addedDocRef = await withTimeout(
+            addDoc(collection(db, 'chats', chatId, 'messages'), msgPayload),
+            7000,
+            'Add message'
+        );
+
+        await summaryPromise;
+
+        const nowMs = Date.now();
+        const optimisticMsg = {
+            ...msgPayload,
+            createdAt: { toDate: () => new Date(nowMs) }
+        };
+        messagesStore.set(addedDocRef.id, optimisticMsg);
+        upsertMessageToCache(chatId, {
+            id: addedDocRef.id,
+            senderUid,
+            senderName: senderNameToSave,
+            senderIsVerified: senderVerifiedToSave,
+            senderIsPro: senderProToSave,
+            text,
+            replyTo: replyToPayload,
+            isEdited: false,
+            status: 'sent',
+            checkColor: null,
+            delivered: false,
+            read: false,
+            createdAtMs: nowMs
+        });
+
+        const messagesContainer = document.getElementById('chatMessages');
+        const typingBubbleWrapper = document.getElementById('typingBubbleWrapper');
+        if (messagesContainer && !messagesContainer.querySelector(`[data-msg-id="${CSS.escape(addedDocRef.id)}"]`)) {
+            const newEl = buildMessageElement(addedDocRef.id, optimisticMsg, senderUid);
+            if (typingBubbleWrapper) {
+                messagesContainer.insertBefore(newEl, typingBubbleWrapper);
+            } else {
+                messagesContainer.appendChild(newEl);
+            }
+        }
 
         scrollMessagesToBottom(true);
         playSentMessageSound();
 
-        const pushRes = await sendPushNotification({
+        sendPushNotification({
             db,
-            recipientUid: activeChatUserId,
+            recipientUid,
             cachedToken: otherUserFcmToken,
             title: senderNameToSave || 'Pesan Baru',
             body: text,
-            tag: `chat-${activeChatId}`,
-            url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(currentUid)}`,
-            icon: myProfile?.avatarUrl || getUserAvatarUrl(currentUid),
+            tag: `chat-${chatId}`,
+            url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(senderUid)}`,
+            icon: myProfile?.avatarUrl || getUserAvatarUrl(senderUid),
             workerUrl: PUSH_WORKER_URL
-        });
-        if (pushRes?.token) otherUserFcmToken = pushRes.token;
+        }).then(pushRes => {
+            if (pushRes?.token) otherUserFcmToken = pushRes.token;
+        }).catch(() => {});
 
     } catch (error) {
         console.error('Send message error:', error);
-        showToast('Gagal mengirim pesan.');
+        if (targetEditId) {
+            editingMessageId = targetEditId;
+            editingOriginalText = prevEditOriginal;
+            renderReplyPreviewBar();
+        } else if (replyToPayload) {
+            activeReplyData = replyToPayload;
+            renderReplyPreviewBar();
+        }
+        if (inputEl && !inputEl.value) {
+            inputEl.value = text;
+        }
+        showToast('Gagal mengirim pesan. Coba lagi.');
+    } finally {
+        isSendingMessage = false;
     }
 };
 </script>
