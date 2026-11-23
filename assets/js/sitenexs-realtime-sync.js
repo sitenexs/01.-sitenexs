@@ -12,7 +12,7 @@ export function readListCache(storageKey) {
     }
 }
 
-export function writeListCache(storageKey, items, maxItems = 200) {
+export function writeListCache(storageKey, items, maxItems = 20000) {
     if (!storageKey) return;
     try {
         localStorage.setItem(storageKey, JSON.stringify(items.slice(-maxItems)));
