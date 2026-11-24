@@ -510,13 +510,49 @@
             }
         }
 
-        /* DEMO SECTION & PRODUCT SELECTOR */
+        /* DEMO SECTION, DEVICE SWITCHER & PRODUCT SELECTOR */
+        .device-switcher-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0 auto 1.25rem auto;
+            padding: 0.35rem;
+            background: #ffffff;
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-full);
+            width: fit-content;
+            box-shadow: var(--shadow-sm);
+        }
+        .device-switch-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.5rem 1.15rem;
+            border-radius: var(--radius-full);
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .device-switch-btn.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.25);
+        }
+        .device-switch-btn:hover:not(.active) {
+            color: var(--text-main);
+        }
+
         .demo-tabs {
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
             gap: 0.65rem;
-            margin: 0 auto 2rem auto;
+            margin: 0 auto 1.25rem auto;
             max-width: 760px;
         }
         .demo-tab-btn {
@@ -534,7 +570,7 @@
             cursor: pointer;
             transition: var(--transition);
         }
-        .demo-tab-btn:hover {
+        .demo-tab-btn:hover:not(:disabled) {
             border-color: var(--primary);
             color: var(--primary);
             transform: translateY(-2px);
@@ -545,18 +581,240 @@
             border-color: transparent;
             box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28);
         }
-        .demo-section-container { display: flex; align-items: center; justify-content: center; width: 100%; padding: 1rem 0 3rem 0; overflow: visible; }
-        .phone-mockup-wrapper { perspective: 1200px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
-        .phone-mockup { width: 310px; height: 620px; background: #1e293b; border-radius: 40px; padding: 12px; transform: rotateY(-18deg) rotateX(5deg) rotateZ(2deg); box-shadow: -30px 30px 50px -15px rgba(15, 23, 42, 0.45), inset 0 0 0 2px #475569, inset -3px 0 6px rgba(255,255,255,0.15); position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        .phone-mockup-wrapper:hover .phone-mockup { transform: rotateY(-5deg) rotateX(2deg) rotateZ(0deg) scale(1.05); box-shadow: -15px 15px 30px -10px rgba(15, 23, 42, 0.3), inset 0 0 0 2px #475569, inset -2px 0 4px rgba(255,255,255,0.1); }
-        .phone-mockup::before { content: ''; position: absolute; left: -3px; top: 130px; width: 3px; height: 50px; background: #475569; border-radius: 4px 0 0 4px; }
-        .phone-mockup::after { content: ''; position: absolute; left: -3px; top: 190px; width: 3px; height: 50px; background: #475569; border-radius: 4px 0 0 4px; }
-        .phone-screen { width: 100%; height: 100%; background-color: #f8fafc; border-radius: 30px; overflow: hidden; display: flex; flex-direction: column; position: relative; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
-        .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 130px; height: 30px; background: #1e293b; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; z-index: 10; }
+        .demo-tab-btn:disabled,
+        .demo-tab-btn.disabled-tab {
+            opacity: 0.45;
+            cursor: not-allowed;
+            background: #f1f5f9;
+            color: #94a3b8;
+            border-color: #e2e8f0;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .demo-notice {
+            text-align: center;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #b45309;
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            padding: 0.45rem 1rem;
+            border-radius: var(--radius-full);
+            width: fit-content;
+            max-width: 100%;
+            margin: 0 auto 1.5rem auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .demo-section-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 1rem 0 2.5rem 0;
+            overflow: visible;
+        }
+
+        /* HANDPHONE MOCKUP */
+        .phone-mockup-wrapper {
+            perspective: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: var(--transition);
+        }
+        .phone-mockup {
+            width: 310px;
+            height: 620px;
+            background: #1e293b;
+            border-radius: 40px;
+            padding: 12px;
+            transform: rotateY(-18deg) rotateX(5deg) rotateZ(2deg);
+            box-shadow: -30px 30px 50px -15px rgba(15, 23, 42, 0.45), inset 0 0 0 2px #475569, inset -3px 0 6px rgba(255,255,255,0.15);
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .phone-mockup-wrapper:hover .phone-mockup {
+            transform: rotateY(-5deg) rotateX(2deg) rotateZ(0deg) scale(1.05);
+            box-shadow: -15px 15px 30px -10px rgba(15, 23, 42, 0.3), inset 0 0 0 2px #475569, inset -2px 0 4px rgba(255,255,255,0.1);
+        }
+        .phone-mockup::before {
+            content: '';
+            position: absolute;
+            left: -3px;
+            top: 130px;
+            width: 3px;
+            height: 50px;
+            background: #475569;
+            border-radius: 4px 0 0 4px;
+        }
+        .phone-mockup::after {
+            content: '';
+            position: absolute;
+            left: -3px;
+            top: 190px;
+            width: 3px;
+            height: 50px;
+            background: #475569;
+            border-radius: 4px 0 0 4px;
+        }
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background-color: #f8fafc;
+            border-radius: 30px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+        /* KAMERA / NOTCH SEMI-TRANSPARAN */
+        .phone-notch {
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 118px;
+            height: 24px;
+            background: rgba(30, 41, 59, 0.38);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 9999px;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+        }
+        .phone-notch::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(59, 130, 246, 0.65);
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
+        }
+
+        /* DESKTOP MOCKUP */
+        .desktop-mockup-wrapper {
+            width: 100%;
+            max-width: 920px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            perspective: 1400px;
+        }
+        .desktop-monitor {
+            width: 100%;
+            background: #1e293b;
+            border-radius: 18px;
+            padding: 12px 12px 14px 12px;
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35), inset 0 0 0 2px #475569;
+            position: relative;
+            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        /* KAMERA WEBCAM ATAS MONITOR SEMI-TRANSPARAN */
+        .desktop-webcam {
+            position: absolute;
+            top: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 48px;
+            height: 8px;
+            border-radius: 9999px;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            z-index: 12;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .desktop-webcam::after {
+            content: '';
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: rgba(56, 189, 248, 0.75);
+        }
+        .desktop-browser-bar {
+            height: 34px;
+            background: #f1f5f9;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 0.85rem;
+        }
+        .browser-dots {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .browser-dots span {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .browser-dots span:nth-child(1) { background: #ef4444; }
+        .browser-dots span:nth-child(2) { background: #f59e0b; }
+        .browser-dots span:nth-child(3) { background: #10b981; }
+        .browser-address-bar {
+            flex: 1;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            padding: 0 0.65rem;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .desktop-screen {
+            width: 100%;
+            height: 490px;
+            background: #ffffff;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        .desktop-stand-neck {
+            width: 96px;
+            height: 42px;
+            background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%);
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.25);
+        }
+        .desktop-stand-base {
+            width: 190px;
+            height: 10px;
+            background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.25);
+        }
+
         .phone-loader { position: absolute; inset: 0; background: rgba(248, 250, 252, 0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; z-index: 5; font-size: 0.85rem; font-weight: 700; color: var(--primary); opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
         .phone-loader.visible { opacity: 1; pointer-events: auto; }
         .phone-iframe { width: 100%; height: 100%; border: none; background-color: #ffffff; z-index: 1; transition: opacity 0.3s ease; }
-        .demo-text-box { text-align: center; max-width: 680px; margin: 2rem auto 0 auto; }
+        .demo-text-box { text-align: center; max-width: 680px; margin: 1.5rem auto 0 auto; }
         .demo-title { font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem; }
         .demo-desc { font-size: 1.02rem; color: var(--text-muted); line-height: 1.65; }
 
@@ -748,6 +1006,7 @@
             .utility-grid { grid-template-columns: 1fr; }
             .phone-mockup { transform: rotateY(-18deg) rotateX(5deg) rotateZ(2deg) scale(0.9); }
             .phone-mockup-wrapper:hover .phone-mockup { transform: rotateY(-5deg) rotateX(2deg) rotateZ(0deg) scale(1.05); }
+            .desktop-screen { height: 360px; }
         }
 
         @media (max-width: 768px) {
@@ -786,6 +1045,9 @@
             .phone-mockup-wrapper { perspective: 800px; }
             .phone-mockup { transform: rotateY(-8deg) rotateX(2deg) scale(0.85); margin-top: -15px; margin-bottom: -15px; }
             .phone-mockup-wrapper:hover .phone-mockup { transform: rotateY(0deg) rotateX(0deg) scale(0.9); }
+            .desktop-screen { height: 240px; }
+            .desktop-stand-neck { height: 26px; width: 72px; }
+            .desktop-stand-base { width: 140px; height: 8px; }
         }
     </style>
 </head>
@@ -930,14 +1192,25 @@
     <!-- DEMO SISTEM INTERAKTIF -->
     <section id="demo-produk" class="page-section bg-square-grid">
         <div class="container">
-            <div class="section-header reveal" style="margin-bottom: 2rem;">
+            <div class="section-header reveal" style="margin-bottom: 1.5rem;">
                 <span class="section-subtitle">Antarmuka Sistem</span>
                 <h4 class="section-title">Tampilan Aplikasi <b id="demoHeadingProduct">Order Via QR</b> <span class="logo-text">Sitenexs</span></h4>
-                <p class="section-desc">Pilih produk di bawah ini untuk mencoba visualisasi antarmuka interaktif langsung di layar HP.</p>
+                <p class="section-desc">Pilih tampilan perangkat Handphone atau Desktop, lalu klik produk untuk mencoba simulasi antarmuka.</p>
             </div>
 
+            <!-- SWITCHER PERANGKAT: HANDPHONE & DESKTOP -->
+            <div class="device-switcher-bar reveal" role="group" aria-label="Pilih Perangkat Mockup">
+                <button type="button" class="device-switch-btn active" id="btnDevicePhone" data-device="phone">
+                    <i class="fas fa-mobile-alt"></i> Handphone
+                </button>
+                <button type="button" class="device-switch-btn" id="btnDeviceDesktop" data-device="desktop">
+                    <i class="fas fa-desktop"></i> Desktop
+                </button>
+            </div>
+
+            <!-- TAB PRODUK -->
             <div class="demo-tabs reveal" role="tablist" aria-label="Pilih Mockup Produk">
-                <button type="button" class="demo-tab-btn active" data-product="qr">
+                <button type="button" class="demo-tab-btn active" id="tabOrderQr" data-product="qr">
                     <i class="fas fa-qrcode"></i> Order Via QR
                 </button>
                 <button type="button" class="demo-tab-btn" data-product="website">
@@ -951,18 +1224,48 @@
                 </button>
             </div>
 
+            <div style="text-align: center;" class="reveal">
+                <div class="demo-notice" id="demoDeviceNotice" style="display: none;">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Mode Desktop: Fitur <strong>Order Via QR</strong> tidak tersedia di tampilan Desktop (khusus Handphone).</span>
+                </div>
+            </div>
+
             <div class="demo-section-container reveal">
-                <div class="phone-mockup-wrapper">
+                <!-- MOCKUP HANDPHONE -->
+                <div class="phone-mockup-wrapper" id="phoneMockupWrapper">
                     <div class="phone-mockup">
                         <div class="phone-screen">
-                            <div class="phone-notch"></div>
+                            <div class="phone-notch" aria-hidden="true"></div>
                             <div class="phone-loader" id="phoneLoader">
                                 <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i>
                                 <span>Memuat tampilan...</span>
                             </div>
-                            <iframe id="demoPhoneIframe" src="https://sitenexs.com/mockup/pesan.html" class="phone-iframe" title="Demo Produk Sitenexs"></iframe>
+                            <iframe id="demoPhoneIframe" src="https://sitenexs.com/mockup/pesan.html" class="phone-iframe" title="Demo Produk Sitenexs Handphone"></iframe>
                         </div>
                     </div>
+                </div>
+
+                <!-- MOCKUP DESKTOP -->
+                <div class="desktop-mockup-wrapper" id="desktopMockupWrapper" style="display: none;">
+                    <div class="desktop-monitor">
+                        <div class="desktop-webcam" aria-hidden="true"></div>
+                        <div class="desktop-browser-bar">
+                            <div class="browser-dots">
+                                <span></span><span></span><span></span>
+                            </div>
+                            <div class="browser-address-bar" id="desktopAddressBar">https://sitenexs.com/mockup/website.html</div>
+                        </div>
+                        <div class="desktop-screen">
+                            <div class="phone-loader" id="desktopLoader">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i>
+                                <span>Memuat tampilan desktop...</span>
+                            </div>
+                            <iframe id="demoDesktopIframe" src="https://sitenexs.com/mockup/website.html" class="phone-iframe" title="Demo Produk Sitenexs Desktop"></iframe>
+                        </div>
+                    </div>
+                    <div class="desktop-stand-neck"></div>
+                    <div class="desktop-stand-base"></div>
                 </div>
             </div>
 
@@ -1333,7 +1636,7 @@
                 mobileNavItems.forEach(item => { item.addEventListener('click', () => { mobileMenu.classList.remove('show'); }); });
             }
 
-            // SWITCHER MOCKUP PRODUK HP
+            // SWITCHER MOCKUP PRODUK & PERANGKAT (HANDPHONE / DESKTOP)
             const demoProducts = {
                 qr: {
                     url: 'https://sitenexs.com/mockup/pesan.html',
@@ -1351,19 +1654,32 @@
                     url: 'https://sitenexs.com/mockup/pencatatan.html',
                     heading: 'Laporan Keuangan',
                     title: 'Pencatatan & Laporan Keuangan Praktis',
-                    desc: 'Silakan coba fitur pencatatan di layar HP di atas! Pantau arus kas masuk dan keluar, rekap laba bersih, serta riwayat transaksi usaha Anda secara rapi dari mana saja.'
+                    desc: 'Silakan coba fitur pencatatan di atas! Pantau arus kas masuk dan keluar, rekap laba bersih, serta riwayat transaksi usaha Anda secara rapi dari mana saja.'
                 },
                 kasir: {
                     url: 'https://sitenexs.com/mockup/kasir.html',
                     heading: 'Aplikasi Kasir (POS)',
-                    title: 'Aplikasi Kasir (POS) Mobile Modern',
-                    desc: 'Silakan gulir dan interaksi langsung pada layar HP di atas! Sistem ini dirancang untuk bekerja sempurna di perangkat mobile, memudahkan staf memproses transaksi dan menghitung omzet harian secara instan.'
+                    title: 'Aplikasi Kasir (POS) Modern',
+                    desc: 'Silakan gulir dan interaksi langsung pada layar di atas! Memudahkan staf memproses transaksi dan menghitung omzet harian secara instan.'
                 }
             };
 
+            let currentDevice = 'phone';
+            let currentProduct = 'qr';
+
+            const btnDevicePhone = document.getElementById('btnDevicePhone');
+            const btnDeviceDesktop = document.getElementById('btnDeviceDesktop');
+            const phoneMockupWrapper = document.getElementById('phoneMockupWrapper');
+            const desktopMockupWrapper = document.getElementById('desktopMockupWrapper');
+            const demoDeviceNotice = document.getElementById('demoDeviceNotice');
+
+            const tabOrderQr = document.getElementById('tabOrderQr');
             const demoTabBtns = document.querySelectorAll('.demo-tab-btn');
             const demoPhoneIframe = document.getElementById('demoPhoneIframe');
+            const demoDesktopIframe = document.getElementById('demoDesktopIframe');
+            const desktopAddressBar = document.getElementById('desktopAddressBar');
             const phoneLoader = document.getElementById('phoneLoader');
+            const desktopLoader = document.getElementById('desktopLoader');
             const demoHeadingProduct = document.getElementById('demoHeadingProduct');
             const demoSubTitle = document.getElementById('demoSubTitle');
             const demoSubDesc = document.getElementById('demoSubDesc');
@@ -1373,24 +1689,79 @@
                     phoneLoader.classList.remove('visible');
                 });
             }
+            if (demoDesktopIframe && desktopLoader) {
+                demoDesktopIframe.addEventListener('load', () => {
+                    desktopLoader.classList.remove('visible');
+                });
+            }
+
+            function renderDemoState() {
+                const isDesktop = currentDevice === 'desktop';
+
+                if (btnDevicePhone) btnDevicePhone.classList.toggle('active', !isDesktop);
+                if (btnDeviceDesktop) btnDeviceDesktop.classList.toggle('active', isDesktop);
+
+                if (phoneMockupWrapper) phoneMockupWrapper.style.display = isDesktop ? 'none' : 'flex';
+                if (desktopMockupWrapper) desktopMockupWrapper.style.display = isDesktop ? 'flex' : 'none';
+                if (demoDeviceNotice) demoDeviceNotice.style.display = isDesktop ? 'inline-flex' : 'none';
+
+                if (tabOrderQr) {
+                    tabOrderQr.disabled = isDesktop;
+                    tabOrderQr.classList.toggle('disabled-tab', isDesktop);
+                }
+
+                // Saat mode Desktop aktif, Order Via QR tidak dapat dibuka
+                if (isDesktop && currentProduct === 'qr') {
+                    currentProduct = 'website';
+                }
+
+                const data = demoProducts[currentProduct];
+                if (!data) return;
+
+                demoTabBtns.forEach(b => {
+                    b.classList.toggle('active', b.getAttribute('data-product') === currentProduct);
+                });
+
+                if (demoHeadingProduct) demoHeadingProduct.textContent = data.heading;
+                if (demoSubTitle) demoSubTitle.textContent = data.title;
+                if (demoSubDesc) demoSubDesc.textContent = data.desc;
+
+                if (!isDesktop && demoPhoneIframe) {
+                    if (demoPhoneIframe.src !== data.url) {
+                        if (phoneLoader) phoneLoader.classList.add('visible');
+                        demoPhoneIframe.src = data.url;
+                    }
+                } else if (isDesktop && demoDesktopIframe) {
+                    if (desktopAddressBar) desktopAddressBar.textContent = data.url;
+                    if (demoDesktopIframe.src !== data.url) {
+                        if (desktopLoader) desktopLoader.classList.add('visible');
+                        demoDesktopIframe.src = data.url;
+                    }
+                }
+            }
+
+            if (btnDevicePhone) {
+                btnDevicePhone.addEventListener('click', () => {
+                    currentDevice = 'phone';
+                    renderDemoState();
+                });
+            }
+
+            if (btnDeviceDesktop) {
+                btnDeviceDesktop.addEventListener('click', () => {
+                    currentDevice = 'desktop';
+                    renderDemoState();
+                });
+            }
 
             demoTabBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const key = btn.getAttribute('data-product');
-                    const data = demoProducts[key];
-                    if (!data) return;
+                    if (!demoProducts[key]) return;
+                    if (currentDevice === 'desktop' && key === 'qr') return;
 
-                    demoTabBtns.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-
-                    if (demoHeadingProduct) demoHeadingProduct.textContent = data.heading;
-                    if (demoSubTitle) demoSubTitle.textContent = data.title;
-                    if (demoSubDesc) demoSubDesc.textContent = data.desc;
-
-                    if (demoPhoneIframe && demoPhoneIframe.src !== data.url) {
-                        if (phoneLoader) phoneLoader.classList.add('visible');
-                        demoPhoneIframe.src = data.url;
-                    }
+                    currentProduct = key;
+                    renderDemoState();
                 });
             });
 
