@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup Pencatatan & Laporan Keuangan — Sitenexs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-line: #e2e8f0;
+            --radius-sm: 0.45rem;
+            --radius-md: 0.75rem;
+            --radius-full: 9999px;
+            --transition: all 0.25s ease;
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        button, input, select {
+            font-family: inherit;
+            outline: none;
+        }
+
+        .main-wrap {
+            padding: 10px 12px 24px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: filter 0.35s ease, opacity 0.35s ease;
+        }
+
+        /* Mode Fokus & Blur Sekitarnya */
+        .demo-dimmed .balance-banner,
+        .demo-dimmed .analytics-box,
+        .demo-dimmed .entry-box,
+        .demo-dimmed .app-header {
+            filter: blur(3px);
+            opacity: 0.45;
+            transition: filter 0.35s ease, opacity 0.35s ease;
+        }
+
+        .demo-dimmed .trx-item:not(.spotlight-row) {
+            filter: blur(2.5px);
+            opacity: 0.38;
+            transition: filter 0.35s ease, opacity 0.35s ease;
+        }
+
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border-line);
+            padding: 34px 12px 10px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            transition: filter 0.35s ease, opacity 0.35s ease;
+        }
+
+        .app-title-wrap {
+            min-width: 0;
+        }
+
+        .app-title {
+            font-size: 0.84rem;
+            font-weight: 800;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .app-sub {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .badge-period {
+            background: var(--primary-light);
+            color: var(--primary);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            padding: 3px 8px;
+            border-radius: var(--radius-full);
+            font-size: 0.62rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        /* Ringkasan Saldo & Arus Kas */
+        .balance-banner {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #ffffff;
+            border-radius: var(--radius-md);
+            padding: 12px;
+            transition: filter 0.35s ease, opacity 0.35s ease, transform 0.35s ease;
+        }
+
+        .balance-label {
+            font-size: 0.64rem;
+            opacity: 0.88;
+            font-weight: 600;
+        }
+
+        .balance-value {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin: 2px 0 8px 0;
+        }
+
+        .cashflow-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .cashflow-box {
+            background: rgba(255, 255, 255, 0.14);
+            border-radius: var(--radius-sm);
+            padding: 6px 8px;
+        }
+
+        .cashflow-box span {
+            display: block;
+            font-size: 0.6rem;
+            opacity: 0.9;
+        }
+
+        .cashflow-box strong {
+            display: block;
+            font-size: 0.74rem;
+            font-weight: 800;
+            margin-top: 1px;
+        }
+
+        /* Grafik & Analisis Terbanyak */
+        .analytics-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-line);
+            border-radius: var(--radius-md);
+            padding: 10px;
+            transition: filter 0.35s ease, opacity 0.35s ease;
+        }
+
+        .chart-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .bar-row {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .bar-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.68rem;
+            font-weight: 700;
+        }
+
+        .bar-meta span.label-in {
+            color: #047857;
+        }
+
+        .bar-meta span.label-out {
+            color: #b91c1c;
+        }
+
+        .bar-meta span.pct {
+            color: var(--text-muted);
+            font-size: 0.63rem;
+        }
+
+        .bar-track {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-body);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            border: 1px solid var(--border-line);
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: var(--radius-full);
+            transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .bar-fill.in {
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+
+        .bar-fill.out {
+            background: linear-gradient(90deg, #f87171, #ef4444);
+        }
+
+        .top-extremes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border-line);
+        }
+
+        .extreme-card {
+            border-radius: var(--radius-sm);
+            padding: 7px 8px;
+            min-width: 0;
+        }
+
+        .extreme-card.in {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.22);
+        }
+
+        .extreme-card.out {
+            background: rgba(239, 68, 68, 0.07);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .extreme-tag {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.58rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            margin-bottom: 2px;
+        }
+
+        .extreme-card.in .extreme-tag {
+            color: #047857;
+        }
+
+        .extreme-card.out .extreme-tag {
+            color: #b91c1c;
+        }
+
+        .extreme-desc {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .extreme-val {
+            font-size: 0.72rem;
+            font-weight: 800;
+            margin-top: 1px;
+        }
+
+        .extreme-card.in .extreme-val {
+            color: #047857;
+        }
+
+        .extreme-card.out .extreme-val {
+            color: #b91c1c;
+        }
+
+        /* Form Input Transaksi & Animasi Zoom */
+        .entry-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-line);
+            border-radius: var(--radius-md);
+            padding: 10px;
+            position: relative;
+            z-index: 15;
+            transform-origin: center center;
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.3s ease, filter 0.35s ease, opacity 0.35s ease;
+        }
+
+        .entry-box.zoom-focus {
+            transform: scale(1.04);
+            border-color: var(--primary);
+            box-shadow: 0 14px 28px rgba(37, 99, 235, 0.22);
+        }
+
+        .box-heading {
+            font-size: 0.76rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .type-switch {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .type-btn {
+            padding: 6px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            font-weight: 700;
+            border: 1px solid var(--border-line);
+            background: var(--bg-body);
+            color: var(--text-muted);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: var(--transition);
+        }
+
+        .type-btn.active-in {
+            background: rgba(16, 185, 129, 0.12);
+            color: #047857;
+            border-color: var(--accent);
+        }
+
+        .type-btn.active-out {
+            background: rgba(239, 68, 68, 0.1);
+            color: #b91c1c;
+            border-color: var(--danger);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .mini-input {
+            width: 100%;
+            padding: 7px 9px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-line);
+            background: var(--bg-body);
+            font-size: 0.74rem;
+            color: var(--text-main);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        }
+
+        .mini-input:focus,
+        .mini-input.typing-active {
+            border-color: var(--primary);
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+        }
+
+        .btn-add-trx {
+            width: 100%;
+            padding: 7px 10px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 0.74rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-add-trx:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-add-trx.zoom-btn {
+            transform: scale(1.06);
+            background: var(--primary-dark);
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-add-trx.pressed {
+            transform: scale(0.95);
+            background: var(--accent);
+        }
+
+        /* Filter & Riwayat Laporan */
+        .history-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-line);
+            border-radius: var(--radius-md);
+            padding: 10px;
+            position: relative;
+            z-index: 16;
+        }
+
+        .filter-pills {
+            display: flex;
+            gap: 4px;
+        }
+
+        .pill-btn {
+            padding: 3px 7px;
+            border-radius: var(--radius-full);
+            font-size: 0.62rem;
+            font-weight: 700;
+            border: 1px solid var(--border-line);
+            background: var(--bg-body);
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .pill-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .trx-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .trx-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 7px 6px;
+            border-bottom: 1px solid var(--border-line);
+            border-radius: var(--radius-sm);
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.3s ease, box-shadow 0.3s ease, filter 0.35s ease, opacity 0.35s ease;
+        }
+
+        .trx-item:last-child {
+            border-bottom: none;
+        }
+
+        .trx-item.spotlight-row {
+            transform: scale(1.05);
+            background: #ffffff;
+            box-shadow: 0 10px 22px rgba(16, 185, 129, 0.22);
+            border: 1px solid rgba(16, 185, 129, 0.45);
+            position: relative;
+            z-index: 25;
+            filter: none !important;
+            opacity: 1 !important;
+        }
+
+        .trx-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .trx-icon {
+            width: 26px;
+            height: 26px;
+            border-radius: var(--radius-sm);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            flex-shrink: 0;
+        }
+
+        .trx-icon.in {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--accent);
+        }
+
+        .trx-icon.out {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .trx-meta {
+            min-width: 0;
+        }
+
+        .trx-name {
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .trx-date {
+            font-size: 0.62rem;
+            color: var(--text-muted);
+        }
+
+        .trx-amount {
+            font-size: 0.74rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .trx-amount.in {
+            color: #047857;
+        }
+
+        .trx-amount.out {
+            color: #b91c1c;
+        }
+
+        .empty-note {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            padding: 10px 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="appShell">
+        <header class="app-header">
+            <div class="app-title-wrap">
+                <div class="app-title">Laporan Keuangan UMKM</div>
+                <div class="app-sub">bisniskamu · Kas Harian</div>
+            </div>
+            <span class="badge-period">November 2026</span>
+        </header>
+
+        <main class="main-wrap" id="mainWrap">
+            <section class="balance-banner">
+                <div class="balance-label">Saldo Bersih Tersedia</div>
+                <div class="balance-value" id="netBalance">Rp 0</div>
+                <div class="cashflow-split">
+                    <div class="cashflow-box">
+                        <span><i class="fas fa-arrow-down"></i> Pemasukan</span>
+                        <strong id="totalIncome">Rp 0</strong>
+                    </div>
+                    <div class="cashflow-box">
+                        <span><i class="fas fa-arrow-up"></i> Pengeluaran</span>
+                        <strong id="totalExpense">Rp 0</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Grafik Arus Kas & Sorotan Terbanyak -->
+            <section class="analytics-box">
+                <div class="box-heading">
+                    <span>Grafik Arus Kas</span>
+                    <i class="fas fa-chart-bar" style="color: var(--primary);"></i>
+                </div>
+
+                <div class="chart-bars">
+                    <div class="bar-row">
+                        <div class="bar-meta">
+                            <span class="label-in"><i class="fas fa-circle" style="font-size: 0.45rem;"></i> Pemasukan</span>
+                            <span class="pct" id="pctIncome">0%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill in" id="barIncome" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="bar-row">
+                        <div class="bar-meta">
+                            <span class="label-out"><i class="fas fa-circle" style="font-size: 0.45rem;"></i> Pengeluaran</span>
+                            <span class="pct" id="pctExpense">0%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill out" id="barExpense" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="top-extremes-grid">
+                    <div class="extreme-card in">
+                        <div class="extreme-tag"><i class="fas fa-arrow-trend-up"></i> Pemasukan Terbanyak</div>
+                        <div class="extreme-desc" id="topIncomeDesc">-</div>
+                        <div class="extreme-val" id="topIncomeVal">Rp 0</div>
+                    </div>
+
+                    <div class="extreme-card out">
+                        <div class="extreme-tag"><i class="fas fa-arrow-trend-down"></i> Pengeluaran Terbanyak</div>
+                        <div class="extreme-desc" id="topExpenseDesc">-</div>
+                        <div class="extreme-val" id="topExpenseVal">Rp 0</div>
+                    </div>
+                </div>
+            </section>
+
+            <form class="entry-box" id="trxForm">
+                <div class="box-heading">
+                    <span>Catat Transaksi Baru</span>
+                    <i class="fas fa-plus-circle" style="color: var(--primary);"></i>
+                </div>
+
+                <div class="type-switch">
+                    <button type="button" class="type-btn active-in" id="btnTypeIn" data-type="in">
+                        <i class="fas fa-plus"></i> Pemasukan
+                    </button>
+                    <button type="button" class="type-btn" id="btnTypeOut" data-type="out">
+                        <i class="fas fa-minus"></i> Pengeluaran
+                    </button>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" id="trxDesc" class="mini-input" required placeholder="Keterangan (misal: Penjualan Kopi / Beli Kemasan)">
+                    <input type="number" id="trxAmount" class="mini-input" required min="100" step="100" placeholder="Nominal (Rp), contoh: 45000">
+                </div>
+
+                <button type="submit" class="btn-add-trx" id="btnSubmitTrx">
+                    <i class="fas fa-check"></i> Simpan ke Laporan
+                </button>
+            </form>
+
+            <section class="history-box">
+                <div class="box-heading">
+                    <span>Riwayat Laporan</span>
+                    <div class="filter-pills">
+                        <button type="button" class="pill-btn active" data-filter="all">Semua</button>
+                        <button type="button" class="pill-btn" data-filter="in">Masuk</button>
+                        <button type="button" class="pill-btn" data-filter="out">Keluar</button>
+                    </div>
+                </div>
+
+                <div class="trx-list" id="trxList"></div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        let transactions = [
+            { id: 1, type: 'in', desc: 'Penjualan Harian QR & Kasir', amount: 685000, date: 'Hari ini · 19.45' },
+            { id: 2, type: 'out', desc: 'Restok Biji Kopi & Susu', amount: 240000, date: 'Hari ini · 14.10' },
+            { id: 3, type: 'in', desc: 'Pesanan Rapat Kantor (10 Pax)', amount: 210000, date: 'Kemarin · 11.20' },
+            { id: 4, type: 'out', desc: 'Biaya Listrik & Kebersihan', amount: 95000, date: '23 Nov · 16.00' }
+        ];
+
+        let currentType = 'in';
+        let currentFilter = 'all';
+        let spotlightId = null;
+
+        const mainWrap = document.getElementById('mainWrap');
+        const entryBox = document.getElementById('trxForm');
+        const btnTypeIn = document.getElementById('btnTypeIn');
+        const btnTypeOut = document.getElementById('btnTypeOut');
+        const trxForm = document.getElementById('trxForm');
+        const trxDesc = document.getElementById('trxDesc');
+        const trxAmount = document.getElementById('trxAmount');
+        const btnSubmitTrx = document.getElementById('btnSubmitTrx');
+        const trxList = document.getElementById('trxList');
+        const netBalance = document.getElementById('netBalance');
+        const totalIncome = document.getElementById('totalIncome');
+        const totalExpense = document.getElementById('totalExpense');
+
+        const barIncome = document.getElementById('barIncome');
+        const barExpense = document.getElementById('barExpense');
+        const pctIncome = document.getElementById('pctIncome');
+        const pctExpense = document.getElementById('pctExpense');
+        const topIncomeDesc = document.getElementById('topIncomeDesc');
+        const topIncomeVal = document.getElementById('topIncomeVal');
+        const topExpenseDesc = document.getElementById('topExpenseDesc');
+        const topExpenseVal = document.getElementById('topExpenseVal');
+
+        function formatRupiah(num) {
+            return 'Rp ' + Math.round(Number(num) || 0).toLocaleString('id-ID');
+        }
+
+        function setTrxType(type) {
+            currentType = type;
+            btnTypeIn.classList.toggle('active-in', type === 'in');
+            btnTypeOut.classList.toggle('active-out', type === 'out');
+        }
+
+        function updateSummary() {
+            const incomeList = transactions.filter(t => t.type === 'in');
+            const expenseList = transactions.filter(t => t.type === 'out');
+
+            const income = incomeList.reduce((acc, t) => acc + t.amount, 0);
+            const expense = expenseList.reduce((acc, t) => acc + t.amount, 0);
+            const balance = income - expense;
+
+            totalIncome.textContent = formatRupiah(income);
+            totalExpense.textContent = formatRupiah(expense);
+            netBalance.textContent = (balance < 0 ? '- ' : '') + formatRupiah(Math.abs(balance));
+
+            const totalFlow = income + expense;
+            const inPercent = totalFlow > 0 ? Math.round((income / totalFlow) * 100) : 0;
+            const outPercent = totalFlow > 0 ? Math.round((expense / totalFlow) * 100) : 0;
+
+            barIncome.style.width = `${inPercent}%`;
+            barExpense.style.width = `${outPercent}%`;
+            pctIncome.textContent = `${inPercent}%`;
+            pctExpense.textContent = `${outPercent}%`;
+
+            if (incomeList.length > 0) {
+                const maxIn = incomeList.reduce((max, item) => item.amount > max.amount ? item : max, incomeList[0]);
+                topIncomeDesc.textContent = maxIn.desc;
+                topIncomeVal.textContent = formatRupiah(maxIn.amount);
+            } else {
+                topIncomeDesc.textContent = '-';
+                topIncomeVal.textContent = 'Rp 0';
+            }
+
+            if (expenseList.length > 0) {
+                const maxOut = expenseList.reduce((max, item) => item.amount > max.amount ? item : max, expenseList[0]);
+                topExpenseDesc.textContent = maxOut.desc;
+                topExpenseVal.textContent = formatRupiah(maxOut.amount);
+            } else {
+                topExpenseDesc.textContent = '-';
+                topExpenseVal.textContent = 'Rp 0';
+            }
+        }
+
+        function renderTransactions() {
+            const filtered = currentFilter === 'all'
+                ? transactions
+                : transactions.filter(t => t.type === currentFilter);
+
+            if (filtered.length === 0) {
+                trxList.innerHTML = '<div class="empty-note">Belum ada catatan pada kategori ini.</div>';
+                return;
+            }
+
+            trxList.innerHTML = filtered.map(item => {
+                const isIn = item.type === 'in';
+                const sign = isIn ? '+' : '-';
+                const iconClass = isIn ? 'fa-arrow-down' : 'fa-arrow-up';
+                const isSpot = spotlightId === item.id;
+                return `
+                    <div class="trx-item ${isSpot ? 'spotlight-row' : ''}">
+                        <div class="trx-left">
+                            <span class="trx-icon ${item.type}"><i class="fas ${iconClass}"></i></span>
+                            <div class="trx-meta">
+                                <div class="trx-name">${item.desc}</div>
+                                <div class="trx-date">${item.date}</div>
+                            </div>
+                        </div>
+                        <span class="trx-amount ${item.type}">${sign} ${formatRupiah(item.amount)}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function typeTextInto(inputEl, text, onDone) {
+            inputEl.classList.add('typing-active');
+            inputEl.value = '';
+            let i = 0;
+            function nextChar() {
+                if (i <= text.length) {
+                    inputEl.value = text.slice(0, i);
+                    i++;
+                    setTimeout(nextChar, 45);
+                } else {
+                    inputEl.classList.remove('typing-active');
+                    if (onDone) onDone();
+                }
+            }
+            nextChar();
+        }
+
+        (function runDemoSequence() {
+            updateSummary();
+            renderTransactions();
+
+            const sampleDesc = 'Penjualan Kopi Aren';
+            const sampleAmount = '75000';
+
+            // 1. Zoom ke input & animasi mengetik deskripsi + nominal
+            setTimeout(() => {
+                entryBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                entryBox.classList.add('zoom-focus');
+                typeTextInto(trxDesc, sampleDesc, () => {
+                    setTimeout(() => {
+                        typeTextInto(trxAmount, sampleAmount, () => {
+                            // 2. Zoom menekan tombol simpan
+                            setTimeout(() => {
+                                btnSubmitTrx.classList.add('zoom-btn');
+                                setTimeout(() => {
+                                    btnSubmitTrx.classList.add('pressed');
+
+                                    const newId = Date.now();
+                                    transactions.unshift({
+                                        id: newId,
+                                        type: 'in',
+                                        desc: sampleDesc,
+                                        amount: Number(sampleAmount),
+                                        date: 'Baru saja · Tersimpan'
+                                    });
+                                    spotlightId = newId;
+
+                                    trxDesc.value = '';
+                                    trxAmount.value = '';
+                                    updateSummary();
+                                    renderTransactions();
+
+                                    setTimeout(() => {
+                                        btnSubmitTrx.classList.remove('pressed', 'zoom-btn');
+                                        entryBox.classList.remove('zoom-focus');
+
+                                        // 3. Zoom ke data yang tersimpan dengan fokus & blur sekitarnya
+                                        const spotEl = document.querySelector('.trx-item.spotlight-row');
+                                        if (spotEl) {
+                                            spotEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        }
+                                        mainWrap.classList.add('demo-dimmed');
+
+                                        setTimeout(() => {
+                                            mainWrap.classList.remove('demo-dimmed');
+                                            spotlightId = null;
+                                            renderTransactions();
+                                        }, 1800);
+                                    }, 260);
+                                }, 240);
+                            }, 350);
+                        });
+                    }, 220);
+                });
+            }, 400);
+        })();
+
+        btnTypeIn.addEventListener('click', () => setTrxType('in'));
+        btnTypeOut.addEventListener('click', () => setTrxType('out'));
+
+        trxForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const desc = trxDesc.value.trim();
+            const amount = Number(trxAmount.value);
+
+            if (!desc || !amount || amount <= 0) return;
+
+            const now = new Date();
+            const jam = String(now.getHours()).padStart(2, '0');
+            const menit = String(now.getMinutes()).padStart(2, '0');
+
+            const createdId = Date.now();
+            transactions.unshift({
+                id: createdId,
+                type: currentType,
+                desc,
+                amount,
+                date: `Baru saja · ${jam}.${menit}`
+            });
+            spotlightId = createdId;
+
+            trxDesc.value = '';
+            trxAmount.value = '';
+            updateSummary();
+            renderTransactions();
+
+            mainWrap.classList.add('demo-dimmed');
+            setTimeout(() => {
+                mainWrap.classList.remove('demo-dimmed');
+                spotlightId = null;
+                renderTransactions();
+            }, 1300);
+        });
+
+        document.querySelectorAll('.pill-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.getAttribute('data-filter');
+                renderTransactions();
+            });
+        });
+    </script>
+</body>
+</html>
