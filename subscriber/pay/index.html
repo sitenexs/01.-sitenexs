@@ -394,7 +394,7 @@
 
                 <div class="qris-image-container">
                     <div class="qris-image-wrapper">
-                        <!-- UBAH URL DI BAWAH INI DENGAN LINK GAMBAR QRIS ANDA -->
+                        <!-- URL QRIS diperbarui otomatis sesuai nominal di script -->
                         <img src="https://sitenexs.com/assets/logo/qris-dummy.png" class="qris-qr" alt="QRIS Sitenexs" id="qrisImg" crossorigin="anonymous" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=SITENEXS-QRIS-PAYMENT';">
                     </div>
                     <div>
@@ -475,11 +475,22 @@
             return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
+        function getQrisUrlByHarga(angka) {
+            if (angka > 0) {
+                const formattedNoSpace = formatRupiah(angka).replace(/\s+/g, '');
+                return `https://sitenexs.com/assets/bayardenganqris/${formattedNoSpace}.jpeg`;
+            }
+            return 'https://sitenexs.com/assets/logo/qris-dummy.png';
+        }
+
         const numericHarga = parseInt(harga) || 0;
         document.getElementById('displayPaket').innerText = paket;
         document.getElementById('displayName').innerText = name;
         document.getElementById('displayBusiness').innerText = business;
         document.getElementById('displayHarga').innerText = formatRupiah(numericHarga);
+
+        const qrisImgEl = document.getElementById('qrisImg');
+        qrisImgEl.src = getQrisUrlByHarga(numericHarga);
 
         // 1. Fitur Hitung Mundur Waktu (Countdown Timer - 15 Menit)
         let timeLeft = 15 * 60; 
