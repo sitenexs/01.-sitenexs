@@ -510,7 +510,41 @@
             }
         }
 
-        /* DEMO SECTION */
+        /* DEMO SECTION & PRODUCT SELECTOR */
+        .demo-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+            margin: 0 auto 2rem auto;
+            max-width: 760px;
+        }
+        .demo-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.65rem 1.25rem;
+            border-radius: var(--radius-full);
+            font-size: 0.88rem;
+            font-weight: 700;
+            background: #ffffff;
+            color: var(--text-muted);
+            border: 1px solid var(--border-medium);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .demo-tab-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .demo-tab-btn.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28);
+        }
         .demo-section-container { display: flex; align-items: center; justify-content: center; width: 100%; padding: 1rem 0 3rem 0; overflow: visible; }
         .phone-mockup-wrapper { perspective: 1200px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
         .phone-mockup { width: 310px; height: 620px; background: #1e293b; border-radius: 40px; padding: 12px; transform: rotateY(-18deg) rotateX(5deg) rotateZ(2deg); box-shadow: -30px 30px 50px -15px rgba(15, 23, 42, 0.45), inset 0 0 0 2px #475569, inset -3px 0 6px rgba(255,255,255,0.15); position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
@@ -519,7 +553,9 @@
         .phone-mockup::after { content: ''; position: absolute; left: -3px; top: 190px; width: 3px; height: 50px; background: #475569; border-radius: 4px 0 0 4px; }
         .phone-screen { width: 100%; height: 100%; background-color: #f8fafc; border-radius: 30px; overflow: hidden; display: flex; flex-direction: column; position: relative; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
         .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 130px; height: 30px; background: #1e293b; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; z-index: 10; }
-        .phone-iframe { width: 100%; height: 100%; border: none; background-color: #ffffff; z-index: 1; }
+        .phone-loader { position: absolute; inset: 0; background: rgba(248, 250, 252, 0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; z-index: 5; font-size: 0.85rem; font-weight: 700; color: var(--primary); opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+        .phone-loader.visible { opacity: 1; pointer-events: auto; }
+        .phone-iframe { width: 100%; height: 100%; border: none; background-color: #ffffff; z-index: 1; transition: opacity 0.3s ease; }
         .demo-text-box { text-align: center; max-width: 680px; margin: 2rem auto 0 auto; }
         .demo-title { font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem; }
         .demo-desc { font-size: 1.02rem; color: var(--text-muted); line-height: 1.65; }
@@ -744,6 +780,8 @@
             .hero-layanan-action .btn { width: 100%; }
             .whatsapp-float-container { bottom: 1.5rem; right: 1.5rem; }
             .whatsapp-float { width: 52px; height: 52px; font-size: 1.6rem; }
+            .demo-tabs { gap: 0.5rem; }
+            .demo-tab-btn { padding: 0.55rem 0.95rem; font-size: 0.8rem; }
             .demo-section-container { padding: 1rem 0; overflow: hidden; }
             .phone-mockup-wrapper { perspective: 800px; }
             .phone-mockup { transform: rotateY(-8deg) rotateX(2deg) scale(0.85); margin-top: -15px; margin-bottom: -15px; }
@@ -889,13 +927,28 @@
         </div>
     </section>
 
-    <!-- DEMO SISTEM KASIR -->
+    <!-- DEMO SISTEM INTERAKTIF -->
     <section id="demo-produk" class="page-section bg-square-grid">
         <div class="container">
-            <div class="section-header reveal">
+            <div class="section-header reveal" style="margin-bottom: 2rem;">
                 <span class="section-subtitle">Antarmuka Sistem</span>
-                <h4 class="section-title">Tampilan Aplikasi <b>Order Via QR</b> <span class="logo-text">Sitenexs</span></h4>
-                <p class="section-desc">Visualisasi langsung antarmuka interaktif yang menghubungkan operasional bisnis Anda.</p>
+                <h4 class="section-title">Tampilan Aplikasi <b id="demoHeadingProduct">Order Via QR</b> <span class="logo-text">Sitenexs</span></h4>
+                <p class="section-desc">Pilih produk di bawah ini untuk mencoba visualisasi antarmuka interaktif langsung di layar HP.</p>
+            </div>
+
+            <div class="demo-tabs reveal" role="tablist" aria-label="Pilih Mockup Produk">
+                <button type="button" class="demo-tab-btn active" data-product="qr">
+                    <i class="fas fa-qrcode"></i> Order Via QR
+                </button>
+                <button type="button" class="demo-tab-btn" data-product="website">
+                    <i class="fas fa-globe"></i> Website Bisnis
+                </button>
+                <button type="button" class="demo-tab-btn" data-product="keuangan">
+                    <i class="fas fa-file-invoice-dollar"></i> Laporan Keuangan
+                </button>
+                <button type="button" class="demo-tab-btn" data-product="kasir">
+                    <i class="fas fa-cash-register"></i> Aplikasi Kasir (POS)
+                </button>
             </div>
 
             <div class="demo-section-container reveal">
@@ -903,16 +956,20 @@
                     <div class="phone-mockup">
                         <div class="phone-screen">
                             <div class="phone-notch"></div>
-                            <iframe src="https://sitenexs.com/mockup/pesan.html" class="phone-iframe" title="Demo POS Sitenexs"></iframe>
+                            <div class="phone-loader" id="phoneLoader">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i>
+                                <span>Memuat tampilan...</span>
+                            </div>
+                            <iframe id="demoPhoneIframe" src="https://sitenexs.com/mockup/pesan.html" class="phone-iframe" title="Demo Produk Sitenexs"></iframe>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="demo-text-box reveal">
-                <h3 class="demo-title">Aplikasi Kasir (POS) Mobile Modern</h3>
-                <p class="demo-desc">
-                    Silakan gulir dan interaksi langsung pada layar HP di atas! Sistem ini dirancang untuk bekerja secara sempurna di perangkat mobile, memudahkan staf dan pelanggan Anda melakukan pemesanan tanpa aplikasi tambahan.
+                <h3 class="demo-title" id="demoSubTitle">Sistem Pemesanan Mandiri Via QR</h3>
+                <p class="demo-desc" id="demoSubDesc">
+                    Silakan gulir dan interaksi langsung pada layar HP di atas! Pelanggan cukup memindai QR di meja untuk melihat menu dan mengirim pesanan langsung ke dapur maupun kasir tanpa antre.
                 </p>
             </div>
         </div>
@@ -1275,6 +1332,67 @@
                 mobileMenuBtn.addEventListener('click', () => { mobileMenu.classList.toggle('show'); });
                 mobileNavItems.forEach(item => { item.addEventListener('click', () => { mobileMenu.classList.remove('show'); }); });
             }
+
+            // SWITCHER MOCKUP PRODUK HP
+            const demoProducts = {
+                qr: {
+                    url: 'https://sitenexs.com/mockup/pesan.html',
+                    heading: 'Order Via QR',
+                    title: 'Sistem Pemesanan Mandiri Via QR',
+                    desc: 'Silakan gulir dan interaksi langsung pada layar HP di atas! Pelanggan cukup memindai QR di meja untuk melihat menu dan mengirim pesanan langsung ke dapur maupun kasir tanpa antre.'
+                },
+                website: {
+                    url: 'https://sitenexs.com/mockup/website.html',
+                    heading: 'Website Bisnis',
+                    title: 'Website Profil & Katalog Bisnis Modern',
+                    desc: 'Silakan gulir dan eksplorasi tampilan website di atas! Dirancang responsif untuk menampilkan identitas usaha, daftar layanan, galeri produk, hingga tombol kontak langsung dengan pelanggan.'
+                },
+                keuangan: {
+                    url: 'https://sitenexs.com/mockup/pencatatan.html',
+                    heading: 'Laporan Keuangan',
+                    title: 'Pencatatan & Laporan Keuangan Praktis',
+                    desc: 'Silakan coba fitur pencatatan di layar HP di atas! Pantau arus kas masuk dan keluar, rekap laba bersih, serta riwayat transaksi usaha Anda secara rapi dari mana saja.'
+                },
+                kasir: {
+                    url: 'https://sitenexs.com/mockup/kasir.html',
+                    heading: 'Aplikasi Kasir (POS)',
+                    title: 'Aplikasi Kasir (POS) Mobile Modern',
+                    desc: 'Silakan gulir dan interaksi langsung pada layar HP di atas! Sistem ini dirancang untuk bekerja sempurna di perangkat mobile, memudahkan staf memproses transaksi dan menghitung omzet harian secara instan.'
+                }
+            };
+
+            const demoTabBtns = document.querySelectorAll('.demo-tab-btn');
+            const demoPhoneIframe = document.getElementById('demoPhoneIframe');
+            const phoneLoader = document.getElementById('phoneLoader');
+            const demoHeadingProduct = document.getElementById('demoHeadingProduct');
+            const demoSubTitle = document.getElementById('demoSubTitle');
+            const demoSubDesc = document.getElementById('demoSubDesc');
+
+            if (demoPhoneIframe && phoneLoader) {
+                demoPhoneIframe.addEventListener('load', () => {
+                    phoneLoader.classList.remove('visible');
+                });
+            }
+
+            demoTabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const key = btn.getAttribute('data-product');
+                    const data = demoProducts[key];
+                    if (!data) return;
+
+                    demoTabBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    if (demoHeadingProduct) demoHeadingProduct.textContent = data.heading;
+                    if (demoSubTitle) demoSubTitle.textContent = data.title;
+                    if (demoSubDesc) demoSubDesc.textContent = data.desc;
+
+                    if (demoPhoneIframe && demoPhoneIframe.src !== data.url) {
+                        if (phoneLoader) phoneLoader.classList.add('visible');
+                        demoPhoneIframe.src = data.url;
+                    }
+                });
+            });
 
             const reveals = document.querySelectorAll('.reveal');
             function revealOnScroll() {
