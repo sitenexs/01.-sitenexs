@@ -1227,7 +1227,7 @@
             <div style="text-align: center;" class="reveal">
                 <div class="demo-notice" id="demoDeviceNotice" style="display: none;">
                     <i class="fas fa-info-circle"></i>
-                    <span>Mode Desktop: Fitur <strong>Order Via QR</strong> tidak tersedia di tampilan Desktop (khusus Handphone).</span>
+                    <span>Mode Desktop: Hanya dapat menampilkan <strong>Website Bisnis</strong>.</span>
                 </div>
             </div>
 
@@ -1673,7 +1673,6 @@
             const desktopMockupWrapper = document.getElementById('desktopMockupWrapper');
             const demoDeviceNotice = document.getElementById('demoDeviceNotice');
 
-            const tabOrderQr = document.getElementById('tabOrderQr');
             const demoTabBtns = document.querySelectorAll('.demo-tab-btn');
             const demoPhoneIframe = document.getElementById('demoPhoneIframe');
             const demoDesktopIframe = document.getElementById('demoDesktopIframe');
@@ -1705,22 +1704,21 @@
                 if (desktopMockupWrapper) desktopMockupWrapper.style.display = isDesktop ? 'flex' : 'none';
                 if (demoDeviceNotice) demoDeviceNotice.style.display = isDesktop ? 'inline-flex' : 'none';
 
-                if (tabOrderQr) {
-                    tabOrderQr.disabled = isDesktop;
-                    tabOrderQr.classList.toggle('disabled-tab', isDesktop);
-                }
-
-                // Saat mode Desktop aktif, Order Via QR tidak dapat dibuka
-                if (isDesktop && currentProduct === 'qr') {
+                // Pada mode Desktop, hanya Website Bisnis yang dapat dibuka
+                if (isDesktop) {
                     currentProduct = 'website';
                 }
 
+                demoTabBtns.forEach(btn => {
+                    const key = btn.getAttribute('data-product');
+                    const isAllowed = !isDesktop || key === 'website';
+                    btn.disabled = !isAllowed;
+                    btn.classList.toggle('disabled-tab', !isAllowed);
+                    btn.classList.toggle('active', key === currentProduct);
+                });
+
                 const data = demoProducts[currentProduct];
                 if (!data) return;
-
-                demoTabBtns.forEach(b => {
-                    b.classList.toggle('active', b.getAttribute('data-product') === currentProduct);
-                });
 
                 if (demoHeadingProduct) demoHeadingProduct.textContent = data.heading;
                 if (demoSubTitle) demoSubTitle.textContent = data.title;
@@ -1758,7 +1756,7 @@
                 btn.addEventListener('click', () => {
                     const key = btn.getAttribute('data-product');
                     if (!demoProducts[key]) return;
-                    if (currentDevice === 'desktop' && key === 'qr') return;
+                    if (currentDevice === 'desktop' && key !== 'website') return;
 
                     currentProduct = key;
                     renderDemoState();
