@@ -21,7 +21,8 @@
             --border-subtle: #e2e8f0;
             --border-medium: #cbd5e1;
             --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
-            --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+            --shadow-md: 0 12px 28px -6px rgba(15, 23, 42, 0.09);
+            --shadow-hero: 0 20px 42px -14px rgba(37, 99, 235, 0.16);
             --radius-sm: 0.5rem;
             --radius-md: 0.875rem;
             --radius-lg: 1.25rem;
@@ -103,6 +104,7 @@
             justify-content: center;
             font-size: 0.95rem;
             flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
         }
 
         .nav-menu {
@@ -123,7 +125,7 @@
             align-items: center;
             justify-content: center;
             gap: 0.45rem;
-            padding: 0.65rem 1.15rem;
+            padding: 0.68rem 1.2rem;
             border-radius: var(--radius-full);
             font-size: 0.85rem;
             font-weight: 700;
@@ -135,36 +137,65 @@
         .btn-primary {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: #ffffff;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.36);
         }
 
         .btn-secondary {
             background: var(--bg-card);
             color: var(--text-main);
             border-color: var(--border-medium);
+            box-shadow: var(--shadow-sm);
         }
 
         .btn-secondary:hover {
             border-color: var(--primary);
             color: var(--primary);
+            transform: translateY(-2px);
         }
 
-        /* Hero */
+        /* Hero Awalan */
         .hero {
-            padding: 2.5rem 0 2rem 0;
+            padding: 2.25rem 0 2rem 0;
+            background:
+                radial-gradient(circle at top right, rgba(37, 99, 235, 0.1), transparent 48%),
+                radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.08), transparent 45%),
+                linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%);
+            border-bottom: 1px solid var(--border-subtle);
         }
 
         .hero-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
+            background: linear-gradient(155deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid rgba(37, 99, 235, 0.14);
             border-radius: var(--radius-lg);
-            padding: 2rem 1.5rem;
-            box-shadow: var(--shadow-md);
+            padding: 2.25rem 1.6rem;
+            box-shadow: var(--shadow-hero);
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+        }
+
+        .hero-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
         }
 
         .pill-badge {
@@ -173,28 +204,52 @@
             gap: 0.4rem;
             background: var(--primary-light);
             color: var(--primary);
-            border: 1px solid rgba(37, 99, 235, 0.2);
-            padding: 0.3rem 0.85rem;
+            border: 1px solid rgba(37, 99, 235, 0.22);
+            padding: 0.32rem 0.9rem;
             border-radius: var(--radius-full);
             font-size: 0.72rem;
             font-weight: 800;
-            margin-bottom: 0.9rem;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.38rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: #047857;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 0.32rem 0.85rem;
+            border-radius: var(--radius-full);
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
         }
 
         .hero-title {
-            font-size: clamp(1.5rem, 4vw, 2.35rem);
+            font-size: clamp(1.55rem, 4.2vw, 2.4rem);
             font-weight: 800;
             line-height: 1.2;
-            letter-spacing: -0.02em;
-            max-width: 720px;
-            margin: 0 auto 0.75rem auto;
+            letter-spacing: -0.025em;
+            max-width: 740px;
+            margin: 0 auto 0.8rem auto;
+            color: var(--text-main);
+        }
+
+        .hero-highlight {
+            color: var(--primary);
         }
 
         .hero-desc {
-            font-size: 0.92rem;
+            font-size: 0.93rem;
             color: var(--text-muted);
-            max-width: 580px;
-            margin: 0 auto 1.4rem auto;
+            max-width: 590px;
+            margin: 0 auto 1.5rem auto;
         }
 
         .hero-cta {
@@ -204,18 +259,65 @@
             flex-wrap: wrap;
         }
 
+        .hero-perks {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.85rem;
+            margin-top: 1.1rem;
+        }
+
+        .perk-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 0.9rem 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: var(--shadow-sm);
+            text-align: left;
+        }
+
+        .perk-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-sm);
+            background: var(--primary-light);
+            color: var(--primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+
+        .perk-text strong {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.25;
+        }
+
+        .perk-text span {
+            display: block;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 0.1rem;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 0.85rem;
-            margin-top: 1.25rem;
+            margin-top: 0.85rem;
         }
 
         .stat-box {
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            padding: 1rem 0.75rem;
+            padding: 0.95rem 0.75rem;
             text-align: center;
             box-shadow: var(--shadow-sm);
         }
@@ -456,6 +558,7 @@
             .nav-menu {
                 display: none;
             }
+            .hero-perks,
             .stats-grid,
             .two-col,
             .catalog-grid,
@@ -463,7 +566,7 @@
                 grid-template-columns: 1fr;
             }
             .hero-card {
-                padding: 1.5rem 1.1rem;
+                padding: 1.65rem 1.15rem;
             }
         }
     </style>
@@ -495,8 +598,11 @@
     <section id="profil" class="hero">
         <div class="container">
             <div class="hero-card">
-                <span class="pill-badge"><i class="fas fa-store"></i> Profil Bisnis Resmi</span>
-                <h1 class="hero-title">Menghadirkan Produk Lokal Berkualitas dengan Pelayanan Cepat</h1>
+                <div class="hero-top-row">
+                    <span class="pill-badge"><i class="fas fa-store"></i> Profil Bisnis Resmi</span>
+                    <span class="status-pill"><span class="status-dot"></span> Siap Melayani Hari Ini</span>
+                </div>
+                <h1 class="hero-title">Menghadirkan Produk Lokal Berkualitas dengan <span class="hero-highlight">Pelayanan Cepat</span></h1>
                 <p class="hero-desc">
                     Kami adalah usaha lokal di Kota Bengkulu yang melayani pemesanan harian, paket acara, serta kebutuhan pelanggan individu maupun mitra bisnis dengan standar rasa dan ketepatan waktu.
                 </p>
@@ -507,6 +613,30 @@
                     <a href="#kontak" class="btn btn-secondary">
                         <i class="fas fa-map-marker-alt"></i> Lokasi & Pesan
                     </a>
+                </div>
+            </div>
+
+            <div class="hero-perks">
+                <div class="perk-card">
+                    <div class="perk-icon"><i class="fas fa-utensils"></i></div>
+                    <div class="perk-text">
+                        <strong>Dine-in & Takeaway</strong>
+                        <span>Pesan santai di tempat atau bawa pulang</span>
+                    </div>
+                </div>
+                <div class="perk-card">
+                    <div class="perk-icon"><i class="fas fa-motorcycle"></i></div>
+                    <div class="perk-text">
+                        <strong>Pengiriman Terjadwal</strong>
+                        <span>Siap antar untuk rumah, kantor, & acara</span>
+                    </div>
+                </div>
+                <div class="perk-card">
+                    <div class="perk-icon"><i class="fas fa-shield-check"></i></div>
+                    <div class="perk-text">
+                        <strong>Harga Transparan</strong>
+                        <span>Daftar menu jelas tanpa biaya tersembunyi</span>
+                    </div>
                 </div>
             </div>
 
