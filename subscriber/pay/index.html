@@ -476,8 +476,16 @@
         }
 
         function getQrisUrlByHarga(angka) {
-            if (angka > 0) {
-                const formattedNoSpace = formatRupiah(angka).replace(/\s+/g, '');
+            const qrisHargaMap = {
+                99999: 100000,
+                149999: 150000,
+                30000: 30000
+            };
+
+            const targetAngka = qrisHargaMap[angka] || angka;
+
+            if (targetAngka > 0) {
+                const formattedNoSpace = formatRupiah(targetAngka).replace(/\s+/g, '');
                 return `https://sitenexs.com/assets/bayardenganqris/${formattedNoSpace}.jpeg`;
             }
             return 'https://sitenexs.com/assets/logo/qris-dummy.png';
