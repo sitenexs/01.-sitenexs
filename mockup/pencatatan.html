@@ -23,7 +23,7 @@
             --radius-sm: 0.45rem;
             --radius-md: 0.75rem;
             --radius-full: 9999px;
-            --transition: all 0.25s ease;
+            --transition: all 0.35s ease;
         }
 
         *, *::before, *::after {
@@ -51,7 +51,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            transition: filter 0.35s ease, opacity 0.35s ease;
+            transition: filter 0.6s ease, opacity 0.6s ease;
         }
 
         /* Mode Fokus & Blur Sekitarnya */
@@ -61,13 +61,13 @@
         .demo-dimmed .app-header {
             filter: blur(3px);
             opacity: 0.45;
-            transition: filter 0.35s ease, opacity 0.35s ease;
+            transition: filter 0.6s ease, opacity 0.6s ease;
         }
 
         .demo-dimmed .trx-item:not(.spotlight-row) {
             filter: blur(2.5px);
             opacity: 0.38;
-            transition: filter 0.35s ease, opacity 0.35s ease;
+            transition: filter 0.6s ease, opacity 0.6s ease;
         }
 
         .app-header {
@@ -82,7 +82,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 8px;
-            transition: filter 0.35s ease, opacity 0.35s ease;
+            transition: filter 0.6s ease, opacity 0.6s ease;
         }
 
         .app-title-wrap {
@@ -121,7 +121,7 @@
             color: #ffffff;
             border-radius: var(--radius-md);
             padding: 12px;
-            transition: filter 0.35s ease, opacity 0.35s ease, transform 0.35s ease;
+            transition: filter 0.6s ease, opacity 0.6s ease, transform 0.6s ease;
         }
 
         .balance-label {
@@ -168,7 +168,7 @@
             border: 1px solid var(--border-line);
             border-radius: var(--radius-md);
             padding: 10px;
-            transition: filter 0.35s ease, opacity 0.35s ease;
+            transition: filter 0.6s ease, opacity 0.6s ease;
         }
 
         .chart-bars {
@@ -217,7 +217,7 @@
         .bar-fill {
             height: 100%;
             border-radius: var(--radius-full);
-            transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: width 0.85s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .bar-fill.in {
@@ -303,7 +303,7 @@
             position: relative;
             z-index: 15;
             transform-origin: center center;
-            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.3s ease, filter 0.35s ease, opacity 0.35s ease;
+            transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.6s ease, border-color 0.5s ease, filter 0.6s ease, opacity 0.6s ease;
         }
 
         .entry-box.zoom-focus {
@@ -372,7 +372,7 @@
             background: var(--bg-body);
             font-size: 0.74rem;
             color: var(--text-main);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+            transition: border-color 0.35s ease, box-shadow 0.35s ease, background-color 0.35s ease;
         }
 
         .mini-input:focus,
@@ -396,7 +396,7 @@
             align-items: center;
             justify-content: center;
             gap: 5px;
-            transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.35s ease, box-shadow 0.35s ease;
         }
 
         .btn-add-trx:hover {
@@ -460,7 +460,7 @@
             padding: 7px 6px;
             border-bottom: 1px solid var(--border-line);
             border-radius: var(--radius-sm);
-            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.3s ease, box-shadow 0.3s ease, filter 0.35s ease, opacity 0.35s ease;
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.5s ease, box-shadow 0.5s ease, filter 0.6s ease, opacity 0.6s ease;
         }
 
         .trx-item:last-child {
@@ -779,7 +779,7 @@
                 if (i <= text.length) {
                     inputEl.value = text.slice(0, i);
                     i++;
-                    setTimeout(nextChar, 45);
+                    setTimeout(nextChar, 90);
                 } else {
                     inputEl.classList.remove('typing-active');
                     if (onDone) onDone();
@@ -795,7 +795,7 @@
             const sampleDesc = 'Penjualan Kopi Aren';
             const sampleAmount = '75000';
 
-            // 1. Zoom ke input & animasi mengetik deskripsi + nominal
+            // 1. Zoom ke input & animasi mengetik deskripsi + nominal (tempo sedang)
             setTimeout(() => {
                 entryBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 entryBox.classList.add('zoom-focus');
@@ -838,14 +838,14 @@
                                             mainWrap.classList.remove('demo-dimmed');
                                             spotlightId = null;
                                             renderTransactions();
-                                        }, 1800);
-                                    }, 260);
-                                }, 240);
-                            }, 350);
+                                        }, 2800);
+                                    }, 500);
+                                }, 450);
+                            }, 650);
                         });
-                    }, 220);
+                    }, 450);
                 });
-            }, 400);
+            }, 700);
         })();
 
         btnTypeIn.addEventListener('click', () => setTrxType('in'));
@@ -882,7 +882,7 @@
                 mainWrap.classList.remove('demo-dimmed');
                 spotlightId = null;
                 renderTransactions();
-            }, 1300);
+            }, 1800);
         });
 
         document.querySelectorAll('.pill-btn').forEach(btn => {
