@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kopi Senja Nusantara — Profil Bisnis & Layanan UMKM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --accent: #10b981;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-subtle: #e2e8f0;
+            --border-medium: #cbd5e1;
+            --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
+            --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+            --radius-sm: 0.5rem;
+            --radius-md: 0.875rem;
+            --radius-lg: 1.25rem;
+            --radius-full: 9999px;
+            --transition: all 0.25s ease;
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button, input, textarea {
+            font-family: inherit;
+            outline: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 0 1.25rem;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+            gap: 0.75rem;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        .brand-mark {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .nav-menu a:hover {
+            color: var(--primary);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            padding: 0.65rem 1.15rem;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-main);
+            border-color: var(--border-medium);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 2.5rem 0 2rem 0;
+        }
+
+        .hero-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 2rem 1.5rem;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+
+        .pill-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--primary-light);
+            color: var(--primary);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            padding: 0.3rem 0.85rem;
+            border-radius: var(--radius-full);
+            font-size: 0.72rem;
+            font-weight: 800;
+            margin-bottom: 0.9rem;
+        }
+
+        .hero-title {
+            font-size: clamp(1.5rem, 4vw, 2.35rem);
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            max-width: 720px;
+            margin: 0 auto 0.75rem auto;
+        }
+
+        .hero-desc {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            max-width: 580px;
+            margin: 0 auto 1.4rem auto;
+        }
+
+        .hero-cta {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.85rem;
+            margin-top: 1.25rem;
+        }
+
+        .stat-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 1rem 0.75rem;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-box strong {
+            display: block;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .stat-box span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Sections */
+        .section {
+            padding: 2.25rem 0;
+        }
+
+        .section-head {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 1.5rem auto;
+        }
+
+        .section-head h2 {
+            font-size: clamp(1.25rem, 3vw, 1.75rem);
+            font-weight: 800;
+            margin-bottom: 0.35rem;
+        }
+
+        .section-head p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            background: var(--primary-light);
+            color: var(--primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .card h3 {
+            font-size: 1rem;
+            font-weight: 800;
+            margin-bottom: 0.35rem;
+        }
+
+        .card p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Katalog Filter & Items */
+        .filter-bar {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
+
+        .filter-btn {
+            padding: 0.45rem 0.95rem;
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            font-weight: 700;
+            background: var(--bg-card);
+            color: var(--text-muted);
+            border: 1px solid var(--border-medium);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .item-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-img {
+            width: 100%;
+            height: 155px;
+            object-fit: cover;
+            background: var(--primary-light);
+        }
+
+        .item-body {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .item-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .item-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+        }
+
+        .item-price {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: var(--primary);
+            white-space: nowrap;
+        }
+
+        .item-desc {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 0.9rem;
+            flex: 1;
+        }
+
+        /* Kontak */
+        .contact-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.85rem;
+        }
+
+        .field {
+            margin-bottom: 0.9rem;
+        }
+
+        .field label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+        }
+
+        .input {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-medium);
+            background: var(--bg-body);
+            font-size: 0.88rem;
+            color: var(--text-main);
+        }
+
+        .input:focus {
+            border-color: var(--primary);
+            background: #ffffff;
+        }
+
+        .footer {
+            margin-top: 2rem;
+            padding: 1.75rem 0 2.5rem 0;
+            border-top: 1px solid var(--border-subtle);
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 1.25rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(16px);
+            background: #0f172a;
+            color: #ffffff;
+            padding: 0.6rem 1.1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            font-weight: 700;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s ease;
+            z-index: 100;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 720px) {
+            .nav-menu {
+                display: none;
+            }
+            .stats-grid,
+            .two-col,
+            .catalog-grid,
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .hero-card {
+                padding: 1.5rem 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast" id="toastBox">Pesan berhasil diproses</div>
+
+    <header class="navbar">
+        <div class="container nav-inner">
+            <a href="#profil" class="brand">
+                <span class="brand-mark"><i class="fas fa-mug-hot"></i></span>
+                <span>Kopi Senja Nusantara</span>
+            </a>
+
+            <nav class="nav-menu">
+                <a href="#profil">Profil</a>
+                <a href="#unggulan">Keunggulan</a>
+                <a href="#katalog">Katalog</a>
+                <a href="#kontak">Kontak</a>
+            </nav>
+
+            <a href="#kontak" class="btn btn-primary">
+                <i class="fab fa-whatsapp"></i> Hubungi
+            </a>
+        </div>
+    </header>
+
+    <section id="profil" class="hero">
+        <div class="container">
+            <div class="hero-card">
+                <span class="pill-badge"><i class="fas fa-store"></i> Profil Bisnis Resmi</span>
+                <h1 class="hero-title">Menghadirkan Produk Lokal Berkualitas dengan Pelayanan Cepat</h1>
+                <p class="hero-desc">
+                    Kami adalah usaha lokal di Kota Bengkulu yang melayani pemesanan harian, paket acara, serta kebutuhan pelanggan individu maupun mitra bisnis dengan standar rasa dan ketepatan waktu.
+                </p>
+                <div class="hero-cta">
+                    <a href="#katalog" class="btn btn-primary">
+                        <i class="fas fa-box-open"></i> Jelajahi Katalog
+                    </a>
+                    <a href="#kontak" class="btn btn-secondary">
+                        <i class="fas fa-map-marker-alt"></i> Lokasi & Pesan
+                    </a>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <strong>1.200+</strong>
+                    <span>Pelanggan Terlayani</span>
+                </div>
+                <div class="stat-box">
+                    <strong>4.9 / 5.0</strong>
+                    <span>Rating Kepuasan</span>
+                </div>
+                <div class="stat-box">
+                    <strong>08.00–22.00</strong>
+                    <span>Jam Operasional (WIB)</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="unggulan" class="section">
+        <div class="container">
+            <div class="section-head">
+                <h2>Mengapa Memilih Kami?</h2>
+                <p>Komitmen operasional kami berfokus pada kualitas bahan baku, transparansi harga, dan kemudahan pemesanan.</p>
+            </div>
+
+            <div class="two-col">
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-leaf"></i></div>
+                    <h3>Bahan Pilihan & Segar</h3>
+                    <p>Diproses setiap hari dengan takaran konsisten agar rasa dan kualitas tetap terjaga di setiap pesanan.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-clock"></i></div>
+                    <h3>Pemesanan Praktis & Cepat</h3>
+                    <p>Bisa dipesan langsung untuk ambil di tempat, diantar ke lokasi, atau dijadwalkan untuk rapat dan acara.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="katalog" class="section">
+        <div class="container">
+            <div class="section-head">
+                <h2>Produk & Paket Unggulan</h2>
+                <p>Pilih kategori di bawah untuk melihat daftar menu dan layanan yang tersedia.</p>
+            </div>
+
+            <div class="filter-bar">
+                <button type="button" class="filter-btn active" data-filter="all">Semua</button>
+                <button type="button" class="filter-btn" data-filter="minuman">Minuman</button>
+                <button type="button" class="filter-btn" data-filter="makanan">Makanan</button>
+                <button type="button" class="filter-btn" data-filter="paket">Paket Acara</button>
+            </div>
+
+            <div class="catalog-grid" id="catalogGrid"></div>
+        </div>
+    </section>
+
+    <section id="kontak" class="section">
+        <div class="container">
+            <div class="section-head">
+                <h2>Hubungi & Lokasi Usaha</h2>
+                <p>Jl. S. Parman No. 24, Kota Bengkulu · Kirimkan pertanyaan atau permintaan pesanan langsung ke WhatsApp.</p>
+            </div>
+
+            <form class="contact-box" id="inquiryForm">
+                <div class="form-row">
+                    <div class="field">
+                        <label for="senderName">Nama Anda</label>
+                        <input type="text" id="senderName" class="input" required placeholder="Contoh: Rina">
+                    </div>
+                    <div class="field">
+                        <label for="senderPhone">No. WhatsApp</label>
+                        <input type="tel" id="senderPhone" class="input" required placeholder="08xxxxxxxxxx">
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="senderMessage">Pesan / Kebutuhan</label>
+                    <textarea id="senderMessage" rows="3" class="input" required placeholder="Tuliskan produk atau jumlah pesanan yang Anda butuhkan..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; border-radius: var(--radius-sm);">
+                    <i class="fab fa-whatsapp"></i> Kirim Pesan via WhatsApp
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            &copy; 2026 Kopi Senja Nusantara · Kota Bengkulu, Indonesia. Seluruh hak cipta dilindungi.
+        </div>
+    </footer>
+
+    <script>
+        const items = [
+            {
+                id: 1,
+                title: 'Kopi Susu Gula Aren',
+                category: 'minuman',
+                price: 'Rp 18.000',
+                desc: 'Perpaduan kopi pilihan, susu segar, dan gula aren asli yang seimbang.',
+                img: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=500&q=75'
+            },
+            {
+                id: 2,
+                title: 'V60 Seduh Manual',
+                category: 'minuman',
+                price: 'Rp 22.000',
+                desc: 'Disajikan hangat dengan karakter rasa bersih dan aroma khas nusantara.',
+                img: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=500&q=75'
+            },
+            {
+                id: 3,
+                title: 'Rice Bowl Ayam Sambal Matah',
+                category: 'makanan',
+                price: 'Rp 25.000',
+                desc: 'Nasi hangat pulen dengan potongan ayam krispi dan sambal matah segar.',
+                img: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=500&q=75'
+            },
+            {
+                id: 4,
+                title: 'Paket Meeting & Acara (10 Pax)',
+                category: 'paket',
+                price: 'Rp 210.000',
+                desc: 'Kombinasi 10 minuman pilihan dan 10 porsi camilan/makanan siap antar.',
+                img: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=500&q=75'
+            }
+        ];
+
+        let selectedFilter = 'all';
+        const catalogGrid = document.getElementById('catalogGrid');
+        const toastBox = document.getElementById('toastBox');
+
+        function showToast(msg) {
+            toastBox.textContent = msg;
+            toastBox.classList.add('show');
+            clearTimeout(window._t);
+            window._t = setTimeout(() => toastBox.classList.remove('show'), 2000);
+        }
+
+        function renderItems() {
+            const list = selectedFilter === 'all'
+                ? items
+                : items.filter(i => i.category === selectedFilter);
+
+            catalogGrid.innerHTML = list.map(item => `
+                <article class="item-card">
+                    <img src="${item.img}" alt="${item.title}" class="item-img" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(item.title)}&background=eff6ff&color=2563eb&size=400';">
+                    <div class="item-body">
+                        <div class="item-top">
+                            <h3 class="item-title">${item.title}</h3>
+                            <span class="item-price">${item.price}</span>
+                        </div>
+                        <p class="item-desc">${item.desc}</p>
+                        <button type="button" class="btn btn-secondary" style="width: 100%; border-radius: var(--radius-sm);" onclick="selectProduct('${item.title.replace(/'/g, "\\'")}', '${item.price}')">
+                            <i class="fas fa-plus"></i> Pilih untuk Ditanyakan
+                        </button>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        window.selectProduct = function(title, price) {
+            const msgField = document.getElementById('senderMessage');
+            const current = msgField.value.trim();
+            const line = `${title} (${price})`;
+            msgField.value = current ? `${current}\n- ${line}` : `Halo, saya ingin menanyakan: ${line}`;
+            showToast(`${title} ditambahkan ke form pesan`);
+            document.getElementById('kontak').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedFilter = btn.getAttribute('data-filter');
+                renderItems();
+            });
+        });
+
+        document.getElementById('inquiryForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('senderName').value.trim();
+            const phone = document.getElementById('senderPhone').value.trim();
+            const msg = document.getElementById('senderMessage').value.trim();
+            const text = `Halo Kopi Senja Nusantara,\nNama: ${name}\nNo. WA: ${phone}\nPesan: ${msg}`;
+            window.open(`https://wa.me/6285177137899?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+        });
+
+        renderItems();
+    </script>
+</body>
+</html>
