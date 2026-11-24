@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup Aplikasi Kasir (POS) — Sitenexs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --accent: #10b981;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-line: #e2e8f0;
+            --radius-sm: 0.45rem;
+            --radius-md: 0.75rem;
+            --radius-full: 9999px;
+            --transition: all 0.35s ease;
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        button, input {
+            font-family: inherit;
+            outline: none;
+        }
+
+        /* Fokus & Blur Sekitarnya Saat Pop-Up Keterangan Muncul */
+        .pos-header,
+        .pos-main,
+        .checkout-panel {
+            transition: filter 0.45s ease, opacity 0.45s ease;
+        }
+
+        body.guide-focus-active .pos-header,
+        body.guide-focus-active .pos-main > *:not(.guide-focused),
+        body.guide-focus-active .checkout-panel > *:not(.guide-focused) {
+            filter: blur(2.5px);
+            opacity: 0.42;
+        }
+
+        .guide-focused {
+            position: relative;
+            z-index: 32;
+            filter: none !important;
+            opacity: 1 !important;
+        }
+
+        /* Header Kasir */
+        .pos-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border-line);
+            padding: 34px 12px 10px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .pos-title-wrap {
+            min-width: 0;
+        }
+
+        .pos-title {
+            font-size: 0.84rem;
+            font-weight: 800;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pos-sub {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .shift-badge {
+            background: rgba(16, 185, 129, 0.12);
+            color: #047857;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 3px 8px;
+            border-radius: var(--radius-full);
+            font-size: 0.62rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        /* Pop-Up Keterangan Langkah */
+        .step-popup {
+            position: fixed;
+            left: 12px;
+            right: 12px;
+            top: 80px;
+            z-index: 55;
+            background: #0f172a;
+            color: #ffffff;
+            border: 1px solid rgba(96, 165, 250, 0.45);
+            border-left: 4px solid var(--primary);
+            border-radius: var(--radius-md);
+            padding: 10px 12px;
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.28);
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            opacity: 0;
+            transform: translateY(-10px) scale(0.97);
+            pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .step-popup.open {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .step-popup-badge {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 0.7rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .step-popup-text {
+            font-size: 0.72rem;
+            font-weight: 700;
+            line-height: 1.4;
+            color: #f8fafc;
+        }
+
+        .pos-main {
+            padding: 10px 12px 104px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Ringkasan Omzet Kasir */
+        .sales-strip {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .sales-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-line);
+            border-radius: var(--radius-md);
+            padding: 8px 9px;
+        }
+
+        .sales-box span {
+            display: block;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .sales-box strong {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-top: 1px;
+        }
+
+        .sales-box strong.accent-text {
+            color: var(--primary);
+        }
+
+        /* Pencarian & Kategori */
+        .search-wrap {
+            position: relative;
+        }
+
+        .search-wrap i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .pos-search {
+            width: 100%;
+            padding: 7px 10px 7px 28px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-line);
+            background: var(--bg-card);
+            font-size: 0.74rem;
+            color: var(--text-main);
+        }
+
+        .pos-search:focus {
+            border-color: var(--primary);
+        }
+
+        .cat-row {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .cat-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .cat-btn {
+            padding: 4px 9px;
+            border-radius: var(--radius-full);
+            font-size: 0.66rem;
+            font-weight: 700;
+            border: 1px solid var(--border-line);
+            background: var(--bg-card);
+            color: var(--text-muted);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: var(--transition);
+        }
+
+        .cat-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        /* Daftar Item Kasir */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 7px;
+        }
+
+        .pos-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-line);
+            border-radius: var(--radius-md);
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 6px;
+            transition: transform 0.35s ease, border-color 0.35s ease, background-color 0.35s ease, box-shadow 0.35s ease;
+        }
+
+        .pos-item.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .pos-item.demo-pick {
+            transform: scale(1.04);
+            border-color: var(--primary);
+            box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
+        }
+
+        .pos-item-name {
+            font-size: 0.74rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.25;
+        }
+
+        .pos-item-price {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-top: 2px;
+        }
+
+        .qty-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4px;
+        }
+
+        .qty-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-line);
+            background: #ffffff;
+            color: var(--text-main);
+            font-size: 0.68rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qty-btn.plus {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .qty-val {
+            font-size: 0.74rem;
+            font-weight: 800;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        /* Panel Bayar Bawah */
+        .checkout-panel {
+            position: fixed;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            z-index: 25;
+            background: #0f172a;
+            color: #ffffff;
+            border-radius: var(--radius-md);
+            padding: 9px 10px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.25);
+        }
+
+        .pay-methods {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .pay-btn {
+            padding: 4px 6px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: rgba(255, 255, 255, 0.06);
+            color: #cbd5e1;
+            font-size: 0.62rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .pay-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .pay-btn.demo-focus {
+            transform: scale(1.06);
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.8);
+        }
+
+        .checkout-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .total-meta span {
+            display: block;
+            font-size: 0.6rem;
+            color: #94a3b8;
+        }
+
+        .total-meta strong {
+            display: block;
+            font-size: 0.86rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .btn-charge {
+            background: var(--accent);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 7px 11px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .btn-charge:active,
+        .btn-charge.demo-focus {
+            transform: scale(0.96);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.45);
+        }
+
+        /* Notifikasi Struk */
+        .receipt-toast {
+            position: fixed;
+            top: 74px;
+            left: 10px;
+            right: 10px;
+            z-index: 40;
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid rgba(16, 185, 129, 0.45);
+            border-left: 4px solid var(--accent);
+            border-radius: var(--radius-sm);
+            padding: 8px 10px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+            transition: all 0.35s ease;
+        }
+
+        .receipt-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .receipt-toast strong {
+            display: block;
+            font-size: 0.74rem;
+            font-weight: 800;
+            color: #047857;
+        }
+
+        .receipt-toast span {
+            display: block;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        /* Modal Pembayaran QRIS / DANA & Rincian Tunai */
+        .pay-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .pay-modal.active {
+            display: flex;
+        }
+
+        .pay-card {
+            width: 100%;
+            max-width: 276px;
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            padding: 12px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 18px 36px rgba(15, 23, 42, 0.3);
+        }
+
+        .pay-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .pay-card-title {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .pay-close-btn {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid var(--border-line);
+            background: var(--bg-body);
+            color: var(--text-muted);
+            font-size: 0.68rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-frame {
+            background: var(--bg-body);
+            border: 1px solid var(--border-line);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+
+        .qr-frame img {
+            width: 136px;
+            height: 136px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 6px auto;
+            border-radius: 6px;
+            background: #ffffff;
+            padding: 4px;
+            border: 1px solid var(--border-line);
+        }
+
+        .qr-amount {
+            font-size: 0.84rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .qr-caption {
+            font-size: 0.62rem;
+            color: var(--text-muted);
+        }
+
+        /* Rincian Pembelian Tunai Pop-Up */
+        .cash-summary-box {
+            text-align: left;
+            background: var(--bg-body);
+            border: 1px solid var(--border-line);
+            border-radius: var(--radius-sm);
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+
+        .cash-items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            max-height: 145px;
+            overflow-y: auto;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed var(--border-line);
+        }
+
+        .cash-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            font-size: 0.68rem;
+        }
+
+        .cash-row-left {
+            min-width: 0;
+        }
+
+        .cash-row-name {
+            font-weight: 700;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cash-row-qty {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+        }
+
+        .cash-row-sub {
+            font-weight: 800;
+            color: var(--text-main);
+            white-space: nowrap;
+        }
+
+        .cash-total-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 7px;
+            font-size: 0.76rem;
+            font-weight: 800;
+        }
+
+        .cash-total-line span:last-child {
+            color: var(--primary);
+            font-size: 0.84rem;
+        }
+
+        .pay-status-box {
+            padding: 12px 8px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pay-status-box.visible {
+            display: flex;
+        }
+
+        .spinner-ring {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 3px solid var(--primary-light);
+            border-top-color: var(--primary);
+            animation: spinPay 0.8s linear infinite;
+        }
+
+        @keyframes spinPay {
+            to { transform: rotate(360deg); }
+        }
+
+        .success-check {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.14);
+            color: var(--accent);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transform: scale(0.7);
+            animation: popCheck 0.35s ease forwards;
+        }
+
+        @keyframes popCheck {
+            to { transform: scale(1); }
+        }
+
+        .pay-status-title {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .pay-status-sub {
+            font-size: 0.66rem;
+            color: var(--text-muted);
+        }
+
+        .btn-confirm-qr {
+            width: 100%;
+            padding: 7px 10px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .btn-confirm-qr.demo-focus {
+            transform: scale(1.03);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.28);
+        }
+
+        /* Partikel Warna-Warni */
+        .particle-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 75;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .color-particle {
+            position: absolute;
+            top: -12px;
+            width: 7px;
+            height: 7px;
+            border-radius: 2px;
+            animation: fallParticle var(--dur, 1.4s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        @keyframes fallParticle {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(580px) translateX(var(--drift, 24px)) rotate(540deg) scale(0.85);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="particle-layer" id="particleLayer"></div>
+
+    <!-- Pop-Up Keterangan Langkah -->
+    <div class="step-popup" id="stepPopup" role="status" aria-live="polite">
+        <span class="step-popup-badge" id="stepPopupNum">1</span>
+        <span class="step-popup-text" id="stepPopupText">Pilih pesanan pelanggan.</span>
+    </div>
+
+    <div class="receipt-toast" id="receiptToast">
+        <strong>Pembayaran Berhasil (Struk Tercetak)</strong>
+        <span id="receiptDetail">0 item · Rp 0</span>
+    </div>
+
+    <!-- Modal Pembayaran Tunai / QRIS / DANA -->
+    <div class="pay-modal" id="payModal">
+        <div class="pay-card">
+            <div class="pay-card-header">
+                <span class="pay-card-title" id="payModalTitle">Bayar pakai QRIS</span>
+                <button type="button" class="pay-close-btn" id="closePayModal" aria-label="Tutup">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div id="cashStepContent" style="display: none;">
+                <div class="cash-summary-box">
+                    <div class="cash-items-list" id="cashItemsList"></div>
+                    <div class="cash-total-line">
+                        <span>Total Tunai</span>
+                        <span id="cashTotalText">Rp 0</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-confirm-qr" id="btnConfirmCash">
+                    <i class="fas fa-money-bill-wave"></i> Selesaikan Pembayaran Tunai
+                </button>
+            </div>
+
+            <div id="qrStepContent">
+                <div class="qr-frame">
+                    <img id="qrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=SITENEXS-QRIS-BISNISKAMU" alt="Kode QR Pembayaran" onerror="this.src='https://ui-avatars.com/api/?name=QRIS&background=eff6ff&color=2563eb&size=160';">
+                    <div class="qr-amount" id="qrNominalText">Rp 0</div>
+                    <div class="qr-caption" id="qrMethodHint">Pindai kode QR untuk membayar via QRIS</div>
+                </div>
+                <button type="button" class="btn-confirm-qr" id="btnSimulateScan">
+                    <i class="fas fa-qrcode"></i> Konfirmasi Pembayaran
+                </button>
+            </div>
+
+            <div class="pay-status-box" id="payLoadingBox">
+                <div class="spinner-ring"></div>
+                <div class="pay-status-title">Menerima Pembayaran...</div>
+                <div class="pay-status-sub" id="payLoadingSub">Memverifikasi transaksi masuk</div>
+            </div>
+
+            <div class="pay-status-box" id="paySuccessBox">
+                <div class="success-check"><i class="fas fa-check"></i></div>
+                <div class="pay-status-title" style="color: #047857;">Pembayaran Diterima!</div>
+                <div class="pay-status-sub" id="paySuccessSub">Transaksi tercatat & struk siap</div>
+            </div>
+        </div>
+    </div>
+
+    <header class="pos-header">
+        <div class="pos-title-wrap">
+            <div class="pos-title">Kasir POS · bisniskamu</div>
+            <div class="pos-sub">Meja / Transaksi Langsung</div>
+        </div>
+        <span class="shift-badge"><i class="fas fa-circle" style="font-size: 0.45rem;"></i> Shift Aktif</span>
+    </header>
+
+    <main class="pos-main">
+        <section class="sales-strip">
+            <div class="sales-box">
+                <span>Omzet Hari Ini</span>
+                <strong class="accent-text" id="dailyOmzet">Rp 685.000</strong>
+            </div>
+            <div class="sales-box">
+                <span>Total Struk</span>
+                <strong id="dailyOrders">24 Transaksi</strong>
+            </div>
+        </section>
+
+        <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" id="posSearch" class="pos-search" placeholder="Cari menu atau produk...">
+        </div>
+
+        <div class="cat-row">
+            <button type="button" class="cat-btn active" data-cat="all">Semua</button>
+            <button type="button" class="cat-btn" data-cat="minuman">Minuman</button>
+            <button type="button" class="cat-btn" data-cat="makanan">Makanan</button>
+        </div>
+
+        <section class="menu-grid" id="posMenuGrid"></section>
+    </main>
+
+    <div class="checkout-panel" id="checkoutPanel">
+        <div class="pay-methods" id="payMethodsRow">
+            <button type="button" class="pay-btn active" data-pay="Tunai">Tunai</button>
+            <button type="button" class="pay-btn" data-pay="QRIS">QRIS</button>
+            <button type="button" class="pay-btn" data-pay="DANA">DANA</button>
+        </div>
+        <div class="checkout-bottom" id="checkoutBottomRow">
+            <div class="total-meta">
+                <span id="posItemCount">0 item</span>
+                <strong id="posTotalAmount">Rp 0</strong>
+            </div>
+            <button type="button" class="btn-charge" id="btnCharge">
+                <i class="fas fa-receipt"></i> Bayar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const posItems = [
+            { id: 1, name: 'Kopi Aren', cat: 'minuman', price: 18000 },
+            { id: 2, name: 'V60 Arabika', cat: 'minuman', price: 22000 },
+            { id: 3, name: 'Es Teh Lemon', cat: 'minuman', price: 12000 },
+            { id: 4, name: 'Roti Keju', cat: 'makanan', price: 15000 },
+            { id: 5, name: 'Rice Bowl Ayam', cat: 'makanan', price: 25000 },
+            { id: 6, name: 'Kentang Goreng', cat: 'makanan', price: 14000 }
+        ];
+
+        let cart = {};
+        let selectedCat = 'all';
+        let searchText = '';
+        let paymentMethod = 'Tunai';
+        let omzetToday = 685000;
+        let orderCountToday = 24;
+        let pendingCharge = null;
+        let demoCancelledByUser = false;
+
+        const posMenuGrid = document.getElementById('posMenuGrid');
+        const payMethodsRow = document.getElementById('payMethodsRow');
+        const checkoutBottomRow = document.getElementById('checkoutBottomRow');
+        const posItemCount = document.getElementById('posItemCount');
+        const posTotalAmount = document.getElementById('posTotalAmount');
+        const dailyOmzet = document.getElementById('dailyOmzet');
+        const dailyOrders = document.getElementById('dailyOrders');
+        const receiptToast = document.getElementById('receiptToast');
+        const receiptDetail = document.getElementById('receiptDetail');
+
+        const stepPopup = document.getElementById('stepPopup');
+        const stepPopupNum = document.getElementById('stepPopupNum');
+        const stepPopupText = document.getElementById('stepPopupText');
+
+        const payModal = document.getElementById('payModal');
+        const payModalTitle = document.getElementById('payModalTitle');
+        const cashStepContent = document.getElementById('cashStepContent');
+        const cashItemsList = document.getElementById('cashItemsList');
+        const cashTotalText = document.getElementById('cashTotalText');
+        const qrStepContent = document.getElementById('qrStepContent');
+        const qrCodeImg = document.getElementById('qrCodeImg');
+        const qrNominalText = document.getElementById('qrNominalText');
+        const qrMethodHint = document.getElementById('qrMethodHint');
+        const payLoadingBox = document.getElementById('payLoadingBox');
+        const payLoadingSub = document.getElementById('payLoadingSub');
+        const paySuccessBox = document.getElementById('paySuccessBox');
+        const paySuccessSub = document.getElementById('paySuccessSub');
+        const particleLayer = document.getElementById('particleLayer');
+        const btnSimulateScan = document.getElementById('btnSimulateScan');
+        const btnCharge = document.getElementById('btnCharge');
+
+        function clearFocusBlur() {
+            document.body.classList.remove('guide-focus-active');
+            document.querySelectorAll('.guide-focused').forEach(el => el.classList.remove('guide-focused'));
+        }
+
+        function openStepPopup(stepNum, text, focusEl) {
+            clearFocusBlur();
+            stepPopupNum.textContent = String(stepNum);
+            stepPopupText.textContent = text;
+            document.body.classList.add('guide-focus-active');
+            if (focusEl) {
+                focusEl.classList.add('guide-focused');
+            }
+            stepPopup.classList.add('open');
+        }
+
+        function closeStepPopup() {
+            stepPopup.classList.remove('open');
+            clearFocusBlur();
+        }
+
+        function formatIDR(num) {
+            return 'Rp ' + Math.round(Number(num) || 0).toLocaleString('id-ID');
+        }
+
+        function spawnColorfulParticles() {
+            const colors = ['#2563eb', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'];
+            particleLayer.innerHTML = '';
+
+            for (let i = 0; i < 36; i++) {
+                const dot = document.createElement('span');
+                dot.className = 'color-particle';
+                const leftPct = Math.random() * 100;
+                const drift = (Math.random() - 0.5) * 90;
+                const dur = 1.1 + Math.random() * 0.9;
+                const delay = Math.random() * 0.25;
+                const color = colors[i % colors.length];
+
+                dot.style.left = `${leftPct}%`;
+                dot.style.backgroundColor = color;
+                dot.style.setProperty('--drift', `${drift}px`);
+                dot.style.setProperty('--dur', `${dur}s`);
+                dot.style.animationDelay = `${delay}s`;
+
+                particleLayer.appendChild(dot);
+            }
+
+            setTimeout(() => {
+                particleLayer.innerHTML = '';
+            }, 2200);
+        }
+
+        function finalizeTransaction(qty, price, method) {
+            omzetToday += price;
+            orderCountToday += 1;
+            dailyOmzet.textContent = formatIDR(omzetToday);
+            dailyOrders.textContent = `${orderCountToday} Transaksi`;
+
+            receiptDetail.textContent = `${qty} item · ${formatIDR(price)} (${method})`;
+            receiptToast.classList.add('show');
+            clearTimeout(window._rTimer);
+            window._rTimer = setTimeout(() => receiptToast.classList.remove('show'), 3200);
+
+            cart = {};
+            renderPosMenu();
+            updateCheckout();
+        }
+
+        function openCashSummaryModal(qty, price, details) {
+            pendingCharge = { qty, price, method: 'Tunai' };
+            payModalTitle.textContent = 'Rincian Pembelian Tunai';
+
+            cashItemsList.innerHTML = details.map(d => `
+                <div class="cash-row">
+                    <div class="cash-row-left">
+                        <div class="cash-row-name">${d.name}</div>
+                        <div class="cash-row-qty">${d.qty} x ${formatIDR(d.price)}</div>
+                    </div>
+                    <span class="cash-row-sub">${formatIDR(d.subtotal)}</span>
+                </div>
+            `).join('');
+
+            cashTotalText.textContent = formatIDR(price);
+            cashStepContent.style.display = 'block';
+            qrStepContent.style.display = 'none';
+            payLoadingBox.classList.remove('visible');
+            paySuccessBox.classList.remove('visible');
+            payModal.classList.add('active');
+        }
+
+        function openDigitalPaymentModal(qty, price, method) {
+            pendingCharge = { qty, price, method };
+            payModalTitle.textContent = `Bayar pakai ${method}`;
+            qrNominalText.textContent = formatIDR(price);
+            qrMethodHint.textContent = `Pindai kode QR untuk membayar via ${method}`;
+
+            const qrPayload = encodeURIComponent(`SITENEXS-${method}-BISNISKAMU-${price}`);
+            qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${qrPayload}`;
+
+            cashStepContent.style.display = 'none';
+            qrStepContent.style.display = 'block';
+            payLoadingBox.classList.remove('visible');
+            paySuccessBox.classList.remove('visible');
+            payModal.classList.add('active');
+        }
+
+        function runPaymentVerificationSequence() {
+            if (!pendingCharge) return;
+            const { qty, price, method } = pendingCharge;
+
+            cashStepContent.style.display = 'none';
+            qrStepContent.style.display = 'none';
+            payLoadingBox.classList.add('visible');
+            payLoadingSub.textContent = `Menerima pembayaran ${method} sebesar ${formatIDR(price)}...`;
+
+            setTimeout(() => {
+                payLoadingBox.classList.remove('visible');
+                paySuccessBox.classList.add('visible');
+                paySuccessSub.textContent = `${qty} item · ${formatIDR(price)} (${method})`;
+                spawnColorfulParticles();
+
+                setTimeout(() => {
+                    payModal.classList.remove('active');
+                    finalizeTransaction(qty, price, method);
+                    pendingCharge = null;
+                }, 1900);
+            }, 1700);
+        }
+
+        function renderPosMenu() {
+            const list = posItems.filter(item => {
+                const matchCat = selectedCat === 'all' || item.cat === selectedCat;
+                const matchSearch = item.name.toLowerCase().includes(searchText.toLowerCase());
+                return matchCat && matchSearch;
+            });
+
+            if (list.length === 0) {
+                posMenuGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; font-size: 0.72rem; color: var(--text-muted); padding: 12px;">Menu tidak ditemukan.</p>';
+                return;
+            }
+
+            posMenuGrid.innerHTML = list.map(item => {
+                const qty = cart[item.id] || 0;
+                return `
+                    <div class="pos-item ${qty > 0 ? 'selected' : ''}" id="posItemCard-${item.id}">
+                        <div>
+                            <div class="pos-item-name">${item.name}</div>
+                            <div class="pos-item-price">${formatIDR(item.price)}</div>
+                        </div>
+                        <div class="qty-bar">
+                            <button type="button" class="qty-btn" onclick="changeQty(${item.id}, -1)" aria-label="Kurangi ${item.name}">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span class="qty-val">${qty}</span>
+                            <button type="button" class="qty-btn plus" onclick="changeQty(${item.id}, 1)" aria-label="Tambah ${item.name}">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateCheckout() {
+            let totalQty = 0;
+            let totalPrice = 0;
+
+            posItems.forEach(item => {
+                const q = cart[item.id] || 0;
+                totalQty += q;
+                totalPrice += q * item.price;
+            });
+
+            posItemCount.textContent = `${totalQty} item · ${paymentMethod}`;
+            posTotalAmount.textContent = formatIDR(totalPrice);
+        }
+
+        window.changeQty = function(id, delta) {
+            const nextVal = (cart[id] || 0) + delta;
+            if (nextVal <= 0) {
+                delete cart[id];
+            } else {
+                cart[id] = nextVal;
+            }
+            renderPosMenu();
+            updateCheckout();
+        };
+
+        // Animasi Pembukaan dengan Pop-Up Buka/Tutup & Fokus Blur (Tempo Lebih Lambat)
+        (function runOpeningKasirDemo() {
+            renderPosMenu();
+            updateCheckout();
+
+            const qrisBtn = document.querySelector('.pay-btn[data-pay="QRIS"]');
+
+            // Langkah 1: Pop-up buka -> Pilih pesanan pelanggan -> Pop-up tutup
+            setTimeout(() => {
+                if (demoCancelledByUser) return;
+                openStepPopup(1, 'Pertama, pilih pesanan pelanggan.', posMenuGrid);
+
+                setTimeout(() => {
+                    if (demoCancelledByUser) return;
+                    window.changeQty(1, 1);
+                    const card1 = document.getElementById('posItemCard-1');
+                    if (card1) card1.classList.add('demo-pick');
+                    setTimeout(() => {
+                        if (card1) card1.classList.remove('demo-pick');
+                    }, 600);
+                }, 700);
+
+                setTimeout(() => {
+                    if (demoCancelledByUser) return;
+                    window.changeQty(5, 1);
+                    const card5 = document.getElementById('posItemCard-5');
+                    if (card5) card5.classList.add('demo-pick');
+                    setTimeout(() => {
+                        if (card5) card5.classList.remove('demo-pick');
+                    }, 600);
+                }, 1500);
+
+                setTimeout(() => {
+                    if (demoCancelledByUser) return;
+                    closeStepPopup();
+
+                    // Langkah 2: Pop-up buka -> Pilih metode pembayaran (QRIS) -> Pop-up tutup
+                    setTimeout(() => {
+                        if (demoCancelledByUser) return;
+                        openStepPopup(2, 'Pilih metode pembayaran yang ingin digunakan pelanggan (QRIS).', payMethodsRow);
+
+                        setTimeout(() => {
+                            if (demoCancelledByUser) return;
+                            if (qrisBtn) {
+                                document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('active'));
+                                qrisBtn.classList.add('active', 'demo-focus');
+                                paymentMethod = 'QRIS';
+                                updateCheckout();
+                                setTimeout(() => qrisBtn.classList.remove('demo-focus'), 650);
+                            }
+                        }, 800);
+
+                        setTimeout(() => {
+                            if (demoCancelledByUser) return;
+                            closeStepPopup();
+
+                            // Langkah 3: Pop-up buka -> Tekan tombol Bayar -> Pop-up tutup
+                            setTimeout(() => {
+                                if (demoCancelledByUser) return;
+                                openStepPopup(3, 'Tekan tombol Bayar untuk menampilkan kode QRIS.', checkoutBottomRow);
+
+                                setTimeout(() => {
+                                    if (demoCancelledByUser) return;
+                                    btnCharge.classList.add('demo-focus');
+                                }, 900);
+
+                                setTimeout(() => {
+                                    if (demoCancelledByUser) return;
+                                    btnCharge.classList.remove('demo-focus');
+                                    closeStepPopup();
+                                    btnCharge.click();
+
+                                    // Langkah 4: Pop-up buka -> Konfirmasi pembayaran -> Pop-up tutup
+                                    setTimeout(() => {
+                                        if (demoCancelledByUser || !pendingCharge) return;
+                                        openStepPopup(4, 'Konfirmasi pembayaran setelah pelanggan memindai QR.', null);
+
+                                        setTimeout(() => {
+                                            if (demoCancelledByUser) return;
+                                            btnSimulateScan.classList.add('demo-focus');
+                                        }, 1100);
+
+                                        setTimeout(() => {
+                                            if (demoCancelledByUser) return;
+                                            btnSimulateScan.classList.remove('demo-focus');
+                                            closeStepPopup();
+                                            if (pendingCharge) {
+                                                runPaymentVerificationSequence();
+                                            }
+                                        }, 2100);
+                                    }, 1100);
+                                }, 1850);
+                            }, 650);
+                        }, 2150);
+                    }, 650);
+                }, 2600);
+            }, 600);
+        })();
+
+        document.getElementById('posSearch').addEventListener('input', (e) => {
+            demoCancelledByUser = true;
+            closeStepPopup();
+            searchText = e.target.value.trim();
+            renderPosMenu();
+        });
+
+        document.querySelectorAll('.cat-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                demoCancelledByUser = true;
+                closeStepPopup();
+                document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedCat = btn.getAttribute('data-cat');
+                renderPosMenu();
+            });
+        });
+
+        document.querySelectorAll('.pay-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                demoCancelledByUser = true;
+                closeStepPopup();
+                document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                paymentMethod = btn.getAttribute('data-pay');
+                updateCheckout();
+            });
+        });
+
+        document.getElementById('closePayModal').addEventListener('click', () => {
+            payModal.classList.remove('active');
+            pendingCharge = null;
+        });
+
+        btnSimulateScan.addEventListener('click', () => {
+            demoCancelledByUser = true;
+            closeStepPopup();
+            runPaymentVerificationSequence();
+        });
+
+        document.getElementById('btnConfirmCash').addEventListener('click', () => {
+            demoCancelledByUser = true;
+            closeStepPopup();
+            runPaymentVerificationSequence();
+        });
+
+        btnCharge.addEventListener('click', () => {
+            let totalQty = 0;
+            let totalPrice = 0;
+            const details = [];
+
+            posItems.forEach(item => {
+                const q = cart[item.id] || 0;
+                if (q > 0) {
+                    const subtotal = q * item.price;
+                    totalQty += q;
+                    totalPrice += subtotal;
+                    details.push({
+                        name: item.name,
+                        qty: q,
+                        price: item.price,
+                        subtotal
+                    });
+                }
+            });
+
+            if (totalQty === 0) {
+                receiptDetail.textContent = 'Pilih minimal 1 menu sebelum memproses bayar.';
+                receiptToast.classList.add('show');
+                clearTimeout(window._rTimer);
+                window._rTimer = setTimeout(() => receiptToast.classList.remove('show'), 2000);
+                return;
+            }
+
+            if (paymentMethod === 'Tunai') {
+                openCashSummaryModal(totalQty, totalPrice, details);
+                return;
+            }
+
+            if (paymentMethod === 'QRIS' || paymentMethod === 'DANA') {
+                openDigitalPaymentModal(totalQty, totalPrice, paymentMethod);
+                return;
+            }
+
+            finalizeTransaction(totalQty, totalPrice, paymentMethod);
+        });
+
+        renderPosMenu();
+        updateCheckout();
+    </script>
+</body>
+</html>
