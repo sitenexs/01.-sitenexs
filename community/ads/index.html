@@ -306,6 +306,11 @@
         }
 
         .post-preview-status.active-ad {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .post-preview-status.pending-ad {
             background: #fef3c7;
             color: #b45309;
         }
@@ -493,6 +498,20 @@
             cursor: pointer;
         }
 
+        .approval-note-box {
+            margin-top: 0.65rem;
+            padding: 0.65rem 0.8rem;
+            border-radius: var(--radius-md);
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            color: #92400e;
+            font-size: 0.74rem;
+            font-weight: 600;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.45rem;
+        }
+
         /* RINGKASAN & TOMBOL BAYAR */
         .summary-row {
             display: flex;
@@ -626,7 +645,7 @@
                 <span>Iklan Komunitas Sitenexs</span>
             </div>
             <h1>Promosikan Postingan Anda</h1>
-            <p>Tempatkan diskusi atau informasi produk Anda di posisi teratas forum komunitas agar dilihat lebih banyak anggota.</p>
+            <p>Setelah pembayaran selesai, pengajuan iklan akan dikirim ke tim Admin Sponsor untuk diverifikasi dan diaktifkan.</p>
         </section>
 
         <!-- PILIH POSTINGAN -->
@@ -663,19 +682,19 @@
                     <span class="plan-tag">Pemula</span>
                     <span class="plan-name">1 Hari (24 Jam)</span>
                     <span class="plan-price">Rp 15.000</span>
-                    <span class="plan-desc">Tampil prioritas bersponsor di urutan atas selama 1 hari.</span>
+                    <span class="plan-desc">Tampil prioritas bersponsor di urutan atas selama 1 hari setelah disetujui.</span>
                 </div>
                 <div class="plan-card" data-plan="3d" onclick="selectPlan('3d')">
                     <span class="plan-tag">Populer</span>
                     <span class="plan-name">3 Hari (72 Jam)</span>
                     <span class="plan-price">Rp 39.000</span>
-                    <span class="plan-desc">Jangkauan lebih luas dan visibilitas stabil selama 3 hari.</span>
+                    <span class="plan-desc">Jangkauan lebih luas dan visibilitas stabil selama 3 hari setelah disetujui.</span>
                 </div>
                 <div class="plan-card" data-plan="7d" onclick="selectPlan('7d')">
                     <span class="plan-tag">Maksimal</span>
                     <span class="plan-name">7 Hari (1 Minggu)</span>
                     <span class="plan-price">Rp 79.000</span>
-                    <span class="plan-desc">Eksposur penuh selama 7 hari untuk diskusi atau promo penting.</span>
+                    <span class="plan-desc">Eksposur penuh selama 7 hari untuk diskusi atau promo penting setelah disetujui.</span>
                 </div>
             </div>
         </section>
@@ -730,6 +749,11 @@
                     </button>
                 </div>
             </div>
+
+            <div class="approval-note-box">
+                <i class="fas fa-hourglass-half" style="margin-top: 0.1rem;"></i>
+                <span>Iklan tidak langsung aktif otomatis. Setelah Anda menekan tombol bayar, pesanan akan masuk ke antrean persetujuan <strong>Admin Sponsor</strong>.</span>
+            </div>
         </section>
 
         <!-- RINGKASAN & KONFIRMASI -->
@@ -750,14 +774,18 @@
                 <span>Metode Pembayaran</span>
                 <strong id="summaryMethod">DANA / E-Wallet</strong>
             </div>
+            <div class="summary-row">
+                <span>Status Setelah Bayar</span>
+                <strong style="color: #b45309;">Menunggu Persetujuan Admin Sponsor</strong>
+            </div>
             <div class="summary-total">
                 <span>Total Pembayaran</span>
                 <span id="summaryTotal">Rp 15.000</span>
             </div>
 
             <button type="button" class="btn-pay" id="confirmPaymentBtn" onclick="processAdPayment()">
-                <i class="fas fa-lock"></i>
-                <span>Bayar & Aktifkan Iklan</span>
+                <i class="fas fa-paper-plane"></i>
+                <span>Bayar & Kirim ke Admin Sponsor</span>
             </button>
         </section>
     </main>
@@ -766,14 +794,12 @@
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
         import {
             doc,
-            getDoc,
             setDoc,
             collection,
             query,
             where,
             getDocs,
-            serverTimestamp,
-            Timestamp
+            serverTimestamp
         } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
         import {
@@ -898,9 +924,20 @@
             }
 
             const activeAd = isAdCurrentlyActive(post);
+            const isPendingApproval = post.adStatus === 'pending_approval';
+
             authorEl.innerText = post.penulis || currentProfile?.displayName || 'Mitra Sitenexs';
-            statusEl.innerText = activeAd ? 'Iklan Aktif' : 'Siap Dipromosikan';
-            statusEl.className = activeAd ? 'post-preview-status active-ad' : 'post-preview-status';
+            if (activeAd) {
+                statusEl.innerText = 'Iklan Aktif';
+                statusEl.className = 'post-preview-status active-ad';
+            } else if (isPendingApproval) {
+                statusEl.innerText = 'Menunggu Persetujuan Admin';
+                statusEl.className = 'post-preview-status pending-ad';
+            } else {
+                statusEl.innerText = 'Belum Diiklankan';
+                statusEl.className = 'post-preview-status';
+            }
+
             titleEl.innerText = post.judul || 'Diskusi Komunitas';
             contentEl.innerText = post.isi || '';
 
@@ -1011,52 +1048,61 @@
                 return;
             }
 
+            const targetPost = userPosts.find(p => p.id === selectedPostId);
             const plan = AD_PLANS[selectedPlanKey] || AD_PLANS['1d'];
             const method = PAYMENT_METHODS[selectedMethodKey] || PAYMENT_METHODS.dana;
             const btn = document.getElementById('confirmPaymentBtn');
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Memproses Pembayaran...</span>';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Mengirim Pengajuan Iklan...</span>';
 
             try {
                 const nowMs = Date.now();
-                const expiresAt = Timestamp.fromMillis(nowMs + plan.durationMs);
                 const orderId = `AD_${nowMs}_${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
 
                 await setDoc(doc(db, 'forum_posts', selectedPostId), {
-                    isAd: true,
-                    adActive: true,
+                    isAd: false,
+                    adActive: false,
+                    adStatus: 'pending_approval',
                     adPlan: selectedPlanKey,
+                    adPlanLabel: plan.label,
                     adPrice: plan.price,
+                    adDurationMs: plan.durationMs,
                     adPaymentMethod: selectedMethodKey,
+                    adPaymentMethodLabel: method.label,
                     adOrderId: orderId,
-                    adActivatedAt: serverTimestamp(),
-                    adExpiresAt: expiresAt
+                    adPaidAt: serverTimestamp(),
+                    adSubmittedAt: serverTimestamp()
                 }, { merge: true });
 
                 await setDoc(doc(db, 'forum_ads_orders', orderId), {
                     orderId,
                     postId: selectedPostId,
+                    postTitle: targetPost?.judul || '',
+                    postContent: targetPost?.isi || '',
+                    postImageUrl: targetPost?.imageUrl || '',
                     authorUid: currentUid,
+                    authorName: targetPost?.penulis || currentProfile?.displayName || 'Mitra Sitenexs',
                     plan: selectedPlanKey,
                     planLabel: plan.label,
+                    durationMs: plan.durationMs,
                     amount: plan.price,
                     paymentMethod: selectedMethodKey,
                     paymentMethodLabel: method.label,
-                    status: 'paid',
-                    createdAt: serverTimestamp(),
-                    expiresAt
+                    paymentStatus: 'paid',
+                    approvalStatus: 'pending',
+                    createdAt: serverTimestamp()
                 }, { merge: true });
 
-                showToast('Pembayaran berhasil! Postingan Anda kini berstatus Bersponsor.');
+                showToast('Pembayaran tercatat! Menunggu persetujuan Admin Sponsor.');
                 setTimeout(() => {
                     window.location.href = `https://sitenexs.com/community/?post=${encodeURIComponent(selectedPostId)}`;
-                }, 900);
+                }, 1100);
             } catch (err) {
-                console.error('Gagal memproses pembayaran iklan:', err);
-                showToast('Gagal memproses pembayaran iklan. Silakan coba lagi.', 'error');
+                console.error('Gagal mengirim pengajuan iklan:', err);
+                showToast('Gagal mengirim pengajuan iklan. Silakan coba lagi.', 'error');
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-lock"></i> <span>Bayar & Aktifkan Iklan</span>';
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> <span>Bayar & Kirim ke Admin Sponsor</span>';
             }
         };
 
