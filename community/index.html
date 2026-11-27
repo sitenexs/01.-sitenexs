@@ -388,12 +388,15 @@
             border: 1.5px solid var(--border-subtle); flex-shrink: 0;
         }
         .author-info { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
-        .author-name-row { display: flex; align-items: center; gap: 0.28rem; min-width: 0; }
+        .author-name-row { display: inline-flex; align-items: center; gap: 0.3rem; min-width: 0; }
         .author-name-link { text-decoration: none; color: inherit; display: inline-flex; align-items: center; min-width: 0; }
         .author-name-link:hover .author-name { text-decoration: underline; color: var(--primary); }
         .author-name {
             font-weight: 800; font-size: 0.88rem; color: var(--text-main);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25;
+        }
+        .user-badges-slot {
+            display: inline-flex; align-items: center; gap: 0.22rem; flex-shrink: 0;
         }
         .member-verification-icon { width: 14px; height: 14px; object-fit: contain; flex-shrink: 0; }
         .author-time {
@@ -467,52 +470,62 @@
             color: var(--text-main);
         }
 
-        /* BAR IKLAN AKTIF (PESAN, KUNJUNGI, BUKA TAUTAN, HUBUNGI) & PROMOSI MILIK SENDIRI */
+        /* BAR IKLAN AKTIF (PESAN, KUNJUNGI, HUBUNGI) LEBIH RAPI & MODERN */
         .ad-cta-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 0.5rem;
-            padding: 0.55rem 0.9rem;
-            background: #fffbeb;
+            gap: 0.6rem;
+            padding: 0.6rem 0.95rem;
+            background: linear-gradient(90deg, #fffbeb 0%, #fef9c3 100%);
             border-top: 1px solid #fde68a;
             flex-wrap: wrap;
         }
         .ad-cta-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
             font-size: 0.72rem;
-            font-weight: 700;
+            font-weight: 800;
             color: #92400e;
         }
         .ad-cta-actions {
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.42rem;
             flex-wrap: wrap;
         }
         .ad-action-pill {
             display: inline-flex;
             align-items: center;
-            gap: 0.32rem;
-            padding: 0.34rem 0.72rem;
+            gap: 0.35rem;
+            padding: 0.38rem 0.82rem;
             border-radius: var(--radius-full);
-            font-size: 0.72rem;
+            font-size: 0.73rem;
             font-weight: 800;
-            transition: var(--transition);
+            transition: all 0.2s ease;
             cursor: pointer;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
         }
-        .ad-action-pill.primary-cta {
-            background: var(--primary);
+        .ad-action-pill:hover {
+            transform: translateY(-1px);
+        }
+        .ad-action-pill.cta-message {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: #ffffff;
+            box-shadow: 0 3px 10px rgba(37, 99, 235, 0.24);
         }
-        .ad-action-pill.primary-cta:hover {
-            background: var(--primary-dark);
+        .ad-action-pill.cta-visit {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: #ffffff;
+            box-shadow: 0 3px 10px rgba(16, 185, 129, 0.24);
         }
-        .ad-action-pill.secondary-cta {
+        .ad-action-pill.cta-call {
             background: #ffffff;
-            color: var(--text-main);
-            border: 1px solid var(--border-medium);
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
         }
-        .ad-action-pill.secondary-cta:hover {
+        .ad-action-pill.cta-call:hover {
             border-color: var(--primary);
             color: var(--primary);
         }
@@ -770,6 +783,8 @@
 
         const forumCollection = collection(db, "forum_posts");
         const postsMap = new Map();
+        const liveProfilesMap = new Map();
+        const userListenersMap = new Map();
 
         let allRegisteredUsers = [];
         let currentUserData = null;
@@ -831,6 +846,94 @@
             return `https://sitenexs.com/community/?post=${encodeURIComponent(fallbackPostId || '')}`;
         }
 
+        /* =====================================================
+           SINKRONISASI PROFIL ASLI REAL-TIME (FOTO, NAMA, LENCANA)
+        ===================================================== */
+        function buildBadgesHtmlFromProfile(profile) {
+            if (!profile) return '';
+            const isVerified = Boolean(profile.isVerified);
+            const isPro = Boolean(profile.raw?.isPro) || Boolean(profile.raw?.lencanaKuning) || Boolean(profile.raw?.isLencanaKuning);
+            let html = getUserBadgesHtml(isVerified, { badgeClass: 'member-verification-icon' });
+            if (isPro) {
+                html += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="member-verification-icon" alt="Lencana Pro" title="Lencana Pro" style="margin-left: 2px;">`;
+            }
+            return html;
+        }
+
+        function applyLiveProfileToDom(uid) {
+            if (!uid || uid === 'unknown') return;
+            const prof = liveProfilesMap.get(uid);
+            if (!prof) return;
+
+            const nameText = prof.displayName || 'Mitra Sitenexs';
+            const avatarSrc = prof.avatarUrl || getUserAvatarUrl(uid);
+            const fallbackSrc = `https://ui-avatars.com/api/?name=${encodeURIComponent(nameText)}&background=2563eb&color=fff`;
+            const badgesHtml = buildBadgesHtmlFromProfile(prof);
+
+            document.querySelectorAll(`.post-author-img[data-author-uid="${uid}"]`).forEach(img => {
+                img.alt = nameText;
+                img.onerror = () => { img.onerror = null; img.src = fallbackSrc; };
+                if (img.src !== avatarSrc) img.src = avatarSrc;
+            });
+
+            document.querySelectorAll(`.author-name[data-author-uid="${uid}"]`).forEach(el => {
+                el.innerText = nameText;
+            });
+
+            document.querySelectorAll(`.post-author-badges[data-author-uid="${uid}"]`).forEach(el => {
+                el.innerHTML = badgesHtml;
+            });
+
+            document.querySelectorAll(`.comment-avatar[data-comment-uid="${uid}"]`).forEach(img => {
+                img.alt = nameText;
+                img.onerror = () => { img.onerror = null; img.src = fallbackSrc; };
+                if (img.src !== avatarSrc) img.src = avatarSrc;
+            });
+
+            document.querySelectorAll(`.comment-author[data-comment-uid="${uid}"]`).forEach(el => {
+                el.innerText = nameText;
+            });
+
+            document.querySelectorAll(`.comment-author-badges[data-comment-uid="${uid}"]`).forEach(el => {
+                el.innerHTML = badgesHtml;
+            });
+        }
+
+        function ensureUserProfileSubscription(uid) {
+            if (!uid || uid === 'unknown' || userListenersMap.has(uid)) return;
+
+            const refreshProfile = async () => {
+                try {
+                    const normalized = await fetchNormalizedUserProfile(db, uid, {
+                        forceRefresh: true,
+                        badgeClass: 'member-verification-icon'
+                    });
+                    const avatarUrl = `${getUserAvatarUrl(uid)}?v=${Date.now()}`;
+                    liveProfilesMap.set(uid, {
+                        ...normalized,
+                        avatarUrl
+                    });
+                    applyLiveProfileToDom(uid);
+                } catch (err) {
+                    console.warn('Gagal menyegarkan profil user:', uid, err);
+                }
+            };
+
+            refreshProfile();
+            const unsub = onSnapshot(doc(db, 'users', uid), () => {
+                refreshProfile();
+            });
+            userListenersMap.set(uid, unsub);
+        }
+
+        function subscribeProfilesForPostAndComments(data) {
+            if (!data) return;
+            if (data.authorUid) ensureUserProfileSubscription(data.authorUid);
+            (data.comments || []).forEach(c => {
+                if (c.authorUid) ensureUserProfileSubscription(c.authorUid);
+            });
+        }
+
         function buildActiveAdActionBarHtml(postId, data) {
             const authorUid = data.authorUid || '';
             const objective = data.adObjective || 'like';
@@ -839,61 +942,26 @@
             const callUrl = `${DEFAULT_CALL_PAGE_URL}?to=${encodeURIComponent(authorUid)}`;
             const targetUrl = normalizeExternalUrl(rawTarget, postId);
 
-            let primaryBtnHtml = '';
-            if (objective === 'visit_site') {
-                primaryBtnHtml = `
-                    <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="ad-action-pill primary-cta" onclick="event.stopPropagation()">
-                        <i class="fas fa-external-link-alt"></i>
-                        <span>Kunjungi</span>
-                    </a>
-                `;
-            } else if (objective === 'order') {
-                const orderHref = /^https?:\/\//i.test(rawTarget) ? targetUrl : messageUrl;
-                primaryBtnHtml = `
-                    <a href="${orderHref}" ${/^https?:\/\//i.test(rawTarget) ? 'target="_blank" rel="noopener noreferrer"' : ''} class="ad-action-pill primary-cta" onclick="event.stopPropagation()">
-                        <i class="fas fa-shopping-bag"></i>
-                        <span>Pesan</span>
-                    </a>
-                `;
-            } else {
-                primaryBtnHtml = `
-                    <a href="${messageUrl}" class="ad-action-pill primary-cta" onclick="event.stopPropagation()">
-                        <i class="fas fa-comment-dots"></i>
-                        <span>Pesan</span>
-                    </a>
-                `;
-            }
-
-            const linkOrVisitBtn = rawTarget
-                ? `
-                    <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="ad-action-pill secondary-cta" onclick="event.stopPropagation()">
-                        <i class="fas fa-link"></i>
-                        <span>Buka Tautan</span>
-                    </a>
-                `
-                : `
-                    <a href="https://sitenexs.com/community/?post=${encodeURIComponent(postId)}" class="ad-action-pill secondary-cta" onclick="event.stopPropagation()">
-                        <i class="fas fa-globe"></i>
-                        <span>Kunjungi</span>
-                    </a>
-                `;
-
-            const contactBtn = authorUid
-                ? `
-                    <a href="${callUrl}" class="ad-action-pill secondary-cta" onclick="event.stopPropagation()">
-                        <i class="fas fa-phone-alt"></i>
-                        <span>Hubungi</span>
-                    </a>
-                `
-                : '';
+            const visitHref = rawTarget ? targetUrl : `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`;
+            const visitExternal = Boolean(rawTarget);
 
             return `
                 <div class="ad-cta-bar">
                     <span class="ad-cta-label"><i class="fas fa-bullhorn"></i> Bersponsor • ${data.adObjectiveLabel || 'Promo'}</span>
                     <div class="ad-cta-actions">
-                        ${primaryBtnHtml}
-                        ${linkOrVisitBtn}
-                        ${contactBtn}
+                        <a href="${messageUrl}" class="ad-action-pill cta-message" onclick="event.stopPropagation()">
+                            <i class="fas fa-comment-dots"></i>
+                            <span>Pesan</span>
+                        </a>
+                        <a href="${visitHref}" ${visitExternal ? 'target="_blank" rel="noopener noreferrer"' : ''} class="ad-action-pill cta-visit" onclick="event.stopPropagation()">
+                            <i class="fas fa-external-link-alt"></i>
+                            <span>Kunjungi</span>
+                        </a>
+                        ${authorUid ? `
+                        <a href="${callUrl}" class="ad-action-pill cta-call" onclick="event.stopPropagation()">
+                            <i class="fas fa-phone-alt"></i>
+                            <span>Hubungi</span>
+                        </a>` : ''}
                     </div>
                 </div>
             `;
@@ -1460,8 +1528,9 @@
 
             const activeUser = currentUserData || auth.currentUser;
             const uidVal = activeUser ? activeUser.uid : savedUid;
-            const nameVal = activeUser ? activeUser.nama : "Mitra Sitenexs";
-            const verifiedVal = currentUserData ? Boolean(currentUserData.isVerified) : false;
+            const liveProf = liveProfilesMap.get(uidVal);
+            const nameVal = liveProf?.displayName || currentUserData?.nama || activeUser?.displayName || "Mitra Sitenexs";
+            const verifiedVal = liveProf ? Boolean(liveProf.isVerified) : Boolean(currentUserData?.isVerified);
 
             const postRef = doc(db, "forum_posts", postId);
             try {
@@ -1551,6 +1620,13 @@
                     fcmToken: profile.fcmToken || null
                 };
 
+                liveProfilesMap.set(uid, {
+                    ...profile,
+                    displayName: namaLengkap,
+                    isVerified,
+                    avatarUrl: photoUrl
+                });
+
                 localStorage.setItem('sitenexs_logged_in', 'true');
                 localStorage.setItem('sitenexs_uid', uid);
 
@@ -1586,6 +1662,7 @@
                 postsMap.forEach((data, postId) => {
                     syncLikeAndStatsDom(postId, data, uid);
                 });
+                applyLiveProfileToDom(uid);
             } catch (err) {
                 console.warn('Gagal memuat profil pengguna:', err);
             }
@@ -1636,8 +1713,11 @@
             return comments.map(c => {
                 const cDate = c.createdAt ? timeAgo(new Date(c.createdAt)) : 'Baru saja';
                 const cAuthorUid = c.authorUid || 'unknown';
-                const cAvatar = getUserAvatarUrl(cAuthorUid);
-                const cFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.penulis)}&background=random&color=fff`;
+                const liveProf = liveProfilesMap.get(cAuthorUid);
+                const cName = liveProf?.displayName || c.penulis || 'Mitra Sitenexs';
+                const cAvatar = liveProf?.avatarUrl || getUserAvatarUrl(cAuthorUid);
+                const cFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(cName)}&background=random&color=fff`;
+                const cBadges = buildBadgesHtmlFromProfile(liveProf);
                 const formattedText = formatCommentText(c.isi);
                 const isMyComment = (cAuthorUid === currentActiveUid);
                 const deleteBtnHtml = isMyComment
@@ -1647,23 +1727,23 @@
                 return `
                     <div class="comment-item">
                         <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" style="flex-shrink: 0;">
-                            <img src="${cAvatar}" alt="${c.penulis}" class="comment-avatar" onerror="this.onerror=null; this.src='${cFallback}';">
+                            <img src="${cAvatar}" alt="${cName}" class="comment-avatar" data-comment-uid="${cAuthorUid}" onerror="this.onerror=null; this.src='${cFallback}';">
                         </a>
                         <div class="comment-content-wrapper">
                             <div class="comment-bubble">
                                 <div class="comment-header-row">
                                     <div class="comment-author-left">
                                         <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(cAuthorUid)}" class="comment-author-link">
-                                            <span class="comment-author">${c.penulis}</span>
+                                            <span class="comment-author" data-comment-uid="${cAuthorUid}">${cName}</span>
                                         </a>
-                                        <span class="async-verif-badge" data-uid="${cAuthorUid}"></span>
+                                        <span class="user-badges-slot comment-author-badges" data-comment-uid="${cAuthorUid}">${cBadges}</span>
                                     </div>
                                 </div>
                                 <div class="comment-text">${formattedText}</div>
                             </div>
                             <div class="comment-footer-row">
                                 <div class="comment-time">${cDate}</div>
-                                <button type="button" class="reply-trigger-btn" onclick="replyComment('${postId}', '${c.penulis.replace(/'/g, "\\'")}')">Balas</button>
+                                <button type="button" class="reply-trigger-btn" onclick="replyComment('${postId}', '${cName.replace(/'/g, "\\'")}')">Balas</button>
                                 ${deleteBtnHtml}
                             </div>
                         </div>
@@ -1681,7 +1761,13 @@
             const isSponsored = isPostAdActive(data);
             article.className = `post-card ${isPrioritized ? 'prioritized-card' : ''} ${isSponsored ? 'sponsored-card' : ''}`;
 
-            const authorUid = data.authorUid;
+            const authorUid = data.authorUid || 'unknown';
+            const liveProf = liveProfilesMap.get(authorUid);
+            const authorName = liveProf?.displayName || data.penulis || 'Mitra Sitenexs';
+            const authorPhoto = liveProf?.avatarUrl || getUserAvatarUrl(authorUid);
+            const authorFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=2563eb&color=fff`;
+            const authorBadgesHtml = buildBadgesHtmlFromProfile(liveProf);
+
             const commentsDisabled = data.commentsDisabled === true;
             const hideStats = data.hideStats === true;
             const isOwnPost = Boolean(currentActiveUid && authorUid && String(currentActiveUid) === String(authorUid));
@@ -1692,8 +1778,6 @@
             if (isSponsored) badgesHtml += `<span class="post-badge badge-sponsored"><i class="fas fa-bullhorn"></i> Bersponsor</span>`;
             if (isPrioritized) badgesHtml += `<span class="post-badge badge-priority"><i class="fas fa-thumbtack"></i> Unggulan</span>`;
 
-            const authorPhoto = getUserAvatarUrl(authorUid);
-            const authorFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.penulis)}&background=2563eb&color=fff`;
             const postTitleHtml = data.judul ? `<h2 class="post-title">${data.judul}</h2>` : '';
             const postImageHtml = data.imageUrl ? `<img src="${data.imageUrl}" alt="Foto Diskusi" class="post-image">` : '';
 
@@ -1730,13 +1814,13 @@
                 <div class="post-card-inner">
                     <div class="post-header">
                         <div class="post-author">
-                            <img src="${authorPhoto}" alt="${data.penulis}" class="post-author-img" onerror="this.onerror=null; this.src='${authorFallback}';">
+                            <img src="${authorPhoto}" alt="${authorName}" class="post-author-img" data-author-uid="${authorUid}" onerror="this.onerror=null; this.src='${authorFallback}';">
                             <div class="author-info">
                                 <div class="author-name-row">
                                     <a href="https://sitenexs.com/community/profile?uid=${encodeURIComponent(authorUid)}" class="author-name-link">
-                                        <span class="author-name">${data.penulis}</span>
+                                        <span class="author-name" data-author-uid="${authorUid}">${authorName}</span>
                                     </a>
-                                    <span class="async-verif-badge" data-uid="${authorUid}"></span>
+                                    <span class="user-badges-slot post-author-badges" data-author-uid="${authorUid}">${authorBadgesHtml}</span>
                                 </div>
                                 <div class="author-time">
                                     <span>${waktuString}</span>
@@ -1812,6 +1896,12 @@
                 commentListEl.innerHTML = buildCommentsInnerHtml(comments, data.commentsDisabled === true, postId, currentActiveUid);
                 commentListEl.scrollTop = prevScrollTop;
             }
+
+            subscribeProfilesForPostAndComments(data);
+            if (data.authorUid) applyLiveProfileToDom(data.authorUid);
+            comments.forEach(c => {
+                if (c.authorUid) applyLiveProfileToDom(c.authorUid);
+            });
         }
 
         function getSortedPostIds() {
@@ -1852,6 +1942,7 @@
             let cursorNode = postContainer.firstElementChild;
             for (const id of sortedIds) {
                 const data = postsMap.get(id);
+                subscribeProfilesForPostAndComments(data);
                 let cardEl = document.getElementById(`post-${id}`);
                 if (!cardEl) {
                     cardEl = createPostCardElement(id, data, currentActiveUid);
@@ -1868,25 +1959,8 @@
                 const elId = el.getAttribute('data-post-id');
                 if (!activeIdSet.has(elId)) el.remove();
             });
-        }
 
-        function runAsyncVerifBadges() {
-            document.querySelectorAll('.async-verif-badge').forEach(async (el) => {
-                const uid = el.getAttribute('data-uid');
-                if (!uid || uid === 'unknown' || el.getAttribute('data-loaded') === 'true') return;
-                el.setAttribute('data-loaded', 'true');
-                try {
-                    const profile = await fetchNormalizedUserProfile(db, uid, { badgeClass: 'member-verification-icon' });
-                    const isPro = Boolean(profile.raw?.isPro) || Boolean(profile.raw?.lencanaKuning) || Boolean(profile.raw?.isLencanaKuning);
-                    let badgesHtml = getUserBadgesHtml(profile.isVerified, { badgeClass: 'member-verification-icon' });
-                    if (isPro) {
-                        badgesHtml += `<img src="https://sitenexs.com/assets/logo/lencana.png" class="member-verification-icon" alt="Pro" title="Lencana Pro" style="margin-left: 2px;">`;
-                    }
-                    el.innerHTML = badgesHtml;
-                } catch (e) {
-                    el.innerHTML = '';
-                }
-            });
+            liveProfilesMap.forEach((_, uid) => applyLiveProfileToDom(uid));
         }
 
         async function handleRealtimePostNotifications(snapshot, currentActiveUid) {
@@ -1906,7 +1980,8 @@
                 if (data.isPrivate) continue;
 
                 if (change.type === 'added' && data.authorUid && data.authorUid !== currentActiveUid) {
-                    const posterName = data.penulis || 'Mitra Sitenexs';
+                    const posterProfile = await fetchNormalizedUserProfile(db, data.authorUid);
+                    const posterName = posterProfile.displayName || data.penulis || 'Mitra Sitenexs';
                     const fullPostText = `${data.judul || ''} ${data.isi || ''}`.trim();
                     const headline = data.judul || data.isi || 'Diskusi baru di komunitas';
                     const postNotifTitle = `Postingan baru dari ${posterName}`;
@@ -2001,7 +2076,8 @@
                     const cKey = `${c.authorUid || ''}_${c.createdAt || ''}_${c.isi || ''}`;
                     currCommentsSet.add(cKey);
                     if (c.authorUid && currentActiveUid && c.authorUid !== currentActiveUid && !prevComments.has(cKey)) {
-                        const commenterName = c.penulis || 'Mitra Sitenexs';
+                        const commenterProf = c.authorUid ? await fetchNormalizedUserProfile(db, c.authorUid) : null;
+                        const commenterName = commenterProf?.displayName || c.penulis || 'Mitra Sitenexs';
                         const commentPreview = String(c.isi || '');
 
                         if (data.authorUid === currentActiveUid && !notifiedCommentKeys.has(cKey)) {
@@ -2110,7 +2186,6 @@
             }
 
             isInitialLoad = false;
-            runAsyncVerifBadges();
         }, (error) => {
             console.error("Gagal memuat post:", error);
         });
