@@ -601,91 +601,76 @@
             color: #ffffff;
         }
 
-        /* METODE PEMBAYARAN */
-        .payment-methods-list {
+        /* METODE PEMBAYARAN QRIS */
+        .qris-box {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .payment-option {
-            display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 0.75rem;
-            padding: 0.7rem 0.85rem;
-            border: 1.5px solid var(--border-subtle);
+            text-align: center;
+            gap: 0.6rem;
+            padding: 0.9rem;
             border-radius: var(--radius-md);
-            background: var(--bg-body);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .payment-option.selected {
-            border-color: var(--primary);
             background: var(--primary-light);
+            border: 1.5px solid var(--border-accent);
         }
 
-        .payment-option-left {
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
-        }
-
-        .payment-icon {
-            width: 34px;
-            height: 34px;
-            border-radius: var(--radius-sm);
-            background: #ffffff;
-            border: 1px solid var(--border-subtle);
-            color: var(--primary);
+        .qris-header-badge {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            flex-shrink: 0;
+            gap: 0.4rem;
+            background: #ffffff;
+            color: var(--primary-dark);
+            border: 1px solid var(--border-accent);
+            padding: 0.25rem 0.7rem;
+            border-radius: var(--radius-full);
+            font-size: 0.72rem;
+            font-weight: 800;
         }
 
-        .payment-title {
-            font-size: 0.82rem;
+        .qris-qr-frame {
+            width: 170px;
+            height: 170px;
+            background: #ffffff;
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-md);
+            padding: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .qris-qr-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .qris-merchant-text {
+            font-size: 0.78rem;
             font-weight: 800;
             color: var(--text-main);
         }
 
-        .payment-sub {
-            font-size: 0.7rem;
+        .qris-sub-text {
+            font-size: 0.72rem;
             color: var(--text-muted);
-        }
-
-        .payment-radio {
-            width: 17px;
-            height: 17px;
-            accent-color: var(--primary);
-            cursor: pointer;
-        }
-
-        .payment-instruction-box {
-            margin-top: 0.75rem;
-            padding: 0.8rem;
-            border-radius: var(--radius-md);
-            background: var(--bg-alt);
-            border: 1px solid var(--border-subtle);
-            font-size: 0.76rem;
-            color: var(--text-main);
+            max-width: 360px;
         }
 
         .payment-code-row {
+            width: 100%;
+            max-width: 380px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 0.5rem;
-            margin-top: 0.45rem;
             padding: 0.5rem 0.7rem;
             background: #ffffff;
             border: 1px dashed var(--border-medium);
             border-radius: var(--radius-sm);
             font-weight: 800;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
         }
 
         .copy-mini-btn {
@@ -696,6 +681,7 @@
             font-size: 0.7rem;
             font-weight: 700;
             cursor: pointer;
+            flex-shrink: 0;
         }
 
         .approval-note-box {
@@ -847,7 +833,7 @@
                 <span>Iklan Komunitas Sitenexs</span>
             </div>
             <h1>Promosikan Postingan Anda</h1>
-            <p>Atur durasi per jam (Rp 2.000/jam), target audiens, dan tujuan iklan. Setelah dibayar, pengajuan akan diverifikasi Admin Sponsor.</p>
+            <p>Atur durasi per jam (Rp 2.000/jam), target audiens, dan tujuan iklan. Pembayaran menggunakan QRIS dan diverifikasi Admin Sponsor.</p>
         </section>
 
         <!-- 1. PILIH POSTINGAN -->
@@ -1011,52 +997,26 @@
             </div>
         </section>
 
-        <!-- 5. METODE PEMBAYARAN -->
+        <!-- 5. METODE PEMBAYARAN KHUSUS QRIS -->
         <section class="ads-card">
             <div class="section-title">
-                <i class="fas fa-wallet"></i>
-                <span>5. Pilih Metode Pembayaran</span>
-            </div>
-            <div class="payment-methods-list">
-                <label class="payment-option selected" data-method="dana" onclick="selectPaymentMethod('dana')">
-                    <div class="payment-option-left">
-                        <span class="payment-icon"><i class="fas fa-mobile-alt"></i></span>
-                        <div>
-                            <div class="payment-title">DANA / E-Wallet</div>
-                            <div class="payment-sub">Transfer saldo DANA atau dompet digital</div>
-                        </div>
-                    </div>
-                    <input type="radio" name="paymentMethod" value="dana" class="payment-radio" checked>
-                </label>
-
-                <label class="payment-option" data-method="qris" onclick="selectPaymentMethod('qris')">
-                    <div class="payment-option-left">
-                        <span class="payment-icon"><i class="fas fa-qrcode"></i></span>
-                        <div>
-                            <div class="payment-title">QRIS Instan</div>
-                            <div class="payment-sub">Scan melalui mobile banking atau aplikasi pembayaran</div>
-                        </div>
-                    </div>
-                    <input type="radio" name="paymentMethod" value="qris" class="payment-radio">
-                </label>
-
-                <label class="payment-option" data-method="transfer" onclick="selectPaymentMethod('transfer')">
-                    <div class="payment-option-left">
-                        <span class="payment-icon"><i class="fas fa-university"></i></span>
-                        <div>
-                            <div class="payment-title">Transfer Bank</div>
-                            <div class="payment-sub">Transfer manual ke rekening resmi Sitenexs</div>
-                        </div>
-                    </div>
-                    <input type="radio" name="paymentMethod" value="transfer" class="payment-radio">
-                </label>
+                <i class="fas fa-qrcode"></i>
+                <span>5. Pembayaran QRIS</span>
             </div>
 
-            <div class="payment-instruction-box" id="paymentInstructionBox">
-                <div id="paymentInstructionDesc">Kirim pembayaran sesuai nominal total ke nomor DANA resmi Sitenexs:</div>
+            <div class="qris-box">
+                <div class="qris-header-badge">
+                    <i class="fas fa-qrcode"></i>
+                    <span>QRIS SITENEXS ADS</span>
+                </div>
+                <div class="qris-qr-frame">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=SITENEXS-COMMUNITY-ADS-QRIS" alt="Kode QRIS Sitenexs">
+                </div>
+                <div class="qris-merchant-text">SITENEXS OFFICIAL MERCHANT</div>
+                <div class="qris-sub-text">Scan kode QRIS di atas melalui aplikasi e-wallet atau mobile banking Anda sesuai nominal total pembayaran.</div>
                 <div class="payment-code-row">
-                    <span id="paymentTargetNumber">DANA • 0851-XXXX-XXXX (a.n. Sitenexs)</span>
-                    <button type="button" class="copy-mini-btn" onclick="copyPaymentTarget()">
+                    <span id="qrisMerchantCode">NMID: ID1026XXXXXXX • SITENEXS</span>
+                    <button type="button" class="copy-mini-btn" onclick="copyQrisCode()">
                         <i class="fas fa-copy"></i> Salin
                     </button>
                 </div>
@@ -1064,7 +1024,7 @@
 
             <div class="approval-note-box">
                 <i class="fas fa-hourglass-half" style="margin-top: 0.1rem;"></i>
-                <span>Iklan tidak langsung aktif otomatis. Setelah Anda menekan tombol bayar, pesanan akan masuk ke antrean persetujuan <strong>Admin Sponsor</strong>.</span>
+                <span>Iklan tidak langsung aktif otomatis. Setelah pembayaran QRIS dikirim, pesanan akan masuk ke antrean persetujuan <strong>Admin Sponsor</strong>.</span>
             </div>
         </section>
 
@@ -1092,7 +1052,7 @@
             </div>
             <div class="summary-row">
                 <span>Metode Pembayaran</span>
-                <strong id="summaryMethod">DANA / E-Wallet</strong>
+                <strong>QRIS</strong>
             </div>
             <div class="summary-total">
                 <span>Total Pembayaran</span>
@@ -1100,8 +1060,8 @@
             </div>
 
             <button type="button" class="btn-pay" id="confirmPaymentBtn" onclick="processAdPayment()">
-                <i class="fas fa-paper-plane"></i>
-                <span>Bayar & Kirim ke Admin Sponsor</span>
+                <i class="fas fa-qrcode"></i>
+                <span>Konfirmasi QRIS & Kirim ke Admin Sponsor</span>
             </button>
         </section>
     </main>
@@ -1175,24 +1135,6 @@
             kreator_digital: 'Kreator & Pengembang Digital'
         };
 
-        const PAYMENT_METHODS = {
-            dana: {
-                label: 'DANA / E-Wallet',
-                desc: 'Kirim pembayaran sesuai nominal total ke nomor DANA resmi Sitenexs:',
-                target: 'DANA • 0851-XXXX-XXXX (a.n. Sitenexs)'
-            },
-            qris: {
-                label: 'QRIS Instan',
-                desc: 'Gunakan kode merchant QRIS resmi Sitenexs pada aplikasi pembayaran Anda:',
-                target: 'NMID: ID1026XXXXXXX • SITENEXS'
-            },
-            transfer: {
-                label: 'Transfer Bank',
-                desc: 'Transfer sesuai nominal total ke rekening tujuan berikut:',
-                target: 'BCA / Mandiri • XXXX-XXXX-XX (a.n. Sitenexs)'
-            }
-        };
-
         const urlParams = new URLSearchParams(window.location.search);
         const initialPostId = urlParams.get('post') || '';
         const initialPlanParam = urlParams.get('plan') || '';
@@ -1212,7 +1154,6 @@
         let selectedPostId = initialPostId;
         let selectedHours = parseInitialHours(initialPlanParam);
         let selectedObjectiveKey = 'like';
-        let selectedMethodKey = 'dana';
         let cleanupIncomingRedirect = null;
         let cleanupOngoingBanner = null;
 
@@ -1259,7 +1200,6 @@
         function updateSummaryUI() {
             const totalPrice = selectedHours * PRICE_PER_HOUR;
             const objInfo = AD_OBJECTIVES[selectedObjectiveKey] || AD_OBJECTIVES.like;
-            const methodInfo = PAYMENT_METHODS[selectedMethodKey] || PAYMENT_METHODS.dana;
             const post = userPosts.find(p => p.id === selectedPostId);
 
             const segKey = document.getElementById('audienceSegmentSelect')?.value || 'all';
@@ -1276,7 +1216,6 @@
             document.getElementById('summaryDuration').innerText = `${selectedHours} Jam${recSuffix}`;
             document.getElementById('summaryObjective').innerText = objInfo.label;
             document.getElementById('summaryAudience').innerText = `${segLabel} • ${locText} • ${ageText}`;
-            document.getElementById('summaryMethod').innerText = methodInfo.label;
             document.getElementById('summaryTotal').innerText = formatIdr(totalPrice);
         }
 
@@ -1345,6 +1284,16 @@
             updateSummaryUI();
         };
 
+        window.copyQrisCode = function() {
+            const codeText = document.getElementById('qrisMerchantCode')?.innerText || '';
+            if (!codeText) return;
+            navigator.clipboard.writeText(codeText).then(() => {
+                showToast('Kode QRIS berhasil disalin.');
+            }).catch(() => {
+                showToast('Gagal menyalin kode QRIS.', 'error');
+            });
+        };
+
         function renderPostPreview() {
             const post = userPosts.find(p => p.id === selectedPostId);
             const authorEl = document.getElementById('previewAuthor');
@@ -1395,32 +1344,6 @@
         window.handlePostSelectionChange = function(postId) {
             selectedPostId = postId;
             renderPostPreview();
-        };
-
-        window.selectPaymentMethod = function(methodKey) {
-            if (!PAYMENT_METHODS[methodKey]) return;
-            selectedMethodKey = methodKey;
-            document.querySelectorAll('.payment-option').forEach(opt => {
-                const isMatch = opt.getAttribute('data-method') === methodKey;
-                opt.classList.toggle('selected', isMatch);
-                const radio = opt.querySelector('input[type="radio"]');
-                if (radio) radio.checked = isMatch;
-            });
-
-            const info = PAYMENT_METHODS[methodKey];
-            document.getElementById('paymentInstructionDesc').innerText = info.desc;
-            document.getElementById('paymentTargetNumber').innerText = info.target;
-            updateSummaryUI();
-        };
-
-        window.copyPaymentTarget = function() {
-            const targetText = document.getElementById('paymentTargetNumber')?.innerText || '';
-            if (!targetText) return;
-            navigator.clipboard.writeText(targetText).then(() => {
-                showToast('Informasi pembayaran berhasil disalin.');
-            }).catch(() => {
-                showToast('Gagal menyalin informasi pembayaran.', 'error');
-            });
         };
 
         async function loadUserPosts(uid) {
@@ -1495,11 +1418,9 @@
             const ageVal = document.getElementById('audienceAgeSelect')?.value || 'semua';
             const interests = getSelectedInterests();
 
-            const method = PAYMENT_METHODS[selectedMethodKey] || PAYMENT_METHODS.dana;
             const btn = document.getElementById('confirmPaymentBtn');
-
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Mengirim Pengajuan Iklan...</span>';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Mengirim Pengajuan Iklan QRIS...</span>';
 
             try {
                 const nowMs = Date.now();
@@ -1525,8 +1446,8 @@
                     adObjectiveLabel: objInfo.label,
                     adObjectiveTarget: objectiveTargetValue,
                     adAudience: audiencePayload,
-                    adPaymentMethod: selectedMethodKey,
-                    adPaymentMethodLabel: method.label,
+                    adPaymentMethod: 'qris',
+                    adPaymentMethodLabel: 'QRIS',
                     adOrderId: orderId,
                     adPaidAt: serverTimestamp(),
                     adSubmittedAt: serverTimestamp()
@@ -1549,22 +1470,22 @@
                     objectiveTarget: objectiveTargetValue,
                     audience: audiencePayload,
                     audienceSummary: `${segLabel} • ${locText} • ${ageVal === 'semua' ? 'Semua Usia' : ageVal + ' thn'}`,
-                    paymentMethod: selectedMethodKey,
-                    paymentMethodLabel: method.label,
+                    paymentMethod: 'qris',
+                    paymentMethodLabel: 'QRIS',
                     paymentStatus: 'paid',
                     approvalStatus: 'pending',
                     createdAt: serverTimestamp()
                 }, { merge: true });
 
-                showToast('Pembayaran tercatat! Menunggu persetujuan Admin Sponsor.');
+                showToast('Pembayaran QRIS tercatat! Menunggu persetujuan Admin Sponsor.');
                 setTimeout(() => {
                     window.location.href = `https://sitenexs.com/community/?post=${encodeURIComponent(selectedPostId)}`;
                 }, 1100);
             } catch (err) {
-                console.error('Gagal mengirim pengajuan iklan:', err);
+                console.error('Gagal mengirim pengajuan iklan QRIS:', err);
                 showToast('Gagal mengirim pengajuan iklan. Silakan coba lagi.', 'error');
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-paper-plane"></i> <span>Bayar & Kirim ke Admin Sponsor</span>';
+                btn.innerHTML = '<i class="fas fa-qrcode"></i> <span>Konfirmasi QRIS & Kirim ke Admin Sponsor</span>';
             }
         };
 
@@ -1597,7 +1518,6 @@
 
             setAdDurationHours(selectedHours);
             selectObjective(selectedObjectiveKey);
-            selectPaymentMethod(selectedMethodKey);
             await loadUserPosts(uid);
         }
 
