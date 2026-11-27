@@ -47,24 +47,23 @@
             --primary-dark: #1d4ed8;
             --primary-light: #eff6ff;
             --accent: #10b981;
-            --bg-body: #f8fafc;
+            --bg-body: #f0f2f5;
             --bg-card: #ffffff;
             --bg-alt: #f1f5f9;
             --text-main: #0f172a;
-            --text-muted: #475569;
+            --text-muted: #64748b;
             --border-subtle: #e2e8f0;
             --border-medium: #cbd5e1;
             --border-accent: #93c5fd;
-            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
-            --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
-            --shadow-lg: 0 15px 30px -5px rgba(15, 23, 42, 0.08);
-            --shadow-card: 0 20px 40px -12px rgba(37, 99, 235, 0.15);
-            --radius-sm: 0.375rem;
-            --radius-md: 0.625rem;
+            --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+            --shadow-md: 0 6px 16px -4px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 18px 36px -8px rgba(15, 23, 42, 0.14);
+            --radius-sm: 0.45rem;
+            --radius-md: 0.75rem;
             --radius-lg: 1rem;
             --radius-xl: 1.5rem;
             --radius-full: 9999px;
-            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body[data-package="pro"] {
@@ -73,12 +72,6 @@
             --primary-light: #f0f9ff;
             --accent: #f59e0b;
             --border-accent: #38bdf8;
-            --shadow-card: 0 20px 40px -12px rgba(2, 132, 199, 0.22);
-        }
-
-        body[data-package="pro"] .btn-primary {
-            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35);
         }
 
         body[data-package="vip"],
@@ -96,12 +89,6 @@
             border-image: linear-gradient(90deg, #7c3aed, #fbbf24, #7c3aed) 1;
         }
 
-        body[data-package="premium"] .btn-primary {
-            background: linear-gradient(135deg, #7c3aed 0%, #d97706 100%);
-            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
-            border: 1px solid rgba(254, 240, 138, 0.5);
-        }
-
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; font-size: 15px; }
 
@@ -109,10 +96,10 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
-            line-height: 1.4;
+            line-height: 1.45;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
-            transition: background-color 0.4s ease, color 0.4s ease;
+            transition: background-color 0.35s ease, color 0.35s ease;
         }
 
         a { text-decoration: none; color: inherit; }
@@ -126,8 +113,8 @@
         .active-call-banner {
             display: none;
             width: 100%;
-            max-width: 680px;
-            margin: 0.5rem auto 0;
+            max-width: 660px;
+            margin: 0.55rem auto 0;
             align-items: center;
             justify-content: space-between;
             gap: 0.75rem;
@@ -208,34 +195,77 @@
             font-size: 0.76rem; font-weight: 700; cursor: pointer;
         }
 
-        /* HEADER FORUM */
-        .forum-header { background: #fff; border-bottom: 1px solid var(--border-subtle); padding: 0.85rem 0; margin-bottom: 1rem; width: 100%; }
-        .forum-header-content { display: flex; flex-direction: column; align-items: flex-start; gap: 0.6rem; width: 100%; max-width: 680px; margin: 0 auto; padding: 0 1rem; }
-        .search-bar {
-            display: flex; align-items: center; background: var(--bg-body); border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-full); padding: 0.45rem 0.85rem; width: 100%; transition: var(--transition);
+        /* HEADER PENCARIAN SOSIAL MEDIA */
+        .forum-header {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0.75rem 0;
+            margin-bottom: 0.9rem;
+            width: 100%;
+            position: sticky;
+            top: 0;
+            z-index: 200;
         }
-        .search-bar:focus-within { border-color: var(--border-accent); background: #fff; box-shadow: 0 0 0 2px var(--primary-light); }
-        .search-bar input { background: transparent; width: 100%; font-size: 0.8rem; margin-left: 0.45rem; min-width: 0; }
+        .forum-header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+            width: 100%;
+            max-width: 660px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: var(--bg-alt);
+            border: 1px solid transparent;
+            border-radius: var(--radius-full);
+            padding: 0.5rem 0.95rem;
+            width: 100%;
+            transition: var(--transition);
+        }
+        .search-bar i { color: var(--text-muted); font-size: 0.85rem; }
+        .search-bar:focus-within {
+            border-color: var(--border-accent);
+            background: #ffffff;
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+        .search-bar input {
+            background: transparent;
+            width: 100%;
+            font-size: 0.82rem;
+            color: var(--text-main);
+            margin-left: 0.55rem;
+            min-width: 0;
+        }
 
         /* MAIN LAYOUT */
-        .forum-layout { display: block; width: 100%; max-width: 680px; margin: 0 auto; padding: 0 1rem 4rem 1rem; }
+        .forum-layout {
+            display: block;
+            width: 100%;
+            max-width: 660px;
+            margin: 0 auto;
+            padding: 0 1rem 4.5rem 1rem;
+        }
         .main-feed { width: 100%; min-width: 0; }
-        .post-list { display: flex; flex-direction: column; gap: 0.85rem; width: 100%; }
+        .post-list { display: flex; flex-direction: column; gap: 0.9rem; width: 100%; }
 
-        /* KOTAK BUAT POSTINGAN (UKURAN & TINGGI TETAP / STABIL SAAT LOADING) */
+        /* COMPOSER / KOTAK BUAT POSTINGAN ASLI SOSIAL MEDIA (TINGGI TETAP STABIL SAAT LOADING) */
         .create-post-box {
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            height: 56px;
-            min-height: 56px;
-            max-height: 56px;
-            padding: 0 0.85rem;
+            border-radius: var(--radius-lg);
+            height: 98px;
+            min-height: 98px;
+            max-height: 98px;
+            padding: 0.7rem 0.9rem;
             display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            margin-bottom: 0.85rem;
+            flex-direction: column;
+            justify-content: space-between;
+            margin-bottom: 0.9rem;
             cursor: pointer;
             box-shadow: var(--shadow-sm);
             width: 100%;
@@ -245,61 +275,83 @@
             box-shadow: var(--shadow-md);
             border-color: var(--border-accent);
         }
+        .create-post-top {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            width: 100%;
+        }
         .create-post-box img {
-            width: 34px;
-            height: 34px;
-            min-width: 34px;
-            min-height: 34px;
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            min-height: 38px;
             border-radius: 50%;
             object-fit: cover;
-            border: 1px solid var(--border-subtle);
+            border: 1.5px solid var(--border-subtle);
             flex-shrink: 0;
         }
         .create-post-input {
             flex: 1;
             height: 36px;
             line-height: 36px;
-            background: var(--bg-body);
-            padding: 0 0.85rem;
+            background: var(--bg-alt);
+            padding: 0 0.95rem;
             border-radius: var(--radius-full);
             color: var(--text-muted);
-            font-size: 0.8rem;
+            font-size: 0.82rem;
+            font-weight: 500;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             min-width: 0;
+            transition: background-color 0.2s ease;
         }
-        .create-post-cta {
-            flex-shrink: 0;
+        .create-post-box:hover .create-post-input {
+            background: #e9eef5;
+        }
+        .create-post-shortcuts {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 0.35rem;
+            gap: 0.25rem;
+        }
+        .create-post-shortcut-item {
+            flex: 1;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 0.35rem;
-            padding: 0.35rem 0.75rem;
-            border-radius: var(--radius-full);
-            background: var(--primary-light);
-            color: var(--primary);
             font-size: 0.74rem;
-            font-weight: 800;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 0.2rem 0.4rem;
+            border-radius: var(--radius-sm);
+        }
+        .create-post-box:hover .create-post-shortcut-item {
+            color: var(--text-main);
         }
 
-        /* POST CARD */
+        /* KARTU POSTINGAN SOSIAL MEDIA */
         .post-card {
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-lg);
             padding: 0;
             box-shadow: var(--shadow-sm);
-            transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+            transition: box-shadow 0.22s ease, border-color 0.22s ease, transform 0.22s ease;
             width: 100%;
             overflow: hidden;
         }
         .post-card.prioritized-card {
-            border: 2px solid var(--primary);
-            background: linear-gradient(to bottom, #ffffff, var(--primary-light));
+            border: 1.5px solid var(--border-accent);
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);
         }
         .post-card.sponsored-card {
-            border: 1.5px solid #f59e0b;
-            background: linear-gradient(to bottom, #ffffff, #fffbeb);
+            border: 1.5px solid #fcd34d;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.09);
         }
 
         /* MODE FOKUS & BLUR */
@@ -317,104 +369,226 @@
         .post-card.focused-card {
             position: relative;
             z-index: 9999;
-            transform: scale(1.015);
-            box-shadow: 0 15px 35px rgba(15, 23, 42, 0.25);
+            transform: scale(1.012);
+            box-shadow: var(--shadow-lg);
             border-color: var(--primary);
         }
         .focus-backdrop {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px);
+            background: rgba(15, 23, 42, 0.42); backdrop-filter: blur(2px);
             z-index: 9998; display: none;
         }
         body.forum-focus-mode .focus-backdrop { display: block; }
 
-        .post-card-inner { padding: 0.85rem; }
-        .post-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.65rem; gap: 0.4rem; }
-        .post-author { display: flex; align-items: center; gap: 0.5rem; min-width: 0; flex: 1; }
-        .post-author-img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(0,0,0,0.08); flex-shrink: 0; }
+        .post-card-inner { padding: 0.95rem 1rem 0.65rem; }
+        .post-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.7rem; gap: 0.5rem; }
+        .post-author { display: flex; align-items: center; gap: 0.6rem; min-width: 0; flex: 1; }
+        .post-author-img {
+            width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+            border: 1.5px solid var(--border-subtle); flex-shrink: 0;
+        }
         .author-info { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
-        .author-name-row { display: flex; align-items: center; gap: 0.25rem; min-width: 0; }
+        .author-name-row { display: flex; align-items: center; gap: 0.28rem; min-width: 0; }
         .author-name-link { text-decoration: none; color: inherit; display: inline-flex; align-items: center; min-width: 0; }
         .author-name-link:hover .author-name { text-decoration: underline; color: var(--primary); }
         .author-name {
-            font-weight: 800; font-size: 0.85rem; color: var(--text-main);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3;
+            font-weight: 800; font-size: 0.88rem; color: var(--text-main);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25;
         }
-        .member-verification-icon { width: 13px; height: 13px; object-fit: contain; flex-shrink: 0; }
-        .author-time { font-size: 0.65rem; color: var(--text-muted); font-weight: 500; margin-top: 0.05rem; }
+        .member-verification-icon { width: 14px; height: 14px; object-fit: contain; flex-shrink: 0; }
+        .author-time {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            font-size: 0.7rem; color: var(--text-muted); font-weight: 500; margin-top: 0.1rem;
+        }
 
-        .post-badges-group { display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap; }
+        .post-badges-group { display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; }
         .post-badge {
-            font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: var(--radius-full);
-            background: var(--bg-body); color: var(--text-muted); flex-shrink: 0; border: 1px solid var(--border-subtle);
+            font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: var(--radius-full);
+            background: var(--bg-alt); color: var(--text-muted); flex-shrink: 0; border: 1px solid var(--border-subtle);
         }
-        .badge-priority { background: #eff6ff; color: var(--primary); border-color: var(--border-accent); display: inline-flex; align-items: center; gap: 0.2rem; }
-        .badge-sponsored { background: #fef3c7; color: #b45309; border-color: #fcd34d; display: inline-flex; align-items: center; gap: 0.2rem; }
+        .badge-priority { background: var(--primary-light); color: var(--primary); border-color: var(--border-accent); display: inline-flex; align-items: center; gap: 0.25rem; }
+        .badge-sponsored { background: #fef3c7; color: #b45309; border-color: #fcd34d; display: inline-flex; align-items: center; gap: 0.25rem; }
 
-        .post-title { font-size: 0.95rem; font-weight: 800; margin-bottom: 0.3rem; line-height: 1.3; color: var(--text-main); word-break: break-word; }
-        .post-content { font-size: 0.8rem; color: var(--text-main); margin-bottom: 0.65rem; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
-        .post-image { width: 100%; max-height: 350px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 0.65rem; border: 1px solid var(--border-subtle); }
+        .post-title {
+            font-size: 0.98rem; font-weight: 800; margin-bottom: 0.35rem;
+            line-height: 1.35; color: var(--text-main); word-break: break-word;
+        }
+        .post-content {
+            font-size: 0.84rem; color: #1e293b; margin-bottom: 0.75rem;
+            line-height: 1.52; white-space: pre-wrap; word-break: break-word;
+        }
+        .post-image {
+            width: 100%; max-height: 400px; object-fit: cover;
+            border-radius: var(--radius-md); margin-bottom: 0.4rem;
+            border: 1px solid var(--border-subtle); display: block;
+        }
 
-        /* BAR PROMOSIKAN POSTINGAN ANDA */
+        /* RINGKASAN STATISTIK (JUMLAH SUKA & KOMENTAR) */
+        .post-stats-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.45rem 1rem;
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-top: 1px solid #f1f5f9;
+        }
+        .post-stats-left {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .like-pill-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+        }
+        .post-stats-right {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+        .stat-link-btn {
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.74rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .stat-link-btn:hover {
+            text-decoration: underline;
+            color: var(--text-main);
+        }
+
+        /* BAR IKLAN AKTIF (PESAN, KUNJUNGI, BUKA TAUTAN, HUBUNGI) & PROMOSI MILIK SENDIRI */
+        .ad-cta-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0.55rem 0.9rem;
+            background: #fffbeb;
+            border-top: 1px solid #fde68a;
+            flex-wrap: wrap;
+        }
+        .ad-cta-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #92400e;
+        }
+        .ad-cta-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+        .ad-action-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.32rem;
+            padding: 0.34rem 0.72rem;
+            border-radius: var(--radius-full);
+            font-size: 0.72rem;
+            font-weight: 800;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        .ad-action-pill.primary-cta {
+            background: var(--primary);
+            color: #ffffff;
+        }
+        .ad-action-pill.primary-cta:hover {
+            background: var(--primary-dark);
+        }
+        .ad-action-pill.secondary-cta {
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-medium);
+        }
+        .ad-action-pill.secondary-cta:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
         .promote-post-bar {
             display: flex; align-items: center; justify-content: space-between; gap: 0.65rem;
-            padding: 0.55rem 0.85rem; background: linear-gradient(90deg, var(--primary-light) 0%, #f8fafc 100%);
+            padding: 0.6rem 1rem; background: linear-gradient(90deg, var(--primary-light) 0%, #f8fafc 100%);
             border-top: 1px solid var(--border-subtle);
         }
-        .promote-post-info { display: flex; align-items: center; gap: 0.45rem; min-width: 0; }
+        .promote-post-info { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
         .promote-post-icon {
-            width: 24px; height: 24px; border-radius: 50%; background: #dbeafe; color: var(--primary);
-            display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; flex-shrink: 0;
+            width: 26px; height: 26px; border-radius: 50%; background: #dbeafe; color: var(--primary);
+            display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; flex-shrink: 0;
         }
         .promote-post-text {
-            font-size: 0.72rem; font-weight: 600; color: var(--text-muted);
+            font-size: 0.74rem; font-weight: 600; color: var(--text-muted);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .promote-post-btn {
-            display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.34rem 0.75rem;
+            display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.38rem 0.8rem;
             border-radius: var(--radius-full); background: var(--primary); color: #ffffff;
-            font-size: 0.72rem; font-weight: 700; flex-shrink: 0; transition: var(--transition);
+            font-size: 0.73rem; font-weight: 700; flex-shrink: 0; transition: var(--transition);
         }
         .promote-post-btn:hover { background: var(--primary-dark); }
 
-        /* TOMBOL AKSI */
+        /* TOMBOL AKSI (SUKA, KOMENTAR, BAGIKAN) */
         .post-actions {
             display: flex; align-items: center; justify-content: space-between;
-            border-top: 1px solid var(--border-subtle); padding: 0.3rem 0.85rem; gap: 0.4rem;
+            border-top: 1px solid var(--border-subtle); padding: 0.25rem 0.6rem; gap: 0.25rem;
         }
         .action-btn {
-            flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.3rem;
-            color: var(--text-muted); font-size: 0.75rem; font-weight: 600; cursor: pointer;
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+            color: var(--text-muted); font-size: 0.78rem; font-weight: 700; cursor: pointer;
             transition: background-color 0.15s ease, color 0.15s ease; background: transparent;
-            padding: 0.4rem 0; border-radius: var(--radius-sm);
+            padding: 0.5rem 0; border-radius: var(--radius-sm);
         }
-        .action-btn:hover { background: var(--bg-body); color: var(--text-main); }
-        .action-btn.liked { color: #ef4444; }
-        .action-btn.liked i { font-weight: 900; }
+        .action-btn:hover { background: var(--bg-alt); color: var(--text-main); }
+        .action-btn.liked { color: var(--primary); }
+        .action-btn.liked i { color: var(--primary); font-weight: 900; }
 
         /* KOMENTAR SECTION */
-        .comments-section { background: #fafafa; border-top: 1px solid var(--border-subtle); padding: 0.85rem; display: none; }
+        .comments-section {
+            background: #f8fafc;
+            border-top: 1px solid var(--border-subtle);
+            padding: 0.85rem 1rem;
+            display: none;
+        }
         .comments-section.active { display: block; }
-        .comment-list { display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 0.85rem; max-height: 250px; overflow-y: auto; padding-right: 0.4rem; }
-        .comment-item { display: flex; gap: 0.5rem; align-items: flex-start; padding: 0.15rem; }
-        .comment-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-subtle); flex-shrink: 0; }
+        .comment-list {
+            display: flex; flex-direction: column; gap: 0.7rem;
+            margin-bottom: 0.85rem; max-height: 260px; overflow-y: auto; padding-right: 0.35rem;
+        }
+        .comment-item { display: flex; gap: 0.55rem; align-items: flex-start; }
+        .comment-avatar {
+            width: 30px; height: 30px; border-radius: 50%; object-fit: cover;
+            border: 1px solid var(--border-subtle); flex-shrink: 0;
+        }
         .comment-content-wrapper { flex: 1; min-width: 0; }
         .comment-bubble {
-            background: var(--bg-body); padding: 0.4rem 0.6rem;
-            border-radius: 0 var(--radius-md) var(--radius-md) var(--radius-md);
-            width: 100%; border: 1px solid var(--border-subtle);
+            background: #ffffff; padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem var(--radius-md) var(--radius-md) var(--radius-md);
+            width: 100%; border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);
         }
         .comment-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.15rem; }
         .comment-author-left { display: flex; align-items: center; gap: 0.25rem; min-width: 0; }
         .comment-author-link { text-decoration: none; color: inherit; display: inline-flex; align-items: center; min-width: 0; }
         .comment-author-link:hover .comment-author { text-decoration: underline; color: var(--primary); }
-        .comment-author { font-weight: 800; font-size: 0.75rem; color: var(--text-main); line-height: 1.3; }
-        .comment-text { font-size: 0.75rem; color: var(--text-main); word-break: break-word; line-height: 1.35; }
+        .comment-author { font-weight: 800; font-size: 0.76rem; color: var(--text-main); line-height: 1.3; }
+        .comment-text { font-size: 0.78rem; color: #1e293b; word-break: break-word; line-height: 1.4; }
         .comment-text .mention-link { color: var(--primary); font-weight: 700; text-decoration: none; }
-        .comment-footer-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.2rem; margin-left: 0.3rem; }
-        .comment-time { font-size: 0.6rem; color: var(--text-muted); font-weight: 500; }
-        .reply-trigger-btn { background: none; border: none; color: var(--primary); font-size: 0.65rem; font-weight: 700; cursor: pointer; padding: 0; }
-        .delete-comment-btn { background: none; border: none; color: #ef4444; font-size: 0.65rem; font-weight: 700; cursor: pointer; padding: 0; }
+        .comment-footer-row { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.22rem; margin-left: 0.35rem; }
+        .comment-time { font-size: 0.64rem; color: var(--text-muted); font-weight: 500; }
+        .reply-trigger-btn { background: none; border: none; color: var(--primary); font-size: 0.68rem; font-weight: 700; cursor: pointer; padding: 0; }
+        .reply-trigger-btn:hover { text-decoration: underline; }
+        .delete-comment-btn { background: none; border: none; color: #ef4444; font-size: 0.68rem; font-weight: 700; cursor: pointer; padding: 0; }
+        .delete-comment-btn:hover { text-decoration: underline; }
 
         .mention-dropdown {
             position: absolute; bottom: 100%; left: 0; background: #fff;
@@ -424,25 +598,29 @@
         }
         .mention-dropdown.active { display: block; }
         .mention-item {
-            display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.6rem;
-            font-size: 0.75rem; cursor: pointer; border-bottom: 1px solid var(--border-subtle); color: var(--text-main);
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.65rem;
+            font-size: 0.76rem; cursor: pointer; border-bottom: 1px solid var(--border-subtle); color: var(--text-main);
         }
         .mention-item:hover { background: var(--primary-light); color: var(--primary); }
         .mention-item img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
 
-        .comment-form { display: flex; gap: 0.5rem; align-items: center; position: relative; }
-        .comment-form-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-subtle); flex-shrink: 0; }
+        .comment-form { display: flex; gap: 0.55rem; align-items: center; position: relative; }
+        .comment-form-avatar {
+            width: 30px; height: 30px; border-radius: 50%; object-fit: cover;
+            border: 1px solid var(--border-subtle); flex-shrink: 0;
+        }
         .comment-input-wrapper {
-            flex: 1; display: flex; align-items: center; background: #fff;
+            flex: 1; display: flex; align-items: center; background: #ffffff;
             border: 1px solid var(--border-medium); border-radius: var(--radius-full);
-            padding: 0.15rem 0.15rem 0.15rem 0.65rem; position: relative;
+            padding: 0.15rem 0.2rem 0.15rem 0.75rem; position: relative;
         }
         .comment-input-wrapper:focus-within { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
-        .comment-input { flex: 1; background: transparent; font-size: 0.75rem; color: var(--text-main); height: 28px; }
+        .comment-input { flex: 1; background: transparent; font-size: 0.78rem; color: var(--text-main); height: 30px; }
         .comment-submit-btn {
-            width: 28px; height: 28px; border-radius: 50%; background: var(--primary);
+            width: 30px; height: 30px; border-radius: 50%; background: var(--primary);
             color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
         }
+        .comment-submit-btn:hover { background: var(--primary-dark); }
 
         /* TOAST */
         #toastContainer {
@@ -457,7 +635,11 @@
         .toast.success { background: #065f46; border-left: 4px solid #10b981; }
         .toast.error { background: #7f1d1d; border-left: 4px solid #ef4444; }
 
-        .loader-container { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem; }
+        .loader-container {
+            text-align: center; padding: 2.25rem 1rem; color: var(--text-muted);
+            font-size: 0.85rem; background: var(--bg-card); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+        }
     </style>
 </head>
 <body data-package="basic">
@@ -512,8 +694,8 @@
     <div class="forum-header">
         <div class="forum-header-content">
             <div class="search-bar">
-                <i class="fas fa-search text-muted" style="font-size: 0.85rem;"></i>
-                <input type="text" id="searchInput" placeholder="Cari topik diskusi..." onkeyup="filterPosts()">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Cari topik, kata kunci, atau diskusi di Sitenexs..." onkeyup="filterPosts()">
             </div>
         </div>
     </div>
@@ -521,17 +703,23 @@
     <!-- MAIN LAYOUT -->
     <main class="forum-layout">
         <section class="main-feed">
-            <!-- JENDELA BUAT POSTINGAN (UKURAN TETAP & MENGARAH KE HALAMAN POSTINGAN) -->
+            <!-- KOTAK BUAT POSTINGAN ASLI SOSIAL MEDIA (TINGGI TETAP STABIL SAAT LOADING) -->
             <div class="create-post-box" id="openCreatePostBox" onclick="goToCreatePostPage()" role="button" tabindex="0">
-                <img id="currentUserAvatar" src="https://ui-avatars.com/api/?name=User&background=cbd5e1&color=fff" alt="User">
-                <div class="create-post-input" id="createPostPromptText">Apa yang ingin Anda diskusikan hari ini?</div>
-                <span class="create-post-cta"><i class="fas fa-pen"></i> Tulis</span>
+                <div class="create-post-top">
+                    <img id="currentUserAvatar" src="https://ui-avatars.com/api/?name=User&background=cbd5e1&color=fff" alt="User">
+                    <div class="create-post-input" id="createPostPromptText">Apa yang ingin Anda diskusikan hari ini?</div>
+                </div>
+                <div class="create-post-shortcuts">
+                    <span class="create-post-shortcut-item"><i class="fas fa-image" style="color: #10b981;"></i> Foto</span>
+                    <span class="create-post-shortcut-item"><i class="fas fa-comments" style="color: var(--primary);"></i> Diskusi</span>
+                    <span class="create-post-shortcut-item"><i class="fas fa-bullhorn" style="color: #f59e0b;"></i> Iklan</span>
+                </div>
             </div>
 
             <div class="post-list" id="postContainer">
                 <div class="loader-container" id="initialFeedLoader">
-                    <i class="fas fa-circle-notch fa-spin fa-2x"></i>
-                    <p style="margin-top: 0.85rem;">Memuat diskusi dari jaringan komunitas...</p>
+                    <i class="fas fa-circle-notch fa-spin fa-2x" style="color: var(--primary);"></i>
+                    <p style="margin-top: 0.85rem; font-weight: 600;">Memuat diskusi dari jaringan komunitas...</p>
                 </div>
             </div>
         </section>
@@ -576,12 +764,12 @@
 
         const CREATE_POST_PAGE_URL = 'https://sitenexs.com/community/create/';
         const AD_PAYMENT_BASE_URL = 'https://sitenexs.com/community/ads/';
+        const CHAT_BASE_URL = 'https://sitenexs.com/community/messages/chat/';
         const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
         const NOTIF_PROMPT_SHOWN_KEY = 'sitenexs_notif_prompt_shown';
 
         const forumCollection = collection(db, "forum_posts");
         const postsMap = new Map();
-        const hydratedBadgeUids = new Set();
 
         let allRegisteredUsers = [];
         let currentUserData = null;
@@ -627,6 +815,88 @@
                 }
             }
             return true;
+        }
+
+        function normalizeExternalUrl(rawTarget, fallbackPostId) {
+            const trimmed = String(rawTarget || '').trim();
+            if (!trimmed) {
+                return `https://sitenexs.com/community/?post=${encodeURIComponent(fallbackPostId || '')}`;
+            }
+            if (/^https?:\/\//i.test(trimmed)) {
+                return trimmed;
+            }
+            if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/.*)?$/.test(trimmed)) {
+                return `https://${trimmed}`;
+            }
+            return `https://sitenexs.com/community/?post=${encodeURIComponent(fallbackPostId || '')}`;
+        }
+
+        function buildActiveAdActionBarHtml(postId, data) {
+            const authorUid = data.authorUid || '';
+            const objective = data.adObjective || 'like';
+            const rawTarget = String(data.adObjectiveTarget || '').trim();
+            const messageUrl = `${CHAT_BASE_URL}?to=${encodeURIComponent(authorUid)}`;
+            const callUrl = `${DEFAULT_CALL_PAGE_URL}?to=${encodeURIComponent(authorUid)}`;
+            const targetUrl = normalizeExternalUrl(rawTarget, postId);
+
+            let primaryBtnHtml = '';
+            if (objective === 'visit_site') {
+                primaryBtnHtml = `
+                    <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="ad-action-pill primary-cta" onclick="event.stopPropagation()">
+                        <i class="fas fa-external-link-alt"></i>
+                        <span>Kunjungi</span>
+                    </a>
+                `;
+            } else if (objective === 'order') {
+                const orderHref = /^https?:\/\//i.test(rawTarget) ? targetUrl : messageUrl;
+                primaryBtnHtml = `
+                    <a href="${orderHref}" ${/^https?:\/\//i.test(rawTarget) ? 'target="_blank" rel="noopener noreferrer"' : ''} class="ad-action-pill primary-cta" onclick="event.stopPropagation()">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>Pesan</span>
+                    </a>
+                `;
+            } else {
+                primaryBtnHtml = `
+                    <a href="${messageUrl}" class="ad-action-pill primary-cta" onclick="event.stopPropagation()">
+                        <i class="fas fa-comment-dots"></i>
+                        <span>Pesan</span>
+                    </a>
+                `;
+            }
+
+            const linkOrVisitBtn = rawTarget
+                ? `
+                    <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="ad-action-pill secondary-cta" onclick="event.stopPropagation()">
+                        <i class="fas fa-link"></i>
+                        <span>Buka Tautan</span>
+                    </a>
+                `
+                : `
+                    <a href="https://sitenexs.com/community/?post=${encodeURIComponent(postId)}" class="ad-action-pill secondary-cta" onclick="event.stopPropagation()">
+                        <i class="fas fa-globe"></i>
+                        <span>Kunjungi</span>
+                    </a>
+                `;
+
+            const contactBtn = authorUid
+                ? `
+                    <a href="${callUrl}" class="ad-action-pill secondary-cta" onclick="event.stopPropagation()">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>Hubungi</span>
+                    </a>
+                `
+                : '';
+
+            return `
+                <div class="ad-cta-bar">
+                    <span class="ad-cta-label"><i class="fas fa-bullhorn"></i> Bersponsor • ${data.adObjectiveLabel || 'Promo'}</span>
+                    <div class="ad-cta-actions">
+                        ${primaryBtnHtml}
+                        ${linkOrVisitBtn}
+                        ${contactBtn}
+                    </div>
+                </div>
+            `;
         }
 
         /* =====================================================
@@ -849,7 +1119,7 @@
                                 {
                                     tag: `msg-${change.doc.id}`,
                                     icon: senderProfile.avatarUrl,
-                                    url: `https://sitenexs.com/community/messages/chat/?to=${encodeURIComponent(otherUid || '')}`
+                                    url: `${CHAT_BASE_URL}?to=${encodeURIComponent(otherUid || '')}`
                                 }
                             );
                         }
@@ -977,26 +1247,29 @@
             return likes.length + boostLikes + autoLikes;
         }
 
-        function syncLikeButtonDom(postId, data, activeUid) {
+        function syncLikeAndStatsDom(postId, data, activeUid) {
             const card = document.getElementById(`post-${postId}`);
             if (!card) return;
             const likeBtn = card.querySelector('.like-action-btn');
-            if (!likeBtn) return;
+            const likeStatEl = card.querySelector('.stat-like-count');
+            const commentStatEl = card.querySelector('.stat-comment-count');
 
             const likes = data.likes || [];
             const isLiked = Boolean(activeUid && likes.includes(activeUid));
             const totalLikes = computeTotalLikes(data);
+            const commentsCount = (data.comments || []).length;
             const hideStats = data.hideStats === true;
-            const labelText = hideStats ? 'Suka' : `${totalLikes > 0 ? totalLikes : ''} Suka`;
 
-            likeBtn.classList.toggle('liked', isLiked);
-            const iconEl = likeBtn.querySelector('i');
-            if (iconEl) {
-                iconEl.className = `${isLiked ? 'fas' : 'far'} fa-thumbs-up`;
+            if (likeBtn) {
+                likeBtn.classList.toggle('liked', isLiked);
+                const iconEl = likeBtn.querySelector('i');
+                if (iconEl) iconEl.className = `${isLiked ? 'fas' : 'far'} fa-thumbs-up`;
             }
-            const spanEl = likeBtn.querySelector('span');
-            if (spanEl) {
-                spanEl.innerText = labelText;
+            if (likeStatEl) {
+                likeStatEl.innerText = hideStats ? 'Suka' : `${totalLikes} suka`;
+            }
+            if (commentStatEl) {
+                commentStatEl.innerText = hideStats ? 'Komentar' : `${commentsCount} komentar`;
             }
         }
 
@@ -1007,23 +1280,23 @@
                 return;
             }
             const uid = currentUserData ? currentUserData.uid : (auth.currentUser ? auth.currentUser.uid : savedUid);
-            const btn = event?.currentTarget || document.querySelector(`#post-${postId} .like-action-btn`);
+            const card = document.getElementById(`post-${postId}`);
+            const btn = event?.currentTarget || card?.querySelector('.like-action-btn');
             const wasLiked = btn ? btn.classList.contains('liked') : false;
             const nextLiked = !wasLiked;
 
-            /* Pembaruan UI optimis langsung agar tidak kedip */
+            const cached = postsMap.get(postId);
+            const baseTotal = cached ? computeTotalLikes(cached) : 0;
+            const optimisticTotal = Math.max(0, baseTotal + (nextLiked ? 1 : -1));
+
             if (btn) {
                 btn.classList.toggle('liked', nextLiked);
                 const iconEl = btn.querySelector('i');
                 if (iconEl) iconEl.className = `${nextLiked ? 'fas' : 'far'} fa-thumbs-up`;
-                const spanEl = btn.querySelector('span');
-                const cached = postsMap.get(postId);
-                if (spanEl && cached && !cached.hideStats) {
-                    const baseTotal = computeTotalLikes(cached);
-                    const delta = nextLiked ? 1 : -1;
-                    const optimisticTotal = Math.max(0, baseTotal + delta);
-                    spanEl.innerText = `${optimisticTotal > 0 ? optimisticTotal : ''} Suka`;
-                }
+            }
+            const likeStatEl = card?.querySelector('.stat-like-count');
+            if (likeStatEl && cached && !cached.hideStats) {
+                likeStatEl.innerText = `${optimisticTotal} suka`;
             }
             playLikeSound(nextLiked);
 
@@ -1310,9 +1583,8 @@
                 avatarImg.onerror = () => { avatarImg.src = fallbackUrl; };
                 promptText.innerText = `Halo ${namaLengkap}, apa yang ingin didiskusikan?`;
 
-                /* Sinkronkan status like & bar promosi tanpa me-render ulang seluruh feed */
                 postsMap.forEach((data, postId) => {
-                    syncLikeButtonDom(postId, data, uid);
+                    syncLikeAndStatsDom(postId, data, uid);
                 });
             } catch (err) {
                 console.warn('Gagal memuat profil pengguna:', err);
@@ -1428,26 +1700,31 @@
             const likes = data.likes || [];
             const isLiked = Boolean(currentActiveUid && likes.includes(currentActiveUid));
             const totalLikes = computeTotalLikes(data);
-            const likeDisplay = hideStats ? 'Suka' : `${totalLikes > 0 ? totalLikes : ''} Suka`;
-
             const comments = data.comments || [];
-            const commentDisplay = hideStats ? 'Komentar' : `${comments.length > 0 ? comments.length : ''} Komentar`;
+
+            const likeStatLabel = hideStats ? 'Suka' : `${totalLikes} suka`;
+            const commentStatLabel = hideStats ? 'Komentar' : `${comments.length} komentar`;
 
             const activeAvatarUrl = currentUserData ? currentUserData.avatar : 'https://ui-avatars.com/api/?name=User&background=cbd5e1&color=fff';
             const activeFallback = currentUserData ? currentUserData.fallbackAvatar : activeAvatarUrl;
 
-            const promoteBarHtml = isOwnPost ? `
-                <div class="promote-post-bar">
-                    <div class="promote-post-info">
-                        <span class="promote-post-icon"><i class="fas fa-bullhorn"></i></span>
-                        <span class="promote-post-text">${isSponsored ? 'Iklan sedang aktif • Perpanjang jangkauan' : 'Jangkau lebih banyak mitra komunitas'}</span>
+            let bottomAdOrPromoteHtml = '';
+            if (isSponsored) {
+                bottomAdOrPromoteHtml = buildActiveAdActionBarHtml(postId, data);
+            } else if (isOwnPost) {
+                bottomAdOrPromoteHtml = `
+                    <div class="promote-post-bar">
+                        <div class="promote-post-info">
+                            <span class="promote-post-icon"><i class="fas fa-bullhorn"></i></span>
+                            <span class="promote-post-text">Jangkau lebih banyak mitra komunitas</span>
+                        </div>
+                        <a href="${buildAdPaymentUrl(postId)}" class="promote-post-btn" onclick="event.stopPropagation()">
+                            <i class="fas fa-rocket"></i>
+                            <span>Promosikan Postingan Anda</span>
+                        </a>
                     </div>
-                    <a href="${buildAdPaymentUrl(postId)}" class="promote-post-btn" onclick="event.stopPropagation()">
-                        <i class="fas fa-rocket"></i>
-                        <span>Promosikan Postingan Anda</span>
-                    </a>
-                </div>
-            ` : '';
+                `;
+            }
 
             article.innerHTML = `
                 <div class="post-card-inner">
@@ -1461,7 +1738,11 @@
                                     </a>
                                     <span class="async-verif-badge" data-uid="${authorUid}"></span>
                                 </div>
-                                <div class="author-time"><span>${waktuString}</span></div>
+                                <div class="author-time">
+                                    <span>${waktuString}</span>
+                                    <span>•</span>
+                                    <i class="fas fa-globe-asia" style="font-size: 0.65rem;"></i>
+                                </div>
                             </div>
                         </div>
                         <div class="post-badges-group">${badgesHtml}</div>
@@ -1470,19 +1751,32 @@
                     <p class="post-content">${data.isi}</p>
                     ${postImageHtml}
                 </div>
+
+                <div class="post-stats-bar">
+                    <div class="post-stats-left">
+                        <span class="like-pill-icon"><i class="fas fa-thumbs-up"></i></span>
+                        <span class="stat-like-count">${likeStatLabel}</span>
+                    </div>
+                    <div class="post-stats-right">
+                        ${!commentsDisabled ? `<button type="button" class="stat-link-btn stat-comment-count" onclick="toggleComments('${postId}')">${commentStatLabel}</button>` : ''}
+                    </div>
+                </div>
+
                 <div class="post-actions">
                     <button type="button" class="action-btn like-action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${postId}', event)">
-                        <i class="${isLiked ? 'fas' : 'far'} fa-thumbs-up"></i> <span>${likeDisplay}</span>
+                        <i class="${isLiked ? 'fas' : 'far'} fa-thumbs-up"></i> <span>Suka</span>
                     </button>
                     ${!commentsDisabled ? `
                     <button type="button" class="action-btn comment-toggle-btn" onclick="toggleComments('${postId}')">
-                        <i class="far fa-comment-alt"></i> <span>${commentDisplay}</span>
+                        <i class="far fa-comment-alt"></i> <span>Komentar</span>
                     </button>` : ''}
                     <button type="button" class="action-btn" onclick="copyPermalink('${postId}', event)" title="Salin Tautan Postingan">
                         <i class="fas fa-share-alt"></i> <span>Bagikan</span>
                     </button>
                 </div>
-                ${promoteBarHtml}
+
+                ${bottomAdOrPromoteHtml}
+
                 ${!commentsDisabled ? `
                 <div class="comments-section" id="comments-${postId}">
                     <div class="comment-list">${buildCommentsInnerHtml(comments, commentsDisabled, postId, currentActiveUid)}</div>
@@ -1509,15 +1803,9 @@
             const isFocused = existingCard.classList.contains('focused-card');
             existingCard.className = `post-card ${isPrioritized ? 'prioritized-card' : ''} ${isSponsored ? 'sponsored-card' : ''} ${isFocused ? 'focused-card' : ''}`;
 
-            syncLikeButtonDom(postId, data, currentActiveUid);
+            syncLikeAndStatsDom(postId, data, currentActiveUid);
 
             const comments = data.comments || [];
-            const hideStats = data.hideStats === true;
-            const commentBtnSpan = existingCard.querySelector('.comment-toggle-btn span');
-            if (commentBtnSpan) {
-                commentBtnSpan.innerText = hideStats ? 'Komentar' : `${comments.length > 0 ? comments.length : ''} Komentar`;
-            }
-
             const commentListEl = existingCard.querySelector('.comment-list');
             if (commentListEl) {
                 const prevScrollTop = commentListEl.scrollTop;
@@ -1575,7 +1863,6 @@
                 }
             }
 
-            /* Hapus kartu yang tidak lagi ada atau private */
             const activeIdSet = new Set(sortedIds);
             Array.from(postContainer.querySelectorAll('.post-card')).forEach(el => {
                 const elId = el.getAttribute('data-post-id');
