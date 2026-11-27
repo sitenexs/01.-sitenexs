@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Promosikan Postingan & Pembayaran Iklan — Sitenexs</title>
+    <meta name="description" content="Promosikan diskusi atau postingan komunitas Sitenexs Anda agar tampil di posisi teratas dan menjangkau lebih banyak anggota.">
+
+    <link rel="icon" type="image/png" href="https://sitenexs.com/assets/logo/logo.png">
+    <link rel="canonical" href="https://sitenexs.com/community/ads/">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --accent: #10b981;
+            --warning: #f59e0b;
+            --warning-light: #fffbeb;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-alt: #f1f5f9;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-subtle: #e2e8f0;
+            --border-medium: #cbd5e1;
+            --border-accent: #93c5fd;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+            --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 15px 30px -5px rgba(15, 23, 42, 0.1);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.625rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+            --radius-full: 9999px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body[data-package="pro"] {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --primary-light: #f0f9ff;
+            --accent: #f59e0b;
+            --border-accent: #38bdf8;
+        }
+
+        body[data-package="vip"],
+        body[data-package="ultimate"],
+        body[data-package="premium"] {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --primary-light: #f5f3ff;
+            --accent: #fbbf24;
+            --border-accent: #c084fc;
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 15px;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.45;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button, input, select {
+            font-family: inherit;
+            outline: none;
+            border: none;
+        }
+
+        /* BANNER DALAM PANGGILAN */
+        .active-call-banner {
+            display: none;
+            width: 100%;
+            max-width: 680px;
+            margin: 0.5rem auto 0;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.55rem 1rem;
+            background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+            color: #ffffff;
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+            transition: var(--transition);
+        }
+
+        .active-call-banner.active {
+            display: flex;
+        }
+
+        .active-call-banner-left {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-width: 0;
+        }
+
+        .active-call-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ffffff;
+            flex-shrink: 0;
+            animation: callBannerPulse 1.3s infinite ease-in-out;
+        }
+
+        @keyframes callBannerPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.45); opacity: 0.55; }
+        }
+
+        .active-call-banner-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .active-call-banner-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: rgba(255, 255, 255, 0.22);
+            padding: 0.24rem 0.65rem;
+            border-radius: var(--radius-full);
+            font-size: 0.72rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        /* LAYOUT UTAMA */
+        .ads-wrapper {
+            width: 100%;
+            max-width: 680px;
+            margin: 1rem auto 4rem;
+            padding: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .top-nav-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 0.45rem 0.85rem;
+            border-radius: var(--radius-full);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+            border-color: var(--border-accent);
+        }
+
+        .ads-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .ads-hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #ffffff;
+            border-radius: var(--radius-lg);
+            padding: 1.15rem 1.25rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .ads-hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(255, 255, 255, 0.18);
+            padding: 0.25rem 0.65rem;
+            border-radius: var(--radius-full);
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-bottom: 0.55rem;
+        }
+
+        .ads-hero h1 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin-bottom: 0.3rem;
+        }
+
+        .ads-hero p {
+            font-size: 0.8rem;
+            opacity: 0.92;
+        }
+
+        .section-title {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        /* PEMILIH POSTINGAN */
+        .post-select-box {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-md);
+            background: var(--bg-body);
+            color: var(--text-main);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .form-select:focus {
+            background: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        .post-preview-box {
+            background: var(--bg-body);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 0.8rem;
+        }
+
+        .post-preview-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .post-preview-author {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .post-preview-status {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: var(--radius-full);
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .post-preview-status.active-ad {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .post-preview-title {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+
+        .post-preview-content {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .post-preview-img {
+            width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            margin-top: 0.55rem;
+            border: 1px solid var(--border-subtle);
+        }
+
+        /* PAKET IKLAN */
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.6rem;
+        }
+
+        @media (max-width: 540px) {
+            .plans-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .plan-card {
+            position: relative;
+            background: var(--bg-body);
+            border: 1.5px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .plan-card:hover {
+            border-color: var(--border-accent);
+            background: #ffffff;
+        }
+
+        .plan-card.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.14);
+        }
+
+        .plan-tag {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--primary);
+        }
+
+        .plan-name {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .plan-price {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin: 0.15rem 0;
+        }
+
+        .plan-desc {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+
+        /* METODE PEMBAYARAN */
+        .payment-methods-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .payment-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.7rem 0.85rem;
+            border: 1.5px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            background: var(--bg-body);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .payment-option.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .payment-option-left {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .payment-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: var(--radius-sm);
+            background: #ffffff;
+            border: 1px solid var(--border-subtle);
+            color: var(--primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .payment-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .payment-sub {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .payment-radio {
+            width: 17px;
+            height: 17px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .payment-instruction-box {
+            margin-top: 0.75rem;
+            padding: 0.8rem;
+            border-radius: var(--radius-md);
+            background: var(--bg-alt);
+            border: 1px solid var(--border-subtle);
+            font-size: 0.76rem;
+            color: var(--text-main);
+        }
+
+        .payment-code-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-top: 0.45rem;
+            padding: 0.5rem 0.7rem;
+            background: #ffffff;
+            border: 1px dashed var(--border-medium);
+            border-radius: var(--radius-sm);
+            font-weight: 800;
+            font-size: 0.8rem;
+        }
+
+        .copy-mini-btn {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 0.25rem 0.55rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* RINGKASAN & TOMBOL BAYAR */
+        .summary-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            padding: 0.35rem 0;
+            color: var(--text-muted);
+        }
+
+        .summary-row strong {
+            color: var(--text-main);
+        }
+
+        .summary-total {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            padding-top: 0.65rem;
+            border-top: 1px solid var(--border-subtle);
+            font-size: 0.92rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .summary-total span:last-child {
+            color: var(--primary-dark);
+            font-size: 1rem;
+        }
+
+        .btn-pay {
+            width: 100%;
+            margin-top: 0.9rem;
+            padding: 0.8rem 1.2rem;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #ffffff;
+            font-size: 0.88rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28);
+            transition: var(--transition);
+        }
+
+        .btn-pay:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.36);
+        }
+
+        .btn-pay:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        /* TOAST */
+        #toastContainer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 320px;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            pointer-events: auto;
+        }
+
+        .toast.success {
+            background: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .toast.error {
+            background: #7f1d1d;
+            border-left: 4px solid #ef4444;
+        }
+    </style>
+</head>
+<body data-package="basic">
+
+    <!-- TOAST -->
+    <div id="toastContainer"></div>
+
+    <!-- NAVBAR -->
+    <header id="navbar"></header>
+
+    <!-- BANNER PANGGILAN AKTIF -->
+    <div id="activeCallBanner" class="active-call-banner" role="button" tabindex="0">
+        <div class="active-call-banner-left">
+            <span class="active-call-pulse"></span>
+            <i id="activeCallBannerIcon" class="fas fa-phone-alt"></i>
+            <span id="activeCallBannerText" class="active-call-banner-text">Dalam panggilan...</span>
+        </div>
+        <span class="active-call-banner-cta">
+            <span>Masuk</span>
+            <i class="fas fa-chevron-right"></i>
+        </span>
+    </div>
+
+    <main class="ads-wrapper">
+        <div class="top-nav-row">
+            <a href="https://sitenexs.com/community/" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                <span>Kembali ke Forum</span>
+            </a>
+        </div>
+
+        <section class="ads-hero">
+            <div class="ads-hero-badge">
+                <i class="fas fa-bullhorn"></i>
+                <span>Iklan Komunitas Sitenexs</span>
+            </div>
+            <h1>Promosikan Postingan Anda</h1>
+            <p>Tempatkan diskusi atau informasi produk Anda di posisi teratas forum komunitas agar dilihat lebih banyak anggota.</p>
+        </section>
+
+        <!-- PILIH POSTINGAN -->
+        <section class="ads-card">
+            <div class="section-title">
+                <i class="fas fa-file-alt"></i>
+                <span>1. Pilih Postingan yang Akan Dipromosikan</span>
+            </div>
+            <div class="post-select-box">
+                <select id="postSelector" class="form-select" onchange="handlePostSelectionChange(this.value)">
+                    <option value="">Memuat daftar postingan Anda...</option>
+                </select>
+
+                <div class="post-preview-box" id="postPreviewBox">
+                    <div class="post-preview-meta">
+                        <span class="post-preview-author" id="previewAuthor">Memuat pratinjau...</span>
+                        <span class="post-preview-status" id="previewAdStatus">Belum Diiklankan</span>
+                    </div>
+                    <div class="post-preview-title" id="previewTitle">-</div>
+                    <div class="post-preview-content" id="previewContent">Pilih postingan terlebih dahulu untuk melihat pratinjau iklan.</div>
+                    <img id="previewImage" src="" alt="Pratinjau Postingan" class="post-preview-img" style="display: none;">
+                </div>
+            </div>
+        </section>
+
+        <!-- PILIH PAKET DURASI -->
+        <section class="ads-card">
+            <div class="section-title">
+                <i class="fas fa-clock"></i>
+                <span>2. Pilih Durasi Promosi</span>
+            </div>
+            <div class="plans-grid" id="plansGrid">
+                <div class="plan-card selected" data-plan="1d" onclick="selectPlan('1d')">
+                    <span class="plan-tag">Pemula</span>
+                    <span class="plan-name">1 Hari (24 Jam)</span>
+                    <span class="plan-price">Rp 15.000</span>
+                    <span class="plan-desc">Tampil prioritas bersponsor di urutan atas selama 1 hari.</span>
+                </div>
+                <div class="plan-card" data-plan="3d" onclick="selectPlan('3d')">
+                    <span class="plan-tag">Populer</span>
+                    <span class="plan-name">3 Hari (72 Jam)</span>
+                    <span class="plan-price">Rp 39.000</span>
+                    <span class="plan-desc">Jangkauan lebih luas dan visibilitas stabil selama 3 hari.</span>
+                </div>
+                <div class="plan-card" data-plan="7d" onclick="selectPlan('7d')">
+                    <span class="plan-tag">Maksimal</span>
+                    <span class="plan-name">7 Hari (1 Minggu)</span>
+                    <span class="plan-price">Rp 79.000</span>
+                    <span class="plan-desc">Eksposur penuh selama 7 hari untuk diskusi atau promo penting.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- METODE PEMBAYARAN -->
+        <section class="ads-card">
+            <div class="section-title">
+                <i class="fas fa-wallet"></i>
+                <span>3. Pilih Metode Pembayaran</span>
+            </div>
+            <div class="payment-methods-list">
+                <label class="payment-option selected" data-method="dana" onclick="selectPaymentMethod('dana')">
+                    <div class="payment-option-left">
+                        <span class="payment-icon"><i class="fas fa-mobile-alt"></i></span>
+                        <div>
+                            <div class="payment-title">DANA / E-Wallet</div>
+                            <div class="payment-sub">Transfer saldo DANA atau dompet digital</div>
+                        </div>
+                    </div>
+                    <input type="radio" name="paymentMethod" value="dana" class="payment-radio" checked>
+                </label>
+
+                <label class="payment-option" data-method="qris" onclick="selectPaymentMethod('qris')">
+                    <div class="payment-option-left">
+                        <span class="payment-icon"><i class="fas fa-qrcode"></i></span>
+                        <div>
+                            <div class="payment-title">QRIS Instan</div>
+                            <div class="payment-sub">Scan melalui mobile banking atau aplikasi pembayaran</div>
+                        </div>
+                    </div>
+                    <input type="radio" name="paymentMethod" value="qris" class="payment-radio">
+                </label>
+
+                <label class="payment-option" data-method="transfer" onclick="selectPaymentMethod('transfer')">
+                    <div class="payment-option-left">
+                        <span class="payment-icon"><i class="fas fa-university"></i></span>
+                        <div>
+                            <div class="payment-title">Transfer Bank</div>
+                            <div class="payment-sub">Transfer manual ke rekening resmi Sitenexs</div>
+                        </div>
+                    </div>
+                    <input type="radio" name="paymentMethod" value="transfer" class="payment-radio">
+                </label>
+            </div>
+
+            <div class="payment-instruction-box" id="paymentInstructionBox">
+                <div id="paymentInstructionDesc">Kirim pembayaran sesuai nominal total ke nomor DANA resmi Sitenexs:</div>
+                <div class="payment-code-row">
+                    <span id="paymentTargetNumber">DANA • 0851-XXXX-XXXX (a.n. Sitenexs)</span>
+                    <button type="button" class="copy-mini-btn" onclick="copyPaymentTarget()">
+                        <i class="fas fa-copy"></i> Salin
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- RINGKASAN & KONFIRMASI -->
+        <section class="ads-card">
+            <div class="section-title">
+                <i class="fas fa-receipt"></i>
+                <span>4. Ringkasan Pembayaran</span>
+            </div>
+            <div class="summary-row">
+                <span>Postingan</span>
+                <strong id="summaryPost">-</strong>
+            </div>
+            <div class="summary-row">
+                <span>Paket Durasi</span>
+                <strong id="summaryPlan">1 Hari (24 Jam)</strong>
+            </div>
+            <div class="summary-row">
+                <span>Metode Pembayaran</span>
+                <strong id="summaryMethod">DANA / E-Wallet</strong>
+            </div>
+            <div class="summary-total">
+                <span>Total Pembayaran</span>
+                <span id="summaryTotal">Rp 15.000</span>
+            </div>
+
+            <button type="button" class="btn-pay" id="confirmPaymentBtn" onclick="processAdPayment()">
+                <i class="fas fa-lock"></i>
+                <span>Bayar & Aktifkan Iklan</span>
+            </button>
+        </section>
+    </main>
+
+    <script type="module">
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
+        import {
+            doc,
+            getDoc,
+            setDoc,
+            collection,
+            query,
+            where,
+            getDocs,
+            serverTimestamp,
+            Timestamp
+        } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
+
+        import {
+            db,
+            rtdb,
+            auth
+        } from 'https://sitenexs.com/assets/js/sitenexs-config.js';
+
+        import {
+            fetchUserProfile as fetchNormalizedUserProfile
+        } from 'https://sitenexs.com/assets/js/sitenexs-user-data.js';
+
+        import {
+            mountSitenexsNavbar,
+            setNavbarUserProfile
+        } from 'https://sitenexs.com/assets/js/sitenexs-navbar.js';
+
+        import {
+            DEFAULT_CALL_PAGE_URL,
+            attachForcedIncomingCallRedirect,
+            attachOngoingCallBanner
+        } from 'https://sitenexs.com/assets/js/sitenexs-call-presence.js';
+
+        const AD_PLANS = {
+            '1d': { label: '1 Hari (24 Jam)', price: 15000, priceFormatted: 'Rp 15.000', durationMs: 24 * 60 * 60 * 1000 },
+            '3d': { label: '3 Hari (72 Jam)', price: 39000, priceFormatted: 'Rp 39.000', durationMs: 3 * 24 * 60 * 60 * 1000 },
+            '7d': { label: '7 Hari (1 Minggu)', price: 79000, priceFormatted: 'Rp 79.000', durationMs: 7 * 24 * 60 * 60 * 1000 }
+        };
+
+        const PAYMENT_METHODS = {
+            dana: {
+                label: 'DANA / E-Wallet',
+                desc: 'Kirim pembayaran sesuai nominal total ke nomor DANA resmi Sitenexs:',
+                target: 'DANA • 0851-XXXX-XXXX (a.n. Sitenexs)'
+            },
+            qris: {
+                label: 'QRIS Instan',
+                desc: 'Gunakan kode merchant QRIS resmi Sitenexs pada aplikasi pembayaran Anda:',
+                target: 'NMID: ID1026XXXXXXX • SITENEXS'
+            },
+            transfer: {
+                label: 'Transfer Bank',
+                desc: 'Transfer sesuai nominal total ke rekening tujuan berikut:',
+                target: 'BCA / Mandiri • XXXX-XXXX-XX (a.n. Sitenexs)'
+            }
+        };
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialPostId = urlParams.get('post') || '';
+        const initialPlanParam = urlParams.get('plan') || '1d';
+
+        let currentUid = null;
+        let currentProfile = null;
+        let userPosts = [];
+        let selectedPostId = initialPostId;
+        let selectedPlanKey = AD_PLANS[initialPlanParam] ? initialPlanParam : '1d';
+        let selectedMethodKey = 'dana';
+        let cleanupIncomingRedirect = null;
+        let cleanupOngoingBanner = null;
+
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const iconClass = type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle';
+            toast.innerHTML = `<i class="fas ${iconClass}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3200);
+        };
+
+        mountSitenexsNavbar({
+            targetSelector: '#navbar',
+            onSelectNotif: ({ postId }) => {
+                if (postId) {
+                    window.location.href = `https://sitenexs.com/community/?post=${encodeURIComponent(postId)}`;
+                }
+            }
+        });
+
+        function isAdCurrentlyActive(data) {
+            if (!data || (!data.isAd && !data.adActive)) return false;
+            if (data.adExpiresAt) {
+                const expMillis = data.adExpiresAt.toMillis ? data.adExpiresAt.toMillis() : new Date(data.adExpiresAt).getTime();
+                if (!Number.isNaN(expMillis) && expMillis <= Date.now()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function updateSummaryUI() {
+            const plan = AD_PLANS[selectedPlanKey] || AD_PLANS['1d'];
+            const method = PAYMENT_METHODS[selectedMethodKey] || PAYMENT_METHODS.dana;
+            const post = userPosts.find(p => p.id === selectedPostId);
+
+            document.getElementById('summaryPost').innerText = post
+                ? (post.judul || post.isi.slice(0, 36) || `Postingan #${post.id.slice(0, 6)}`)
+                : 'Belum dipilih';
+            document.getElementById('summaryPlan').innerText = plan.label;
+            document.getElementById('summaryMethod').innerText = method.label;
+            document.getElementById('summaryTotal').innerText = plan.priceFormatted;
+        }
+
+        function renderPostPreview() {
+            const post = userPosts.find(p => p.id === selectedPostId);
+            const authorEl = document.getElementById('previewAuthor');
+            const statusEl = document.getElementById('previewAdStatus');
+            const titleEl = document.getElementById('previewTitle');
+            const contentEl = document.getElementById('previewContent');
+            const imgEl = document.getElementById('previewImage');
+
+            if (!post) {
+                authorEl.innerText = 'Tidak ada postingan dipilih';
+                statusEl.innerText = '-';
+                statusEl.className = 'post-preview-status';
+                titleEl.innerText = '-';
+                contentEl.innerText = 'Anda belum memiliki postingan atau pilih postingan dari daftar di atas.';
+                imgEl.style.display = 'none';
+                updateSummaryUI();
+                return;
+            }
+
+            const activeAd = isAdCurrentlyActive(post);
+            authorEl.innerText = post.penulis || currentProfile?.displayName || 'Mitra Sitenexs';
+            statusEl.innerText = activeAd ? 'Iklan Aktif' : 'Siap Dipromosikan';
+            statusEl.className = activeAd ? 'post-preview-status active-ad' : 'post-preview-status';
+            titleEl.innerText = post.judul || 'Diskusi Komunitas';
+            contentEl.innerText = post.isi || '';
+
+            if (post.imageUrl) {
+                imgEl.src = post.imageUrl;
+                imgEl.style.display = 'block';
+            } else {
+                imgEl.style.display = 'none';
+            }
+
+            updateSummaryUI();
+        }
+
+        window.handlePostSelectionChange = function(postId) {
+            selectedPostId = postId;
+            renderPostPreview();
+        };
+
+        window.selectPlan = function(planKey) {
+            if (!AD_PLANS[planKey]) return;
+            selectedPlanKey = planKey;
+            document.querySelectorAll('.plan-card').forEach(card => {
+                card.classList.toggle('selected', card.getAttribute('data-plan') === planKey);
+            });
+            updateSummaryUI();
+        };
+
+        window.selectPaymentMethod = function(methodKey) {
+            if (!PAYMENT_METHODS[methodKey]) return;
+            selectedMethodKey = methodKey;
+            document.querySelectorAll('.payment-option').forEach(opt => {
+                const isMatch = opt.getAttribute('data-method') === methodKey;
+                opt.classList.toggle('selected', isMatch);
+                const radio = opt.querySelector('input[type="radio"]');
+                if (radio) radio.checked = isMatch;
+            });
+
+            const info = PAYMENT_METHODS[methodKey];
+            document.getElementById('paymentInstructionDesc').innerText = info.desc;
+            document.getElementById('paymentTargetNumber').innerText = info.target;
+            updateSummaryUI();
+        };
+
+        window.copyPaymentTarget = function() {
+            const targetText = document.getElementById('paymentTargetNumber')?.innerText || '';
+            if (!targetText) return;
+            navigator.clipboard.writeText(targetText).then(() => {
+                showToast('Informasi pembayaran berhasil disalin.');
+            }).catch(() => {
+                showToast('Gagal menyalin informasi pembayaran.', 'error');
+            });
+        };
+
+        async function loadUserPosts(uid) {
+            const selector = document.getElementById('postSelector');
+            try {
+                const qPosts = query(collection(db, 'forum_posts'), where('authorUid', '==', uid));
+                const snap = await getDocs(qPosts);
+
+                userPosts = [];
+                snap.forEach(docSnap => {
+                    userPosts.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                userPosts.sort((a, b) => {
+                    const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+                    const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+                    return timeB - timeA;
+                });
+
+                if (userPosts.length === 0) {
+                    selector.innerHTML = '<option value="">Anda belum memiliki postingan di forum</option>';
+                    selectedPostId = '';
+                    renderPostPreview();
+                    return;
+                }
+
+                let optionsHtml = '';
+                userPosts.forEach(p => {
+                    const labelText = p.judul ? `${p.judul} — ${p.isi.slice(0, 35)}` : p.isi.slice(0, 55);
+                    optionsHtml += `<option value="${p.id}">${labelText}</option>`;
+                });
+                selector.innerHTML = optionsHtml;
+
+                if (selectedPostId && userPosts.some(p => p.id === selectedPostId)) {
+                    selector.value = selectedPostId;
+                } else {
+                    selectedPostId = userPosts[0].id;
+                    selector.value = selectedPostId;
+                }
+
+                renderPostPreview();
+            } catch (err) {
+                console.error('Gagal memuat daftar postingan user:', err);
+                selector.innerHTML = '<option value="">Gagal memuat postingan</option>';
+                showToast('Gagal memuat postingan Anda.', 'error');
+            }
+        }
+
+        window.processAdPayment = async function() {
+            if (!currentUid) {
+                window.location.href = 'https://account.sitenexs.com/sign-in/';
+                return;
+            }
+
+            if (!selectedPostId) {
+                showToast('Silakan pilih postingan yang ingin dipromosikan.', 'error');
+                return;
+            }
+
+            const plan = AD_PLANS[selectedPlanKey] || AD_PLANS['1d'];
+            const method = PAYMENT_METHODS[selectedMethodKey] || PAYMENT_METHODS.dana;
+            const btn = document.getElementById('confirmPaymentBtn');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Memproses Pembayaran...</span>';
+
+            try {
+                const nowMs = Date.now();
+                const expiresAt = Timestamp.fromMillis(nowMs + plan.durationMs);
+                const orderId = `AD_${nowMs}_${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+
+                await setDoc(doc(db, 'forum_posts', selectedPostId), {
+                    isAd: true,
+                    adActive: true,
+                    adPlan: selectedPlanKey,
+                    adPrice: plan.price,
+                    adPaymentMethod: selectedMethodKey,
+                    adOrderId: orderId,
+                    adActivatedAt: serverTimestamp(),
+                    adExpiresAt: expiresAt
+                }, { merge: true });
+
+                await setDoc(doc(db, 'forum_ads_orders', orderId), {
+                    orderId,
+                    postId: selectedPostId,
+                    authorUid: currentUid,
+                    plan: selectedPlanKey,
+                    planLabel: plan.label,
+                    amount: plan.price,
+                    paymentMethod: selectedMethodKey,
+                    paymentMethodLabel: method.label,
+                    status: 'paid',
+                    createdAt: serverTimestamp(),
+                    expiresAt
+                }, { merge: true });
+
+                showToast('Pembayaran berhasil! Postingan Anda kini berstatus Bersponsor.');
+                setTimeout(() => {
+                    window.location.href = `https://sitenexs.com/community/?post=${encodeURIComponent(selectedPostId)}`;
+                }, 900);
+            } catch (err) {
+                console.error('Gagal memproses pembayaran iklan:', err);
+                showToast('Gagal memproses pembayaran iklan. Silakan coba lagi.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-lock"></i> <span>Bayar & Aktifkan Iklan</span>';
+            }
+        };
+
+        async function initAdsPage(uid) {
+            currentUid = uid;
+            localStorage.setItem('sitenexs_uid', uid);
+            localStorage.setItem('sitenexs_logged_in', 'true');
+
+            await setNavbarUserProfile(uid);
+            currentProfile = await fetchNormalizedUserProfile(db, uid, { forceRefresh: true });
+
+            if (cleanupIncomingRedirect) cleanupIncomingRedirect();
+            cleanupIncomingRedirect = attachForcedIncomingCallRedirect({
+                rtdb,
+                currentUid: uid,
+                callPageUrl: DEFAULT_CALL_PAGE_URL,
+                fallbackPeerName: currentProfile.displayName || 'Mitra Sitenexs'
+            });
+
+            if (cleanupOngoingBanner) cleanupOngoingBanner();
+            cleanupOngoingBanner = attachOngoingCallBanner({
+                rtdb,
+                currentUid: uid,
+                bannerElement: document.getElementById('activeCallBanner'),
+                textElement: document.getElementById('activeCallBannerText'),
+                iconElement: document.getElementById('activeCallBannerIcon'),
+                fallbackPeerName: currentProfile.displayName || 'Mitra Sitenexs',
+                callPageUrl: DEFAULT_CALL_PAGE_URL
+            });
+
+            selectPlan(selectedPlanKey);
+            selectPaymentMethod(selectedMethodKey);
+            await loadUserPosts(uid);
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                await initAdsPage(user.uid);
+            } else {
+                const savedUid = localStorage.getItem('sitenexs_uid');
+                const isLogged = localStorage.getItem('sitenexs_logged_in') === 'true';
+                if (isLogged && savedUid) {
+                    await initAdsPage(savedUid);
+                } else {
+                    window.location.href = 'https://account.sitenexs.com/sign-in/';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
