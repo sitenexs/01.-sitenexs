@@ -147,28 +147,13 @@
         }
 
         .promote-modal-box {
-            margin-top: 0.75rem; padding: 0.8rem; border-radius: var(--radius-md);
+            margin-top: 0.75rem; padding: 0.75rem 0.85rem; border-radius: var(--radius-md);
             border: 1px solid var(--border-accent); background: var(--primary-light);
         }
-        .promote-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; cursor: pointer; }
+        .promote-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 0.65rem; cursor: pointer; }
         .promote-toggle-left { display: flex; align-items: center; gap: 0.55rem; }
-        .promote-toggle-title { font-size: 0.8rem; font-weight: 800; color: var(--text-main); }
-        .promote-toggle-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.1rem; }
-        .promote-checkbox { width: 17px; height: 17px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
-        .promote-plans-container { display: none; margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px dashed var(--border-accent); }
-        .promote-plans-container.active { display: block; }
-        .promote-plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-        @media (max-width: 480px) { .promote-plans-grid { grid-template-columns: 1fr; } }
-
-        .promote-plan-option {
-            position: relative; display: flex; flex-direction: column; align-items: center;
-            text-align: center; padding: 0.55rem 0.4rem; border-radius: var(--radius-sm);
-            border: 1.5px solid var(--border-medium); background: #ffffff; cursor: pointer; transition: var(--transition);
-        }
-        .promote-plan-option input { position: absolute; opacity: 0; pointer-events: none; }
-        .promote-plan-option.selected { border-color: var(--primary); background: #eff6ff; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15); }
-        .promote-plan-duration { font-size: 0.74rem; font-weight: 800; color: var(--text-main); }
-        .promote-plan-price { font-size: 0.7rem; font-weight: 700; color: var(--primary); margin-top: 0.15rem; }
+        .promote-toggle-title { font-size: 0.82rem; font-weight: 800; color: var(--text-main); }
+        .promote-checkbox { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
 
         .composer-actions {
             display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1.1rem;
@@ -254,34 +239,12 @@
 
                 <div class="form-group promote-modal-box">
                     <label class="promote-toggle-row" for="promoteOnCreateCheckbox">
-                        <div class="promote-toggle-left">
+                        <span class="promote-toggle-left">
                             <i class="fas fa-bullhorn text-primary" style="font-size: 0.95rem;"></i>
-                            <div>
-                                <div class="promote-toggle-title">Jadikan Iklan / Promosikan Postingan</div>
-                                <div class="promote-toggle-sub">Lanjut ke pembayaran iklan setelah postingan dibuat</div>
-                            </div>
-                        </div>
-                        <input type="checkbox" id="promoteOnCreateCheckbox" class="promote-checkbox" onchange="togglePromoteOptions()">
+                            <span class="promote-toggle-title">Jadikan Iklan</span>
+                        </span>
+                        <input type="checkbox" id="promoteOnCreateCheckbox" class="promote-checkbox" onchange="togglePromoteCheckbox()">
                     </label>
-                    <div class="promote-plans-container" id="promotePlansContainer">
-                        <div class="promote-plans-grid">
-                            <label class="promote-plan-option selected" onclick="selectPromotePlan(this)">
-                                <input type="radio" name="promotePlan" value="1d" checked>
-                                <span class="promote-plan-duration">1 Hari</span>
-                                <span class="promote-plan-price">Rp 15.000</span>
-                            </label>
-                            <label class="promote-plan-option" onclick="selectPromotePlan(this)">
-                                <input type="radio" name="promotePlan" value="3d">
-                                <span class="promote-plan-duration">3 Hari</span>
-                                <span class="promote-plan-price">Rp 39.000</span>
-                            </label>
-                            <label class="promote-plan-option" onclick="selectPromotePlan(this)">
-                                <input type="radio" name="promotePlan" value="7d">
-                                <span class="promote-plan-duration">7 Hari</span>
-                                <span class="promote-plan-price">Rp 79.000</span>
-                            </label>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="composer-actions">
@@ -361,31 +324,20 @@
             }
         });
 
-        window.buildAdPaymentUrl = function(postId, plan = '') {
+        window.buildAdPaymentUrl = function(postId) {
             const url = new URL(AD_PAYMENT_BASE_URL);
             if (postId) url.searchParams.set('post', postId);
-            if (plan) url.searchParams.set('plan', plan);
             return url.toString();
         };
 
-        window.togglePromoteOptions = function() {
+        window.togglePromoteCheckbox = function() {
             const checkbox = document.getElementById('promoteOnCreateCheckbox');
-            const plansBox = document.getElementById('promotePlansContainer');
-            if (!checkbox || !plansBox) return;
+            if (!checkbox) return;
             if (checkbox.checked) {
-                plansBox.classList.add('active');
                 submitBtn.innerHTML = '<i class="fas fa-bullhorn"></i> Posting & Lanjut Bayar';
             } else {
-                plansBox.classList.remove('active');
                 submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Posting';
             }
-        };
-
-        window.selectPromotePlan = function(labelEl) {
-            document.querySelectorAll('.promote-plan-option').forEach(el => el.classList.remove('selected'));
-            labelEl.classList.add('selected');
-            const radio = labelEl.querySelector('input[type="radio"]');
-            if (radio) radio.checked = true;
         };
 
         window.previewImage = function(event) {
@@ -529,8 +481,6 @@
             const title = document.getElementById('postTitle').value.trim();
             const content = document.getElementById('postContent').value.trim();
             const wantsAdPromotion = Boolean(document.getElementById('promoteOnCreateCheckbox')?.checked);
-            const selectedPlanEl = document.querySelector('input[name="promotePlan"]:checked');
-            const selectedPlan = selectedPlanEl ? selectedPlanEl.value : '1d';
 
             if (!content) return;
 
@@ -582,7 +532,6 @@
                     isPrioritized: false,
                     isAd: false,
                     adStatus: wantsAdPromotion ? 'pending_payment' : 'none',
-                    adPlanRequested: wantsAdPromotion ? selectedPlan : null,
                     commentsDisabled: false,
                     hideStats: false,
                     createdAt: serverTimestamp()
@@ -612,7 +561,7 @@
 
                 if (wantsAdPromotion) {
                     showToast("Diskusi diposting! Mengalihkan ke pembayaran iklan...");
-                    window.location.href = buildAdPaymentUrl(createdDoc.id, selectedPlan);
+                    window.location.href = buildAdPaymentUrl(createdDoc.id);
                     return;
                 }
 
