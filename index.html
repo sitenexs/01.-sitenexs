@@ -2136,6 +2136,39 @@
             return formatted;
         }
 
+        function revertCardToOriginalPrice(card) {
+            if (!card || card.dataset.expiredHandled === 'true') return;
+            card.dataset.expiredHandled = 'true';
+
+            const originalPrice = Number(card.getAttribute('data-original-price')) || 0;
+            const packageName = card.getAttribute('data-package-name') || '';
+
+            const strikeEl = card.querySelector('.pricing-strike');
+            if (strikeEl) strikeEl.remove();
+
+            const countdownEl = card.querySelector('.countdown-timer');
+            if (countdownEl) countdownEl.remove();
+
+            const finalEl = card.querySelector('.pricing-final');
+            if (finalEl) {
+                finalEl.innerHTML = originalPrice > 0
+                    ? `${formatRupiah(originalPrice)}<span>/bln</span>`
+                    : 'Gratis';
+            }
+
+            const btnEl = card.querySelector('.pricing-action-btn');
+            if (btnEl) {
+                if (originalPrice === 0) {
+                    const waText = `Halo Sitenexs, saya tertarik untuk mulai menggunakan paket gratis (${packageName}).`;
+                    btnEl.href = `https://wa.me/6285177137899?text=${encodeURIComponent(waText)}`;
+                    btnEl.target = '_blank';
+                    btnEl.rel = 'noopener noreferrer';
+                } else {
+                    btnEl.href = `subscriber/?paket=${encodeURIComponent(packageName)}&harga=${originalPrice}`;
+                }
+            }
+        }
+
         window.updateCountdowns = function() {
             document.querySelectorAll('.countdown-timer').forEach(el => {
                 const hoursDuration = Number(el.getAttribute('data-hours')) || 24;
@@ -2153,8 +2186,9 @@
                     distance = endTime - now;
                 }
 
-                if (distance < 0 && !isLooping) {
-                    el.innerHTML = "Diskon telah berakhir";
+                if (distance <= 0 && !isLooping) {
+                    const card = el.closest('.pricing-card');
+                    revertCardToOriginalPrice(card);
                 } else {
                     const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                     const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -2190,21 +2224,26 @@
                 packages.forEach(pkg => {
                     let priceHTML = '';
                     let countdownHTML = '';
-                    const finalPrice = (pkg.hargaDiskon > 0 && pkg.hargaDiskon < pkg.hargaAsli) ? pkg.hargaDiskon : pkg.hargaAsli;
+                    const hargaAsli = Number(pkg.hargaAsli) || 0;
+                    const hargaDiskon = Number(pkg.hargaDiskon) || 0;
+                    const hours = Number(pkg.countdownJam) || 24;
+                    const loop = pkg.perulanganWaktu !== false;
+                    const startTime = Number(pkg.countdownStart) || Date.now();
+                    const durationMs = hours * 60 * 60 * 1000;
+                    const isCountdownExpired = !loop && (Date.now() >= (startTime + durationMs));
 
-                    const hasDiscount = pkg.hargaDiskon > 0 && pkg.hargaDiskon < pkg.hargaAsli;
-                    if (hasDiscount) {
+                    const hasActiveDiscount = hargaDiskon > 0 && hargaDiskon < hargaAsli && !isCountdownExpired;
+                    const finalPrice = hasActiveDiscount ? hargaDiskon : hargaAsli;
+
+                    if (hasActiveDiscount) {
                         priceHTML = `
-                            <span class="pricing-strike">${formatRupiah(pkg.hargaAsli)}</span>
-                            <div class="pricing-final">${formatRupiah(pkg.hargaDiskon)}<span>/bln</span></div>
+                            <span class="pricing-strike">${formatRupiah(hargaAsli)}</span>
+                            <div class="pricing-final">${formatRupiah(hargaDiskon)}<span>/bln</span></div>
                         `;
-                        const hours = pkg.countdownJam || 24;
-                        const loop = pkg.perulanganWaktu !== false;
-                        const startTime = pkg.countdownStart || Date.now();
                         countdownHTML = `<div class="pkg-countdown-badge countdown-timer" data-hours="${hours}" data-loop="${loop}" data-start="${startTime}"><i class="fas fa-spinner fa-spin"></i> Memuat waktu...</div>`;
-                    } else if (pkg.hargaAsli > 0) {
+                    } else if (hargaAsli > 0) {
                         priceHTML = `
-                            <div class="pricing-final">${formatRupiah(pkg.hargaAsli)}<span>/bln</span></div>
+                            <div class="pricing-final">${formatRupiah(hargaAsli)}<span>/bln</span></div>
                         `;
                     } else {
                         priceHTML = `
@@ -2237,11 +2276,16 @@
                     const titleStyle = pkg.isPopuler ? 'color: var(--primary);' : '';
                     const btnClass = pkg.isPopuler ? 'btn-primary' : 'btn-outline-primary';
                     
-                    const linkUrl = pkg.hargaAsli === 0 ? 'https://account.sitenexs.com/sign-in/' : `subscriber/?paket=${encodeURIComponent(pkg.namaPaket)}&harga=${finalPrice}`;
+                    const isFreePackage = hargaAsli === 0;
+                    const waFreeMessage = `Halo Sitenexs, saya tertarik untuk mulai menggunakan paket gratis (${pkg.namaPaket}).`;
+                    const linkUrl = isFreePackage
+                        ? `https://wa.me/6285177137899?text=${encodeURIComponent(waFreeMessage)}`
+                        : `subscriber/?paket=${encodeURIComponent(pkg.namaPaket)}&harga=${finalPrice}`;
+                    const targetAttr = isFreePackage ? 'target="_blank" rel="noopener noreferrer"' : '';
                     const iconClass = pkg.icon || 'fa-box';
 
                     const cardHTML = `
-                        <div class="pricing-card reveal active" style="${borderStyle}">
+                        <div class="pricing-card reveal active" data-original-price="${hargaAsli}" data-package-name="${pkg.namaPaket}" style="${borderStyle}">
                             ${badgePopuler}
                             <div class="pricing-icon"><i class="fas ${iconClass}"></i></div>
                             <h3 class="pricing-title" style="${titleStyle}">${pkg.namaPaket} ${nameBadgeHTML}</h3>
@@ -2251,7 +2295,9 @@
                                 ${countdownHTML}
                             </div>
                             ${featureHTML}
-                            <a href="${linkUrl}" class="btn ${btnClass} btn-block btn-sm" style="margin-top: auto;">${pkg.hargaAsli === 0 ? 'Mulai Gratis' : 'Pilih Paket'}</a>
+                            <a href="${linkUrl}" ${targetAttr} class="btn ${btnClass} btn-block btn-sm pricing-action-btn" style="margin-top: auto;">
+                                ${isFreePackage ? '<i class="fab fa-whatsapp"></i> Mulai Gratis' : 'Pilih Paket'}
+                            </a>
                         </div>
                     `;
                     pricingContainer.insertAdjacentHTML('beforeend', cardHTML);
